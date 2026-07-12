@@ -13,18 +13,20 @@ class ReviewState(BaseModel):
     diff: str | None = None
     files_changed: List[str] = Field(default_factory=list)
 
+    # Knowledge Base Context
+    context_from_kb: str = ""
+
+    # Memory Context (Previous Reviews)
+    previous_reviews: list = Field(default_factory=list)   # ← New
+
     # Agent Outputs
     context_summary: str = ""
     code_analysis: str = ""
-    critique: str = ""                    # ← New
-    recommendation: str = ""              # ← New
-    final_comment: str = ""               # ← New
+    critique: str = ""
+    recommendation: str = ""
+    final_comment: str = ""
 
     # Metadata
     traces: List[Dict[str, Any]] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=datetime.now)
     model_used: str = ""
-    context_from_kb: str = ""
-
-    class Config:
-        arbitrary_types_allowed = True
