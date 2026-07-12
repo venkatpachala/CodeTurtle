@@ -24,7 +24,7 @@ def add_repo(
 
         repo_path = Path("repos") / repo_name.replace("/", "_")
 
-        # Clone repository if not exists
+        # Clone if not exists
         if repo_path.exists():
             console.print("[yellow]Repository already exists locally. Skipping clone.[/yellow]")
         else:
@@ -36,12 +36,12 @@ def add_repo(
             except GitCommandError as e:
                 raise Exception(f"Failed to clone repository: {repo_name}") from e
 
-        # Load documents with robust error handling
-        console.print("[yellow]Loading and embedding codebase...[/yellow]")
+        # Only load text/code files (ignore images, binaries, etc.)
+        console.print("[yellow]Loading and embedding codebase (this may take a while)...[/yellow]")
 
         loader = DirectoryLoader(
             str(repo_path),
-            glob="**/*",
+            glob="**/*.{py,md,txt,rst,yaml,yml,json,toml,cfg,ini,sh}",
             loader_cls=TextLoader,
             loader_kwargs={
                 "encoding": "utf-8",
@@ -49,13 +49,13 @@ def add_repo(
             },
             show_progress=True,
             use_multithreading=True,
-            silent_errors=True,           # Skip files that fail to load
+            silent_errors=True,
         )
 
         documents = loader.load()
 
         if not documents:
-            raise Exception("No documents could be loaded from the repository.")
+            raise Exception("No text documents found in the repository.")
 
         # Create knowledge base
         collection_name = repo_name.replace("/", "_")
@@ -63,10 +63,9 @@ def add_repo(
         kb.add_documents(documents)
 
         console.print(Panel.fit(
-            f"[bold green]✓ Successfully created knowledge base[/bold green]\n\n"
+            f"[bold green]✓ Knowledge base created successfully[/bold green]\n\n"
             f"Repository: {repo_name}\n"
-            f"Documents loaded: {len(documents)}\n"
-            f"Collection: {collection_name}",
+            f"Documents loaded: {len(documents)}",
             title="Success"
         ))
 

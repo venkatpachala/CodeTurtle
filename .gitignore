@@ -9,3 +9,7 @@ wheels/
 # Virtual environments
 .venv
 .env
+
+qdrant_data/
+repos/
+.env

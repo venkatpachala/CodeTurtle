@@ -13,7 +13,8 @@ from core.memory.manager import MemoryManager
 from core.utils import handle_error
 from core.observability import get_logger
 from core.observability import get_langfuse_client
-
+from github import GithubException
+from core.agents import context_summarizer
 
 logger = get_logger()
 
@@ -31,6 +32,7 @@ def get_current_session() -> str:
         return f.read().strip()
 
 
+print("DEBUG TOKEN:", os.getenv("GITHUB_TOKEN")[:15] + "..." if os.getenv("GITHUB_TOKEN") else "No token found")
 
 def review(
     repo: str = typer.Argument(..., help="Repository in format owner/repo"),
@@ -63,10 +65,32 @@ def review(
         # Retrieve context from Knowledge Base
         query = f"{pr.title}\n{pr.body or ''}"
         retrieved_docs = kb.similarity_search(query, k=4)
-        context_from_kb = "\n\n".join([doc.page_content for doc in retrieved_docs])
+        raw_context = "\n\n".join([doc.page_content[:1200] for doc in retrieved_docs])  # Limit length
+
+# Create temporary state for summarizer
+        temp_state = ReviewState(
+        title=pr.title,
+        context_from_kb=raw_context
+        )
+
+# Run context summarizer
+        summarizer_state = context_summarizer(temp_state)
+        context_from_kb = summarizer_state.summarized_context
+
+        console.print("[yellow]Context summarized for agents[/yellow]")
 
         console.print(f"[yellow]Retrieved {len(retrieved_docs)} relevant chunks from knowledge base[/yellow]")
 
+        # Retrieve from Knowledge Base
+        retrieved_docs = kb.similarity_search(query, k=4)
+        raw_context = "\n\n".join([doc.page_content[:1200] for doc in retrieved_docs])
+
+# Run Context Summarizer
+        temp_state = ReviewState(title=pr.title, context_from_kb=raw_context)
+        summarized_state = context_summarizer(temp_state)
+        context_from_kb = summarized_state.summarized_context
+
+        console.print("[yellow]Context summarized successfully[/yellow]")
         # Fetch previous reviews from memory
         previous_reviews = memory.get_recent_reviews(conversation_id, repo, limit=4)
         if previous_reviews:

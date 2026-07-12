@@ -15,9 +15,10 @@ class ReviewState(BaseModel):
 
     # Knowledge Base Context
     context_from_kb: str = ""
+    summarized_context: str = ""          # ← New field
 
-    # Memory Context (Previous Reviews)
-    previous_reviews: list = Field(default_factory=list)   # ← New
+    # Memory Context
+    previous_reviews: list = Field(default_factory=list)
 
     # Agent Outputs
     context_summary: str = ""
@@ -30,3 +31,6 @@ class ReviewState(BaseModel):
     traces: List[Dict[str, Any]] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=datetime.now)
     model_used: str = ""
+
+    class Config:
+        arbitrary_types_allowed = True

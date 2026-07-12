@@ -27,7 +27,7 @@ PR Description: {body}
 Author: {author}
 
 Relevant code from repository knowledge base:
-{context_from_kb}
+{summarized_context}
 
 {previous_context}
 
@@ -39,7 +39,7 @@ Please provide a clear summary of what this PR is trying to achieve and what are
         "title": state.title,
         "body": state.body,
         "author": state.author,
-        "context_from_kb": state.context_from_kb,
+        "summarized_context": state.summarized_context,
         "previous_context": previous_context
     })
 
@@ -68,7 +68,7 @@ Be constructive and specific."""),
         ("human", """PR Title: {title}
 
 Relevant code from the repository knowledge base:
-{context_from_kb}
+{summarized_context}
 
 PR Code Changes (Diff):
 {diff}
@@ -79,7 +79,7 @@ Please provide a detailed code quality analysis. Reference existing code pattern
     chain = prompt | llm
     response = chain.invoke({
         "title": state.title,
-        "context_from_kb": state.context_from_kb,
+        "summarized_context": state.summarized_context,
         "diff": state.diff or "No diff available (issue review)"
     })
 
@@ -179,6 +179,40 @@ Please give your final recommendation and a ready-to-post GitHub comment.""")
     state.final_comment = response.content
     state.traces.append({
         "agent": "FinalRecommender",
+        "output": response.content
+    })
+    return state
+
+def context_summarizer(state: ReviewState) -> ReviewState:
+    """Summarizes the raw context retrieved from knowledge base"""
+    llm = get_llm(temperature=0.2, max_tokens=600)
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", """You are a helpful assistant that summarizes technical context from a codebase.
+Your job is to create a concise summary of the provided code/documentation chunks that are relevant to the current Pull Request.
+Focus on:
+- Key functions, classes, or modules mentioned
+- Important logic or architecture details
+- Any patterns that the PR seems to be modifying or extending
+
+Keep the summary short and focused."""),
+        ("human", """PR Title: {title}
+
+Raw context from knowledge base:
+{raw_context}
+
+Please provide a concise summary of the relevant codebase context.""")
+    ])
+
+    chain = prompt | llm
+    response = chain.invoke({
+        "title": state.title,
+        "raw_context": state.summarized_context
+    })
+
+    state.summarized_context = response.content
+    state.traces.append({
+        "agent": "ContextSummarizer",
         "output": response.content
     })
     return state

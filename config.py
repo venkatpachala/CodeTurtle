@@ -1,5 +1,10 @@
 from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
+from dotenv import load_dotenv
+import os
+
+# Explicitly load .env
+load_dotenv()
 
 class Settings(BaseSettings):
     # LLM Configuration
