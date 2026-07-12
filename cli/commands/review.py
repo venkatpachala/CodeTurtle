@@ -13,6 +13,7 @@ from core.memory.manager import MemoryManager
 from core.utils import handle_error
 from core.observability import get_logger
 from core.observability import get_langfuse_client
+from core.observability import get_langfuse_client
 
 logger = get_logger()
 
@@ -88,6 +89,32 @@ def review(
         # Run agent swarm
         console.print("[yellow]Running agent swarm...[/yellow]")
         final_state = review_graph.invoke(state)
+        # === Add metadata + token usage to Langfuse ===
+
+
+        langfuse_client = get_langfuse_client()
+        if langfuse_client:
+            try:
+        # Try to extract token usage if available from the final state
+                token_usage = {}
+                if hasattr(final_state, 'token_usage'):
+                    token_usage = final_state.token_usage
+                elif isinstance(final_state, dict) and 'token_usage' in final_state:
+                    token_usage = final_state['token_usage']
+
+                langfuse_client.update_current_trace(
+                metadata={
+                "repo": repo,
+                "pr_number": number,
+                "model": settings.ollama_model,
+                "session_id": conversation_id,
+                "token_usage": token_usage if token_usage else "Tracked automatically by Langfuse",
+            },
+                tags=["review", repo.split("/")[0]],
+            )
+            except Exception as e:
+        # Don't break the review if metadata update fails
+                pass
 
         # Add custom metadata/tags to Langfuse trace
 
