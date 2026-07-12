@@ -5,7 +5,7 @@ from core.state import ReviewState
 
 def context_gatherer(state: ReviewState) -> ReviewState:
     """Agent that gathers context using repository knowledge base + previous reviews"""
-    llm = get_llm(temperature=0.3)
+    llm = get_llm(temperature=0.3, max_tokens=800)
 
     # Format previous reviews
     previous_context = ""
@@ -54,7 +54,7 @@ Please provide a clear summary of what this PR is trying to achieve and what are
 
 def code_quality_reviewer(state: ReviewState) -> ReviewState:
     """Agent that reviews code quality using repository knowledge"""
-    llm = get_llm(temperature=0.2)
+    llm = get_llm(temperature=0.2, max_tokens=1200)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a senior Code Quality Reviewer.
@@ -94,7 +94,7 @@ Please provide a detailed code quality analysis. Reference existing code pattern
 
 def critic_agent(state: ReviewState) -> ReviewState:
     """Critic agent that reviews the previous agents' work"""
-    llm = get_llm(temperature=0.2)
+    llm = get_llm(temperature=0.2, max_tokens=1000)
 
     # Format previous reviews for critic
     previous_context = ""
@@ -143,7 +143,7 @@ Please critique the above analysis and suggest improvements.""")
 
 def final_recommender(state: ReviewState) -> ReviewState:
     """Final agent that gives recommendation and generates comment"""
-    llm = get_llm(temperature=0.3)
+    llm = get_llm(temperature=0.3, max_tokens=1500)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a senior maintainer giving the final review decision.

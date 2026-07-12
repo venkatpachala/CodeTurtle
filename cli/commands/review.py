@@ -13,7 +13,7 @@ from core.memory.manager import MemoryManager
 from core.utils import handle_error
 from core.observability import get_logger
 from core.observability import get_langfuse_client
-from core.observability import get_langfuse_client
+
 
 logger = get_logger()
 
@@ -62,7 +62,7 @@ def review(
 
         # Retrieve context from Knowledge Base
         query = f"{pr.title}\n{pr.body or ''}"
-        retrieved_docs = kb.similarity_search(query, k=6)
+        retrieved_docs = kb.similarity_search(query, k=4)
         context_from_kb = "\n\n".join([doc.page_content for doc in retrieved_docs])
 
         console.print(f"[yellow]Retrieved {len(retrieved_docs)} relevant chunks from knowledge base[/yellow]")
