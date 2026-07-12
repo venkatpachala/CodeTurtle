@@ -24,6 +24,7 @@ class ReviewState(BaseModel):
     traces: List[Dict[str, Any]] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=datetime.now)
     model_used: str = ""
+    context_from_kb: str = ""
 
     class Config:
         arbitrary_types_allowed = True

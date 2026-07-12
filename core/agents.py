@@ -16,18 +16,20 @@ Be concise but insightful."""),
         ("human", """PR Title: {title}
 PR Body: {body}
 Author: {author}
-Files changed: {files_changed}
+
+Relevant code from repository knowledge base:
+{context_from_kb}
 
 Please provide a clear summary of context and what the next agent should investigate.""")
     ])
     
     chain = prompt | llm
     response = chain.invoke({
-        "title": state.title,
-        "body": state.body,
-        "author": state.author,
-        "files_changed": state.files_changed
-    })
+    "title": state.title,
+    "body": state.body,
+    "author": state.author,
+    "context_from_kb": state.context_from_kb
+})
     
     state.context_summary = response.content
     state.traces.append({
