@@ -2,35 +2,47 @@ from langchain_core.prompts import ChatPromptTemplate
 from core.llm import get_llm
 from core.state import ReviewState
 
+
 def context_gatherer(state: ReviewState) -> ReviewState:
-    """Agent that gathers context and flags what to investigate"""
+    """Agent that gathers context using repository knowledge base + previous reviews"""
     llm = get_llm(temperature=0.3)
-    
+
+    # Format previous reviews
+    previous_context = ""
+    if state.previous_reviews:
+        previous_context = "\n\nPrevious reviews of this repository in this session:\n"
+        for rev in state.previous_reviews:
+            previous_context += f"- PR #{rev['number']}: {rev['recommendation']} | {rev['summary'][:250]}...\n"
+
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are an expert Context Gatherer for GitHub code reviews.
-Your job is to analyze the PR and extract key context:
-- What is the PR trying to achieve?
-- Any red flags in the description or linked issues?
-- What should the Code Reviewer focus on?
+You have access to:
+- Relevant code from the repository knowledge base
+- Previous reviews of this repository in the current session
+
+Your job is to analyze the current PR in the context of the existing codebase and past reviews.
 Be concise but insightful."""),
-        ("human", """PR Title: {title}
-PR Body: {body}
+        ("human", """Current PR Title: {title}
+PR Description: {body}
 Author: {author}
 
 Relevant code from repository knowledge base:
 {context_from_kb}
 
-Please provide a clear summary of context and what the next agent should investigate.""")
+{previous_context}
+
+Please provide a clear summary of what this PR is trying to achieve and what areas the Code Reviewer should focus on.""")
     ])
-    
+
     chain = prompt | llm
     response = chain.invoke({
-    "title": state.title,
-    "body": state.body,
-    "author": state.author,
-    "context_from_kb": state.context_from_kb
-})
-    
+        "title": state.title,
+        "body": state.body,
+        "author": state.author,
+        "context_from_kb": state.context_from_kb,
+        "previous_context": previous_context
+    })
+
     state.context_summary = response.content
     state.traces.append({
         "agent": "ContextGatherer",
@@ -41,34 +53,36 @@ Please provide a clear summary of context and what the next agent should investi
 
 
 def code_quality_reviewer(state: ReviewState) -> ReviewState:
-    """Agent that reviews the code diff for quality issues"""
+    """Agent that reviews code quality using repository knowledge"""
     llm = get_llm(temperature=0.2)
-    
+
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a senior Code Quality Reviewer.
+You have access to relevant parts of the existing codebase through the knowledge base.
 Focus on:
-- Code correctness and bugs
-- Readability and maintainability
-- Best practices for the language
-- Security concerns
-- Test coverage (if tests are present)
-Be constructive and specific. Reference line numbers or functions when possible."""),
+- How the new code integrates with existing patterns in the repository
+- Potential bugs, regressions, or edge cases
+- Code style and best practices used in this specific project
+- Test coverage and missing scenarios
+Be constructive and specific."""),
         ("human", """PR Title: {title}
-Context from previous agent: {context_summary}
 
-Code Diff:
+Relevant code from the repository knowledge base:
+{context_from_kb}
+
+PR Code Changes (Diff):
 {diff}
 
-Please provide a detailed code quality analysis.""")
+Please provide a detailed code quality analysis. Reference existing code patterns where relevant.""")
     ])
-    
+
     chain = prompt | llm
     response = chain.invoke({
         "title": state.title,
-        "context_summary": state.context_summary,
+        "context_from_kb": state.context_from_kb,
         "diff": state.diff or "No diff available (issue review)"
     })
-    
+
     state.code_analysis = response.content
     state.traces.append({
         "agent": "CodeQualityReviewer",
@@ -77,9 +91,15 @@ Please provide a detailed code quality analysis.""")
     })
     return state
 
+
 def critic_agent(state: ReviewState) -> ReviewState:
     """Critic agent that reviews the previous agents' work"""
     llm = get_llm(temperature=0.2)
+
+    # Format previous reviews for critic
+    previous_context = ""
+    if state.previous_reviews:
+        previous_context = "\n\nNote: Previous reviews of this repo in this session exist. Consider consistency with past feedback."
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a strict and experienced Code Review Critic.
@@ -89,6 +109,7 @@ Check for:
 - Incorrect or weak analysis
 - Lack of specificity
 - Poor reasoning
+- Inconsistency with previous reviews of this repository (if any)
 
 Be direct and constructive."""),
         ("human", """PR Title: {title}
@@ -99,6 +120,8 @@ Context Summary:
 Code Quality Analysis:
 {code_analysis}
 
+{previous_context}
+
 Please critique the above analysis and suggest improvements.""")
     ])
 
@@ -106,7 +129,8 @@ Please critique the above analysis and suggest improvements.""")
     response = chain.invoke({
         "title": state.title,
         "context_summary": state.context_summary,
-        "code_analysis": state.code_analysis
+        "code_analysis": state.code_analysis,
+        "previous_context": previous_context
     })
 
     state.critique = response.content
@@ -123,11 +147,11 @@ def final_recommender(state: ReviewState) -> ReviewState:
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a senior maintainer giving the final review decision.
-Based on all previous analysis, give:
+Based on all previous analysis (including context from the repository knowledge base and past reviews), give:
 1. A clear recommendation: MERGE, REQUEST_CHANGES, or COMMENT
 2. A professional, constructive comment that can be posted on GitHub.
 
-Be balanced and specific."""),
+Be balanced, specific, and consistent with previous feedback when relevant."""),
         ("human", """PR Title: {title}
 Author: {author}
 
@@ -140,7 +164,7 @@ Code Analysis:
 Critique:
 {critique}
 
-Please give your final recommendation and a ready-to-post comment.""")
+Please give your final recommendation and a ready-to-post GitHub comment.""")
     ])
 
     chain = prompt | llm

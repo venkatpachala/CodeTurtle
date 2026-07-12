@@ -59,6 +59,15 @@ def review(
 
         console.print(f"[yellow]Retrieved {len(retrieved_docs)} relevant chunks from knowledge base[/yellow]")
 
+        # Fetch previous reviews from memory (for context)
+        previous_reviews = memory.get_recent_reviews(
+            conversation_id=conversation_id,
+            repo_name=repo,
+            limit=4
+        )
+
+        console.print(f"[yellow]Loaded {len(previous_reviews)} previous reviews from memory[/yellow]")
+
         # 4. Create state
         state = ReviewState(
             repo=repo,
@@ -69,7 +78,8 @@ def review(
             diff=pr.get_files()[0].patch if pr.get_files() else None,
             files_changed=[f.filename for f in pr.get_files()],
             model_used=settings.ollama_model,
-            context_from_kb=context_from_kb
+            context_from_kb=context_from_kb,
+            previous_reviews=previous_reviews
         )
 
         # 5. Run agent swarm
