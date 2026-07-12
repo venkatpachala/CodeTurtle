@@ -12,6 +12,7 @@ from core.knowledge_base import KnowledgeBase
 from core.memory.manager import MemoryManager
 from core.utils import handle_error
 from core.observability import get_logger
+from core.observability import get_langfuse_client
 
 logger = get_logger()
 
@@ -87,6 +88,23 @@ def review(
         # Run agent swarm
         console.print("[yellow]Running agent swarm...[/yellow]")
         final_state = review_graph.invoke(state)
+
+        # Add custom metadata/tags to Langfuse trace
+
+        langfuse_client = get_langfuse_client()
+        if langfuse_client:
+            try:
+                langfuse_client.update_current_trace(
+                metadata={
+                "repo": repo,
+                "pr_number": number,
+                "model": settings.ollama_model,
+                "session_id": conversation_id,
+            },
+            tags=["review", repo.split("/")[0]],   # Example: ["review", "FalkorDB"]
+        )
+            except Exception:
+                pass  # Fail silently if Langfuse update fails
 
         # Display results
         console.print("\n[bold green]=== CONTEXT SUMMARY ===[/bold green]")

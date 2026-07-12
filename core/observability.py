@@ -3,10 +3,8 @@ from dotenv import load_dotenv
 from langfuse.langchain import CallbackHandler
 import structlog
 
-# Load .env file explicitly
 load_dotenv()
 
-# Configure structured logging
 structlog.configure(
     processors=[
         structlog.processors.TimeStamper(fmt="iso"),
@@ -17,22 +15,19 @@ structlog.configure(
 
 logger = structlog.get_logger()
 
+
 def get_langfuse_handler() -> CallbackHandler | None:
-    """Initialize Langfuse callback handler if credentials are available"""
+    """Initialize Langfuse - simplest and most compatible way"""
     public_key = os.getenv("LANGFUSE_PUBLIC_KEY")
     secret_key = os.getenv("LANGFUSE_SECRET_KEY")
-    host = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
 
     if not public_key or not secret_key:
         logger.warning("Langfuse keys not found. Observability disabled.")
         return None
 
     try:
-        handler = CallbackHandler(
-            public_key=public_key,
-            secret_key=secret_key,
-            host=host,
-        )
+        # Clean initialization - no extra arguments
+        handler = CallbackHandler()
         logger.info("Langfuse observability enabled")
         return handler
     except Exception as e:
@@ -40,6 +35,14 @@ def get_langfuse_handler() -> CallbackHandler | None:
         return None
 
 
+def get_langfuse_client():
+    """Return Langfuse client for adding metadata/tags"""
+    try:
+        from langfuse import Langfuse
+        return Langfuse()
+    except Exception:
+        return None
+
+
 def get_logger():
-    """Return structured logger"""
     return logger
