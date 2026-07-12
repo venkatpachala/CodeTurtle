@@ -5,30 +5,32 @@ import sys
 console = Console()
 
 def handle_error(error: Exception, verbose: bool = False):
-    """Central error handler with user-friendly messages"""
+    """Centralized error handler with clear, actionable messages"""
     
-    error_msg = str(error)
+    error_str = str(error).lower()
     
-    # Common known errors
-    if "No active session" in error_msg or ".current_session" in error_msg:
+    # Session related
+    if "no active session" in error_str or ".current_session" in error_str:
         console.print(Panel.fit(
             "[red]No active session found![/red]\n\n"
-            "Please start a new session first:\n"
+            "Please create a new session:\n"
             "[bold]codeturtle new-session[/bold]",
             title="Error"
         ))
     
-    elif "ollama" in error_msg.lower() or "connection refused" in error_msg.lower():
+    # Ollama related
+    elif "ollama" in error_str or "connection refused" in error_str:
         console.print(Panel.fit(
             "[red]Could not connect to Ollama.[/red]\n\n"
-            "Please make sure Ollama is running:\n"
+            "Make sure Ollama is running:\n"
             "[bold]ollama serve[/bold]\n\n"
-            "And that your model is pulled:\n"
+            "And your model is downloaded:\n"
             "[bold]ollama pull qwen2.5:7b[/bold]",
             title="Error"
         ))
     
-    elif "knowledge base" in error_msg.lower() or "collection" in error_msg.lower():
+    # Knowledge Base related
+    elif "knowledge base" in error_str or "collection" in error_str:
         console.print(Panel.fit(
             "[red]Knowledge base not found for this repository.[/red]\n\n"
             "Please add the repository first:\n"
@@ -36,22 +38,31 @@ def handle_error(error: Exception, verbose: bool = False):
             title="Error"
         ))
     
-    elif "github" in error_msg.lower() or "token" in error_msg.lower():
+    # GitHub related
+    elif "github" in error_str or "token" in error_str:
         console.print(Panel.fit(
             "[red]GitHub authentication failed.[/red]\n\n"
-            "Please check your GitHub token in `.env` file.\n"
-            "Make sure it has `public_repo` scope.",
+            "Please check your GitHub token in the `.env` file.\n"
+            "It needs at least `public_repo` scope.",
+            title="Error"
+        ))
+    
+    # Repository not found
+    elif "not found" in error_str and "repo" in error_str:
+        console.print(Panel.fit(
+            "[red]Repository not found.[/red]\n\n"
+            "Please check the repository name (format: owner/repo).",
             title="Error"
         ))
     
     else:
-        # Generic error
+        # Generic fallback
         console.print(Panel.fit(
-            f"[red]Something went wrong.[/red]\n\n{error_msg}",
+            f"[red]An unexpected error occurred.[/red]\n\n{str(error)}",
             title="Error"
         ))
         
         if verbose:
-            console.print_exception()
+            console.print_exception(show_locals=False)
     
     sys.exit(1)
