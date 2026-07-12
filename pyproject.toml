@@ -1,0 +1,15 @@
+[project]
+name = "reviewforge"
+version = "0.1.0"
+description = "Autonomous GitHub Review Agent Swarm"
+requires-python = ">=3.10"
+dependencies = [
+    "typer>=0.12.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "pygithub>=2.0.0",
+    "langgraph>=0.2.0",
+    "langchain-ollama>=1.1.0",
+]
