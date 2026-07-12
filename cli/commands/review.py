@@ -11,6 +11,12 @@ from core.graph import review_graph
 from core.knowledge_base import KnowledgeBase
 from core.memory.manager import MemoryManager
 from core.utils import handle_error
+from core.observability import get_logger
+
+logger = get_logger()
+
+# At the beginning of review function
+
 
 console = Console()
 memory = MemoryManager()
@@ -23,12 +29,14 @@ def get_current_session() -> str:
         return f.read().strip()
 
 
+
 def review(
     repo: str = typer.Argument(..., help="Repository in format owner/repo"),
     number: int = typer.Argument(..., help="PR number"),
     dry_run: bool = typer.Option(True, "--dry-run"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed error information"),
 ):
+    logger.info("Starting review", repo=repo, pr_number=number)
     """Review a PR using knowledge base + agent swarm (with memory)"""
 
     try:
@@ -111,3 +119,5 @@ def review(
 
     except Exception as e:
         handle_error(e, verbose=verbose)
+
+        
