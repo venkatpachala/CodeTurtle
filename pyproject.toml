@@ -21,4 +21,5 @@ dependencies = [
     "tqdm>=4.68.4",
     "langfuse>=4.14.0",
     "structlog>=26.1.0",
+    "langfuse-call-back",
 ]

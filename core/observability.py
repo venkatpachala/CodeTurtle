@@ -1,6 +1,10 @@
 import os
-from langfuse.callback import CallbackHandler
+from dotenv import load_dotenv
+from langfuse.langchain import CallbackHandler
 import structlog
+
+# Load .env file explicitly
+load_dotenv()
 
 # Configure structured logging
 structlog.configure(
@@ -28,7 +32,6 @@ def get_langfuse_handler() -> CallbackHandler | None:
             public_key=public_key,
             secret_key=secret_key,
             host=host,
-            session_id=os.getenv("CODETURTLE_SESSION_ID"),
         )
         logger.info("Langfuse observability enabled")
         return handler
