@@ -6,7 +6,7 @@ console = Console()
 
 def context_gatherer(state: ReviewState) -> ReviewState:
     """Agent that gathers context using repository knowledge base + previous reviews"""
-    llm = get_llm(temperature=0.3, max_tokens=800)
+    llm = get_llm(temperature=0.3, max_tokens=300)
 
     # Format previous reviews
     previous_context = ""
@@ -55,7 +55,7 @@ Please provide a clear summary of what this PR is trying to achieve and what are
 
 def code_quality_reviewer(state: ReviewState) -> ReviewState:
     """Agent that reviews code quality using repository knowledge"""
-    llm = get_llm(temperature=0.2, max_tokens=1200)
+    llm = get_llm(temperature=0.2, max_tokens=500)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a senior Code Quality Reviewer.
@@ -95,7 +95,7 @@ Please provide a detailed code quality analysis. Reference existing code pattern
 
 def critic_agent(state: ReviewState) -> ReviewState:
     """Critic agent that reviews the previous agents' work"""
-    llm = get_llm(temperature=0.2, max_tokens=1000)
+    llm = get_llm(temperature=0.2, max_tokens=350)
 
     # Format previous reviews for critic
     previous_context = ""
@@ -144,7 +144,7 @@ Please critique the above analysis and suggest improvements.""")
 
 def final_recommender(state: ReviewState) -> ReviewState:
     """Final agent that gives recommendation and generates comment"""
-    llm = get_llm(temperature=0.3, max_tokens=1500)
+    llm = get_llm(temperature=0.3, max_tokens=300)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a senior maintainer giving the final review decision.
@@ -186,7 +186,7 @@ Please give your final recommendation and a ready-to-post GitHub comment.""")
 print("ENTERED CONTEXT SUMMARIZER")
 def context_summarizer(state: ReviewState) -> ReviewState:
     """Summarizes the raw context retrieved from knowledge base"""
-    llm = get_llm(temperature=0.2, max_tokens=600)
+    llm = get_llm(temperature=0.2, max_tokens=250)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a helpful assistant that summarizes technical context from a codebase.
