@@ -7,6 +7,7 @@ from langchain_community.document_loaders import DirectoryLoader, TextLoader
 
 from core.knowledge_base import KnowledgeBase
 from core.utils import handle_error
+from pathlib import Path
 
 console = Console()
 
@@ -38,10 +39,21 @@ def add_repo(
 
         # Only load text/code files (ignore images, binaries, etc.)
         console.print("[yellow]Loading and embedding codebase (this may take a while)...[/yellow]")
+        print("="*50)
+        print("Repository path:", repo_path)
+        print("Exists:", repo_path.exists())
+
+
+        repo = Path(repo_path)
+
+        print("Python files:", len(list(repo.rglob("*.py"))))
+        print("Markdown:", len(list(repo.rglob("*.md"))))
+        print("YAML:", len(list(repo.rglob("*.yaml"))))
+        print("="*50)
 
         loader = DirectoryLoader(
             str(repo_path),
-            glob="**/*.{py,md,txt,rst,yaml,yml,json,toml,cfg,ini,sh}",
+            glob="**/*.py",
             loader_cls=TextLoader,
             loader_kwargs={
                 "encoding": "utf-8",
@@ -51,8 +63,11 @@ def add_repo(
             use_multithreading=True,
             silent_errors=True,
         )
-
+        print(repo_path.exists())
+        print(list(repo_path.rglob("*"))[:10])
         documents = loader.load()
+
+        print("Documents loaded:", len(documents))
 
         if not documents:
             raise Exception("No text documents found in the repository.")

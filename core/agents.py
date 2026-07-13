@@ -1,7 +1,8 @@
 from langchain_core.prompts import ChatPromptTemplate
 from core.llm import get_llm
 from core.state import ReviewState
-
+from rich.console import Console
+console = Console()
 
 def context_gatherer(state: ReviewState) -> ReviewState:
     """Agent that gathers context using repository knowledge base + previous reviews"""
@@ -182,7 +183,7 @@ Please give your final recommendation and a ready-to-post GitHub comment.""")
         "output": response.content
     })
     return state
-
+print("ENTERED CONTEXT SUMMARIZER")
 def context_summarizer(state: ReviewState) -> ReviewState:
     """Summarizes the raw context retrieved from knowledge base"""
     llm = get_llm(temperature=0.2, max_tokens=600)
@@ -204,15 +205,17 @@ Raw context from knowledge base:
 Please provide a concise summary of the relevant codebase context.""")
     ])
 
+    console.print("[yellow]Creating LLM...[/yellow]")
     chain = prompt | llm
+    console.print("[yellow]About to call Ollama...[/yellow]")
     response = chain.invoke({
-        "title": state.title,
-        "raw_context": state.summarized_context
-    })
-
+    "title": state.title,
+    "raw_context": state.context_from_kb})
+    console.print("[green]Ollama returned successfully[/green]")
     state.summarized_context = response.content
     state.traces.append({
         "agent": "ContextSummarizer",
         "output": response.content
     })
     return state
+print("EXITING CONTEXT SUMMARIZER")

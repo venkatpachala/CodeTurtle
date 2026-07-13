@@ -66,37 +66,18 @@ def review(
         query = f"{pr.title}\n{pr.body or ''}"
         retrieved_docs = kb.similarity_search(query, k=4)
         raw_context = "\n\n".join([doc.page_content[:1200] for doc in retrieved_docs])  # Limit length
+        
+        previous_reviews = memory.get_recent_reviews(
+            conversation_id,
+            repo,
+            limit=4,
+            )
 
-# Create temporary state for summarizer
-        temp_state = ReviewState(
-        title=pr.title,
-        context_from_kb=raw_context
-        )
-
-# Run context summarizer
-        summarizer_state = context_summarizer(temp_state)
-        context_from_kb = summarizer_state.summarized_context
-
-        console.print("[yellow]Context summarized for agents[/yellow]")
-
-        console.print(f"[yellow]Retrieved {len(retrieved_docs)} relevant chunks from knowledge base[/yellow]")
-
-        # Retrieve from Knowledge Base
-        retrieved_docs = kb.similarity_search(query, k=4)
-        raw_context = "\n\n".join([doc.page_content[:1200] for doc in retrieved_docs])
-
-# Run Context Summarizer
-        temp_state = ReviewState(title=pr.title, context_from_kb=raw_context)
-        summarized_state = context_summarizer(temp_state)
-        context_from_kb = summarized_state.summarized_context
-
-        console.print("[yellow]Context summarized successfully[/yellow]")
-        # Fetch previous reviews from memory
-        previous_reviews = memory.get_recent_reviews(conversation_id, repo, limit=4)
         if previous_reviews:
-            console.print(f"[yellow]Loaded {len(previous_reviews)} previous reviews from memory[/yellow]")
-
-        # Create state
+            console.print(
+            f"[yellow]Loaded {len(previous_reviews)} previous reviews from memory[/yellow]"
+            )
+        # Create temporary state for summarizer
         state = ReviewState(
             repo=repo,
             number=number,
@@ -106,9 +87,20 @@ def review(
             diff=pr.get_files()[0].patch if pr.get_files() else None,
             files_changed=[f.filename for f in pr.get_files()],
             model_used=settings.ollama_model,
-            context_from_kb=context_from_kb,
-            previous_reviews=previous_reviews
-        )
+            context_from_kb=raw_context,
+            previous_reviews=previous_reviews,
+            )
+
+# Run context summarizer
+        console.print(f"[yellow]Retrieved {len(retrieved_docs)} relevant chunks from knowledge base[/yellow]")
+
+        # Retrieve from Knowledge Base was not required here we already did it above right
+        # Run Context Summarizer
+        summarized_state = context_summarizer(state)
+        console.print("[yellow]Context summarized successfully[/yellow]")
+        # Fetch previous reviews from memory
+        if previous_reviews:
+            console.print(f"[yellow]Loaded {len(previous_reviews)} previous reviews from memory[/yellow]")
 
         # Run agent swarm
         console.print("[yellow]Running agent swarm...[/yellow]")
