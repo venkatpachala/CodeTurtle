@@ -4,9 +4,8 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-Agent_Orchestration-FF6B6B)](https://langchain-ai.github.io/langgraph/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-CodeTurtle is an **AI-native code review platform** that goes beyond simple diff analysis. It builds a semantic understanding of your entire repository, maintains session memory across reviews, and uses a multi-agent swarm to deliver high-quality, context-aware feedback — all running locally with Ollama.
+CodeTurtle is an **AI-native code review platform** that goes beyond simple diff analysis. It builds a semantic understanding of your entire repository, maintains session memory across reviews, and uses a multi-agent swarm to deliver high-quality, context-aware feedback — all running locally with Ollama
 
 ---
 
