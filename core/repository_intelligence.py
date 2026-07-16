@@ -4,42 +4,20 @@ import os
 import ast
 import json
 from datetime import datetime
-import hashlib
 
 from core.repository_model import FileModel, RepositoryModel, Symbol
 from core.knowledge_base import KnowledgeBase
-from core.repository_indexer import RepositoryIndexer   # We'll create this next
-from core.repository_analyzer import RepositoryAnalyzer
 from core.repository_persistence import RepositoryPersistence
-
-class RepositoryPersistence:
-    """Handles persistence of the RepositoryModel."""
-
-    def __init__(self, repo_path: Path):
-        self.repo_path = repo_path
-        self.dot_codeturtle = self.repo_path / ".codeturtle"
-
-    def save_repository_model(self, repository_model: RepositoryModel):
-        """Save RepositoryModel to .codeturtle/"""
-        self.dot_codeturtle.mkdir(parents=True, exist_ok=True)
-        path = self.dot_codeturtle / "repository_model.json"
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(repository_model.model_dump_json(indent=2))
 
 
 class RepositoryIntelligence:
-    """
-    Dedicated pipeline for building the Repository Knowledge Base.
-    """
-
     def __init__(self, repo_path: str, repo_name: str):
-        self.repo_path = Path(repo_path)
+        self.repo_path = Path(repo_path)   # ← Ensured Path object
         self.repo_name = repo_name
         self.repository_model = RepositoryModel(repo_name=repo_name)
-        self.persistence = RepositoryPersistence(repo_path)
+        self.persistence = RepositoryPersistence(repo_name)
 
     def index_repository(self, force: bool = False) -> RepositoryModel:
-        """Main entry point."""
         print(f"[RepositoryIntelligence] Indexing {self.repo_name}...")
 
         files = self._scan_files()
@@ -55,14 +33,10 @@ class RepositoryIntelligence:
         self.repository_model.total_files = len(file_models)
         self.repository_model.indexed_at = datetime.now()
 
-        # Build symbol index
+        # Analyze and build index
         self._build_symbol_index()
 
-        # Analyze
-        analyzer = RepositoryAnalyzer(self.repository_model)
-        analyzer.analyze()
-
-        # Persist model
+        # Persist outside the repo
         self.persistence.save_repository_model(self.repository_model)
 
         # Embed and store
@@ -87,8 +61,7 @@ class RepositoryIntelligence:
         return files
 
     def _should_reindex(self, file_path: Path) -> bool:
-        """Placeholder for real incremental indexing."""
-        return True
+        return True  # TODO: real incremental check later
 
     def _extract_file_metadata(self, file_path: Path) -> Optional[FileModel]:
         try:
@@ -116,7 +89,6 @@ class RepositoryIntelligence:
             return None
 
     def _parse_python_ast(self, file_path: Path, content: str, file_model: FileModel):
-        """Improved AST parsing."""
         try:
             tree = ast.parse(content, filename=str(file_path))
 
@@ -167,7 +139,7 @@ class RepositoryIntelligence:
         return mapping.get(extension, "Unknown")
 
     def _build_symbol_index(self):
-        """Build simple symbol index (fully qualified name → symbol)."""
+        """Build fully qualified symbol index."""
         for fm in self.repository_model.files:
             for symbol in fm.symbols:
                 key = f"{fm.path}::{symbol.name}"
@@ -177,6 +149,9 @@ class RepositoryIntelligence:
         """Use RepositoryIndexer to store in Qdrant."""
         if not file_models:
             return
+
+        from core.repository_indexer import RepositoryIndexer
+
         indexer = RepositoryIndexer(self.repository_model)
         documents = indexer.to_documents()
 

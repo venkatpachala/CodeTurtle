@@ -5,6 +5,8 @@ from rich.panel import Panel
 from cli.commands import review, init, add_repo, session
 from cli.commands.review import ReviewPipeline
 from core.utils import handle_error
+from cli.commands.inspect_kb import inspect_kb
+
 pipeline = ReviewPipeline()
 app = typer.Typer(
     name="codeturtle",
@@ -18,7 +20,7 @@ app.command(name="list-sessions")(session.list_sessions)
 app.command()(init.init)
 app.command()(review.review)
 app.command()(add_repo.add_repo)
-
+app.command()(inspect_kb)
 
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context):
