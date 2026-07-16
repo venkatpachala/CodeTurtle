@@ -1,7 +1,7 @@
 from typing import List, Dict
 from pathlib import Path
 
-from core.repository_model import RepositoryModel, FileModel
+from core.repository_model import RepositoryModel
 
 
 class RepositoryAnalyzer:
@@ -15,13 +15,12 @@ class RepositoryAnalyzer:
         self._build_dependency_graph()
         self._compute_statistics()
         self._build_symbol_index()
-        # Future: architecture summary, package boundaries, etc.
+        print("[RepositoryAnalyzer] Analysis completed.")
 
     def _build_dependency_graph(self):
-        """Extract dependencies from imports (simple version)."""
+        """Simple dependency extraction from imports."""
         for fm in self.repository_model.files:
             for imp in fm.imports:
-                # Simple heuristic: add to dependencies
                 fm.dependencies.append(imp)
 
     def _compute_statistics(self):

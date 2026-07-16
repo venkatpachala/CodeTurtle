@@ -8,7 +8,7 @@ from datetime import datetime
 from core.repository_model import FileModel, RepositoryModel, Symbol
 from core.knowledge_base import KnowledgeBase
 from core.repository_persistence import RepositoryPersistence
-
+from core.repository_analyzer import RepositoryAnalyzer
 
 class RepositoryIntelligence:
     def __init__(self, repo_path: str, repo_name: str):
@@ -23,27 +23,43 @@ class RepositoryIntelligence:
         files = self._scan_files()
 
         file_models: List[FileModel] = []
+        reindexed_count = 0
+
         for file_path in files:
             if force or self._should_reindex(file_path):
                 file_model = self._extract_file_metadata(file_path)
                 if file_model:
                     file_models.append(file_model)
+                    reindexed_count += 1
 
         self.repository_model.files = file_models
         self.repository_model.total_files = len(file_models)
         self.repository_model.indexed_at = datetime.now()
 
-        # Analyze and build index
-        self._build_symbol_index()
+        # Analyze
+        analyzer = RepositoryAnalyzer(self.repository_model)
+        analyzer.analyze()
 
-        # Persist outside the repo
+        # Persist
         self.persistence.save_repository_model(self.repository_model)
 
         # Embed and store
         self._embed_and_store(file_models)
 
-        print(f"[RepositoryIntelligence] Successfully indexed {len(file_models)} files.")
+        print(f"[RepositoryIntelligence] Re-indexed {reindexed_count} files (incremental).")
         return self.repository_model
+
+    def _should_reindex(self, file_path: Path) -> bool:
+        """Check if file needs re-indexing based on modification time."""
+        model_path = self.persistence.workspace / "repository_model.json"
+        if not model_path.exists():
+            return True
+
+        # Simple time-based check (can be improved with Git SHA)
+        file_mtime = file_path.stat().st_mtime
+        model_mtime = model_path.stat().st_mtime
+
+        return file_mtime > model_mtime
 
     def _scan_files(self) -> List[Path]:
         allowed_extensions = {".py", ".md", ".txt", ".rst", ".yaml", ".yml", ".json", ".toml"}
@@ -59,9 +75,6 @@ class RepositoryIntelligence:
                     if full_path.stat().st_size < 500_000:
                         files.append(full_path)
         return files
-
-    def _should_reindex(self, file_path: Path) -> bool:
-        return True  # TODO: real incremental check later
 
     def _extract_file_metadata(self, file_path: Path) -> Optional[FileModel]:
         try:
