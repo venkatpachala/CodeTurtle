@@ -2031,6 +2031,12 @@ wheels = [
 ]
 
 [[package]]
+name = "optional"
+version = "0.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/81/6d/6e5de8c53a36ffb43bebef8dfded5ca782e41010489104e4a90962f080a5/optional-0.0.1.tar.gz", hash = "sha256:2d8532e9f688b936be1ae13f81e57347631017831fc49f358e8f3de975d353eb", size = 1476, upload-time = "2015-03-30T07:14:42.495Z" }
+
+[[package]]
 name = "orjson"
 version = "3.11.9"
 source = { registry = "https://pypi.org/simple" }
@@ -2857,6 +2863,7 @@ dependencies = [
     { name = "langfuse" },
     { name = "langgraph" },
     { name = "litellm" },
+    { name = "optional" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pygithub" },
@@ -2879,6 +2886,7 @@ requires-dist = [
     { name = "langfuse", specifier = ">=4.14.0" },
     { name = "langgraph", specifier = ">=0.2.0" },
     { name = "litellm", specifier = "==1.91.0" },
+    { name = "optional", specifier = ">=0.0.1" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "pydantic-settings", specifier = ">=2.0.0" },
     { name = "pygithub", specifier = ">=2.0.0" },
