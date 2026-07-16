@@ -3,11 +3,9 @@ from rich.console import Console
 from rich.panel import Panel
 from git import Repo, GitCommandError
 from pathlib import Path
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
 
-from core.knowledge_base import KnowledgeBase
+from core.repository_intelligence import RepositoryIntelligence
 from core.utils import handle_error
-from pathlib import Path
 
 console = Console()
 
@@ -15,7 +13,7 @@ console = Console()
 def add_repo(
     repo_name: str = typer.Argument(..., help="Repository in format owner/repo"),
 ):
-    """Add a repository and build its knowledge base"""
+    """Add a repository and build its knowledge base using the Repository Intelligence pipeline."""
 
     try:
         console.print(Panel.fit(
@@ -25,7 +23,7 @@ def add_repo(
 
         repo_path = Path("repos") / repo_name.replace("/", "_")
 
-        # Clone if not exists
+        # Clone repository if not exists
         if repo_path.exists():
             console.print("[yellow]Repository already exists locally. Skipping clone.[/yellow]")
         else:
@@ -37,50 +35,18 @@ def add_repo(
             except GitCommandError as e:
                 raise Exception(f"Failed to clone repository: {repo_name}") from e
 
-        # Only load text/code files (ignore images, binaries, etc.)
-        console.print("[yellow]Loading and embedding codebase (this may take a while)...[/yellow]")
-        print("="*50)
-        print("Repository path:", repo_path)
-        print("Exists:", repo_path.exists())
-
-
-        repo = Path(repo_path)
-
-        print("Python files:", len(list(repo.rglob("*.py"))))
-        print("Markdown:", len(list(repo.rglob("*.md"))))
-        print("YAML:", len(list(repo.rglob("*.yaml"))))
-        print("="*50)
-
-        loader = DirectoryLoader(
-            str(repo_path),
-            glob="**/*.py",
-            loader_cls=TextLoader,
-            loader_kwargs={
-                "encoding": "utf-8",
-                "autodetect_encoding": True,
-            },
-            show_progress=True,
-            use_multithreading=True,
-            silent_errors=True,
+        # Use the new Repository Intelligence Pipeline
+        intelligence = RepositoryIntelligence(
+            repo_path=str(repo_path),
+            repo_name=repo_name
         )
-        print(repo_path.exists())
-        print(list(repo_path.rglob("*"))[:10])
-        documents = loader.load()
 
-        print("Documents loaded:", len(documents))
-
-        if not documents:
-            raise Exception("No text documents found in the repository.")
-
-        # Create knowledge base
-        collection_name = repo_name.replace("/", "_")
-        kb = KnowledgeBase(collection_name=collection_name)
-        kb.add_documents(documents)
+        intelligence.index_repository()
 
         console.print(Panel.fit(
-            f"[bold green]✓ Knowledge base created successfully[/bold green]\n\n"
+            f"[bold green]✓ Repository Intelligence Pipeline completed successfully[/bold green]\n\n"
             f"Repository: {repo_name}\n"
-            f"Documents loaded: {len(documents)}",
+            f"Total files indexed: {intelligence.repository_model.total_files}",
             title="Success"
         ))
 
