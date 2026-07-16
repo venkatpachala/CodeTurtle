@@ -12,6 +12,7 @@ class ReviewState(BaseModel):
     author: str = ""
     diff: str | None = None
     files_changed: List[str] = Field(default_factory=list)
+    full_diff: str = ""
 
     # Knowledge Base Context
     context_from_kb: str = ""

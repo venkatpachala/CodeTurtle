@@ -3,8 +3,9 @@ from rich.console import Console
 from rich.panel import Panel
 
 from cli.commands import review, init, add_repo, session
+from cli.commands.review import ReviewPipeline
 from core.utils import handle_error
-
+pipeline = ReviewPipeline()
 app = typer.Typer(
     name="codeturtle",
     help="CodeTurtle - Local Agentic Code Review & Repository Intelligence System",
