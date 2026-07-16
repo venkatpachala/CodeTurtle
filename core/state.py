@@ -1,37 +1,29 @@
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any
-from datetime import datetime
+from typing import List, Annotated, TypedDict
+from operator import add
 
-class ReviewState(BaseModel):
-    # Input
+class ReviewOutput(TypedDict):
+    summary: str
+    recommendation: str
+    confidence: float
+
+
+class ReviewState(TypedDict):
     repo: str
     number: int
-    event_type: str = "pr"
-    title: str = ""
-    body: str = ""
-    author: str = ""
-    diff: str | None = None
-    files_changed: List[str] = Field(default_factory=list)
-    full_diff: str = ""
+    title: str
+    body: str
+    author: str
+    full_diff: str
+    files_changed: List[str]
 
-    # Knowledge Base Context
-    context_from_kb: str = ""
-    summarized_context: str = ""          # ← New field
+    context_from_kb: str
+    summarized_context: str
+    context_summary: str
 
-    # Memory Context
-    previous_reviews: list = Field(default_factory=list)
+    code_analysis: ReviewOutput
+    critique: ReviewOutput
+    final_comment: ReviewOutput
 
-    # Agent Outputs
-    context_summary: str = ""
-    code_analysis: str = ""
-    critique: str = ""
-    recommendation: str = ""
-    final_comment: str = ""
-
-    # Metadata
-    traces: List[Dict[str, Any]] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.now)
-    model_used: str = ""
-
-    class Config:
-        arbitrary_types_allowed = True
+    model_used: str
+    traces: Annotated[List[dict], add]
+    recommendation: str

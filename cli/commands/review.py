@@ -15,6 +15,7 @@ from core.memory.manager import MemoryManager
 from core.utils import handle_error
 from core.observability import get_logger, get_langfuse_client
 from core.agents import context_summarizer
+from core.hybrid_retriever import HybridRetriever
 
 logger = get_logger()
 
@@ -26,8 +27,11 @@ memory = MemoryManager()
 class PipelineContext:
     repo: str = ""
     number: int = 0
+    conversation_id: str = ""
     pr: Optional[object] = None
+    kb: Optional[object] = None
     raw_context: str = ""
+    summarized_context: str = ""
     previous_reviews: List[dict] = field(default_factory=list)
     files_changed: List[str] = field(default_factory=list)
     full_diff: str = ""
@@ -36,6 +40,8 @@ class PipelineContext:
 
 
 class ReviewPipeline:
+    """Clean orchestration for the full review process"""
+
     def __init__(self):
         self.context = PipelineContext()
 
@@ -43,12 +49,11 @@ class ReviewPipeline:
         try:
             self.context.repo = repo
             self.context.number = number
-
-            conversation_id = get_current_session()
+            self.context.conversation_id = get_current_session()
 
             console.print(Panel.fit(
                 f"[bold cyan]CodeTurtle[/bold cyan]\n"
-                f"Session: {conversation_id}\n"
+                f"Session: {self.context.conversation_id}\n"
                 f"Repository: {repo}#{number}\n"
                 f"Model: {settings.ollama_model} (Ollama)"
             ))
@@ -56,14 +61,14 @@ class ReviewPipeline:
             self._load_knowledge_base()
             self._fetch_pr()
             self._retrieve_context()
-            self._load_previous_reviews(conversation_id)
+            self._load_previous_reviews()
             self._build_full_diff()
             self._create_review_state()
-            self._run_context_summarizer()
+            # NO manual summarizer here — graph starts with it
             self._run_agent_swarm()
-            self._add_langfuse_metadata(conversation_id)
+            self._add_langfuse_metadata()
             self._display_results()
-            self._save_to_memory(conversation_id)
+            self._save_to_memory()
 
             if not dry_run:
                 console.print("[red]Auto-posting to GitHub is not implemented yet.[/red]")
@@ -75,7 +80,7 @@ class ReviewPipeline:
 
     def _load_knowledge_base(self):
         collection_name = self.context.repo.replace("/", "_")
-        self.kb = KnowledgeBase(collection_name=collection_name)
+        self.context.kb = KnowledgeBase(collection_name)
 
     def _fetch_pr(self):
         g = Github(settings.github_token)
@@ -84,20 +89,18 @@ class ReviewPipeline:
 
     def _retrieve_context(self):
         query = f"{self.context.pr.title}\n{self.context.pr.body or ''}"
-        retrieved_docs = self.kb.similarity_search(query, k=4)
-        self.context.raw_context = "\n\n".join(
-            [doc.page_content[:1200] for doc in retrieved_docs]
-        )
+        retriever = HybridRetriever(self.context.repo)
+        retrieved_docs = retriever.retrieve(query, k=6)
+
+        self.context.raw_context = "\n\n".join([doc.page_content[:1200] for doc in retrieved_docs])
         console.print(f"[yellow]Retrieved {len(retrieved_docs)} relevant chunks from knowledge base[/yellow]")
 
-    def _load_previous_reviews(self, conversation_id: str):
+    def _load_previous_reviews(self):
         self.context.previous_reviews = memory.get_recent_reviews(
-            conversation_id, self.context.repo, limit=2
+            self.context.conversation_id, self.context.repo, limit=2
         )
         if self.context.previous_reviews:
-            console.print(
-                f"[yellow]Loaded {len(self.context.previous_reviews)} previous reviews from memory[/yellow]"
-            )
+            console.print(f"[yellow]Loaded {len(self.context.previous_reviews)} previous reviews from memory[/yellow]")
 
     def _build_full_diff(self):
         files = self.context.pr.get_files()
@@ -123,15 +126,11 @@ class ReviewPipeline:
             previous_reviews=self.context.previous_reviews,
         )
 
-    def _run_context_summarizer(self):
-        self.context.state = context_summarizer(self.context.state)
-        console.print("[yellow]Context summarized successfully[/yellow]")
-
     def _run_agent_swarm(self):
         console.print("[yellow]Running agent swarm...[/yellow]")
         self.context.final_state = review_graph.invoke(self.context.state)
 
-    def _add_langfuse_metadata(self, conversation_id: str):
+    def _add_langfuse_metadata(self):
         langfuse_client = get_langfuse_client()
         if langfuse_client:
             try:
@@ -140,7 +139,7 @@ class ReviewPipeline:
                         "repo": self.context.repo,
                         "pr_number": self.context.number,
                         "model": settings.ollama_model,
-                        "session_id": conversation_id,
+                        "session_id": self.context.conversation_id,
                     },
                     tags=["review", self.context.repo.split("/")[0]],
                 )
@@ -152,28 +151,35 @@ class ReviewPipeline:
         console.print(Markdown(self.context.final_state.get("context_summary", "")))
 
         console.print("\n[bold green]=== CODE QUALITY ANALYSIS ===[/bold green]")
-        console.print(Markdown(self.context.final_state.get("code_analysis", "")))
+        code_analysis = self.context.final_state.get("code_analysis", {})
+        if isinstance(code_analysis, dict):
+            analysis_text = f"**Summary**: {code_analysis.get('summary', '')}\n**Recommendation**: {code_analysis.get('recommendation', '')}"
+        else:
+            analysis_text = str(code_analysis)
+        console.print(Markdown(analysis_text))
 
         console.print("\n[bold green]=== CRITIQUE ===[/bold green]")
-        console.print(Markdown(self.context.final_state.get("critique", "")))
+        critique = self.context.final_state.get("critique", {})
+        if isinstance(critique, dict):
+            critique_text = f"**Summary**: {critique.get('summary', '')}\n**Recommendation**: {critique.get('recommendation', '')}"
+        else:
+            critique_text = str(critique)
+        console.print(Markdown(critique_text))
 
         console.print("\n[bold cyan]=== FINAL RECOMMENDATION ===[/bold cyan]")
-        console.print(Markdown(self.context.final_state.get("final_comment", "")))
+        final_comment = self.context.final_state.get("final_comment", "")
+        console.print(Markdown(str(final_comment)))
 
-    def _save_to_memory(self, conversation_id: str):
+    def _save_to_memory(self):
         memory.save_review(
-            conversation_id=conversation_id,
+            conversation_id=self.context.conversation_id,
             repo_name=self.context.repo,
             review_type="pr",
             number=self.context.number,
-            title=self.context.state.title,
+            title=self.context.state["title"],
             recommendation=self.context.final_state.get("recommendation", "N/A"),
             summary=self.context.final_state.get("final_comment", "")[:600]
         )
-
-
-console = Console()
-memory = MemoryManager()
 
 
 def get_current_session() -> str:

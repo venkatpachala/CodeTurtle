@@ -41,7 +41,7 @@ def add_repo(
             repo_name=repo_name
         )
 
-        intelligence.index_repository()
+        intelligence.index_repository(force=True)
 
         console.print(Panel.fit(
             f"[bold green]✓ Repository Intelligence Pipeline completed successfully[/bold green]\n\n"

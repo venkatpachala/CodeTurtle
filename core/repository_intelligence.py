@@ -9,6 +9,7 @@ from core.repository_model import FileModel, RepositoryModel, Symbol
 from core.knowledge_base import KnowledgeBase
 from core.repository_persistence import RepositoryPersistence
 from core.repository_analyzer import RepositoryAnalyzer
+from core.repository_indexer import RepositoryIndexer
 
 class RepositoryIntelligence:
     def __init__(self, repo_path: str, repo_name: str):
@@ -163,11 +164,9 @@ class RepositoryIntelligence:
         if not file_models:
             return
 
-        from core.repository_indexer import RepositoryIndexer
-
         indexer = RepositoryIndexer(self.repository_model)
         documents = indexer.to_documents()
 
-        kb = KnowledgeBase(collection_name=self.repo_name.replace("/", "_"))
+        kb = KnowledgeBase(self.repo_name.replace("/", "_"))
         kb.add_documents(documents)
         print(f"[RepositoryIntelligence] Stored {len(documents)} chunks in Qdrant.")
