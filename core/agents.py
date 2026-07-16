@@ -54,34 +54,32 @@ Please provide a clear summary of what this PR is trying to achieve and what are
 
 
 def code_quality_reviewer(state: ReviewState) -> ReviewState:
-    """Agent that reviews code quality using repository knowledge"""
-    llm = get_llm(temperature=0.2, max_tokens=500)
+    llm = get_llm(temperature=0.2, max_tokens=1200)
+
+    context_to_use = state.summarized_context if state.summarized_context else state.context_from_kb
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are a senior Code Quality Reviewer.
-You have access to relevant parts of the existing codebase through the knowledge base.
-Focus on:
-- How the new code integrates with existing patterns in the repository
-- Potential bugs, regressions, or edge cases
-- Code style and best practices used in this specific project
-- Test coverage and missing scenarios
-Be constructive and specific."""),
+        ("system", """You are a senior Code Quality Reviewer with access to the full repository context."""),
         ("human", """PR Title: {title}
 
-Relevant code from the repository knowledge base:
-{summarized_context}
+Relevant summarized context from the repository:
+{context_to_use}
 
-PR Code Changes (Diff):
-{diff}
+Files Changed:
+{files_changed}
 
-Please provide a detailed code quality analysis. Reference existing code patterns where relevant.""")
+Full Diff (multi-file):
+{full_diff}
+
+Please provide a detailed code quality analysis across all changed files.""")
     ])
 
     chain = prompt | llm
     response = chain.invoke({
         "title": state.title,
-        "summarized_context": state.summarized_context,
-        "diff": state.diff or "No diff available (issue review)"
+        "context_to_use": context_to_use,
+        "files_changed": ", ".join(state.files_changed),
+        "full_diff": state.full_diff[:12000] if state.full_diff else "No diff available"
     })
 
     state.code_analysis = response.content

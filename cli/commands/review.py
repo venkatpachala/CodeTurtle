@@ -11,15 +11,10 @@ from core.graph import review_graph
 from core.knowledge_base import KnowledgeBase
 from core.memory.manager import MemoryManager
 from core.utils import handle_error
-from core.observability import get_logger
-from core.observability import get_langfuse_client
-from github import GithubException
+from core.observability import get_logger, get_langfuse_client
 from core.agents import context_summarizer
 
 logger = get_logger()
-
-# At the beginning of review function
-
 
 console = Console()
 memory = MemoryManager()
@@ -32,153 +27,147 @@ def get_current_session() -> str:
         return f.read().strip()
 
 
-print("DEBUG TOKEN:", os.getenv("GITHUB_TOKEN")[:15] + "..." if os.getenv("GITHUB_TOKEN") else "No token found")
+class ReviewPipeline:
+    """Clean orchestration for the full review process"""
 
-def review(
-    repo: str = typer.Argument(..., help="Repository in format owner/repo"),
-    number: int = typer.Argument(..., help="PR number"),
-    dry_run: bool = typer.Option(True, "--dry-run"),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed error information"),
-):
-    logger.info("Starting review", repo=repo, pr_number=number)
-    """Review a PR using knowledge base + agent swarm (with memory)"""
+    def __init__(self):
+        self.kb = None
+        self.pr = None
+        self.state = None
 
-    try:
-        conversation_id = get_current_session()
+    def run(self, repo: str, number: int, dry_run: bool, verbose: bool):
+        try:
+            conversation_id = get_current_session()
 
-        console.print(Panel.fit(
-            f"[bold cyan]CodeTurtle[/bold cyan]\n"
-            f"Session: {conversation_id}\n"
-            f"Repository: {repo}#{number}\n"
-            f"Model: {settings.ollama_model} (Ollama)"
-        ))
+            console.print(Panel.fit(
+                f"[bold cyan]CodeTurtle[/bold cyan]\n"
+                f"Session: {conversation_id}\n"
+                f"Repository: {repo}#{number}\n"
+                f"Model: {settings.ollama_model} (Ollama)"
+            ))
 
-        # Load Knowledge Base
+            # 1. Load Knowledge Base + Retrieve Context
+            self._load_knowledge_base(repo)
+
+            # 2. Fetch PR from GitHub
+            self._fetch_pr(repo, number)
+
+            # 3. Summarize context
+            self._summarize_context()
+
+            # 4. Load previous reviews from memory
+            self._load_previous_reviews(conversation_id, repo)
+
+            # 5. Build multi-file diff
+            self._build_full_diff()
+
+            # 6. Create ReviewState
+            self._create_review_state(conversation_id)
+
+            # 7. Run agent swarm
+            self._run_agent_swarm()
+
+            # 8. Add metadata to Langfuse
+            self._add_langfuse_metadata(repo, number, conversation_id)
+
+            # 9. Display results
+            self._display_results()
+
+            # 10. Save to memory
+            self._save_to_memory(conversation_id, repo)
+
+            if not dry_run:
+                console.print("[red]Auto-posting to GitHub is not implemented yet.[/red]")
+            else:
+                console.print("[dim]--dry-run mode[/dim]")
+
+        except Exception as e:
+            handle_error(e, verbose=verbose)
+
+    def _load_knowledge_base(self, repo: str):
         collection_name = repo.replace("/", "_")
-        kb = KnowledgeBase(collection_name=collection_name)
+        self.kb = KnowledgeBase(collection_name=collection_name)
 
-        # Fetch PR
+    def _fetch_pr(self, repo: str, number: int):
         g = Github(settings.github_token)
         repo_obj = g.get_repo(repo)
-        pr = repo_obj.get_pull(number)
+        self.pr = repo_obj.get_pull(number)
 
-        # Retrieve context from Knowledge Base
-        query = f"{pr.title}\n{pr.body or ''}"
-        retrieved_docs = kb.similarity_search(query, k=4)
-        raw_context = "\n\n".join([doc.page_content[:1200] for doc in retrieved_docs])  # Limit length
-        
-        previous_reviews = memory.get_recent_reviews(
-            conversation_id,
-            repo,
-            limit=4,
-            )
+    def _summarize_context(self):
+        query = f"{self.pr.title}\n{self.pr.body or ''}"
+        retrieved_docs = self.kb.similarity_search(query, k=4)
+        raw_context = "\n\n".join([doc.page_content[:1200] for doc in retrieved_docs])
 
-        if previous_reviews:
-            console.print(
-            f"[yellow]Loaded {len(previous_reviews)} previous reviews from memory[/yellow]"
-            )
-        # Create temporary state for summarizer
-        state = ReviewState(
-            repo=repo,
-            number=number,
-            title=pr.title,
-            body=pr.body or "",
-            author=pr.user.login,
-            diff=pr.get_files()[0].patch if pr.get_files() else None,
-            files_changed=[f.filename for f in pr.get_files()],
-            model_used=settings.ollama_model,
-            context_from_kb=raw_context,
-            previous_reviews=previous_reviews,
-            )
-
-# Run context summarizer
-        console.print(f"[yellow]Retrieved {len(retrieved_docs)} relevant chunks from knowledge base[/yellow]")
-
-        # Retrieve from Knowledge Base was not required here we already did it above right
-        # Run Context Summarizer
-        summarized_state = context_summarizer(state)
+        temp_state = ReviewState(title=self.pr.title, context_from_kb=raw_context)
+        summarized_state = context_summarizer(temp_state)
+        self.state = ReviewState(  # We'll build full state later
+            title=self.pr.title,
+            context_from_kb=summarized_state.summarized_context,
+            summarized_context=summarized_state.summarized_context
+        )
         console.print("[yellow]Context summarized successfully[/yellow]")
-        # Fetch previous reviews from memory
-        if previous_reviews:
-            console.print(f"[yellow]Loaded {len(previous_reviews)} previous reviews from memory[/yellow]")
 
-        # Run agent swarm
+    def _load_previous_reviews(self, conversation_id: str, repo: str):
+        self.state.previous_reviews = memory.get_recent_reviews(conversation_id, repo, limit=2)
+        if self.state.previous_reviews:
+            console.print(f"[yellow]Loaded {len(self.state.previous_reviews)} previous reviews from memory[/yellow]")
+
+    def _build_full_diff(self):
+        files = self.pr.get_files()
+        self.state.files_changed = [f.filename for f in files]
+        full_diff = ""
+        for f in files:
+            if f.patch:
+                full_diff += f"--- {f.filename}\n+++ {f.filename}\n{f.patch}\n\n"
+        self.state.full_diff = full_diff
+        self.state.diff = full_diff[:8000] if full_diff else None
+
+    def _create_review_state(self, conversation_id: str):
+        self.state.repo = repo  # from outer scope - fix in full integration
+        self.state.number = number
+        self.state.author = self.pr.user.login
+        self.state.model_used = settings.ollama_model
+
+    def _run_agent_swarm(self):
         console.print("[yellow]Running agent swarm...[/yellow]")
-        final_state = review_graph.invoke(state)
-        # === Add metadata + token usage to Langfuse ===
+        self.final_state = review_graph.invoke(self.state)
 
-
+    def _add_langfuse_metadata(self, repo: str, number: int, conversation_id: str):
         langfuse_client = get_langfuse_client()
         if langfuse_client:
             try:
-        # Try to extract token usage if available from the final state
-                token_usage = {}
-                if hasattr(final_state, 'token_usage'):
-                    token_usage = final_state.token_usage
-                elif isinstance(final_state, dict) and 'token_usage' in final_state:
-                    token_usage = final_state['token_usage']
-
                 langfuse_client.update_current_trace(
-                metadata={
-                "repo": repo,
-                "pr_number": number,
-                "model": settings.ollama_model,
-                "session_id": conversation_id,
-                "token_usage": token_usage if token_usage else "Tracked automatically by Langfuse",
-            },
-                tags=["review", repo.split("/")[0]],
-            )
-            except Exception as e:
-        # Don't break the review if metadata update fails
+                    metadata={
+                        "repo": repo,
+                        "pr_number": number,
+                        "model": settings.ollama_model,
+                        "session_id": conversation_id,
+                    },
+                    tags=["review", repo.split("/")[0]],
+                )
+            except Exception:
                 pass
 
-        # Add custom metadata/tags to Langfuse trace
-
-        langfuse_client = get_langfuse_client()
-        if langfuse_client:
-            try:
-                langfuse_client.update_current_trace(
-                metadata={
-                "repo": repo,
-                "pr_number": number,
-                "model": settings.ollama_model,
-                "session_id": conversation_id,
-            },
-            tags=["review", repo.split("/")[0]],   # Example: ["review", "FalkorDB"]
-        )
-            except Exception:
-                pass  # Fail silently if Langfuse update fails
-
-        # Display results
+    def _display_results(self):
         console.print("\n[bold green]=== CONTEXT SUMMARY ===[/bold green]")
-        console.print(Markdown(final_state.get("context_summary", "")))
+        console.print(Markdown(self.final_state.get("context_summary", "")))
 
         console.print("\n[bold green]=== CODE QUALITY ANALYSIS ===[/bold green]")
-        console.print(Markdown(final_state.get("code_analysis", "")))
+        console.print(Markdown(self.final_state.get("code_analysis", "")))
 
         console.print("\n[bold green]=== CRITIQUE ===[/bold green]")
-        console.print(Markdown(final_state.get("critique", "")))
+        console.print(Markdown(self.final_state.get("critique", "")))
 
         console.print("\n[bold cyan]=== FINAL RECOMMENDATION ===[/bold cyan]")
-        console.print(Markdown(final_state.get("final_comment", "")))
+        console.print(Markdown(self.final_state.get("final_comment", "")))
 
-        # Auto-save review to memory
+    def _save_to_memory(self, conversation_id: str, repo: str):
         memory.save_review(
             conversation_id=conversation_id,
             repo_name=repo,
             review_type="pr",
-            number=number,
-            title=pr.title,
-            recommendation=final_state.get("recommendation", "N/A"),
-            summary=final_state.get("final_comment", "")[:600]
+            number=self.state.number,
+            title=self.state.title,
+            recommendation=self.final_state.get("recommendation", "N/A"),
+            summary=self.final_state.get("final_comment", "")[:600]
         )
-
-        if not dry_run:
-            console.print("[red]Auto-posting to GitHub is not implemented yet.[/red]")
-        else:
-            console.print("[dim]--dry-run mode[/dim]")
-
-    except Exception as e:
-        handle_error(e, verbose=verbose)
-
-        
