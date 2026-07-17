@@ -1,5 +1,11 @@
 from langgraph.graph import StateGraph, END
 from core.state import ReviewState
+
+# New agents
+from core.pr_understanding import pr_understanding_agent
+from core.pr_analysis import pr_analysis_agent
+from core.correctness_agent import correctness_agent
+
 from core.agents import (
     context_summarizer,
     context_gatherer,
@@ -8,22 +14,34 @@ from core.agents import (
     final_recommender
 )
 
+
 def build_review_graph():
     workflow = StateGraph(ReviewState)
 
+    # Nodes
+    workflow.add_node("pr_understanding", pr_understanding_agent)
+    workflow.add_node("pr_analysis", pr_analysis_agent)
     workflow.add_node("context_summarizer", context_summarizer)
     workflow.add_node("context_gatherer", context_gatherer)
     workflow.add_node("code_quality_reviewer", code_quality_reviewer)
+    workflow.add_node("correctness_agent", correctness_agent)
     workflow.add_node("critic_agent", critic_agent)
     workflow.add_node("final_recommender", final_recommender)
 
-    workflow.set_entry_point("context_summarizer")
+    # Entry point
+    workflow.set_entry_point("pr_understanding")
+
+    # Flow
+    workflow.add_edge("pr_understanding", "pr_analysis")
+    workflow.add_edge("pr_analysis", "context_summarizer")
 
     workflow.add_edge("context_summarizer", "context_gatherer")
     workflow.add_edge("context_summarizer", "code_quality_reviewer")
+    workflow.add_edge("context_summarizer", "correctness_agent")
 
     workflow.add_edge("context_gatherer", "critic_agent")
     workflow.add_edge("code_quality_reviewer", "critic_agent")
+    workflow.add_edge("correctness_agent", "critic_agent")
 
     workflow.add_edge("critic_agent", "final_recommender")
     workflow.add_edge("final_recommender", END)

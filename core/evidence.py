@@ -1,27 +1,23 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any
-from langchain_core.documents import Document
+from typing import List, Dict, Any, Optional
 
 
 class Evidence(BaseModel):
-    """Rich evidence package for agents."""
-
     path: str
-    retrieval_type: str  # "vector", "symbol", "metadata", "dependency"
-    score: float
-    document: Document
+    chunk_type: str = "module"
+    start_line: Optional[int] = None
+    end_line: Optional[int] = None
     symbols: List[str] = Field(default_factory=list)
-    metadata: Dict[str, Any] = Field(default_factory=dict)
-    reason: str = ""  # Why this evidence was retrieved
+    retrieval_type: str = "vector"
+    content: str
+    score: float = 0.0
+    reason: str = ""
 
 
 class EvidencePackage(BaseModel):
-    """Structured context for the agent swarm."""
-
     query: str
+    pr_understanding: Dict[str, Any] = Field(default_factory=dict)
     evidences: List[Evidence] = Field(default_factory=list)
-    summary: str = ""
     affected_files: List[str] = Field(default_factory=list)
     related_symbols: List[str] = Field(default_factory=list)
-    dependencies: List[str] = Field(default_factory=list)
-    previous_reviews: List[dict] = Field(default_factory=list)
+    summary: str = ""

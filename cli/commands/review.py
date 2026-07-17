@@ -14,8 +14,13 @@ from core.knowledge_base import KnowledgeBase
 from core.memory.manager import MemoryManager
 from core.utils import handle_error
 from core.observability import get_logger, get_langfuse_client
-from core.agents import context_summarizer
+
+# New imports for Review Intelligence
+from core.pr_understanding import pr_understanding_agent
 from core.hybrid_retriever import HybridRetriever
+from core.context_builder import ContextBuilder
+from core.evidence import EvidencePackage
+from core.pr_analysis import pr_analysis_agent
 
 logger = get_logger()
 
@@ -31,11 +36,10 @@ class PipelineContext:
     pr: Optional[object] = None
     kb: Optional[object] = None
     raw_context: str = ""
-    summarized_context: str = ""
-    previous_reviews: List[dict] = field(default_factory=list)
+    evidence_package: Optional[EvidencePackage] = None
     files_changed: List[str] = field(default_factory=list)
     full_diff: str = ""
-    state: Optional[ReviewState] = None
+    state: Optional[dict] = None
     final_state: Optional[dict] = None
 
 
@@ -60,11 +64,45 @@ class ReviewPipeline:
 
             self._load_knowledge_base()
             self._fetch_pr()
-            self._retrieve_context()
-            self._load_previous_reviews()
             self._build_full_diff()
             self._create_review_state()
-            # NO manual summarizer here — graph starts with it
+
+            # === REVIEW INTELLIGENCE START ===
+
+            # 1. PR Understanding
+            console.print("[yellow]Running PR Understanding Agent...[/yellow]")
+            understanding_result = pr_understanding_agent(self.context.state)
+            self.context.state.update(understanding_result)
+
+            pr_understanding = self.context.state.get("pr_understanding", {})
+            console.print(f"[green]PR Understanding completed. Risk: {pr_understanding.get('risk_level', 'unknown')}[/green]")
+
+            # 2. PR Analysis (deterministic + LLM)
+            console.print("[yellow]Running PR Analysis...[/yellow]")
+            analysis_result = pr_analysis_agent(self.context.state)
+            self.context.state.update(analysis_result)
+
+            # 3. Intelligent Retrieval + Evidence Package
+            console.print("[yellow]Running Hybrid Retriever + Context Builder...[/yellow]")
+            query = f"{self.context.pr.title}\n{self.context.pr.body or ''}"
+
+            retriever = HybridRetriever(self.context.repo, kb=self.context.kb)
+            evidence_package = retriever.retrieve(
+                query=query,
+                pr_understanding=pr_understanding,
+                k=8
+            )
+
+            self.context.evidence_package = evidence_package
+
+            # Build rich context for agents
+            rich_context = ContextBuilder.to_agent_context(evidence_package)
+            self.context.state["context_from_kb"] = rich_context
+
+            console.print(f"[green]Evidence Package built with {len(evidence_package.evidences)} evidences[/green]")
+
+            # === REVIEW INTELLIGENCE END ===
+
             self._run_agent_swarm()
             self._add_langfuse_metadata()
             self._display_results()
@@ -87,21 +125,6 @@ class ReviewPipeline:
         repo_obj = g.get_repo(self.context.repo)
         self.context.pr = repo_obj.get_pull(self.context.number)
 
-    def _retrieve_context(self):
-        query = f"{self.context.pr.title}\n{self.context.pr.body or ''}"
-        retriever = HybridRetriever(self.context.repo)
-        retrieved_docs = retriever.retrieve(query, k=6)
-
-        self.context.raw_context = "\n\n".join([doc.page_content[:1200] for doc in retrieved_docs])
-        console.print(f"[yellow]Retrieved {len(retrieved_docs)} relevant chunks from knowledge base[/yellow]")
-
-    def _load_previous_reviews(self):
-        self.context.previous_reviews = memory.get_recent_reviews(
-            self.context.conversation_id, self.context.repo, limit=2
-        )
-        if self.context.previous_reviews:
-            console.print(f"[yellow]Loaded {len(self.context.previous_reviews)} previous reviews from memory[/yellow]")
-
     def _build_full_diff(self):
         files = self.context.pr.get_files()
         self.context.files_changed = [f.filename for f in files]
@@ -112,19 +135,18 @@ class ReviewPipeline:
         self.context.full_diff = full_diff
 
     def _create_review_state(self):
-        self.context.state = ReviewState(
-            repo=self.context.repo,
-            number=self.context.number,
-            title=self.context.pr.title,
-            body=self.context.pr.body or "",
-            author=self.context.pr.user.login,
-            diff=self.context.full_diff[:8000] if self.context.full_diff else None,
-            full_diff=self.context.full_diff,
-            files_changed=self.context.files_changed,
-            model_used=settings.ollama_model,
-            context_from_kb=self.context.raw_context,
-            previous_reviews=self.context.previous_reviews,
-        )
+        self.context.state = {
+            "repo": self.context.repo,
+            "number": self.context.number,
+            "title": self.context.pr.title,
+            "body": self.context.pr.body or "",
+            "author": self.context.pr.user.login,
+            "full_diff": self.context.full_diff,
+            "files_changed": self.context.files_changed,
+            "model_used": settings.ollama_model,
+            "context_from_kb": "",
+            "traces": [],
+        }
 
     def _run_agent_swarm(self):
         console.print("[yellow]Running agent swarm...[/yellow]")
@@ -147,11 +169,32 @@ class ReviewPipeline:
                 pass
 
     def _display_results(self):
+        # Display PR Understanding first
+        understanding = self.context.state.get("pr_understanding", {})
+        if understanding:
+            console.print("\n[bold cyan]=== PR UNDERSTANDING ===[/bold cyan]")
+            console.print(f"**Summary**: {understanding.get('summary', '')}")
+            console.print(f"**Risk Level**: {understanding.get('risk_level', '')}")
+            console.print(f"**Change Types**: {', '.join(understanding.get('change_type', []))}")
+            console.print(f"**Focus Areas**: {', '.join(understanding.get('focus_areas', []))}")
+
+        # Display Correctness Findings
+        findings = self.context.final_state.get("findings", [])
+        if findings:
+            console.print("\n[bold red]=== CORRECTNESS FINDINGS ===[/bold red]")
+            for finding in findings:
+                console.print(f"**{finding.title}** ({finding.severity})")
+                console.print(f"Evidence: {finding.evidence}")
+                console.print(f"Recommendation: {finding.recommendation}")
+                console.print("---")
+
+        # Rest of the display
+        final = self.context.final_state or {}
         console.print("\n[bold green]=== CONTEXT SUMMARY ===[/bold green]")
-        console.print(Markdown(self.context.final_state.get("context_summary", "")))
+        console.print(Markdown(final.get("context_summary", "")))
 
         console.print("\n[bold green]=== CODE QUALITY ANALYSIS ===[/bold green]")
-        code_analysis = self.context.final_state.get("code_analysis", {})
+        code_analysis = final.get("code_analysis", {})
         if isinstance(code_analysis, dict):
             analysis_text = f"**Summary**: {code_analysis.get('summary', '')}\n**Recommendation**: {code_analysis.get('recommendation', '')}"
         else:
@@ -159,7 +202,7 @@ class ReviewPipeline:
         console.print(Markdown(analysis_text))
 
         console.print("\n[bold green]=== CRITIQUE ===[/bold green]")
-        critique = self.context.final_state.get("critique", {})
+        critique = final.get("critique", {})
         if isinstance(critique, dict):
             critique_text = f"**Summary**: {critique.get('summary', '')}\n**Recommendation**: {critique.get('recommendation', '')}"
         else:
@@ -167,7 +210,7 @@ class ReviewPipeline:
         console.print(Markdown(critique_text))
 
         console.print("\n[bold cyan]=== FINAL RECOMMENDATION ===[/bold cyan]")
-        final_comment = self.context.final_state.get("final_comment", "")
+        final_comment = final.get("final_comment", "")
         console.print(Markdown(str(final_comment)))
 
     def _save_to_memory(self):
@@ -176,7 +219,7 @@ class ReviewPipeline:
             repo_name=self.context.repo,
             review_type="pr",
             number=self.context.number,
-            title=self.context.state["title"],
+            title=self.context.state.get("title", ""),
             recommendation=self.context.final_state.get("recommendation", "N/A"),
             summary=self.context.final_state.get("final_comment", "")[:600]
         )

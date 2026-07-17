@@ -19,6 +19,9 @@ class FileModel(BaseModel):
     language: str = "unknown"
     extension: str = ""
     size_bytes: int = 0
+
+    # Full file content (critical for AST-aware chunking)
+    content: str = ""
     preview: str = ""
 
     # Unified symbols
@@ -49,5 +52,5 @@ class RepositoryModel(BaseModel):
     # Symbol Index (fully qualified name → Symbol)
     symbol_index: Dict[str, Symbol] = Field(default_factory=dict)
 
-    # Future
+    # Future extensions
     # architecture_summary: Optional[str] = None

@@ -21,33 +21,33 @@ class RepositoryIntelligence:
     def index_repository(self, force: bool = False) -> RepositoryModel:
         print(f"[RepositoryIntelligence] Indexing {self.repo_name}...")
 
-        files = self._scan_files()
+        # 1. Discover CURRENT files on disk
+        current_files = list(self._scan_files())
 
-        file_models: List[FileModel] = []
-        reindexed_count = 0
-
-        for file_path in files:
+        # 2. Extract metadata for current files
+        file_models = []
+        for file_path in current_files:
             if force or self._should_reindex(file_path):
-                file_model = self._extract_file_metadata(file_path)
-                if file_model:
-                    file_models.append(file_model)
-                    reindexed_count += 1
+                fm = self._extract_file_metadata(file_path)
+                if fm:
+                    file_models.append(fm)
 
+        # 3. Replace the entire file list (clean stale entries)
         self.repository_model.files = file_models
         self.repository_model.total_files = len(file_models)
         self.repository_model.indexed_at = datetime.now()
 
-        # Analyze
+        # 4. Analyze
         analyzer = RepositoryAnalyzer(self.repository_model)
         analyzer.analyze()
 
-        # Persist
+        # 5. Persist clean model
         self.persistence.save_repository_model(self.repository_model)
 
-        # Embed and store
+        # 6. Embed
         self._embed_and_store(file_models)
 
-        print(f"[RepositoryIntelligence] Re-indexed {reindexed_count} files (incremental).")
+        print(f"[RepositoryIntelligence] Indexed {len(file_models)} files (clean).")
         return self.repository_model
 
     def _should_reindex(self, file_path: Path) -> bool:
@@ -78,6 +78,7 @@ class RepositoryIntelligence:
         return files
 
     def _extract_file_metadata(self, file_path: Path) -> Optional[FileModel]:
+        """Extract structured metadata from a file."""
         try:
             content = file_path.read_text(encoding="utf-8", errors="ignore")
             extension = file_path.suffix.lower()
@@ -88,7 +89,10 @@ class RepositoryIntelligence:
                 language=language,
                 extension=extension,
                 size_bytes=len(content),
+
+                content=content,                    # ← THIS WAS MISSING
                 preview=content[:600] + "..." if len(content) > 600 else content,
+
                 line_count=len(content.splitlines()),
                 last_modified=datetime.fromtimestamp(file_path.stat().st_mtime),
             )
@@ -103,6 +107,7 @@ class RepositoryIntelligence:
             return None
 
     def _parse_python_ast(self, file_path: Path, content: str, file_model: FileModel):
+        """Improved AST parsing for Python files with safe node handling."""
         try:
             tree = ast.parse(content, filename=str(file_path))
 
@@ -116,6 +121,7 @@ class RepositoryIntelligence:
                             docstring=ast.get_docstring(node),
                         )
                     )
+                    # Extract methods inside the class
                     for child in node.body:
                         if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
                             file_model.symbols.append(
@@ -137,8 +143,11 @@ class RepositoryIntelligence:
                         )
                     )
 
+                # Ignore expressions, imports, assignments, etc.
+                # We only care about top-level classes and functions for now
+
         except SyntaxError:
-            pass
+            pass  # Skip files with syntax errors
 
     def _detect_language(self, extension: str) -> str:
         mapping = {
