@@ -29,3 +29,15 @@ class Finding(BaseModel):
     reasoning: str
     recommendation: str
     category: str
+
+
+class ReviewOutput(BaseModel):
+    """Structured output for review agents."""
+    summary: str
+    recommendation: str
+    confidence: float
+
+
+class Findings(BaseModel):
+    """Wrapper for list of findings."""
+    findings: List[Finding]

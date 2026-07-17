@@ -4,6 +4,8 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Literal
 from typing import List, Optional, Dict, Any
 from core.models import PRAnalysis, Finding
+from datetime import datetime
+import operator
 
 class ReviewOutput(TypedDict):
     summary: str
@@ -30,13 +32,16 @@ class ReviewState(TypedDict):
     model_used: str
     traces: List[dict]
     recommendation: str
+    traces: Annotated[List[dict], operator.add]
 
     # Review Intelligence
     pr_understanding: Optional[dict] = None
     pr_analysis: Optional[PRAnalysis] = None
     evidence_package: Optional[Dict] = None
+    correctness_findings: List[Finding] = Field(default_factory=list)
+    quality_findings: List[Finding] = Field(default_factory=list)
     findings: List[Finding] = Field(default_factory=list)
-    final_findings: List[Finding] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=datetime.now)
 
 class PRUnderstanding(BaseModel):
     """Structured understanding of a Pull Request."""

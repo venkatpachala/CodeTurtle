@@ -7,11 +7,9 @@ from core.models import Finding, Findings
 from core.evidence import EvidencePackage
 
 
-def correctness_agent(state: ReviewState) -> dict:
+def code_quality_agent(state: ReviewState) -> dict:
     """
-    Specialized Correctness Agent.
-
-    Focuses on functional correctness, logic errors, edge cases, and potential bugs.
+    Specialized Code Quality Agent.
     """
 
     llm = get_llm(temperature=0.2, max_tokens=1500)
@@ -21,20 +19,11 @@ def correctness_agent(state: ReviewState) -> dict:
     pr_analysis = state.get("pr_analysis", {})
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are a strict and experienced Correctness Reviewer.
+        ("system", """You are a strict and experienced Code Quality Reviewer.
 
-Your only job is to find functional correctness issues, logic errors, edge cases, and potential bugs.
+Your only job is to evaluate code style, maintainability, readability, best practices, and technical debt.
 
-You must produce structured findings only. Be critical and precise.
-
-Every finding must include:
-- Clear title
-- Detailed description
-- Evidence (specific code)
-- Reasoning
-- Recommendation
-- Severity and confidence"""),
-
+You must produce structured findings only. Be constructive but critical."""),
         ("human", """PR Understanding:
 {pr_understanding}
 
@@ -47,7 +36,7 @@ Retrieved Evidence:
 Full context from relevant files:
 {rich_context}
 
-Find correctness issues in this PR.""")
+Find code quality issues in this PR.""")
     ])
 
     structured_llm = llm.with_structured_output(Findings)
@@ -64,9 +53,9 @@ Find correctness issues in this PR.""")
     findings = result.findings
 
     return {
-        "correctness_findings": findings,
+        "quality_findings": findings,
         "traces": [{
-            "agent": "CorrectnessAgent",
-            "output": f"Found {len(findings)} correctness findings"
+            "agent": "CodeQualityAgent",
+            "output": f"Found {len(findings)} code quality findings"
         }]
     }

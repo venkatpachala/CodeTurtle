@@ -13,3 +13,14 @@ wheels/
 qdrant_data/
 repos/
 .env
+# Generated repository intelligence
+.codeturtle/
+
+# Local DB
+data/
+
+# Sessions
+.current_session
+
+# Debug
+debug_*.txt
