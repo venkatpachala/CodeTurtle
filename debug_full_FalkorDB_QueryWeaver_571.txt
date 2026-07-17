@@ -1,0 +1,517 @@
+PR: FalkorDB/QueryWeaver#571
+Query: chore: sync root package-lock.json with app workspace (@vitejs/plugin-react-swc v4)
+`npm ci` was failing in the Playwright Tests CI job because the root `package-lock.json` didn't include the `@swc/core@1.15.33` platform-specific binaries required by `@vitejs/plugin-react-swc@^4.3.0` (upgraded in `app/`).
+
+## Changes
+
+- **Regenerated root `package-lock.json`** via `npm install` from the repo root, picking up the updated `app` workspace resolution — `@vitejs/plugin-react-swc` bumped from `^3.11.0` → `^4.3.0` with all `@swc/core` platform binaries now present in the lock file.
+
+The mismatch between `app/package-lock.json` and the root lock file was the sole cause of the CI failure; no source files were modified.
+
+<!-- START COPILOT ORIGINAL PROMPT -->
+
+
+
+<details>
+
+<summary>Original prompt</summary>
+
+> ## Problem
+> 
+> The Playwright Tests CI job is failing at the **"Install root dependencies"** step (`npm ci`) with errors like:
+> 
+> ```
+> npm error Missing: @swc/core-darwin-x64@1.15.33 from lock file
+> npm error Missing: @swc/core-linux-x64-gnu@1.15.33 from lock file
+> npm error Missing: @swc/core-linux-arm64-gnu@1.15.33 from lock file
+> ... (and other @swc/core platform variants)
+> ```
+> 
+> **Root cause:** The root `package-lock.json` is out of sync with `app/package.json`. The `app` package upgraded `@vitejs/plugin-react-swc` from `^3.11.0` to `^4.3.0`, which has `@swc/core@1.15.33` platform-specific binaries as dependencies. These were added to `app/package-lock.json` but were **never reflected in the root `package-lock.json`**. Since `npm ci` strictly enforces the lock file, it fails.
+> 
+> Failing job: https://github.com/FalkorDB/QueryWeaver/actions/runs/25627969237/job/75226367251
+> 
+> ## Fix
+> 
+> Regenerate the root `package-lock.json` by running `npm install` from the repo root so it picks up the updated `app` workspace dependencies (including `@vitejs/plugin-react-swc@^4.3.0` and its `@swc/core` platform binaries).
+> 
+> ```bash
+> # From repo root
+> npm install
+> ```
+> 
+> Then commit the updated `package-lock.json`.
+> 
+> ## Steps to implement
+> 
+> 1. Run `npm install` from the repository root to regenerate `package-lock.json` with the correct resolved versions that match what's in `app/package-lock.json`.
+> 2. Commit the updated root `package-lock.json`.
+> 
+> Do **not** modify any source files, workflow files, or `package.json` files — only the root `package-lock.json` needs to be updated.
+> 
+> 
+> The following is the prior conversation context from the user's chat exploration (may be truncated):
+> 
+> User: Please find a solution for this failing job. Use the logs, job definition, and any referenced files where the failure occurred. Keep your response focused on the solution and include code suggestions when appropriate.
+> 
+> Assistant: I'll grab the job logs right away!
+> 
+> Assistant: ## Root Cause
+> 
+> The job fails at the **"Install root dependencies"** step (`npm ci`) with:
+> 
+> ```
+> npm error Missing: @swc/core-darwin-x64@1.15.33 from lock file
+> npm error Missing: @swc/core-linux-x64-gnu@1.15.33 from lock file
+> ... (and other platform variants)
+> ```
+> 
+> The root `package-lock.json` is **out of sync** with `app/package.json`. Specifically:
+> 
+> - **Root `package-lock.json`** (line 81) declares `"@vitejs/plugin-react-swc": "^3.11.0"` for the `app` workspace
+> - **`app/package-lock.json`** (line 71) has it updated to `"@vitejs/plugin-react-swc": "^4.3.0"`
+> 
+> The `@swc/core` native platform binaries at version `1.15.33` are peer dependencies of `@vitejs/plugin-react-swc` v4.x, but they were never added to the **root** `package-lock.json` when the `app` dependency was upgraded. Since `npm ci` strictly enforces the lock file, it fails.
+> 
+> ## Solution
+> 
+> Regenerate the root `package-lock.json` to bring it in sync with the current state of `app/package.json`:
+> 
+> ```bash
+> # From the repo root
+> npm install
+> git add package-lock.json
+> git commit -m "chore: sync root package-lock.json with updated app dependencies"
+> ```
+> 
+> This will re-resolve the `app` workspace (including the new `@vitejs/plugin-react-swc@^4.3.0` and its `@swc/core` platform binaries) and write them properly into the root lock file. After that, `npm ci` in CI will succeed.
+> 
+> > **Note:** Going forward, whenever `app/package.json` or `app/package-lock.json` is updated, make sure to also run `npm install` from the repo root and commit the updated root `package-lock.json`.
+> 
+> User: please fix it in a PR
+> 
+> Assistant: I've submitted a PR creation request to fix the issue. The coding agent will:
+> 
+> 1. Run `npm install` from the repo root to regenerate the root `package-lock.json`, pulling in the `@swc/core@1.15.33` platform binaries that `@vitejs/plugin-react-swc@^4.3.0` requires.
+> 2. Commit and open a PR with the updated lock file.
+> 
+> Once merged, `npm ci` in the Playwright Tests workflow should pass cleanly. You'll be notified when the PR is ready for review.
+> 
+> 
+
+
+</details>
+
+
+
+<!-- START COPILOT CODING AGENT SUFFIX -->
+
+*This pull request was created from Copilot chat.*
+>
+
+Retrieved Documents:
+
+Document 1
+Path: package-lock.json
+Content:
+File: package-lock.json
+Language: JSON
+
+Preview:
+{
+  "name": "QueryWeaver",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "dependencies": {
+        "queryweaver-app": "file:app"
+      },
+      "devDependencies": {
+        "@playwright/test": "^1.56.1",
+        "@types/node": "^22.10.2",
+        "playwright": "^1.56.1"
+      }
+    },
+    "app": {
+      "name": "queryweaver-app",
+      "version": "0.3.0",
+      "dependencies": {
+        "@falkordb/canvas": "^0.0.45",
+        "@hookform/resolvers": "^5.2.2",
+        "@radix-ui/react-accordion": "^1.2.15",
+        "@radix-ui/react-alert-dialog": "^1.1.18",
+        "...
+
+Document 2
+Path: app\package-lock.json
+Content:
+File: app\package-lock.json
+Language: JSON
+
+Preview:
+{
+  "name": "queryweaver-app",
+  "version": "0.3.1",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "name": "queryweaver-app",
+      "version": "0.3.1",
+      "dependencies": {
+        "@falkordb/canvas": "^0.0.45",
+        "@hookform/resolvers": "^5.2.2",
+        "@radix-ui/react-accordion": "^1.2.15",
+        "@radix-ui/react-alert-dialog": "^1.1.18",
+        "@radix-ui/react-aspect-ratio": "^1.1.11",
+        "@radix-ui/react-avatar": "^1.1.10",
+        "@radix-ui/react-checkbox": "^1.3.6",
+        "@radix-ui/react-collapsible": "^1.1.11",
+        "@radix-ui/reac...
+
+Document 3
+Path: app\package.json
+Content:
+File: app\package.json
+Language: JSON
+
+Preview:
+{
+  "name": "queryweaver-app",
+  "private": true,
+  "version": "0.3.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@falkordb/canvas": "^0.0.45",
+    "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-accordion": "^1.2.15",
+    "@radix-ui/react-alert-dialog": "^1.1.18",
+    "@radix-ui/react-aspect-ratio": "^1.1.11",
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-checkbox": "^1.3.6",
+    "@radix-ui/react-coll...
+
+Document 4
+Path: package.json
+Content:
+File: package.json
+Language: JSON
+
+Preview:
+{
+  "dependencies": {
+    "queryweaver-app": "file:app"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^22.10.2",
+    "playwright": "^1.56.1"
+  },
+  "scripts": {}
+}
+
+Document 5
+Path: app\tsconfig.app.json
+Content:
+File: app\tsconfig.app.json
+Language: JSON
+
+Preview:
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "...
+
+Document 6
+Path: app\tsconfig.node.json
+Content:
+File: app\tsconfig.node.json
+Language: JSON
+
+Preview:
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["vite.config.ts"]
+}
+
+Document 7
+Path: .github\workflows\dependency-review.yml
+Content:
+File: .github\workflows\dependency-review.yml
+Language: YAML
+
+Preview:
+# Dependency Review Action
+#
+# This Action will scan dependency manifest files that change as part of a Pull Request,
+# surfacing known-vulnerable versions of the packages declared or updated in the PR.
+# Once installed, if the workflow run is marked as required, PRs introducing known-vulnerable
+# packages will be blocked from merging.
+#
+# Source repository: https://github.com/actions/dependency-review-action
+# Public documentation: https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review#dependency-review-enforcement
+name:...
+
+Document 8
+Path: app\tsconfig.json
+Content:
+File: app\tsconfig.json
+Language: JSON
+
+Preview:
+{
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "strict": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true,
+    "allowJs": true
+  }
+}
+
+Context Passed to First Agent:
+File: package-lock.json
+Language: JSON
+
+Preview:
+{
+  "name": "QueryWeaver",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "dependencies": {
+        "queryweaver-app": "file:app"
+      },
+      "devDependencies": {
+        "@playwright/test": "^1.56.1",
+        "@types/node": "^22.10.2",
+        "playwright": "^1.56.1"
+      }
+    },
+    "app": {
+      "name": "queryweaver-app",
+      "version": "0.3.0",
+      "dependencies": {
+        "@falkordb/canvas": "^0.0.45",
+        "@hookform/resolvers": "^5.2.2",
+        "@radix-ui/react-accordion": "^1.2.15",
+        "@radix-ui/react-alert-dialog": "^1.1.18",
+        "...
+
+File: app\package-lock.json
+Language: JSON
+
+Preview:
+{
+  "name": "queryweaver-app",
+  "version": "0.3.1",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "name": "queryweaver-app",
+      "version": "0.3.1",
+      "dependencies": {
+        "@falkordb/canvas": "^0.0.45",
+        "@hookform/resolvers": "^5.2.2",
+        "@radix-ui/react-accordion": "^1.2.15",
+        "@radix-ui/react-alert-dialog": "^1.1.18",
+        "@radix-ui/react-aspect-ratio": "^1.1.11",
+        "@radix-ui/react-avatar": "^1.1.10",
+        "@radix-ui/react-checkbox": "^1.3.6",
+        "@radix-ui/react-collapsible": "^1.1.11",
+        "@radix-ui/reac...
+
+File: app\package.json
+Language: JSON
+
+Preview:
+{
+  "name": "queryweaver-app",
+  "private": true,
+  "version": "0.3.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@falkordb/canvas": "^0.0.45",
+    "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-accordion": "^1.2.15",
+    "@radix-ui/react-alert-dialog": "^1.1.18",
+    "@radix-ui/react-aspect-ratio": "^1.1.11",
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-checkbox": "^1.3.6",
+    "@radix-ui/react-coll...
+
+File: package.json
+Language: JSON
+
+Preview:
+{
+  "dependencies": {
+    "queryweaver-app": "file:app"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^22.10.2",
+    "playwright": "^1.56.1"
+  },
+  "scripts": {}
+}
+
+File: app\tsconfig.app.json
+Language: JSON
+
+Preview:
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "...
+
+File: app\tsconfig.node.json
+Language: JSON
+
+Preview:
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["vite.config.ts"]
+}
+
+File: .github\workflows\dependency-review.yml
+Language: YAML
+
+Preview:
+# Dependency Review Action
+#
+# This Action will scan dependency manifest files that change as part of a Pull Request,
+# surfacing known-vulnerable versions of the packages declared or updated in the PR.
+# Once installed, if the workflow run is marked as required, PRs introducing known-vulnerable
+# packages will be blocked from merging.
+#
+# Source repository: https://github.com/actions/dependency-review-action
+# Public documentation: https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review#dependency-review-enforcement
+name:...
+
+File: app\tsconfig.json
+Language: JSON
+
+Preview:
+{
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "strict": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true,
+    "allowJs": true
+  }
+}
