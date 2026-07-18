@@ -5,8 +5,8 @@ from core.state import ReviewState
 from core.pr_understanding import pr_understanding_agent
 from core.pr_analysis import pr_analysis_agent
 from core.agents import build_evidence_package
-from core.correctness_agent import correctness_agent
-from core.code_quality_agent import code_quality_agent
+from core.agents import correctness_agent
+from core.agents import code_quality_agent
 
 from core.agents import (
     context_summarizer,
