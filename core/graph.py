@@ -4,6 +4,7 @@ from core.state import ReviewState
 # New agents for Review Intelligence
 from core.pr_understanding import pr_understanding_agent
 from core.pr_analysis import pr_analysis_agent
+from core.agents import build_evidence_package
 from core.correctness_agent import correctness_agent
 from core.code_quality_agent import code_quality_agent
 
@@ -22,6 +23,7 @@ def build_review_graph():
     # Nodes
     workflow.add_node("pr_understanding", pr_understanding_agent)
     workflow.add_node("pr_analysis", pr_analysis_agent)
+    workflow.add_node("build_evidence_package", build_evidence_package)
     workflow.add_node("context_summarizer", context_summarizer)
     workflow.add_node("context_gatherer", context_gatherer)
     workflow.add_node("code_quality_reviewer", code_quality_reviewer)
@@ -35,7 +37,8 @@ def build_review_graph():
 
     # Flow
     workflow.add_edge("pr_understanding", "pr_analysis")
-    workflow.add_edge("pr_analysis", "context_summarizer")
+    workflow.add_edge("pr_analysis", "build_evidence_package")
+    workflow.add_edge("build_evidence_package", "context_summarizer")
 
     workflow.add_edge("context_summarizer", "context_gatherer")
     workflow.add_edge("context_summarizer", "code_quality_reviewer")

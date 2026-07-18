@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     github_token: str = ""
 
     # Paths
-    memory_path: str = "~/.reviewforge/memory"
-    traces_path: str = "~/.reviewforge/traces"
+    memory_path: str = "~/.codeturrle/memory"
+    traces_path: str = "~/.codeturrle/traces"
 
     model_config = ConfigDict(
         env_file = ".env",

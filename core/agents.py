@@ -5,6 +5,8 @@ from core.llm import get_llm
 from core.state import ReviewState
 from core.models import Finding, ReviewOutput
 from core.evidence import EvidencePackage
+from core.hybrid_retriever import HybridRetriever
+from core.context_builder import ContextBuilder
 
 
 def context_summarizer(state: ReviewState) -> dict:
@@ -152,6 +154,29 @@ Find code quality issues in this PR.""")
     }
 
 
+def build_evidence_package(state: ReviewState) -> dict:
+    """Runs inside the graph after PR Analysis."""
+    query = f"{state['title']}\n{state['body']}"
+
+    retriever = HybridRetriever(state["repo"], kb=state.get("kb"))
+    evidence_package = retriever.retrieve(
+        query=query,
+        pr_understanding=state.get("pr_understanding", {}),
+        k=8
+    )
+
+    rich_context = ContextBuilder.to_agent_context(evidence_package)
+
+    return {
+        "evidence_package": evidence_package.model_dump(),
+        "context_from_kb": rich_context,
+        "traces": [{
+            "agent": "BuildEvidencePackage",
+            "output": f"Built EvidencePackage with {len(evidence_package.evidences)} items"
+        }]
+    }
+
+
 def critic_agent(state: ReviewState) -> dict:
     correctness = state.get("correctness_findings", [])
     quality = state.get("quality_findings", [])
@@ -165,7 +190,6 @@ def critic_agent(state: ReviewState) -> dict:
             "output": f"Aggregated {len(all_findings)} findings from specialized agents"
         }]
     }
-
 
 
 def final_recommender(state: ReviewState) -> dict:
@@ -185,9 +209,8 @@ def final_recommender(state: ReviewState) -> dict:
         "findings": "\n".join([f"{f.title} ({f.severity}): {f.description}" for f in state.get("findings", [])])
     })
 
-    # Fix: Use attributes instead of .get()
     return {
-        "final_comment": response.summary or "",   # or response.comment if you have that field
+        "final_comment": response.summary or "",
         "recommendation": response.recommendation or "COMMENT",
         "traces": [{
             "agent": "FinalRecommender",

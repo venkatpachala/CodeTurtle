@@ -1,5 +1,5 @@
 [project]
-name = "reviewforge"
+name = "codeturrle"
 version = "0.1.0"
 description = "Autonomous GitHub Review Agent Swarm"
 requires-python = ">=3.10"

@@ -15,13 +15,6 @@ from core.memory.manager import MemoryManager
 from core.utils import handle_error
 from core.observability import get_logger, get_langfuse_client
 
-# New imports for Review Intelligence
-from core.pr_understanding import pr_understanding_agent
-from core.hybrid_retriever import HybridRetriever
-from core.context_builder import ContextBuilder
-from core.evidence import EvidencePackage
-from core.pr_analysis import pr_analysis_agent
-
 logger = get_logger()
 
 console = Console()
@@ -35,8 +28,6 @@ class PipelineContext:
     conversation_id: str = ""
     pr: Optional[object] = None
     kb: Optional[object] = None
-    raw_context: str = ""
-    evidence_package: Optional[EvidencePackage] = None
     files_changed: List[str] = field(default_factory=list)
     full_diff: str = ""
     state: Optional[dict] = None
@@ -62,48 +53,16 @@ class ReviewPipeline:
                 f"Model: {settings.ollama_model} (Ollama)"
             ))
 
+            # Only deterministic steps in CLI
             self._load_knowledge_base()
             self._fetch_pr()
             self._build_full_diff()
             self._create_review_state()
 
-            # === REVIEW INTELLIGENCE START ===
+            # Single entry point into LangGraph (the real orchestrator)
+            console.print("[yellow]Running agent swarm...[/yellow]")
+            self.context.final_state = review_graph.invoke(self.context.state)
 
-            # 1. PR Understanding
-            console.print("[yellow]Running PR Understanding Agent...[/yellow]")
-            understanding_result = pr_understanding_agent(self.context.state)
-            self.context.state.update(understanding_result)
-
-            pr_understanding = self.context.state.get("pr_understanding", {})
-            console.print(f"[green]PR Understanding completed. Risk: {pr_understanding.get('risk_level', 'unknown')}[/green]")
-
-            # 2. PR Analysis (deterministic + LLM)
-            console.print("[yellow]Running PR Analysis...[/yellow]")
-            analysis_result = pr_analysis_agent(self.context.state)
-            self.context.state.update(analysis_result)
-
-            # 3. Intelligent Retrieval + Evidence Package
-            console.print("[yellow]Running Hybrid Retriever + Context Builder...[/yellow]")
-            query = f"{self.context.pr.title}\n{self.context.pr.body or ''}"
-
-            retriever = HybridRetriever(self.context.repo, kb=self.context.kb)
-            evidence_package = retriever.retrieve(
-                query=query,
-                pr_understanding=pr_understanding,
-                k=8
-            )
-
-            self.context.evidence_package = evidence_package
-
-            # Build rich context for agents
-            rich_context = ContextBuilder.to_agent_context(evidence_package)
-            self.context.state["context_from_kb"] = rich_context
-
-            console.print(f"[green]Evidence Package built with {len(evidence_package.evidences)} evidences[/green]")
-
-            # === REVIEW INTELLIGENCE END ===
-
-            self._run_agent_swarm()
             self._add_langfuse_metadata()
             self._display_results()
             self._save_to_memory()
@@ -148,10 +107,6 @@ class ReviewPipeline:
             "traces": [],
         }
 
-    def _run_agent_swarm(self):
-        console.print("[yellow]Running agent swarm...[/yellow]")
-        self.context.final_state = review_graph.invoke(self.context.state)
-
     def _add_langfuse_metadata(self):
         langfuse_client = get_langfuse_client()
         if langfuse_client:
@@ -170,7 +125,7 @@ class ReviewPipeline:
 
     def _display_results(self):
         # Display PR Understanding first
-        understanding = self.context.state.get("pr_understanding", {})
+        understanding = self.context.final_state.get("pr_understanding", {})
         if understanding:
             console.print("\n[bold cyan]=== PR UNDERSTANDING ===[/bold cyan]")
             console.print(f"**Summary**: {understanding.get('summary', '')}")
