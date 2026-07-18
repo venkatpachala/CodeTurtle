@@ -28,7 +28,7 @@ Full Diff (truncated): {diff}
 Extract the following facts:""")
     ])
 
-    structured_llm = llm.with_structured_output(PRAnalysis)
+    structured_llm = gateway.generate_structured(PRAnalysis)
 
     chain = prompt | structured_llm
 

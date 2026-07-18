@@ -51,7 +51,7 @@ Focus on:
 Respond with a structured JSON that matches the PRUnderstanding schema.""")
     ])
 
-    structured_llm = llm.with_structured_output(PRUnderstanding)
+    structured_llm = gateway.generate_structured(PRUnderstanding)
 
     chain = prompt | structured_llm
 
