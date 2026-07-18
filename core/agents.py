@@ -6,16 +6,28 @@ from core.models import Finding, ReviewOutput, Findings
 from core.evidence import EvidencePackage
 from core.hybrid_retriever import HybridRetriever
 from core.context_builder import ContextBuilder
-from core.gateway.gateway import AIGateway
-
-# Global gateway instance
-gateway = AIGateway()
+from core.gateway import gateway
 
 
 def context_summarizer(state: ReviewState) -> dict:
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Summarize relevant repository context."),
-        ("human", "PR Title: {title}\nRaw context: {raw_context}")
+        ("system", """You are an expert repository analyst.
+
+Your job is to create a concise, high-signal summary of the repository context relevant to this PR.
+
+Focus on:
+- Key files and modules touched
+- Relevant symbols, classes, functions
+- Architecture patterns
+- Dependencies
+
+Be technical and precise. Do not speculate."""),
+        ("human", """PR Title: {title}
+
+Retrieved Repository Context:
+{raw_context}
+
+Summarize only the most relevant parts for code review.""")
     ]).format(
         title=state["title"],
         raw_context=state["context_from_kb"]
@@ -25,7 +37,8 @@ def context_summarizer(state: ReviewState) -> dict:
         prompt=prompt,
         capability="summarization",
         temperature=0.2,
-        max_tokens=600
+        max_tokens=600,
+        agent_name="ContextSummarizer"
     )
 
     return {
@@ -36,10 +49,26 @@ def context_summarizer(state: ReviewState) -> dict:
 
 def context_gatherer(state: ReviewState) -> dict:
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Gather PR context."),
-        ("human", "PR Title: {title}\nContext: {context_to_use}")
+        ("system", """You are an expert PR context gatherer.
+
+Your job is to create a focused summary of the PR and relevant repository context for downstream reviewers.
+
+Highlight:
+- Main intent of the PR
+- Key changes
+- Potential impact areas
+- What reviewers should focus on"""),
+        ("human", """PR Title: {title}
+
+PR Body: {body}
+
+Summarized Repository Context:
+{context_to_use}
+
+Provide a concise, actionable summary for code reviewers.""")
     ]).format(
         title=state["title"],
+        body=state.get("body", ""),
         context_to_use=state["summarized_context"]
     )
 
@@ -47,7 +76,8 @@ def context_gatherer(state: ReviewState) -> dict:
         prompt=prompt,
         capability="context_gathering",
         temperature=0.3,
-        max_tokens=800
+        max_tokens=800,
+        agent_name="ContextGatherer"
     )
 
     return {
@@ -67,9 +97,14 @@ def correctness_agent(state: ReviewState) -> dict:
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a strict and experienced Correctness Reviewer.
 
-Your only job is to find functional correctness issues, logic errors, edge cases, and potential bugs.
+Your ONLY job is to find functional correctness issues, logic errors, edge cases, and potential bugs.
 
-You must produce structured findings only. Be critical and precise."""),
+Rules:
+- Every finding MUST be supported by retrieved evidence.
+- If evidence is insufficient, return empty list.
+- Be highly critical and specific.
+- Cite evidence IDs or file paths.
+- Never speculate or invent code that was not retrieved."""),
         ("human", """PR Understanding:
 {pr_understanding}
 
@@ -93,7 +128,8 @@ Find correctness issues in this PR.""")
     result = gateway.generate_structured(
         prompt=prompt,
         schema=Findings,
-        capability="correctness_review"
+        capability="correctness_review",
+        agent_name="CorrectnessAgent"
     )
 
     findings = result.findings
@@ -115,9 +151,14 @@ def code_quality_agent(state: ReviewState) -> dict:
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a strict and experienced Code Quality Reviewer.
 
-Your only job is to evaluate code style, maintainability, readability, best practices, and technical debt.
+Your ONLY job is to evaluate code style, maintainability, readability, best practices, and technical debt.
 
-You must produce structured findings only. Be constructive but critical."""),
+Rules:
+- Every finding MUST be supported by retrieved evidence.
+- If evidence is insufficient, return empty list.
+- Be constructive but critical.
+- Cite evidence IDs or file paths.
+- Never speculate or invent code that was not retrieved."""),
         ("human", """PR Understanding:
 {pr_understanding}
 
@@ -141,7 +182,8 @@ Find code quality issues in this PR.""")
     result = gateway.generate_structured(
         prompt=prompt,
         schema=Findings,
-        capability="code_quality_review"
+        capability="code_quality_review",
+        agent_name="CodeQualityAgent"
     )
 
     findings = result.findings
@@ -196,8 +238,18 @@ def final_recommender(state: ReviewState) -> dict:
     """
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are a senior maintainer giving the final review decision."),
-        ("human", "Context: {context_summary}\nFindings: {findings}")
+        ("system", """You are a senior maintainer giving the final review decision.
+
+Synthesize the provided findings into a clear, actionable recommendation.
+
+Be balanced, specific, and professional."""),
+        ("human", """PR Context:
+{context_summary}
+
+Findings:
+{findings}
+
+Provide the final recommendation and a ready-to-post comment.""")
     ]).format(
         context_summary=state.get("context_summary", ""),
         findings="\n".join([f"{f.title} ({f.severity}): {f.description}" for f in state.get("findings", [])])
@@ -206,7 +258,8 @@ def final_recommender(state: ReviewState) -> dict:
     response = gateway.generate_structured(
         prompt=prompt,
         schema=ReviewOutput,
-        capability="final_recommendation"
+        capability="final_recommendation",
+        agent_name="FinalRecommender"
     )
 
     return {

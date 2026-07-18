@@ -1,7 +1,8 @@
 from langchain_core.prompts import ChatPromptTemplate
-from core.llm import get_llm
+
 from core.state import ReviewState
 from core.models import PRUnderstanding
+from core.gateway import gateway
 
 
 def pr_understanding_agent(state: ReviewState) -> dict:
@@ -9,8 +10,6 @@ def pr_understanding_agent(state: ReviewState) -> dict:
     First agent in the review pipeline.
     Analyzes the PR title, body, and changed files to produce a structured understanding.
     """
-
-    llm = get_llm(temperature=0.2, max_tokens=1200)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are an expert senior software engineer performing the first-pass analysis of a GitHub Pull Request.
@@ -49,23 +48,24 @@ Focus on:
 7. Were tests and documentation updated?
 
 Respond with a structured JSON that matches the PRUnderstanding schema.""")
-    ])
+    ]).format(
+        title=state.get("title", ""),
+        body=state.get("body", "") or "No description provided.",
+        files_changed="\n".join(state.get("files_changed", [])),
+        diff=(state.get("full_diff") or "")[:12000]  # Truncate very large diffs
+    )
 
-    structured_llm = gateway.generate_structured(PRUnderstanding)
-
-    chain = prompt | structured_llm
-
-    result = chain.invoke({
-        "title": state.get("title", ""),
-        "body": state.get("body", "") or "No description provided.",
-        "files_changed": "\n".join(state.get("files_changed", [])),
-        "diff": (state.get("full_diff") or "")[:12000]  # Truncate very large diffs
-    })
+    result = gateway.generate_structured(
+        prompt=prompt,
+        schema=PRUnderstanding,
+        capability="reasoning",
+        agent_name="PRUnderstandingAgent"
+    )
 
     return {
         "pr_understanding": result.model_dump(),
         "traces": [{
-            "agent": "PRUnderstanding",
+            "agent": "PRUnderstandingAgent",
             "output": result.model_dump_json(indent=2)
         }]
     }

@@ -1,7 +1,8 @@
 from langchain_core.prompts import ChatPromptTemplate
-from core.llm import get_llm
+
 from core.state import ReviewState
 from core.models import PRAnalysis
+from core.gateway import gateway
 
 
 def pr_analysis_agent(state: ReviewState) -> dict:
@@ -9,8 +10,6 @@ def pr_analysis_agent(state: ReviewState) -> dict:
 
     # TODO: Add deterministic part later (GitHub API + AST)
     # For now, LLM-based
-
-    llm = get_llm(temperature=0.1, max_tokens=800)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are an expert senior software engineer performing deterministic PR analysis.
@@ -26,23 +25,24 @@ Files Changed: {files_changed}
 Full Diff (truncated): {diff}
 
 Extract the following facts:""")
-    ])
+    ]).format(
+        title=state.get("title", ""),
+        body=state.get("body", ""),
+        files_changed="\n".join(state.get("files_changed", [])),
+        diff=(state.get("full_diff") or "")[:8000]
+    )
 
-    structured_llm = gateway.generate_structured(PRAnalysis)
-
-    chain = prompt | structured_llm
-
-    result = chain.invoke({
-        "title": state.get("title", ""),
-        "body": state.get("body", ""),
-        "files_changed": "\n".join(state.get("files_changed", [])),
-        "diff": (state.get("full_diff") or "")[:8000]
-    })
+    result = gateway.generate_structured(
+        prompt=prompt,
+        schema=PRAnalysis,
+        capability="reasoning",
+        agent_name="PRAnalysisAgent"
+    )
 
     return {
         "pr_analysis": result.model_dump(),
         "traces": [{
-            "agent": "PRAnalysis",
+            "agent": "PRAnalysisAgent",
             "output": result.model_dump_json(indent=2)
         }]
     }

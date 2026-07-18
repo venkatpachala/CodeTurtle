@@ -11,20 +11,42 @@ class OllamaResponse:
 
 def structured_generate(
     prompt: str,
-    schema: BaseModel,
+    schema: type[BaseModel],
     temperature: float = 0.2,
     max_tokens: int = 1500,
+    model: str = "qwen2.5:7b",
 ) -> OllamaResponse:
     llm = ChatOllama(
-        model="qwen2.5:7b",
+        model=model,
         temperature=temperature,
-        max_tokens=max_tokens
+        max_tokens=max_tokens,
     )
-    structured_llm = gateway.generate_structured(schema)
+    structured_llm = llm.with_structured_output(schema)
     response = structured_llm.invoke(prompt)
 
     return OllamaResponse(
         content=response,
-        model="qwen2.5:7b",
+        model=model,
+        usage={}
+    )
+
+
+def generate(
+    prompt: str,
+    temperature: float = 0.2,
+    max_tokens: int = 1500,
+    model: str = "qwen2.5:7b",
+) -> OllamaResponse:
+    """Plain text generation for non-structured calls."""
+    llm = ChatOllama(
+        model=model,
+        temperature=temperature,
+        max_tokens=max_tokens,
+    )
+    response = llm.invoke(prompt)
+
+    return OllamaResponse(
+        content=response.content,
+        model=model,
         usage={}
     )
