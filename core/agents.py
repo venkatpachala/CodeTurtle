@@ -7,6 +7,7 @@ from core.models import Finding, ReviewOutput
 from core.evidence import EvidencePackage
 from core.hybrid_retriever import HybridRetriever
 from core.context_builder import ContextBuilder
+from core.models import Finding, Findings
 
 
 def context_summarizer(state: ReviewState) -> dict:
@@ -39,32 +40,13 @@ def context_gatherer(state: ReviewState) -> dict:
     }
 
 
-def code_quality_reviewer(state: ReviewState) -> dict:
-    llm = get_llm(temperature=0.2, max_tokens=1200)
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are a senior Code Quality Reviewer."),
-        ("human", "PR Title: {title}\nDiff: {diff}\nContext: {context_to_use}")
-    ])
-    structured_llm = llm.with_structured_output(ReviewOutput)
-    chain = prompt | structured_llm
-    response = chain.invoke({
-        "title": state["title"],
-        "diff": state["full_diff"],
-        "context_to_use": state["summarized_context"]
-    })
-    return {
-        "code_analysis": response,
-        "traces": [{"agent": "CodeQualityReviewer", "output": str(response)}]
-    }
-
-
 def correctness_agent(state: ReviewState) -> dict:
     """
     Specialized Correctness Agent.
     """
     llm = get_llm(temperature=0.2, max_tokens=1500)
 
-    evidence_package = state.get("evidence_package", {})
+    evidence_package = state.get("evidence_package")
     pr_understanding = state.get("pr_understanding", {})
     pr_analysis = state.get("pr_analysis", {})
 
@@ -89,16 +71,18 @@ Full context from relevant files:
 Find correctness issues in this PR.""")
     ])
 
-    structured_llm = llm.with_structured_output(List[Finding])
+    structured_llm = llm.with_structured_output(Findings)
 
     chain = prompt | structured_llm
 
-    findings = chain.invoke({
+    result = chain.invoke({
         "pr_understanding": pr_understanding,
         "pr_analysis": pr_analysis,
-        "evidence_summary": evidence_package.get("summary", ""),
+        "evidence_summary": evidence_package.summary if evidence_package else "",
         "rich_context": state.get("context_from_kb", "")[:10000]
     })
+
+    findings = result.findings
 
     return {
         "correctness_findings": findings,
@@ -112,7 +96,7 @@ def code_quality_agent(state: ReviewState) -> dict:
     """
     llm = get_llm(temperature=0.2, max_tokens=1500)
 
-    evidence_package = state.get("evidence_package", {})
+    evidence_package = state.get("evidence_package")
     pr_understanding = state.get("pr_understanding", {})
     pr_analysis = state.get("pr_analysis", {})
 
@@ -137,16 +121,18 @@ Full context from relevant files:
 Find code quality issues in this PR.""")
     ])
 
-    structured_llm = llm.with_structured_output(List[Finding])
+    structured_llm = llm.with_structured_output(Findings)
 
     chain = prompt | structured_llm
 
-    findings = chain.invoke({
+    result = chain.invoke({
         "pr_understanding": pr_understanding,
         "pr_analysis": pr_analysis,
-        "evidence_summary": evidence_package.get("summary", ""),
+        "evidence_summary": evidence_package.summary if evidence_package else "",
         "rich_context": state.get("context_from_kb", "")[:10000]
     })
+
+    findings = result.findings
 
     return {
         "quality_findings": findings,
@@ -168,7 +154,7 @@ def build_evidence_package(state: ReviewState) -> dict:
     rich_context = ContextBuilder.to_agent_context(evidence_package)
 
     return {
-        "evidence_package": evidence_package.model_dump(),
+        "evidence_package": evidence_package,   # ← Keep the object, not dict
         "context_from_kb": rich_context,
         "traces": [{
             "agent": "BuildEvidencePackage",

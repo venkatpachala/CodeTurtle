@@ -124,8 +124,10 @@ class ReviewPipeline:
                 pass
 
     def _display_results(self):
+        final = self.context.final_state or {}
+
         # Display PR Understanding first
-        understanding = self.context.final_state.get("pr_understanding", {})
+        understanding = final.get("pr_understanding", {})
         if understanding:
             console.print("\n[bold cyan]=== PR UNDERSTANDING ===[/bold cyan]")
             console.print(f"**Summary**: {understanding.get('summary', '')}")
@@ -134,36 +136,37 @@ class ReviewPipeline:
             console.print(f"**Focus Areas**: {', '.join(understanding.get('focus_areas', []))}")
 
         # Display Correctness Findings
-        findings = self.context.final_state.get("findings", [])
+        findings = final.get("findings", [])
         if findings:
             console.print("\n[bold red]=== CORRECTNESS FINDINGS ===[/bold red]")
             for finding in findings:
-                console.print(f"**{finding.title}** ({finding.severity})")
+                console.print(f"**{finding.title}** ({finding.severity}) - Confidence: {finding.confidence:.1f}")
                 console.print(f"Evidence: {finding.evidence}")
+                console.print(f"Reasoning: {finding.reasoning}")
                 console.print(f"Recommendation: {finding.recommendation}")
                 console.print("---")
 
-        # Rest of the display
-        final = self.context.final_state or {}
-        console.print("\n[bold green]=== CONTEXT SUMMARY ===[/bold green]")
-        console.print(Markdown(final.get("context_summary", "")))
-
-        console.print("\n[bold green]=== CODE QUALITY ANALYSIS ===[/bold green]")
+        # Display Code Quality Analysis
         code_analysis = final.get("code_analysis", {})
-        if isinstance(code_analysis, dict):
-            analysis_text = f"**Summary**: {code_analysis.get('summary', '')}\n**Recommendation**: {code_analysis.get('recommendation', '')}"
+        if isinstance(code_analysis, dict) and code_analysis.get("summary"):
+            console.print("\n[bold green]=== CODE QUALITY ANALYSIS ===[/bold green]")
+            console.print(f"**Summary**: {code_analysis.get('summary', '')}")
+            console.print(f"**Recommendation**: {code_analysis.get('recommendation', '')}")
         else:
-            analysis_text = str(code_analysis)
-        console.print(Markdown(analysis_text))
+            console.print("\n[bold green]=== CODE QUALITY ANALYSIS ===[/bold green]")
+            console.print("No significant code quality issues found.")
 
-        console.print("\n[bold green]=== CRITIQUE ===[/bold green]")
+        # Display Critique
         critique = final.get("critique", {})
-        if isinstance(critique, dict):
-            critique_text = f"**Summary**: {critique.get('summary', '')}\n**Recommendation**: {critique.get('recommendation', '')}"
+        if isinstance(critique, dict) and critique.get("summary"):
+            console.print("\n[bold green]=== CRITIQUE ===[/bold green]")
+            console.print(f"**Summary**: {critique.get('summary', '')}")
+            console.print(f"**Recommendation**: {critique.get('recommendation', '')}")
         else:
-            critique_text = str(critique)
-        console.print(Markdown(critique_text))
+            console.print("\n[bold green]=== CRITIQUE ===[/bold green]")
+            console.print("Critic has no additional comments.")
 
+        # Final Recommendation
         console.print("\n[bold cyan]=== FINAL RECOMMENDATION ===[/bold cyan]")
         final_comment = final.get("final_comment", "")
         console.print(Markdown(str(final_comment)))

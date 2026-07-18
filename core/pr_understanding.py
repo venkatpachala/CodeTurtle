@@ -1,6 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 from core.llm import get_llm
-from core.state import ReviewState, PRUnderstanding
+from core.state import ReviewState
+from core.models import PRUnderstanding
 
 
 def pr_understanding_agent(state: ReviewState) -> dict:
