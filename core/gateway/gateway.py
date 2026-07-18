@@ -12,11 +12,12 @@ class GatewayResponse(BaseModel):
     provider: str
     usage: Dict[str, Any]
     latency: float
+    estimated_cost: float = 0.0   # New: cost tracking
 
 
 class AIGateway:
     """
-    Production-grade AI Gateway.
+    Production-grade AI Gateway with cost tracking.
     """
 
     def __init__(self):
@@ -27,11 +28,16 @@ class AIGateway:
         self.default_provider = "ollama"
         self.model_registry = {
             "reasoning": {"provider": "openai", "model": "gpt-4o"},
+            "correctness_review": {"provider": "openai", "model": "gpt-4o"},
+            "final_recommendation": {"provider": "openai", "model": "gpt-4o-mini"},
             "fast": {"provider": "ollama", "model": "qwen2.5:7b"},
             "summarization": {"provider": "ollama", "model": "qwen2.5:7b"},
             "code_quality_review": {"provider": "openai", "model": "gpt-4o-mini"},
-            "correctness_review": {"provider": "openai", "model": "gpt-4o"},
-            "final_recommendation": {"provider": "openai", "model": "gpt-4o-mini"},
+            "security_review": {"provider": "openai", "model": "gpt-4o"},
+            "documentation_review": {"provider": "ollama", "model": "qwen2.5:7b"},
+            "performance_review": {"provider": "openai", "model": "gpt-4o-mini"},
+            "api_compatibility_review": {"provider": "openai", "model": "gpt-4o-mini"},
+            "default": {"provider": "ollama", "model": "qwen2.5:7b"},
         }
 
     def _get_provider(self, capability: str):
@@ -47,9 +53,6 @@ class AIGateway:
         structured_output: Optional[BaseModel] = None,
         retries: int = 3,
     ) -> GatewayResponse:
-        """
-        Main entry point for all agents with retry logic.
-        """
         provider, model = self._get_provider(capability)
 
         for attempt in range(retries):
@@ -74,12 +77,18 @@ class AIGateway:
 
                 latency = time.time() - start_time
 
+                # Simple cost estimation (you can make this more accurate)
+                estimated_cost = 0.0
+                if "gpt-4o" in model:
+                    estimated_cost = 0.01  # placeholder
+
                 return GatewayResponse(
                     content=response.content,
                     model=model,
                     provider=provider.__name__.split('.')[-1],
                     usage=response.usage,
                     latency=latency,
+                    estimated_cost=estimated_cost,
                 )
             except Exception as e:
                 if attempt == retries - 1:

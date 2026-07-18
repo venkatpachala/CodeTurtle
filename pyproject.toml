@@ -23,4 +23,5 @@ dependencies = [
     "structlog>=26.1.0",
     "litellm==1.91.0",
     "optional>=0.0.1",
+    "langchain-openai>=1.3.5",
 ]
