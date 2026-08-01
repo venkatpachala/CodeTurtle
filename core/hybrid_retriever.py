@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Set
 from langchain_core.documents import Document
 
 from core.knowledge_base import KnowledgeBase
@@ -29,7 +29,7 @@ class HybridRetriever:
         files_changed: List[str] | None = None,
         k: int = 8,
     ) -> EvidencePackage:
-        """Vector + symbol search, then IMPORTS graph expansion, then rerank."""
+        """Vector + symbol search, then capped IMPORTS expansion, then rerank."""
         print(f"[HybridRetriever] Querying collection: {self.repo_name.replace('/', '_')}")
         pr_understanding = pr_understanding or {}
         files_changed = files_changed or []
@@ -38,27 +38,37 @@ class HybridRetriever:
         vector_docs = self.kb.similarity_search(query, k=k * 2)
 
         # --- 2. Symbol search ---
-        symbol_docs = self._symbol_search(query, k=k // 2)
+        symbol_docs = self._symbol_search(query, k=max(1, k // 2))
 
         all_docs = list(vector_docs) + list(symbol_docs)
 
-        # --- 3. Seed paths for graph expansion ---
+        # --- 3. Seed paths ---
         seed_paths = self._collect_seed_paths(
             docs=all_docs,
             pr_understanding=pr_understanding,
             files_changed=files_changed,
         )
 
-        # --- 4. Phase 3: IMPORTS expansion ---
+        # --- 4. Phase 3: IMPORTS expansion (capped) ---
         graph_docs: List[Document] = []
         if self._graph and seed_paths:
             expanded = self._graph.expand_paths(seed_paths, limit_per=8)
+            expanded = list(dict.fromkeys(expanded))[:12]  # path list cap
             self._last_graph_expansion = expanded
             print(
                 f"[HybridRetriever] Graph expansion: "
-                f"{len(seed_paths)} seeds → {len(expanded)} paths"
+                f"{len(seed_paths)} seeds → {len(expanded)} paths (capped)"
             )
-            graph_docs = self._docs_for_paths(expanded, exclude={d.metadata.get("path") for d in all_docs if d.metadata})
+            existing: Set[str] = {
+                (d.metadata or {}).get("path")
+                for d in all_docs
+                if (d.metadata or {}).get("path")
+            }
+            graph_docs = self._docs_for_paths(
+                expanded,
+                exclude=existing,
+                max_docs=8,  # hard cap on KB fetches
+            )
             all_docs.extend(graph_docs)
         else:
             self._last_graph_expansion = []
@@ -72,21 +82,21 @@ class HybridRetriever:
             f"reranked to {len(ranked_docs)} documents"
         )
 
-        # --- 6. Evidence package + dependency context ---
+        # --- 6. Evidence package ---
         package = ContextBuilder.build(
             query=query,
             pr_understanding=pr_understanding,
             documents=ranked_docs,
         )
 
-        # Attach human-readable IMPORTS context for agents (if package allows)
         dep_context = self._format_dependency_context(seed_paths)
         if dep_context:
             if hasattr(package, "dependency_context"):
                 package.dependency_context = dep_context
-            # Also fold into a common text field if your package has it
             if hasattr(package, "extra_context"):
-                package.extra_context = (getattr(package, "extra_context", "") or "") + "\n" + dep_context
+                package.extra_context = (
+                    (getattr(package, "extra_context", "") or "") + "\n" + dep_context
+                )
 
         return package
 
@@ -98,7 +108,6 @@ class HybridRetriever:
         pr_understanding: dict = None,
         files_changed: List[str] | None = None,
     ) -> EvidencePackage:
-        """Multi-query retrieval with weighting, dedup, and one graph expansion pass."""
         print(f"[HybridRetriever] Multi-query retrieval with {len(queries)} queries")
         pr_understanding = pr_understanding or {}
         files_changed = files_changed or []
@@ -136,12 +145,11 @@ class HybridRetriever:
             f"deduplicated to {len(final_docs)} documents"
         )
 
-        package = ContextBuilder.build(
+        return ContextBuilder.build(
             query=" | ".join(q.text for q in queries),
             pr_understanding=pr_understanding,
             documents=final_docs,
         )
-        return package
 
     def _collect_seed_paths(
         self,
@@ -161,55 +169,55 @@ class HybridRetriever:
                     seeds.append(p.replace("\\", "/"))
 
         for d in docs:
-            meta = d.metadata or {}
-            p = meta.get("path")
+            p = (d.metadata or {}).get("path")
             if p:
                 seeds.append(str(p).replace("\\", "/"))
 
-        # dedupe, preserve order
         return list(dict.fromkeys(seeds))
 
-    def _docs_for_paths(self, paths: List[str], exclude: set | None = None) -> List[Document]:
-        """
-        Pull KB chunks for graph-expanded paths so agents get real code,
-        not only path names.
-        """
+    def _docs_for_paths(
+        self,
+        paths: List[str],
+        exclude: Set[str] | None = None,
+        max_docs: int = 8,
+    ) -> List[Document]:
+        """Fetch ≤ max_docs chunks for graph paths; prefer exact path filter."""
         exclude = exclude or set()
         out: List[Document] = []
-        seen = set()
+        seen: Set[str] = set()
 
         for path in paths:
-            if path in exclude or path in seen:
+            if len(out) >= max_docs:
+                break
+            if not path or path in exclude or path in seen:
                 continue
             seen.add(path)
-            try:
-                # Prefer metadata filter if your KB supports it; else query by path string
-                hits = self.kb.similarity_search(path, k=2)
-                for h in hits:
-                    meta = h.metadata or {}
-                    if meta.get("path") == path or path in (h.page_content or ""):
-                        meta = {**meta, "path": meta.get("path") or path, "retrieval_type": "graph_imports"}
-                        h.metadata = meta
-                        out.append(h)
-                        break
-                else:
-                    # Lightweight placeholder evidence if no chunk matched
-                    out.append(
-                        Document(
-                            page_content=f"[Graph IMPORTS] Related file: {path}",
-                            metadata={"path": path, "retrieval_type": "graph_imports"},
-                        )
-                    )
-            except Exception:
+
+            doc = self._fetch_by_path(path)
+            if doc is not None:
+                out.append(doc)
+            else:
                 out.append(
                     Document(
                         page_content=f"[Graph IMPORTS] Related file: {path}",
                         metadata={"path": path, "retrieval_type": "graph_imports"},
                     )
                 )
-            if len(out) >= 16:
-                break
         return out
+
+    def _fetch_by_path(self, path: str) -> Optional[Document]:
+        path = path.replace("\\", "/")
+        try:
+            hits = self.kb.get_by_path(path, k=1)
+            if hits:
+                h = hits[0]
+                meta = dict(h.metadata or {})
+                meta.update({"path": path, "retrieval_type": "graph_imports"})
+                h.metadata = meta
+                return h
+        except Exception as e:
+            print(f"[HybridRetriever] get_by_path failed for {path}: {e}")
+        return None
 
     def _format_dependency_context(self, seed_paths: List[str]) -> str:
         if not self._graph or not seed_paths:
@@ -228,11 +236,9 @@ class HybridRetriever:
         return "\n".join(lines) if len(lines) > 1 else ""
 
     def _symbol_search(self, query: str, k: int) -> List[Document]:
-        """Fast lookup using symbol index."""
         try:
             persistence = RepositoryPersistence(self.repo_name)
             repository_model = persistence.load_repository_model()
-
             if not repository_model or not repository_model.symbol_index:
                 return []
 
