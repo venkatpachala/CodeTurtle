@@ -1,23 +1,29 @@
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
+from pydantic import BaseModel
+from typing import List, Optional
 
 
 class Evidence(BaseModel):
     path: str
-    chunk_type: str = "module"
-    start_line: Optional[int] = None
-    end_line: Optional[int] = None
-    symbols: List[str] = Field(default_factory=list)
-    retrieval_type: str = "vector"
     content: str
     score: float = 0.0
-    reason: str = ""
+    symbols: List[str] = []
+    retrieval_type: str = "vector"
+
+    # Chunk metadata (required by ContextBuilder)
+    chunk_type: Optional[str] = "module"
+    start_line: Optional[int] = None
+    end_line: Optional[int] = None
+
+    # Provenance (for debugging and ranking)
+    source_query: Optional[str] = None
+    query_category: Optional[str] = None
+    query_weight: Optional[float] = None
 
 
 class EvidencePackage(BaseModel):
+    evidences: List[Evidence]
     query: str
-    pr_understanding: Dict[str, Any] = Field(default_factory=dict)
-    evidences: List[Evidence] = Field(default_factory=list)
-    affected_files: List[str] = Field(default_factory=list)
-    related_symbols: List[str] = Field(default_factory=list)
+    pr_understanding: dict = {}
     summary: str = ""
+    affected_files: List[str] = []
+    related_symbols: List[str] = []

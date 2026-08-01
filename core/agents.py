@@ -7,7 +7,7 @@ from core.evidence import EvidencePackage
 from core.hybrid_retriever import HybridRetriever
 from core.context_builder import ContextBuilder
 from core.gateway import gateway
-
+from core.query_builder import QueryBuilder
 
 def context_summarizer(state: ReviewState) -> dict:
     prompt = ChatPromptTemplate.from_messages([
@@ -196,13 +196,15 @@ Find code quality issues in this PR.""")
 
 def build_evidence_package(state: ReviewState) -> dict:
     """Runs inside the graph after PR Analysis."""
-    query = f"{state['title']}\n{state['body']}"
+    
+    # Use the full state (recommended)
+    queries = QueryBuilder.build(state)
 
     retriever = HybridRetriever(state["repo"], kb=state.get("kb"))
-    evidence_package = retriever.retrieve(
-        query=query,
-        pr_understanding=state.get("pr_understanding", {}),
-        k=8
+    evidence_package = retriever.retrieve_multi(
+        queries=queries,
+        k_per_query=6,
+        max_total=12
     )
 
     rich_context = ContextBuilder.to_agent_context(evidence_package)
@@ -212,7 +214,7 @@ def build_evidence_package(state: ReviewState) -> dict:
         "context_from_kb": rich_context,
         "traces": [{
             "agent": "BuildEvidencePackage",
-            "output": f"Built EvidencePackage with {len(evidence_package.evidences)} items"
+            "output": f"Built EvidencePackage with {len(evidence_package.evidences)} items from {len(queries)} queries"
         }]
     }
 

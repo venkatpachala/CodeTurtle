@@ -1,7 +1,7 @@
-from typing import List
+from typing import List, Union
 from langchain_core.documents import Document
 
-from core.evidence import EvidencePackage
+from core.evidence import Evidence, EvidencePackage
 
 
 class ContextBuilder:
@@ -11,35 +11,36 @@ class ContextBuilder:
     def build(
         query: str,
         pr_understanding: dict,
-        documents: List[Document]
+        documents: List[Union[Document, Evidence]]
     ) -> EvidencePackage:
-        from core.evidence import Evidence, EvidencePackage
-
         evidences = []
         affected_files = set()
         related_symbols = set()
 
         for doc in documents:
-            meta = doc.metadata or {}
-
-            path = meta.get("path", "unknown")
-            symbols = meta.get("symbols", []) or []
-            chunk_type = meta.get("chunk_type", "module")
-
-            evidence = Evidence(
-                path=path,
-                chunk_type=chunk_type,
-                start_line=meta.get("start_line"),
-                end_line=meta.get("end_line"),
-                symbols=symbols,
-                retrieval_type=meta.get("retrieval_type", "vector"),
-                content=doc.page_content,
-                score=meta.get("score", 0.0),
-            )
+            # Handle both LangChain Document and our Evidence model
+            if isinstance(doc, Evidence):
+                evidence = doc  # already an Evidence object
+            else:
+                # Old LangChain Document path
+                meta = getattr(doc, "metadata", {}) or {}
+                evidence = Evidence(
+                    path=meta.get("path", "unknown"),
+                    chunk_type=meta.get("chunk_type", "module"),
+                    start_line=meta.get("start_line"),
+                    end_line=meta.get("end_line"),
+                    symbols=meta.get("symbols", []) or [],
+                    retrieval_type=meta.get("retrieval_type", "vector"),
+                    content=getattr(doc, "page_content", ""),
+                    score=meta.get("score", 0.0),
+                    source_query=meta.get("source_query"),
+                    query_category=meta.get("query_category"),
+                    query_weight=meta.get("query_weight"),
+                )
 
             evidences.append(evidence)
-            affected_files.add(path)
-            related_symbols.update(symbols)
+            affected_files.add(evidence.path)
+            related_symbols.update(evidence.symbols or [])
 
         package = EvidencePackage(
             query=query,
@@ -49,9 +50,7 @@ class ContextBuilder:
             related_symbols=sorted(list(related_symbols)),
         )
 
-        # Simple summary for agents
         package.summary = ContextBuilder._build_summary(package)
-
         return package
 
     @staticmethod
@@ -68,7 +67,7 @@ class ContextBuilder:
 
         for i, ev in enumerate(package.evidences[:6]):
             lines.append(
-                f"{i+1}. {ev.path} ({ev.chunk_type}) "
+                f"{i+1}. {ev.path} ({ev.chunk_type or 'module'}) "
                 f"lines {ev.start_line}-{ev.end_line} "
                 f"symbols={ev.symbols}"
             )
@@ -91,7 +90,7 @@ class ContextBuilder:
         for ev in package.evidences:
             block = f"""
 --- File: {ev.path} ---
-Type: {ev.chunk_type}
+Type: {ev.chunk_type or 'module'}
 Lines: {ev.start_line}-{ev.end_line}
 Symbols: {', '.join(ev.symbols) if ev.symbols else 'None'}
 

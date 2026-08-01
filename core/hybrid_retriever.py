@@ -6,6 +6,8 @@ from core.reranker import Reranker
 from core.repository_persistence import RepositoryPersistence
 from core.context_builder import ContextBuilder
 from core.evidence import EvidencePackage
+from core.query_builder import RetrievalQuery
+
 
 class HybridRetriever:
     def __init__(self, repo_name: str, kb: Optional[KnowledgeBase] = None):
@@ -14,6 +16,7 @@ class HybridRetriever:
         self.reranker = Reranker()
 
     def retrieve(self, query: str, pr_understanding: dict = None, k: int = 8) -> EvidencePackage:
+        """Single query retrieval (kept for backward compatibility)."""
         print(f"[HybridRetriever] Querying collection: {self.repo_name.replace('/', '_')}")
 
         # Vector search
@@ -34,6 +37,47 @@ class HybridRetriever:
             query=query,
             pr_understanding=pr_understanding or {},
             documents=ranked_docs
+        )
+
+        return package
+
+    def retrieve_multi(self, queries: List[RetrievalQuery], k_per_query: int = 6, max_total: int = 12) -> EvidencePackage:
+        """Multi-query retrieval with weighting and deduplication."""
+        print(f"[HybridRetriever] Multi-query retrieval with {len(queries)} queries")
+
+        all_docs = []
+
+        for q in queries:
+            # Use single retrieve for each query
+            package = self.retrieve(q.text, k=k_per_query)
+            docs = package.evidences if hasattr(package, 'evidences') else []
+
+            for doc in docs:
+                # Attach provenance as attributes
+                doc.source_query = q.text
+                doc.query_category = q.category
+                doc.query_weight = q.weight
+                all_docs.append(doc)
+
+        # Deduplicate by file path (keep highest weighted score)
+        unique = {}
+        for doc in all_docs:
+            file_path = doc.path
+            score = getattr(doc, 'score', 0) * getattr(doc, 'query_weight', 1.0)
+
+            if file_path not in unique or score > unique[file_path][1]:
+                unique[file_path] = (doc, score)
+
+        # Take top results
+        final_docs = [doc for doc, _ in sorted(unique.values(), key=lambda x: x[1], reverse=True)][:max_total]
+
+        print(f"[HybridRetriever] Retrieved {len(all_docs)} → deduplicated to {len(final_docs)} documents")
+
+        # Build final Evidence Package
+        package = ContextBuilder.build(
+            query=" | ".join(q.text for q in queries),
+            pr_understanding={},
+            documents=final_docs
         )
 
         return package
