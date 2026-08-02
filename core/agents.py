@@ -107,7 +107,12 @@ Rules:
 - If evidence is insufficient, return an empty findings list.
 - Be highly critical and specific.
 - Cite evidence IDs or file paths from the evidence block.
-- Never speculate or invent code that was not retrieved."""),
+- Never speculate or invent code that was not retrieved.
+Mandatory output rules:
+- Each finding must name at least one file path that appears in the evidence/context.
+- Each finding must quote or paraphrase a concrete code behavior from the evidence or diff.
+- If you cannot do both, return zero findings.
+- Do not comment on files that were not retrieved."""),
         ("human", """PR Understanding:
 {pr_understanding}
 
@@ -165,6 +170,11 @@ Rules:
 - If evidence is insufficient, return an empty findings list.
 - Be constructive but critical.
 - Cite evidence IDs or file paths from the evidence block.
+Mandatory output rules:
+- Each finding must name at least one file path that appears in the evidence/context.
+- Each finding must quote or paraphrase a concrete code behavior from the evidence or diff.
+- If you cannot do both, return zero findings.
+- Do not comment on files that were not retrieved.
 - Never speculate or invent code that was not retrieved."""),
         ("human", """PR Understanding:
 {pr_understanding}
@@ -280,16 +290,90 @@ def build_evidence_package(state: ReviewState) -> dict:
 
 
 def critic_agent(state: ReviewState) -> dict:
-    """Aggregate findings (LLM critic can replace this later)."""
+    """
+    Filter specialized findings: keep only evidence-backed, non-duplicate items.
+    """
     correctness = state.get("correctness_findings") or []
     quality = state.get("quality_findings") or []
-    all_findings = list(correctness) + list(quality)
+
+    def _fmt(findings) -> str:
+        lines = []
+        for i, f in enumerate(findings):
+            if hasattr(f, "model_dump"):
+                lines.append(f"[{i}] {f.model_dump()}")
+            elif hasattr(f, "title"):
+                lines.append(
+                    f"[{i}] {f.title} | {getattr(f, 'severity', '')} | "
+                    f"{getattr(f, 'description', '')} | evidence={getattr(f, 'evidence', getattr(f, 'evidence_ids', ''))}"
+                )
+            else:
+                lines.append(f"[{i}] {f}")
+        return "\n".join(lines) if lines else "(none)"
+
+    evidence_summary = ""
+    ep = state.get("evidence_package")
+    if ep is not None and hasattr(ep, "summary"):
+        evidence_summary = ep.summary or ""
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", """You are a senior staff engineer acting as Critic for an automated PR review.
+
+You receive findings from Correctness and Code Quality agents, plus the evidence they were given.
+
+Your job is NOT to invent new bugs. Your job is to FILTER:
+
+KEEP a finding only if:
+1. It is supported by the retrieved evidence or the PR diff context provided
+2. It is specific (file/symbol/behavior), not generic advice
+3. It is not a duplicate of another finding (merge duplicates; keep the stronger one)
+
+DROP a finding if:
+- No clear link to evidence / files in context
+- Pure speculation ("might", "could possibly" with no anchor)
+- Contradicts stronger evidence-backed findings
+- Generic style nits with no location
+
+Return the filtered list only. Prefer fewer high-quality findings over many weak ones.
+If nothing survives, return an empty findings list."""),
+        ("human", """PR title: {title}
+
+Evidence summary:
+{evidence_summary}
+
+Context (truncated):
+{context}
+
+Correctness findings:
+{correctness}
+
+Code quality findings:
+{quality}
+
+Produce the final filtered findings list.""")
+    ]).format(
+        title=state.get("title", ""),
+        evidence_summary=evidence_summary,
+        context=(state.get("context_from_kb") or "")[:8000],
+        correctness=_fmt(correctness),
+        quality=_fmt(quality),
+    )
+
+    result = gateway.generate_structured(
+        prompt=prompt,
+        schema=Findings,
+        capability="reasoning",
+        agent_name="CriticAgent",
+    )
+
+    findings = result.findings if hasattr(result, "findings") else []
 
     return {
-        "findings": all_findings,
+        "findings": findings,
         "traces": [{
             "agent": "CriticAgent",
-            "output": f"Aggregated {len(all_findings)} findings from specialized agents",
+            "output": (
+                f"Filtered {len(correctness) + len(quality)} → {len(findings)} findings"
+            ),
         }],
     }
 
