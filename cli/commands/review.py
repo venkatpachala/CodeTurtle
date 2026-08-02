@@ -14,6 +14,7 @@ from core.knowledge_base import KnowledgeBase
 from core.memory.manager import MemoryManager
 from core.utils import handle_error
 from core.observability import get_logger, get_langfuse_client
+from core.knowledge_base import KnowledgeBase
 
 logger = get_logger()
 
@@ -58,7 +59,6 @@ class ReviewPipeline:
             self._fetch_pr()
             self._build_full_diff()
             self._create_review_state()
-
             # Single entry point into LangGraph (the real orchestrator)
             console.print("[yellow]Running agent swarm...[/yellow]")
             self.context.final_state = review_graph.invoke(self.context.state)

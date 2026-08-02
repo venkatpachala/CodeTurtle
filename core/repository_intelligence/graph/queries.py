@@ -4,60 +4,63 @@ from typing import List
 from core.repository_intelligence.graph.store import GraphStore
 
 
+# core/repository_intelligence/graph/queries.py
+
 class GraphQueries:
-    def __init__(self, store: GraphStore | None = None):
+    def __init__(self, store=None):
+        from core.repository_intelligence.graph.store import GraphStore
         self.store = store or GraphStore()
 
-    def direct_imports(self, path: str, limit: int = 20) -> List[str]:
-        """Files that `path` imports."""
-        q = """
-        MATCH (f:File {path: $path})-[:IMPORTS]->(dep:File)
-        RETURN dep.path AS path
-        LIMIT $limit
-        """
-        return self._paths(q, path=path, limit=limit)
-
-    def importers(self, path: str, limit: int = 20) -> List[str]:
-        """Files that import `path` (blast radius)."""
-        q = """
-        MATCH (f:File)-[:IMPORTS]->(dep:File {path: $path})
-        RETURN f.path AS path
-        LIMIT $limit
-        """
-        return self._paths(q, path=path, limit=limit)
-
-    def expand_paths(self, paths: List[str], limit_per: int = 10) -> List[str]:
-        """
-        For each changed/retrieved path, add:
-          - direct imports
-          - reverse importers
-        Deduped, original paths first.
-        """
-        seen = set()
-        ordered: List[str] = []
-
-        def add(p: str):
-            p = p.replace("\\", "/")
-            if p not in seen:
-                seen.add(p)
-                ordered.append(p)
-
-        for p in paths:
-            add(p)
-
-        for p in list(paths):
-            for dep in self.direct_imports(p, limit=limit_per):
-                add(dep)
-            for src in self.importers(p, limit=limit_per):
-                add(src)
-
-        return ordered
-
-    def _paths(self, query: str, **params) -> List[str]:
+    def expand_imports(self, paths: list[str], limit: int = 15) -> list[str]:
+        paths = [p.replace("\\", "/") for p in paths]
         driver = self.store.connect()
-        try:
-            with driver.session() as session:
-                return [r["path"] for r in session.run(query, **params)]
-        except Exception as e:
-            print(f"[GraphQueries] {e}")
-            return []
+        out = []
+        with driver.session() as session:
+            result = session.run(
+                """
+                MATCH (f:File)-[:IMPORTS]->(g:File)
+                WHERE f.path IN $paths
+                RETURN DISTINCT g.path AS path
+                LIMIT $limit
+                UNION
+                MATCH (f:File)<-[:IMPORTS]-(g:File)
+                WHERE f.path IN $paths
+                RETURN DISTINCT g.path AS path
+                LIMIT $limit
+                """,
+                paths=paths,
+                limit=limit,
+            )
+            out = [r["path"] for r in result if r["path"]]
+        return out[:limit]
+
+    def expand_calls(
+        self,
+        paths: list[str],
+        limit: int = 10,
+        exclude_prefixes: tuple = ("tests/", "worked/"),
+        max_callee_degree: int = 150,
+    ) -> list[str]:
+        """Map changed files → symbols → CALLS → related file paths."""
+        paths = [p.replace("\\", "/") for p in paths]
+        driver = self.store.connect()
+        with driver.session() as session:
+            result = session.run(
+                """
+                MATCH (f:File)-[:CONTAINS]->(s:Symbol)-[:CALLS]->(t:Symbol)
+                WHERE f.path IN $paths
+                WITH t, count(*) AS dummy
+                MATCH (t)<-[:CALLS]-(:Symbol)
+                WITH t, count(*) AS degree
+                WHERE degree <= $max_degree
+                MATCH (tf:File)-[:CONTAINS]->(t)
+                WHERE none(prefix IN $exclude WHERE tf.path STARTS WITH prefix)
+                RETURN DISTINCT tf.path AS path
+                LIMIT $limit
+                """,
+                paths=paths,
+                max_degree=max_callee_degree,
+                exclude=list(exclude_prefixes),
+                limit=limit,
+            )
+            return [r["path"] for r in result if r["path"]]
