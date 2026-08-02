@@ -1,10 +1,8 @@
 from pathlib import Path
-from typing import List, Optional, Dict, Set
+from typing import List, Optional, Dict, Set, Tuple
 import os
 import ast
 from datetime import datetime
-import ast
-from typing import List, Optional, Dict, Set, Tuple
 
 from core.repository_model import FileModel, RepositoryModel, Symbol
 from core.knowledge_base import KnowledgeBase
@@ -12,6 +10,7 @@ from core.repository_persistence import RepositoryPersistence
 from core.repository_analyzer import RepositoryAnalyzer
 from core.repository_indexer import RepositoryIndexer
 from core.repository_intelligence.call_extractor import CallExtractor
+
 
 class RepositoryIntelligence:
     def __init__(self, repo_path: str, repo_name: str):
@@ -22,9 +21,9 @@ class RepositoryIntelligence:
 
     def index_repository(self, force: bool = False) -> RepositoryModel:
         """
-        RI v1 write path:
-          scan → metadata/AST (symbols+imports) → analyze → persist
-          → Qdrant embed → Neo4j graph (Files, Symbols, IMPORTS)
+        RI write path:
+          scan → metadata/AST → analyze → persist
+          → Qdrant embed → Neo4j (Files, Symbols, IMPORTS, CALLS)
         """
         print(f"[RepositoryIntelligence] Indexing {self.repo_name}...")
 
@@ -48,8 +47,6 @@ class RepositoryIntelligence:
 
         self.persistence.save_repository_model(self.repository_model)
         self._embed_and_store(file_models, force=force)
-
-        # v1: graph is part of add-repo, not a separate smoke script
         self._sync_neo4j_graph()
 
         print(f"[RepositoryIntelligence] Indexed {len(file_models)} files (clean).")
@@ -80,8 +77,6 @@ class RepositoryIntelligence:
             content = file_path.read_text(encoding="utf-8", errors="ignore")
             extension = file_path.suffix.lower()
             language = self._detect_language(extension)
-
-            # Always forward slashes in RI artifacts (Qdrant + Neo4j + PR paths)
             rel = str(file_path.relative_to(self.repo_path)).replace("\\", "/")
 
             file_model = FileModel(
@@ -107,7 +102,6 @@ class RepositoryIntelligence:
         try:
             tree = ast.parse(content, filename=str(file_path))
 
-            # --- imports (needed for IMPORTS edges) ---
             imports: List[str] = []
             for node in tree.body:
                 if isinstance(node, ast.Import):
@@ -117,10 +111,8 @@ class RepositoryIntelligence:
                 elif isinstance(node, ast.ImportFrom):
                     if node.module:
                         imports.append(node.module)
-                    # relative imports: record module if present; dots-only skipped
             file_model.imports = sorted(set(imports))
 
-            # --- symbols ---
             for node in tree.body:
                 if isinstance(node, ast.ClassDef):
                     file_model.symbols.append(
@@ -197,11 +189,8 @@ class RepositoryIntelligence:
             f"(points {before} → {after})."
         )
 
-    # -------------------------------------------------------------------------
-    # Neo4j sync (Phases 1–3) — single source of truth: repository_model
-    # -------------------------------------------------------------------------
     def _sync_neo4j_graph(self):
-        """Write Files, Symbols, IMPORTS, and CALLS from repository_model into Neo4j."""
+        """Write Files, Symbols, IMPORTS, and CALLS into Neo4j."""
         try:
             from core.repository_intelligence.graph.store import GraphStore
         except ImportError as e:
@@ -217,7 +206,6 @@ class RepositoryIntelligence:
         repo = self.repo_name
         files = self.repository_model.files
 
-        # Path index for import resolution
         path_set: Set[str] = {fm.path.replace("\\", "/") for fm in files}
         module_to_path: Dict[str, str] = {}
         for p in path_set:
@@ -244,7 +232,6 @@ class RepositoryIntelligence:
 
         try:
             with driver.session() as session:
-                # Clear this repo's subgraph
                 session.run(
                     """
                     MATCH (r:Repository {name: $repo})
@@ -262,7 +249,6 @@ class RepositoryIntelligence:
                     ts=datetime.now().isoformat(),
                 )
 
-                # --- Files ---
                 for fm in files:
                     path = fm.path.replace("\\", "/")
                     session.run(
@@ -281,7 +267,6 @@ class RepositoryIntelligence:
                         line_count=fm.line_count,
                     )
 
-                # --- Symbols ---
                 sym_count = 0
                 for fm in files:
                     path = fm.path.replace("\\", "/")
@@ -303,7 +288,6 @@ class RepositoryIntelligence:
                         )
                         sym_count += 1
 
-                # --- IMPORTS ---
                 import_count = 0
                 for fm in files:
                     src = fm.path.replace("\\", "/")
@@ -322,7 +306,6 @@ class RepositoryIntelligence:
                         )
                         import_count += 1
 
-                # --- CALLS (Phase 4) ---
                 call_edges = self._resolve_calls()
                 call_count = 0
                 for caller_qn, callee_qn, line in call_edges:
@@ -332,13 +315,12 @@ class RepositoryIntelligence:
                         MATCH (b:Symbol {qualified_name: $callee})
                         MERGE (a)-[r:CALLS]->(b)
                         SET r.line = $line
-                        RETURN count(r) AS c
+                        RETURN 1 AS ok
                         """,
                         caller=caller_qn,
                         callee=callee_qn,
                         line=line,
                     )
-                    # count only if both nodes existed
                     if result.single() is not None:
                         call_count += 1
 
@@ -357,21 +339,35 @@ class RepositoryIntelligence:
 
     def _resolve_calls(self) -> List[Tuple[str, str, int]]:
         """
-        Build (caller_qualified_name, callee_qualified_name, call_line) edges.
-        Resolution v1: same-file preferred, else unique name, else first candidate.
+        Precision-first CALLS resolution:
+          - skip attribute calls (obj.get / d.items) — main noise source
+          - do not resolve targets under worked/
+          - same-file → accept
+          - unique name → accept
+          - single import-preferred → accept
+          - else skip (never candidates[0])
         """
-        by_name: Dict[str, List[str]] = {}
-        for qn, sym in self.repository_model.symbol_index.items():
-            by_name.setdefault(sym.name, []).append(qn)
-
-        # Ensure symbol_index is populated
         if not self.repository_model.symbol_index:
             self._build_symbol_index()
-            for qn, sym in self.repository_model.symbol_index.items():
-                by_name.setdefault(sym.name, []).append(qn)
+
+        by_name: Dict[str, List[str]] = {}
+        for qn, sym in self.repository_model.symbol_index.items():
+            path = qn.split("::")[0].replace("\\", "/")
+            if path.startswith("worked/"):
+                continue
+            by_name.setdefault(sym.name, []).append(qn)
 
         edges: List[Tuple[str, str, int]] = []
         seen: Set[Tuple[str, str]] = set()
+        stats = {
+            "sites": 0,
+            "skipped_attr": 0,
+            "skipped_ambiguous": 0,
+            "skipped_no_candidate": 0,
+            "accepted_same_file": 0,
+            "accepted_unique": 0,
+            "accepted_import": 0,
+        }
 
         for fm in self.repository_model.files:
             if getattr(fm, "language", "") != "Python":
@@ -381,81 +377,81 @@ class RepositoryIntelligence:
                 continue
 
             path = fm.path.replace("\\", "/")
+            if path.startswith("worked/"):
+                continue
+
             try:
                 tree = ast.parse(content, filename=path)
             except SyntaxError:
                 continue
 
             try:
-                from core.repository_intelligence.call_extractor import CallExtractor
-                file_calls = CallExtractor(path).extract(tree)
-                call_sites = file_calls.calls
-            except ImportError:
-                # Inline minimal extract if module not present yet
+                call_sites = CallExtractor(path).extract(tree).calls
+            except Exception:
                 call_sites = self._extract_calls_inline(tree, path)
 
             for cs in call_sites:
+                stats["sites"] += 1
+
+                if getattr(cs, "is_attribute", False):
+                    stats["skipped_attr"] += 1
+                    continue
+
                 caller_qn = f"{path}::{cs.caller_name}"
+                if caller_qn not in self.repository_model.symbol_index:
+                    continue
+
                 candidates = by_name.get(cs.callee_name, [])
                 if not candidates:
+                    stats["skipped_no_candidate"] += 1
                     continue
 
                 same_file = [c for c in candidates if c.startswith(path + "::")]
                 if same_file:
                     callee_qn = same_file[0]
+                    stats["accepted_same_file"] += 1
                 elif len(candidates) == 1:
                     callee_qn = candidates[0]
+                    stats["accepted_unique"] += 1
                 else:
-                    # Prefer symbols under imported modules when possible
                     preferred = []
-                    for imp in fm.imports or []:
-                        same_file = [c for c in candidates if c.startswith(path + "::")]
-                        if same_file:
-                            callee_qn = same_file[0]
-                        elif len(candidates) == 1:
-                            callee_qn = candidates[0]
-                        else:
-                            preferred = []
-                            for c in candidates:
-                                c_mod = c.split("::")[0].replace("/", ".")
-                                if any(
-                                    c_mod == imp or c_mod.startswith(imp + ".")
-                                    for imp in (fm.imports or [])
-                                ):
-                                    preferred.append(c)
-                            callee_qn = preferred[0] if preferred else candidates[0]
-                        # soft match: qualified path contains import as dotted prefix
-                        for c in candidates:
-                            c_path = c.split("::")[0].replace("/", ".")
-                            if c_path.startswith(imp) or imp in c_path:
-                                preferred.append(c)
-                    callee_qn = preferred[0] if preferred else candidates[0]
+                    for c in candidates:
+                        c_mod = c.split("::")[0].replace("/", ".")
+                        if any(
+                            c_mod == imp or c_mod.startswith(imp + ".")
+                            for imp in (fm.imports or [])
+                        ):
+                            preferred.append(c)
+                    if len(set(preferred)) == 1:
+                        callee_qn = preferred[0]
+                        stats["accepted_import"] += 1
+                    else:
+                        stats["skipped_ambiguous"] += 1
+                        continue
 
                 if caller_qn == callee_qn:
                     continue
                 key = (caller_qn, callee_qn)
                 if key in seen:
                     continue
-                # Only keep edges whose caller exists as a symbol node we created
-                if caller_qn not in self.repository_model.symbol_index:
-                    # still allow: methods stored under same name in symbol_index
-                    if not any(
-                        qn.startswith(path + "::") and qn.endswith("::" + cs.caller_name)
-                        for qn in self.repository_model.symbol_index
-                    ):
-                        # caller might still be valid if name matches a symbol on this path
-                        if f"{path}::{cs.caller_name}" not in self.repository_model.symbol_index:
-                            continue
-
                 seen.add(key)
                 edges.append((caller_qn, callee_qn, cs.call_line))
 
+        print(
+            f"[CALLS] sites={stats['sites']} edges={len(edges)} "
+            f"same_file={stats['accepted_same_file']} "
+            f"unique={stats['accepted_unique']} "
+            f"import={stats['accepted_import']} "
+            f"skip_attr={stats['skipped_attr']} "
+            f"skip_ambiguous={stats['skipped_ambiguous']} "
+            f"skip_no_cand={stats['skipped_no_candidate']}"
+        )
         return edges
 
     def _extract_calls_inline(self, tree: ast.AST, path: str):
-        """Fallback call extraction without separate module."""
-        from dataclasses import dataclass, field
-        from typing import List, Optional
+        """Fallback if CallExtractor import fails."""
+        from dataclasses import dataclass
+        from typing import List
 
         @dataclass
         class CallSite:
@@ -466,228 +462,39 @@ class RepositoryIntelligence:
             is_attribute: bool = False
 
         calls: List[CallSite] = []
-        current: List[tuple] = []  # stack of (name, line)
+        stack: List[tuple] = []
 
         class V(ast.NodeVisitor):
             def visit_FunctionDef(self, node: ast.FunctionDef):
-                current.append((node.name, node.lineno))
+                stack.append((node.name, node.lineno))
                 self.generic_visit(node)
-                current.pop()
+                stack.pop()
 
             def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef):
-                current.append((node.name, node.lineno))
+                stack.append((node.name, node.lineno))
                 self.generic_visit(node)
-                current.pop()
+                stack.pop()
 
             def visit_Call(self, node: ast.Call):
-                if not current:
-                    self.generic_visit(node)
-                    return
-                caller_name, caller_line = current[-1]
-                callee = None
-                is_attr = False
-                func = node.func
-                if isinstance(func, ast.Name):
-                    callee = func.id
-                elif isinstance(func, ast.Attribute):
-                    callee = func.attr
-                    is_attr = True
-                if callee:
-                    calls.append(
-                        CallSite(
-                            caller_name=caller_name,
-                            caller_line=caller_line,
-                            callee_name=callee,
-                            call_line=getattr(node, "lineno", 0),
-                            is_attribute=is_attr,
+                if stack:
+                    caller_name, caller_line = stack[-1]
+                    callee, is_attr = None, False
+                    if isinstance(node.func, ast.Name):
+                        callee = node.func.id
+                    elif isinstance(node.func, ast.Attribute):
+                        callee = node.func.attr
+                        is_attr = True
+                    if callee:
+                        calls.append(
+                            CallSite(
+                                caller_name=caller_name,
+                                caller_line=caller_line,
+                                callee_name=callee,
+                                call_line=getattr(node, "lineno", 0),
+                                is_attribute=is_attr,
+                            )
                         )
-                    )
                 self.generic_visit(node)
 
         V().visit(tree)
         return calls
-
-    def _resolve_calls(self) -> list[tuple[str, str, int]]:
-        """
-        Returns list of (caller_qn, callee_qn, call_line).
-        """
-        # name -> list of qualified_names
-        by_name: dict[str, list[str]] = {}
-        for qn, sym in self.repository_model.symbol_index.items():
-            by_name.setdefault(sym.name, []).append(qn)
-
-        path_to_symbols: dict[str, set[str]] = {}
-        for qn in self.repository_model.symbol_index:
-            path, _, name = qn.partition("::")
-            path_to_symbols.setdefault(path, set()).add(name)
-
-        edges: list[tuple[str, str, int]] = []
-        seen: set[tuple[str, str]] = set()
-
-        for fm in self.repository_model.files:
-            if fm.language != "Python" or not fm.content:
-                continue
-            try:
-                tree = ast.parse(fm.content, filename=fm.path)
-            except SyntaxError:
-                continue
-
-            file_calls = CallExtractor(fm.path).extract(tree)
-            path = fm.path.replace("\\", "/")
-
-            for cs in file_calls.calls:
-                caller_qn = f"{path}::{cs.caller_name}"
-                if caller_qn not in self.repository_model.symbol_index:
-                    # method defined only under class still stored as name-only in your model
-                    # keep best-effort: still emit if name exists on this path
-                    pass
-
-                candidates = by_name.get(cs.callee_name, [])
-                if not candidates:
-                    continue
-
-                # Prefer same-file symbol
-                same_file = [c for c in candidates if c.startswith(path + "::")]
-                if same_file:
-                    callee_qn = same_file[0]
-                elif len(candidates) == 1:
-                    callee_qn = candidates[0]
-                else:
-                    # Prefer symbols in files this file imports (module path prefix)
-                    imported_paths = set()
-                    for imp in fm.imports or []:
-                        # graphify.validate -> graphify/validate.py style
-                        imported_paths.add(imp.replace(".", "/") + ".py")
-                        imported_paths.add(imp.replace(".", "/") + "/__init__.py")
-                    preferred = [
-                        c for c in candidates
-                        if any(c.startswith(p.replace("\\", "/") + "::") or c.startswith(ip + "::")
-                            for ip in imported_paths for p in [ip])
-                    ]
-                    # simpler prefer:
-                    preferred = [c for c in candidates if any(
-                        c.startswith(ip.replace("\\", "/").rstrip(".py") )  # fallback weak
-                        for ip in imported_paths
-                    )]
-                    # pragmatic v1:
-                    preferred = [
-                        c for c in candidates
-                        if any(
-                            c.split("::")[0].replace("/", ".").startswith(imp) or
-                            c.split("::")[0].endswith(imp.replace(".", "/") + ".py")
-                            for imp in (fm.imports or [])
-                        )
-                    ]
-                    callee_qn = preferred[0] if preferred else candidates[0]
-
-                key = (caller_qn, callee_qn)
-                if key in seen or caller_qn == callee_qn:
-                    continue
-                seen.add(key)
-                edges.append((caller_qn, callee_qn, cs.call_line))
-
-        return edges
-
-        def resolve_import(imp: str) -> Optional[str]:
-            imp = (imp or "").strip()
-            if not imp:
-                return None
-            # exact
-            if imp in module_to_path:
-                return module_to_path[imp]
-            # walk parents: graphify.paths.util → graphify.paths → graphify
-            parts = imp.split(".")
-            for i in range(len(parts), 0, -1):
-                cand = ".".join(parts[:i])
-                if cand in module_to_path:
-                    return module_to_path[cand]
-            return None
-
-        try:
-            with driver.session() as session:
-                # Clear this repo's subgraph (safe for single-repo-per-DB-dev)
-                session.run(
-                    """
-                    MATCH (r:Repository {name: $repo})
-                    OPTIONAL MATCH (r)-[:CONTAINS*]->(n)
-                    DETACH DELETE r, n
-                    """,
-                    repo=repo,
-                )
-                session.run(
-                    "MERGE (r:Repository {name: $repo}) SET r.indexed_at = $ts",
-                    repo=repo,
-                    ts=datetime.now().isoformat(),
-                )
-
-                # Files
-                for fm in files:
-                    path = fm.path.replace("\\", "/")
-                    session.run(
-                        """
-                        MATCH (r:Repository {name: $repo})
-                        MERGE (f:File {path: $path})
-                        SET f.language = $language,
-                            f.extension = $extension,
-                            f.line_count = $line_count
-                        MERGE (r)-[:CONTAINS]->(f)
-                        """,
-                        repo=repo,
-                        path=path,
-                        language=fm.language,
-                        extension=fm.extension,
-                        line_count=fm.line_count,
-                    )
-
-                # Symbols
-                sym_count = 0
-                for fm in files:
-                    path = fm.path.replace("\\", "/")
-                    for sym in fm.symbols:
-                        session.run(
-                            """
-                            MATCH (f:File {path: $path})
-                            MERGE (s:Symbol {qualified_name: $qn})
-                            SET s.name = $name,
-                                s.kind = $kind,
-                                s.line = $line
-                            MERGE (f)-[:CONTAINS]->(s)
-                            """,
-                            path=path,
-                            qn=f"{path}::{sym.name}",
-                            name=sym.name,
-                            kind=sym.type,
-                            line=sym.line,
-                        )
-                        sym_count += 1
-
-                # IMPORTS
-                import_count = 0
-                for fm in files:
-                    src = fm.path.replace("\\", "/")
-                    for imp in fm.imports or []:
-                        dst = resolve_import(imp)
-                        if not dst or dst == src:
-                            continue
-                        session.run(
-                            """
-                            MATCH (a:File {path: $src})
-                            MATCH (b:File {path: $dst})
-                            MERGE (a)-[:IMPORTS]->(b)
-                            """,
-                            src=src,
-                            dst=dst,
-                        )
-                        import_count += 1
-
-                print(
-                    f"[RepositoryIntelligence] Neo4j sync OK — "
-                    f"files={len(files)} symbols={sym_count} import_edges≈{import_count}"
-                )
-        except Exception as e:
-            print(f"[RepositoryIntelligence] Neo4j sync failed: {e}")
-        finally:
-            try:
-                store.close()
-            except Exception:
-                pass
