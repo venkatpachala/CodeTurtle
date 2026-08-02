@@ -4,8 +4,8 @@ from rich.panel import Panel
 from git import Repo, GitCommandError
 from pathlib import Path
 
-from core.repository_intelligence import RepositoryIntelligence
 from core.utils import handle_error
+from core.repository_intelligence import RepositoryIntelligence
 
 console = Console()
 

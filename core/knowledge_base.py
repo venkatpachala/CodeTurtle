@@ -155,3 +155,28 @@ class KnowledgeBase:
             metadata = payload.get("metadata") if isinstance(payload.get("metadata"), dict) else dict(payload)
             docs.append(Document(page_content=text, metadata=metadata))
         return docs
+
+    def recreate_collection(self):
+        """Delete collection if it exists, then create empty with correct vector config."""
+        collections = self.client.get_collections().collections
+        names = [c.name for c in collections]
+
+        if self.collection_name in names:
+            print(f"[KnowledgeBase] Deleting collection: {self.collection_name}")
+            self.client.delete_collection(self.collection_name)
+
+        print(f"[KnowledgeBase] Creating collection: {self.collection_name}")
+        self.client.create_collection(
+            collection_name=self.collection_name,
+            vectors_config=VectorParams(
+                size=768,  # nomic-embed-text
+                distance=Distance.COSINE,
+            ),
+        )
+
+        # Rebuild LangChain wrapper against empty collection
+        self.vectorstore = QdrantVectorStore(
+            client=self.client,
+            collection_name=self.collection_name,
+            embedding=self.embeddings,
+        )

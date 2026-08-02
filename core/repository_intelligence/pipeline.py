@@ -1,0 +1,693 @@
+from pathlib import Path
+from typing import List, Optional, Dict, Set
+import os
+import ast
+from datetime import datetime
+import ast
+from typing import List, Optional, Dict, Set, Tuple
+
+from core.repository_model import FileModel, RepositoryModel, Symbol
+from core.knowledge_base import KnowledgeBase
+from core.repository_persistence import RepositoryPersistence
+from core.repository_analyzer import RepositoryAnalyzer
+from core.repository_indexer import RepositoryIndexer
+from core.repository_intelligence.call_extractor import CallExtractor
+
+class RepositoryIntelligence:
+    def __init__(self, repo_path: str, repo_name: str):
+        self.repo_path = Path(repo_path)
+        self.repo_name = repo_name
+        self.repository_model = RepositoryModel(repo_name=repo_name)
+        self.persistence = RepositoryPersistence(repo_name)
+
+    def index_repository(self, force: bool = False) -> RepositoryModel:
+        """
+        RI v1 write path:
+          scan → metadata/AST (symbols+imports) → analyze → persist
+          → Qdrant embed → Neo4j graph (Files, Symbols, IMPORTS)
+        """
+        print(f"[RepositoryIntelligence] Indexing {self.repo_name}...")
+
+        current_files = list(self._scan_files())
+
+        file_models = []
+        for file_path in current_files:
+            if force or self._should_reindex(file_path):
+                fm = self._extract_file_metadata(file_path)
+                if fm:
+                    file_models.append(fm)
+
+        self.repository_model.files = file_models
+        self.repository_model.total_files = len(file_models)
+        self.repository_model.indexed_at = datetime.now()
+        self.repository_model.symbol_index = {}
+        self._build_symbol_index()
+
+        analyzer = RepositoryAnalyzer(self.repository_model)
+        analyzer.analyze()
+
+        self.persistence.save_repository_model(self.repository_model)
+        self._embed_and_store(file_models, force=force)
+
+        # v1: graph is part of add-repo, not a separate smoke script
+        self._sync_neo4j_graph()
+
+        print(f"[RepositoryIntelligence] Indexed {len(file_models)} files (clean).")
+        return self.repository_model
+
+    def _should_reindex(self, file_path: Path) -> bool:
+        model_path = self.persistence.workspace / "repository_model.json"
+        if not model_path.exists():
+            return True
+        return file_path.stat().st_mtime > model_path.stat().st_mtime
+
+    def _scan_files(self) -> List[Path]:
+        allowed_extensions = {".py", ".md", ".txt", ".rst", ".yaml", ".yml", ".json", ".toml"}
+        excluded_dirs = {"node_modules", ".git", "__pycache__", "build", "dist", ".venv", "venv"}
+
+        files: List[Path] = []
+        for root, dirs, filenames in os.walk(self.repo_path):
+            dirs[:] = [d for d in dirs if d not in excluded_dirs]
+            for filename in filenames:
+                if any(filename.endswith(ext) for ext in allowed_extensions):
+                    full_path = Path(root) / filename
+                    if full_path.stat().st_size < 500_000:
+                        files.append(full_path)
+        return files
+
+    def _extract_file_metadata(self, file_path: Path) -> Optional[FileModel]:
+        try:
+            content = file_path.read_text(encoding="utf-8", errors="ignore")
+            extension = file_path.suffix.lower()
+            language = self._detect_language(extension)
+
+            # Always forward slashes in RI artifacts (Qdrant + Neo4j + PR paths)
+            rel = str(file_path.relative_to(self.repo_path)).replace("\\", "/")
+
+            file_model = FileModel(
+                path=rel,
+                language=language,
+                extension=extension,
+                size_bytes=len(content.encode("utf-8", errors="ignore")),
+                content=content,
+                preview=content[:600] + "..." if len(content) > 600 else content,
+                line_count=len(content.splitlines()),
+                last_modified=datetime.fromtimestamp(file_path.stat().st_mtime),
+            )
+
+            if extension == ".py":
+                self._parse_python_ast(file_path, content, file_model)
+
+            return file_model
+        except Exception as e:
+            print(f"Warning: Could not process {file_path}: {e}")
+            return None
+
+    def _parse_python_ast(self, file_path: Path, content: str, file_model: FileModel):
+        try:
+            tree = ast.parse(content, filename=str(file_path))
+
+            # --- imports (needed for IMPORTS edges) ---
+            imports: List[str] = []
+            for node in tree.body:
+                if isinstance(node, ast.Import):
+                    for alias in node.names:
+                        if alias.name:
+                            imports.append(alias.name)
+                elif isinstance(node, ast.ImportFrom):
+                    if node.module:
+                        imports.append(node.module)
+                    # relative imports: record module if present; dots-only skipped
+            file_model.imports = sorted(set(imports))
+
+            # --- symbols ---
+            for node in tree.body:
+                if isinstance(node, ast.ClassDef):
+                    file_model.symbols.append(
+                        Symbol(
+                            name=node.name,
+                            type="class",
+                            line=node.lineno,
+                            docstring=ast.get_docstring(node),
+                        )
+                    )
+                    for child in node.body:
+                        if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                            file_model.symbols.append(
+                                Symbol(
+                                    name=child.name,
+                                    type="method",
+                                    line=child.lineno,
+                                    docstring=ast.get_docstring(child),
+                                )
+                            )
+                elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    file_model.symbols.append(
+                        Symbol(
+                            name=node.name,
+                            type="function",
+                            line=node.lineno,
+                            docstring=ast.get_docstring(node),
+                        )
+                    )
+        except SyntaxError:
+            pass
+
+    def _detect_language(self, extension: str) -> str:
+        mapping = {
+            ".py": "Python",
+            ".md": "Markdown",
+            ".rst": "reStructuredText",
+            ".yaml": "YAML",
+            ".yml": "YAML",
+            ".json": "JSON",
+            ".toml": "TOML",
+        }
+        return mapping.get(extension, "Unknown")
+
+    def _build_symbol_index(self):
+        for fm in self.repository_model.files:
+            for symbol in fm.symbols:
+                key = f"{fm.path}::{symbol.name}"
+                self.repository_model.symbol_index[key] = symbol
+
+    def _embed_and_store(self, file_models: List[FileModel], force: bool = False):
+        if not file_models:
+            return
+
+        indexer = RepositoryIndexer(self.repository_model)
+        documents = indexer.to_documents()
+
+        for d in documents:
+            if d.metadata and "path" in d.metadata:
+                d.metadata["path"] = str(d.metadata["path"]).replace("\\", "/")
+
+        kb = KnowledgeBase(self.repo_name.replace("/", "_"))
+
+        if force:
+            kb.recreate_collection()
+            print("[RepositoryIntelligence] Qdrant collection rebuilt (full re-index).")
+
+        before = kb.client.get_collection(kb.collection_name).points_count
+        kb.add_documents(documents)
+        after = kb.client.get_collection(kb.collection_name).points_count
+
+        print(
+            f"[RepositoryIntelligence] Stored {len(documents)} chunks "
+            f"(points {before} → {after})."
+        )
+
+    # -------------------------------------------------------------------------
+    # Neo4j sync (Phases 1–3) — single source of truth: repository_model
+    # -------------------------------------------------------------------------
+    def _sync_neo4j_graph(self):
+        """Write Files, Symbols, IMPORTS, and CALLS from repository_model into Neo4j."""
+        try:
+            from core.repository_intelligence.graph.store import GraphStore
+        except ImportError as e:
+            print(f"[RepositoryIntelligence] Graph package missing, skip Neo4j: {e}")
+            return
+
+        store = GraphStore()
+        if not store.health_check():
+            print("[RepositoryIntelligence] Neo4j not reachable — skip graph sync.")
+            return
+
+        driver = store.connect()
+        repo = self.repo_name
+        files = self.repository_model.files
+
+        # Path index for import resolution
+        path_set: Set[str] = {fm.path.replace("\\", "/") for fm in files}
+        module_to_path: Dict[str, str] = {}
+        for p in path_set:
+            if not p.endswith(".py"):
+                continue
+            mod = p[:-3].replace("/", ".")
+            module_to_path[mod] = p
+            if p.endswith("/__init__.py"):
+                pkg = p[: -len("/__init__.py")].replace("/", ".")
+                module_to_path[pkg] = p
+
+        def resolve_import(imp: str) -> Optional[str]:
+            imp = (imp or "").strip()
+            if not imp:
+                return None
+            if imp in module_to_path:
+                return module_to_path[imp]
+            parts = imp.split(".")
+            for i in range(len(parts), 0, -1):
+                cand = ".".join(parts[:i])
+                if cand in module_to_path:
+                    return module_to_path[cand]
+            return None
+
+        try:
+            with driver.session() as session:
+                # Clear this repo's subgraph
+                session.run(
+                    """
+                    MATCH (r:Repository {name: $repo})
+                    OPTIONAL MATCH (r)-[:CONTAINS*]->(n)
+                    DETACH DELETE r, n
+                    """,
+                    repo=repo,
+                )
+                session.run(
+                    """
+                    MERGE (r:Repository {name: $repo})
+                    SET r.indexed_at = $ts
+                    """,
+                    repo=repo,
+                    ts=datetime.now().isoformat(),
+                )
+
+                # --- Files ---
+                for fm in files:
+                    path = fm.path.replace("\\", "/")
+                    session.run(
+                        """
+                        MATCH (r:Repository {name: $repo})
+                        MERGE (f:File {path: $path})
+                        SET f.language = $language,
+                            f.extension = $extension,
+                            f.line_count = $line_count
+                        MERGE (r)-[:CONTAINS]->(f)
+                        """,
+                        repo=repo,
+                        path=path,
+                        language=fm.language,
+                        extension=fm.extension,
+                        line_count=fm.line_count,
+                    )
+
+                # --- Symbols ---
+                sym_count = 0
+                for fm in files:
+                    path = fm.path.replace("\\", "/")
+                    for sym in fm.symbols:
+                        session.run(
+                            """
+                            MATCH (f:File {path: $path})
+                            MERGE (s:Symbol {qualified_name: $qn})
+                            SET s.name = $name,
+                                s.kind = $kind,
+                                s.line = $line
+                            MERGE (f)-[:CONTAINS]->(s)
+                            """,
+                            path=path,
+                            qn=f"{path}::{sym.name}",
+                            name=sym.name,
+                            kind=sym.type,
+                            line=sym.line,
+                        )
+                        sym_count += 1
+
+                # --- IMPORTS ---
+                import_count = 0
+                for fm in files:
+                    src = fm.path.replace("\\", "/")
+                    for imp in fm.imports or []:
+                        dst = resolve_import(imp)
+                        if not dst or dst == src:
+                            continue
+                        session.run(
+                            """
+                            MATCH (a:File {path: $src})
+                            MATCH (b:File {path: $dst})
+                            MERGE (a)-[:IMPORTS]->(b)
+                            """,
+                            src=src,
+                            dst=dst,
+                        )
+                        import_count += 1
+
+                # --- CALLS (Phase 4) ---
+                call_edges = self._resolve_calls()
+                call_count = 0
+                for caller_qn, callee_qn, line in call_edges:
+                    result = session.run(
+                        """
+                        MATCH (a:Symbol {qualified_name: $caller})
+                        MATCH (b:Symbol {qualified_name: $callee})
+                        MERGE (a)-[r:CALLS]->(b)
+                        SET r.line = $line
+                        RETURN count(r) AS c
+                        """,
+                        caller=caller_qn,
+                        callee=callee_qn,
+                        line=line,
+                    )
+                    # count only if both nodes existed
+                    if result.single() is not None:
+                        call_count += 1
+
+                print(
+                    f"[RepositoryIntelligence] Neo4j sync OK — "
+                    f"files={len(files)} symbols={sym_count} "
+                    f"import_edges≈{import_count} calls≈{call_count}"
+                )
+        except Exception as e:
+            print(f"[RepositoryIntelligence] Neo4j sync failed: {e}")
+        finally:
+            try:
+                store.close()
+            except Exception:
+                pass
+
+    def _resolve_calls(self) -> List[Tuple[str, str, int]]:
+        """
+        Build (caller_qualified_name, callee_qualified_name, call_line) edges.
+        Resolution v1: same-file preferred, else unique name, else first candidate.
+        """
+        by_name: Dict[str, List[str]] = {}
+        for qn, sym in self.repository_model.symbol_index.items():
+            by_name.setdefault(sym.name, []).append(qn)
+
+        # Ensure symbol_index is populated
+        if not self.repository_model.symbol_index:
+            self._build_symbol_index()
+            for qn, sym in self.repository_model.symbol_index.items():
+                by_name.setdefault(sym.name, []).append(qn)
+
+        edges: List[Tuple[str, str, int]] = []
+        seen: Set[Tuple[str, str]] = set()
+
+        for fm in self.repository_model.files:
+            if getattr(fm, "language", "") != "Python":
+                continue
+            content = getattr(fm, "content", "") or ""
+            if not content:
+                continue
+
+            path = fm.path.replace("\\", "/")
+            try:
+                tree = ast.parse(content, filename=path)
+            except SyntaxError:
+                continue
+
+            try:
+                from core.repository_intelligence.call_extractor import CallExtractor
+                file_calls = CallExtractor(path).extract(tree)
+                call_sites = file_calls.calls
+            except ImportError:
+                # Inline minimal extract if module not present yet
+                call_sites = self._extract_calls_inline(tree, path)
+
+            for cs in call_sites:
+                caller_qn = f"{path}::{cs.caller_name}"
+                candidates = by_name.get(cs.callee_name, [])
+                if not candidates:
+                    continue
+
+                same_file = [c for c in candidates if c.startswith(path + "::")]
+                if same_file:
+                    callee_qn = same_file[0]
+                elif len(candidates) == 1:
+                    callee_qn = candidates[0]
+                else:
+                    # Prefer symbols under imported modules when possible
+                    preferred = []
+                    for imp in fm.imports or []:
+                        same_file = [c for c in candidates if c.startswith(path + "::")]
+                        if same_file:
+                            callee_qn = same_file[0]
+                        elif len(candidates) == 1:
+                            callee_qn = candidates[0]
+                        else:
+                            preferred = []
+                            for c in candidates:
+                                c_mod = c.split("::")[0].replace("/", ".")
+                                if any(
+                                    c_mod == imp or c_mod.startswith(imp + ".")
+                                    for imp in (fm.imports or [])
+                                ):
+                                    preferred.append(c)
+                            callee_qn = preferred[0] if preferred else candidates[0]
+                        # soft match: qualified path contains import as dotted prefix
+                        for c in candidates:
+                            c_path = c.split("::")[0].replace("/", ".")
+                            if c_path.startswith(imp) or imp in c_path:
+                                preferred.append(c)
+                    callee_qn = preferred[0] if preferred else candidates[0]
+
+                if caller_qn == callee_qn:
+                    continue
+                key = (caller_qn, callee_qn)
+                if key in seen:
+                    continue
+                # Only keep edges whose caller exists as a symbol node we created
+                if caller_qn not in self.repository_model.symbol_index:
+                    # still allow: methods stored under same name in symbol_index
+                    if not any(
+                        qn.startswith(path + "::") and qn.endswith("::" + cs.caller_name)
+                        for qn in self.repository_model.symbol_index
+                    ):
+                        # caller might still be valid if name matches a symbol on this path
+                        if f"{path}::{cs.caller_name}" not in self.repository_model.symbol_index:
+                            continue
+
+                seen.add(key)
+                edges.append((caller_qn, callee_qn, cs.call_line))
+
+        return edges
+
+    def _extract_calls_inline(self, tree: ast.AST, path: str):
+        """Fallback call extraction without separate module."""
+        from dataclasses import dataclass, field
+        from typing import List, Optional
+
+        @dataclass
+        class CallSite:
+            caller_name: str
+            caller_line: int
+            callee_name: str
+            call_line: int
+            is_attribute: bool = False
+
+        calls: List[CallSite] = []
+        current: List[tuple] = []  # stack of (name, line)
+
+        class V(ast.NodeVisitor):
+            def visit_FunctionDef(self, node: ast.FunctionDef):
+                current.append((node.name, node.lineno))
+                self.generic_visit(node)
+                current.pop()
+
+            def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef):
+                current.append((node.name, node.lineno))
+                self.generic_visit(node)
+                current.pop()
+
+            def visit_Call(self, node: ast.Call):
+                if not current:
+                    self.generic_visit(node)
+                    return
+                caller_name, caller_line = current[-1]
+                callee = None
+                is_attr = False
+                func = node.func
+                if isinstance(func, ast.Name):
+                    callee = func.id
+                elif isinstance(func, ast.Attribute):
+                    callee = func.attr
+                    is_attr = True
+                if callee:
+                    calls.append(
+                        CallSite(
+                            caller_name=caller_name,
+                            caller_line=caller_line,
+                            callee_name=callee,
+                            call_line=getattr(node, "lineno", 0),
+                            is_attribute=is_attr,
+                        )
+                    )
+                self.generic_visit(node)
+
+        V().visit(tree)
+        return calls
+
+    def _resolve_calls(self) -> list[tuple[str, str, int]]:
+        """
+        Returns list of (caller_qn, callee_qn, call_line).
+        """
+        # name -> list of qualified_names
+        by_name: dict[str, list[str]] = {}
+        for qn, sym in self.repository_model.symbol_index.items():
+            by_name.setdefault(sym.name, []).append(qn)
+
+        path_to_symbols: dict[str, set[str]] = {}
+        for qn in self.repository_model.symbol_index:
+            path, _, name = qn.partition("::")
+            path_to_symbols.setdefault(path, set()).add(name)
+
+        edges: list[tuple[str, str, int]] = []
+        seen: set[tuple[str, str]] = set()
+
+        for fm in self.repository_model.files:
+            if fm.language != "Python" or not fm.content:
+                continue
+            try:
+                tree = ast.parse(fm.content, filename=fm.path)
+            except SyntaxError:
+                continue
+
+            file_calls = CallExtractor(fm.path).extract(tree)
+            path = fm.path.replace("\\", "/")
+
+            for cs in file_calls.calls:
+                caller_qn = f"{path}::{cs.caller_name}"
+                if caller_qn not in self.repository_model.symbol_index:
+                    # method defined only under class still stored as name-only in your model
+                    # keep best-effort: still emit if name exists on this path
+                    pass
+
+                candidates = by_name.get(cs.callee_name, [])
+                if not candidates:
+                    continue
+
+                # Prefer same-file symbol
+                same_file = [c for c in candidates if c.startswith(path + "::")]
+                if same_file:
+                    callee_qn = same_file[0]
+                elif len(candidates) == 1:
+                    callee_qn = candidates[0]
+                else:
+                    # Prefer symbols in files this file imports (module path prefix)
+                    imported_paths = set()
+                    for imp in fm.imports or []:
+                        # graphify.validate -> graphify/validate.py style
+                        imported_paths.add(imp.replace(".", "/") + ".py")
+                        imported_paths.add(imp.replace(".", "/") + "/__init__.py")
+                    preferred = [
+                        c for c in candidates
+                        if any(c.startswith(p.replace("\\", "/") + "::") or c.startswith(ip + "::")
+                            for ip in imported_paths for p in [ip])
+                    ]
+                    # simpler prefer:
+                    preferred = [c for c in candidates if any(
+                        c.startswith(ip.replace("\\", "/").rstrip(".py") )  # fallback weak
+                        for ip in imported_paths
+                    )]
+                    # pragmatic v1:
+                    preferred = [
+                        c for c in candidates
+                        if any(
+                            c.split("::")[0].replace("/", ".").startswith(imp) or
+                            c.split("::")[0].endswith(imp.replace(".", "/") + ".py")
+                            for imp in (fm.imports or [])
+                        )
+                    ]
+                    callee_qn = preferred[0] if preferred else candidates[0]
+
+                key = (caller_qn, callee_qn)
+                if key in seen or caller_qn == callee_qn:
+                    continue
+                seen.add(key)
+                edges.append((caller_qn, callee_qn, cs.call_line))
+
+        return edges
+
+        def resolve_import(imp: str) -> Optional[str]:
+            imp = (imp or "").strip()
+            if not imp:
+                return None
+            # exact
+            if imp in module_to_path:
+                return module_to_path[imp]
+            # walk parents: graphify.paths.util → graphify.paths → graphify
+            parts = imp.split(".")
+            for i in range(len(parts), 0, -1):
+                cand = ".".join(parts[:i])
+                if cand in module_to_path:
+                    return module_to_path[cand]
+            return None
+
+        try:
+            with driver.session() as session:
+                # Clear this repo's subgraph (safe for single-repo-per-DB-dev)
+                session.run(
+                    """
+                    MATCH (r:Repository {name: $repo})
+                    OPTIONAL MATCH (r)-[:CONTAINS*]->(n)
+                    DETACH DELETE r, n
+                    """,
+                    repo=repo,
+                )
+                session.run(
+                    "MERGE (r:Repository {name: $repo}) SET r.indexed_at = $ts",
+                    repo=repo,
+                    ts=datetime.now().isoformat(),
+                )
+
+                # Files
+                for fm in files:
+                    path = fm.path.replace("\\", "/")
+                    session.run(
+                        """
+                        MATCH (r:Repository {name: $repo})
+                        MERGE (f:File {path: $path})
+                        SET f.language = $language,
+                            f.extension = $extension,
+                            f.line_count = $line_count
+                        MERGE (r)-[:CONTAINS]->(f)
+                        """,
+                        repo=repo,
+                        path=path,
+                        language=fm.language,
+                        extension=fm.extension,
+                        line_count=fm.line_count,
+                    )
+
+                # Symbols
+                sym_count = 0
+                for fm in files:
+                    path = fm.path.replace("\\", "/")
+                    for sym in fm.symbols:
+                        session.run(
+                            """
+                            MATCH (f:File {path: $path})
+                            MERGE (s:Symbol {qualified_name: $qn})
+                            SET s.name = $name,
+                                s.kind = $kind,
+                                s.line = $line
+                            MERGE (f)-[:CONTAINS]->(s)
+                            """,
+                            path=path,
+                            qn=f"{path}::{sym.name}",
+                            name=sym.name,
+                            kind=sym.type,
+                            line=sym.line,
+                        )
+                        sym_count += 1
+
+                # IMPORTS
+                import_count = 0
+                for fm in files:
+                    src = fm.path.replace("\\", "/")
+                    for imp in fm.imports or []:
+                        dst = resolve_import(imp)
+                        if not dst or dst == src:
+                            continue
+                        session.run(
+                            """
+                            MATCH (a:File {path: $src})
+                            MATCH (b:File {path: $dst})
+                            MERGE (a)-[:IMPORTS]->(b)
+                            """,
+                            src=src,
+                            dst=dst,
+                        )
+                        import_count += 1
+
+                print(
+                    f"[RepositoryIntelligence] Neo4j sync OK — "
+                    f"files={len(files)} symbols={sym_count} import_edges≈{import_count}"
+                )
+        except Exception as e:
+            print(f"[RepositoryIntelligence] Neo4j sync failed: {e}")
+        finally:
+            try:
+                store.close()
+            except Exception:
+                pass
