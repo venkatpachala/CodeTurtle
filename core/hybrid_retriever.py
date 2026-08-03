@@ -141,7 +141,7 @@ class HybridRetriever:
         all_docs = self._prefer_changed_files(all_docs, files_changed)
 
         # --- 6. Rerank ---
-        ranked_docs = self.reranker.rerank(query, all_docs, top_k=k)
+        ranked_docs = self.reranker.rerank(query, all_docs, top_k=8)
 
         print(
             f"[HybridRetriever] Retrieved {len(vector_docs)} vector + "
