@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from core.query_engine.errors import RepoNotIndexedError
+from core.query_engine.errors import GraphUnavailableError, RepoNotIndexedError
+from core.query_engine.routers.graph_router import GraphRouter
 from core.query_engine.routers.model_router import ModelRouter
 from core.query_engine.types import (
+    CallEdge,
+    DependencyEdge,
     FileHit,
     RepositorySummary,
     SymbolHit,
@@ -14,18 +17,10 @@ from core.query_engine.types import (
 
 
 class RepositoryQueryEngine:
-    """
-    Public façade for repository knowledge.
-
-    Phase 7 Step 1–2: structure queries via RepositoryModel.
-    Graph + vector routers land in later steps.
-    """
-
-    def __init__(self, repo_name: str, repository_model=None):
+    def __init__(self, repo_name: str, repository_model=None, graph_store=None):
         self.repo_name = repo_name
         self._model = ModelRouter(repo_name, repository_model=repository_model)
-        # Placeholders for later steps
-        self._graph = None
+        self._graph = GraphRouter(repo_name, graph_store=graph_store)
         self._vector = None
 
     # ── Structure (Model) ──────────────────────────────────────────
@@ -50,14 +45,38 @@ class RepositoryQueryEngine:
 
     # ── Graph (Step 3) ─────────────────────────────────────────────
 
-    def find_dependencies(self, path: str, *, direction: str = "out"):
-        raise NotImplementedError("Graph router not wired yet (Phase 7 Step 3)")
+    def find_dependencies(
+        self,
+        path: str,
+        *,
+        direction: str = "out",
+        limit: int = 100,
+    ) -> List[DependencyEdge]:
+        if not self._graph.available:
+            raise GraphUnavailableError("Neo4j not connected")
+        return self._graph.find_dependencies(path, direction=direction, limit=limit)
 
-    def find_callers(self, symbol: str, *, path: Optional[str] = None, limit: int = 50):
-        raise NotImplementedError("Graph router not wired yet (Phase 7 Step 3)")
+    def find_callers(
+        self,
+        symbol: str,
+        *,
+        path: Optional[str] = None,
+        limit: int = 50,
+    ) -> List[CallEdge]:
+        if not self._graph.available:
+            raise GraphUnavailableError("Neo4j not connected")
+        return self._graph.find_callers(symbol, path=path, limit=limit)
 
-    def find_callees(self, symbol: str, *, path: Optional[str] = None, limit: int = 50):
-        raise NotImplementedError("Graph router not wired yet (Phase 7 Step 3)")
+    def find_callees(
+        self,
+        symbol: str,
+        *,
+        path: Optional[str] = None,
+        limit: int = 50,
+    ) -> List[CallEdge]:
+        if not self._graph.available:
+            raise GraphUnavailableError("Neo4j not connected")
+        return self._graph.find_callees(symbol, path=path, limit=limit)
 
     # ── Retrieval (Step 4) ─────────────────────────────────────────
 
@@ -80,7 +99,7 @@ class RepositoryQueryEngine:
             "total_symbols": summary.total_symbols,
             "languages": summary.languages,
             "indexed_at": str(summary.indexed_at) if summary.indexed_at else None,
-            "graph": self._graph is not None,
+            "graph": self._graph.available,
             "vector": self._vector is not None,
         }
 
@@ -93,6 +112,6 @@ class RepositoryQueryEngine:
         return {
             "repo_name": self.repo_name,
             "model": model_ok,
-            "neo4j": False,   # until Step 3
-            "qdrant": False,  # until Step 4
+            "neo4j": self._graph.available,
+            "qdrant": False,
         }
