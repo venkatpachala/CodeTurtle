@@ -25,7 +25,7 @@ class HybridRetriever:
         self,
         repo_name: str,
         kb: Optional[KnowledgeBase] = None,
-        graph_queries: Optional[Any] = None,  # GraphQueries instance or None
+        graph_queries: Optional[Any] = None,
         *,
         require_kb: bool = True,
     ):
@@ -58,10 +58,15 @@ class HybridRetriever:
         use_calls: bool = True,
         fail_if_empty: bool = True,
     ) -> EvidencePackage:
-        """Vector + symbol + capped IMPORTS/CALLS expansion, then rerank."""
+        """Vector + symbol + capped IMPORTS/CALLS expansion, then finalize to k."""
         print(f"[HybridRetriever] Querying collection: {self.repo_name.replace('/', '_')}")
         pr_understanding = pr_understanding or {}
-        files_changed = [p.replace("\\", "/") for p in (files_changed or []) if p]
+        files_changed = [
+            p.replace("\\", "/").lstrip("./")
+            for p in (files_changed or [])
+            if p
+        ]
+        k = max(int(k or 8), 1)
 
         # --- 1. Vector search ---
         vector_docs = self.kb.similarity_search(query, k=k * 2)
@@ -70,7 +75,7 @@ class HybridRetriever:
         # --- 2. Symbol search ---
         symbol_docs = self._symbol_search(query, k=max(1, k // 2))
 
-        all_docs = list(vector_docs) + list(symbol_docs)
+        all_docs: List[Document] = list(vector_docs) + list(symbol_docs)
 
         # --- 3. Seed paths (PR files first) ---
         seed_paths = self._collect_seed_paths(
@@ -106,7 +111,7 @@ class HybridRetriever:
                     print(f"[HybridRetriever] CALLS expand skipped: {e}")
 
             expanded = [
-                p.replace("\\", "/")
+                p.replace("\\", "/").lstrip("./")
                 for p in expanded
                 if p
                 and not p.startswith("tests/")
@@ -121,45 +126,71 @@ class HybridRetriever:
             )
 
             existing: Set[str] = {
-                str((d.metadata or {}).get("path", "")).replace("\\", "/")
+                str((d.metadata or {}).get("path", "")).replace("\\", "/").lstrip("./")
                 for d in all_docs
                 if (d.metadata or {}).get("path")
             }
-            # Prefer fetching changed files even if already partially present
             priority = [p for p in files_changed if p not in existing]
             rest = [p for p in expanded if p not in existing and p not in priority]
             graph_docs = self._docs_for_paths(
                 priority + rest,
                 exclude=set(),
-                max_docs=8,
+                max_docs=max(8, k),
             )
             all_docs.extend(graph_docs)
         else:
             self._last_graph_expansion = []
 
-        # --- 5. Prefer docs whose path is in files_changed before rerank ---
-        all_docs = self._prefer_changed_files(all_docs, files_changed)
+        # Ensure changed-file chunks are in the candidate pool
+        for path in files_changed:
+            if not path:
+                continue
+            already = any(
+                str((d.metadata or {}).get("path", "")).replace("\\", "/").lstrip("./")
+                == path
+                for d in all_docs
+            )
+            if already:
+                continue
+            extra = self._docs_for_paths([path], exclude=set(), max_docs=3)
+            all_docs.extend(extra)
 
-        # --- 6. Rerank ---
-        ranked_docs = self.reranker.rerank(query, all_docs, top_k=8)
+        # --- 5. Prefer docs whose path is in files_changed before rerank ---
+        candidates = self._prefer_changed_files(all_docs, files_changed)
+
+        # --- 6. Rerank (ordering only; does not define final size alone) ---
+        # Request more than k so ranking has room; we still finalize to k from full pool
+        rerank_top = max(k * 2, k)
+        try:
+            ranked_docs = self.reranker.rerank(query, candidates, top_k=rerank_top)
+        except TypeError:
+            ranked_docs = self.reranker.rerank(query, candidates)
+
+        # --- 7. Finalize: respect k, prefer changed files, pad from candidates ---
+        final_docs = self._finalize_docs(
+            ranked=ranked_docs,
+            candidates=candidates,
+            k=k,
+            files_changed=files_changed,
+        )
 
         print(
             f"[HybridRetriever] Retrieved {len(vector_docs)} vector + "
             f"{len(symbol_docs)} symbol + {len(graph_docs)} graph → "
-            f"reranked to {len(ranked_docs)} documents"
+            f"reranked {len(ranked_docs or [])} → final {len(final_docs)} documents (k={k})"
         )
 
-        if fail_if_empty and not ranked_docs:
+        if fail_if_empty and not final_docs:
             raise RuntimeError(
                 f"Knowledge base retrieval returned no context for {self.repo_name}. "
                 "Re-run: python -m cli.main add-repo <owner/repo>"
             )
 
-        # --- 7. Evidence package ---
+        # --- 8. Evidence package ---
         package = ContextBuilder.build(
             query=query,
             pr_understanding=pr_understanding,
-            documents=ranked_docs,
+            documents=final_docs,
         )
 
         dep_context = self._format_dependency_context(seed_paths)
@@ -192,7 +223,7 @@ class HybridRetriever:
                 pr_understanding=pr_understanding,
                 files_changed=files_changed,
                 k=k_per_query,
-                fail_if_empty=False,  # empty single query OK; final check below
+                fail_if_empty=False,
             )
             docs = package.evidences if hasattr(package, "evidences") else []
             for doc in docs:
@@ -203,7 +234,7 @@ class HybridRetriever:
 
         unique = {}
         for doc in all_docs:
-            file_path = getattr(doc, "path", None) or (doc.metadata or {}).get("path")
+            file_path = getattr(doc, "path", None) or (getattr(doc, "metadata", None) or {}).get("path")
             if not file_path:
                 continue
             score = getattr(doc, "score", 0) * getattr(doc, "query_weight", 1.0)
@@ -231,44 +262,60 @@ class HybridRetriever:
             documents=final_docs,
         )
 
+    # ------------------------------------------------------------------
+    # Finalization (fix: never collapse to top-1)
+    # ------------------------------------------------------------------
 
-    def _apply_rerank_floor(self, ranked_docs, k: int):
-        """Never return fewer than min(k, len(candidates)) when docs exist."""
-        if not ranked_docs:
-            return []
-        target = max(k, 1)
-        # If reranker returns too few, pad with original order
-        if len(ranked_docs) < min(target, len(ranked_docs)):
-            return ranked_docs
-        if len(ranked_docs) < target:
-            # caller should pass full candidate list as second arg if available
-            return ranked_docs
-        return ranked_docs[:target]
-
-    def _prefer_paths(docs, files_changed: list[str]):
-        if not files_changed:
-            return docs
+    def _finalize_docs(
+        self,
+        ranked: Optional[List[Document]],
+        candidates: List[Document],
+        k: int,
+        files_changed: List[str] | None = None,
+    ) -> List[Document]:
+        """Order from ranked, pad from candidates, prefer files_changed, size = k."""
+        k = max(int(k or 8), 1)
+        files_changed = files_changed or []
         changed = {p.replace("\\", "/").lstrip("./") for p in files_changed}
-        primary = []
-        rest = []
-        for d in docs:
-            meta = getattr(d, "metadata", None) or {}
-            path = (meta.get("path") or "").replace("\\", "/").lstrip("./")
-            if path in changed:
-                primary.append(d)
-            else:
-                rest.append(d)
-        return primary + rest
+
+        def path_of(doc: Document) -> str:
+            meta = doc.metadata or {}
+            return str(meta.get("path") or meta.get("file") or "").replace("\\", "/").lstrip("./")
+
+        def content_key(doc: Document) -> str:
+            return (doc.page_content or "")[:160]
+
+        # Build ordered pool: ranked first, then remaining candidates
+        pool: List[Document] = []
+        seen: Set[tuple] = set()
+
+        for d in list(ranked or []) + list(candidates or []):
+            key = (path_of(d), content_key(d))
+            if key in seen:
+                continue
+            seen.add(key)
+            pool.append(d)
+
+        if not pool:
+            return []
+
+        # Prefer changed-file docs at the front
+        if changed:
+            primary = [d for d in pool if path_of(d) in changed]
+            rest = [d for d in pool if path_of(d) not in changed]
+            pool = primary + rest
+
+        return pool[:k]
 
     def _prefer_changed_files(
         self, docs: List[Document], files_changed: List[str]
     ) -> List[Document]:
         if not files_changed:
             return docs
-        changed = set(files_changed)
+        changed = {p.replace("\\", "/").lstrip("./") for p in files_changed}
         first, rest = [], []
         for d in docs:
-            p = str((d.metadata or {}).get("path", "")).replace("\\", "/")
+            p = str((d.metadata or {}).get("path", "")).replace("\\", "/").lstrip("./")
             (first if p in changed else rest).append(d)
         return first + rest
 
@@ -282,17 +329,17 @@ class HybridRetriever:
 
         for p in files_changed:
             if p:
-                seeds.append(p.replace("\\", "/"))
+                seeds.append(p.replace("\\", "/").lstrip("./"))
 
         for key in ("affected_files", "changed_files", "files_changed", "high_risk_files"):
             for p in pr_understanding.get(key) or []:
                 if isinstance(p, str) and p:
-                    seeds.append(p.replace("\\", "/"))
+                    seeds.append(p.replace("\\", "/").lstrip("./"))
 
         for d in docs:
             p = (d.metadata or {}).get("path")
             if p:
-                seeds.append(str(p).replace("\\", "/"))
+                seeds.append(str(p).replace("\\", "/").lstrip("./"))
 
         return list(dict.fromkeys(seeds))
 
@@ -309,16 +356,17 @@ class HybridRetriever:
         for path in paths:
             if len(out) >= max_docs:
                 break
-            path = path.replace("\\", "/")
+            path = path.replace("\\", "/").lstrip("./")
             if not path or path in exclude or path in seen:
                 continue
             if path.startswith("tests/") or path.startswith("worked/"):
                 continue
             seen.add(path)
 
-            doc = self._fetch_by_path(path)
-            if doc is not None:
-                out.append(doc)
+            # Prefer up to 2 chunks per path so k has material
+            hits = self._fetch_by_path_many(path, k=2)
+            if hits:
+                out.extend(hits)
             else:
                 out.append(
                     Document(
@@ -326,22 +374,27 @@ class HybridRetriever:
                         metadata={"path": path, "retrieval_type": "graph"},
                     )
                 )
-        return out
+        return out[:max_docs]
 
     def _fetch_by_path(self, path: str) -> Optional[Document]:
-        path = path.replace("\\", "/")
+        hits = self._fetch_by_path_many(path, k=1)
+        return hits[0] if hits else None
+
+    def _fetch_by_path_many(self, path: str, k: int = 2) -> List[Document]:
+        path = path.replace("\\", "/").lstrip("./")
         try:
             if hasattr(self.kb, "get_by_path"):
-                hits = self.kb.get_by_path(path, k=1)
-                if hits:
-                    h = hits[0]
+                hits = self.kb.get_by_path(path, k=k)
+                out = []
+                for h in hits or []:
                     meta = dict(h.metadata or {})
-                    meta.update({"path": path, "retrieval_type": "graph"})
+                    meta.update({"path": path, "retrieval_type": meta.get("retrieval_type") or "path"})
                     h.metadata = meta
-                    return h
+                    out.append(h)
+                return out
         except Exception as e:
             print(f"[HybridRetriever] get_by_path failed for {path}: {e}")
-        return None
+        return []
 
     def _format_dependency_context(self, seed_paths: List[str]) -> str:
         if not self._graph or not seed_paths:

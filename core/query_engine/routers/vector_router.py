@@ -123,6 +123,7 @@ class VectorRouter:
                 query=enriched,
                 pr_understanding=pr_understanding,
                 k=k,
+                files_changed=files_changed,
             )
         except TypeError:
             try:
