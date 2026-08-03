@@ -107,20 +107,17 @@ class VectorRouter:
         try:
             retriever = HybridRetriever(self.repo_name, kb=self._kb)
         except TypeError:
-            # older signature: HybridRetriever(repo_name) only
             retriever = HybridRetriever(self.repo_name)
             if hasattr(retriever, "kb") and self._kb is not None:
                 retriever.kb = self._kb
 
-        # Build a slightly stronger query if symbols known
+        # Stronger query from paths + symbols
         enriched = query
         if files_changed:
             enriched = f"{query}\n" + "\n".join(files_changed[:12])
         if symbols:
             enriched = enriched + "\n" + " ".join(f"def {s}" for s in symbols[:8])
 
-        # Call retrieve with whatever kwargs the class accepts
-        kwargs: dict[str, Any] = {"query": enriched, "k": k}
         try:
             result = retriever.retrieve(
                 query=enriched,
@@ -133,7 +130,35 @@ class VectorRouter:
             except TypeError:
                 result = retriever.retrieve(enriched)
 
-        return self._normalize_to_package(result, query=query, k=k)
+        package = self._normalize_to_package(result, query=query, k=k)
+
+        # Floor: hybrid often reranks to 1 — pad with path/vector hits
+        if package.count < k and files_changed:
+            extra = self._via_kb_only(query, files_changed=files_changed, k=k)
+            seen = {(e.path, e.content[:120]) for e in package.evidences}
+            for e in extra.evidences:
+                key = (e.path, e.content[:120])
+                if key not in seen:
+                    package.evidences.append(e)
+                    seen.add(key)
+                if package.count >= k:
+                    break
+            package.evidences = package.evidences[:k]
+
+        elif package.count < k:
+            # No files_changed — still try pure vector pad
+            extra = self._via_kb_only(query, files_changed=[], k=k)
+            seen = {(e.path, e.content[:120]) for e in package.evidences}
+            for e in extra.evidences:
+                key = (e.path, e.content[:120])
+                if key not in seen:
+                    package.evidences.append(e)
+                    seen.add(key)
+                if package.count >= k:
+                    break
+            package.evidences = package.evidences[:k]
+
+        return package
 
     def _via_kb_only(
         self,

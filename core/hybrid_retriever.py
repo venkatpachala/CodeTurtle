@@ -231,6 +231,35 @@ class HybridRetriever:
             documents=final_docs,
         )
 
+
+    def _apply_rerank_floor(self, ranked_docs, k: int):
+        """Never return fewer than min(k, len(candidates)) when docs exist."""
+        if not ranked_docs:
+            return []
+        target = max(k, 1)
+        # If reranker returns too few, pad with original order
+        if len(ranked_docs) < min(target, len(ranked_docs)):
+            return ranked_docs
+        if len(ranked_docs) < target:
+            # caller should pass full candidate list as second arg if available
+            return ranked_docs
+        return ranked_docs[:target]
+
+    def _prefer_paths(docs, files_changed: list[str]):
+        if not files_changed:
+            return docs
+        changed = {p.replace("\\", "/").lstrip("./") for p in files_changed}
+        primary = []
+        rest = []
+        for d in docs:
+            meta = getattr(d, "metadata", None) or {}
+            path = (meta.get("path") or "").replace("\\", "/").lstrip("./")
+            if path in changed:
+                primary.append(d)
+            else:
+                rest.append(d)
+        return primary + rest
+
     def _prefer_changed_files(
         self, docs: List[Document], files_changed: List[str]
     ) -> List[Document]:

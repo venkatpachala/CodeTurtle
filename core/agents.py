@@ -9,6 +9,9 @@ from core.context_builder import ContextBuilder
 from core.gateway import gateway
 from core.query_builder import QueryBuilder
 from core.knowledge_base import KnowledgeBase
+from core.query_engine import RepositoryQueryEngine
+from core.state import ReviewState
+
 
 
 def context_summarizer(state: ReviewState) -> dict:
@@ -213,80 +216,96 @@ Find code quality issues in this PR.""")
         }],
     }
 
-
 def build_evidence_package(state: ReviewState) -> dict:
     """
-    After PR Analysis: hybrid retrieval → EvidencePackage.
-    Fails loud if the knowledge base returns nothing.
+    Build evidence for the PR using Repository Query Engine only.
+    No direct KnowledgeBase / HybridRetriever / Neo4j calls.
     """
     repo = state.get("repo") or ""
-    collection = repo.replace("/", "_")
+    title = state.get("title") or ""
+    body = state.get("body") or ""
+    files_changed = list(state.get("files_changed") or [])
+    pr_understanding = state.get("pr_understanding") or {}
+    pr_analysis = state.get("pr_analysis") or {}
 
+    # Prefer structured signals from analysis
+    symbols = []
+    for key in ("modified_functions", "added_functions", "removed_functions"):
+        val = pr_analysis.get(key) or []
+        if isinstance(val, list):
+            symbols.extend(val)
+
+    query = f"{title}\n{body}".strip()
+    if not query:
+        query = " ".join(files_changed[:10]) or "pull request changes"
+
+    # Reuse KB from state if pipeline already opened one (single Qdrant client)
     kb = state.get("kb")
-    if kb is None:
-        kb = KnowledgeBase(collection)
 
-    files_changed = [
-        p.replace("\\", "/")
-        for p in (state.get("files_changed") or [])
-    ]
+    engine = RepositoryQueryEngine(repo, kb=kb)
 
-    query = f"{state.get('title', '')}\n{state.get('body') or ''}"
-
-    graph_queries = None
-    try:
-        from core.repository_intelligence.graph.queries import GraphQueries
-        graph_queries = GraphQueries()
-    except Exception as e:
-        print(f"[build_evidence_package] GraphQueries unavailable: {e}")
-
-    retriever = HybridRetriever(
-        repo,
-        kb=kb,
-        graph_queries=graph_queries,
-        require_kb=True,
-    )
-
-    # Returns EvidencePackage; raises RuntimeError if empty
-    package = retriever.retrieve(
+    evidence_package = engine.retrieve_context(
         query=query,
-        pr_understanding=state.get("pr_understanding") or {},
         files_changed=files_changed,
+        symbols=symbols,
         k=8,
-        use_calls=True,
+        use_graph=True,
+        pr_understanding=pr_understanding if isinstance(pr_understanding, dict) else {},
         fail_if_empty=True,
     )
 
-    # Prefer ContextBuilder string if available; else synthesize from evidences
-    rich_context = ""
-    if hasattr(ContextBuilder, "to_agent_context"):
-        try:
-            rich_context = ContextBuilder.to_agent_context(package) or ""
-        except Exception:
-            rich_context = ""
+    # Text context for agents (backward compatible with context_from_kb: str)
+    rich_context = _evidence_to_agent_context(evidence_package)
 
-    if not rich_context:
-        parts = []
-        evidences = getattr(package, "evidences", None) or []
-        for i, ev in enumerate(evidences):
-            path = getattr(ev, "path", None) or (getattr(ev, "metadata", {}) or {}).get("path", "?")
-            content = getattr(ev, "page_content", None) or getattr(ev, "content", None) or str(ev)
-            parts.append(f"### [{i}] {path}\n{content}")
-        if not parts and getattr(package, "summary", None):
-            parts.append(package.summary)
-        rich_context = "\n\n".join(parts)
+    # Optional: impact of changed files for later agents
+    impact = None
+    try:
+        if files_changed:
+            impact = engine.impact_analysis(files_changed[:15], depth=1)
+    except Exception:
+        impact = None
 
-    n = len(getattr(package, "evidences", None) or [])
-    print(f"[build_evidence_package] EvidencePackage with {n} items")
+    traces = [{
+        "agent": "BuildEvidencePackage",
+        "output": (
+            f"QueryEngine retrieve_context → {evidence_package.count} evidences; "
+            f"impact_files={len(impact.affected_files) if impact else 0}"
+        ),
+    }]
 
-    return {
-        "evidence_package": package,
+    out = {
+        "evidence_package": evidence_package,
         "context_from_kb": rich_context,
-        "traces": [{
-            "agent": "BuildEvidencePackage",
-            "output": f"Built EvidencePackage with {n} items",
-        }],
+        "traces": traces,
     }
+    if impact is not None:
+        out["impact_report"] = {
+            "seed_paths": impact.seed_paths,
+            "affected_files": impact.affected_files,
+            "edges_considered": impact.edges_considered,
+            "depth": impact.depth,
+        }
+    return out
+
+
+def _evidence_to_agent_context(package) -> str:
+    """Flatten EvidencePackage into a string agents already expect."""
+    # Prefer existing ContextBuilder if present
+    try:
+        from core.context_builder import ContextBuilder
+        if hasattr(ContextBuilder, "to_agent_context"):
+            return ContextBuilder.to_agent_context(package)
+    except Exception:
+        pass
+
+    parts = []
+    evidences = getattr(package, "evidences", None) or []
+    for i, ev in enumerate(evidences):
+        path = getattr(ev, "path", "") or ""
+        source = getattr(ev, "source", "") or ""
+        content = getattr(ev, "content", "") or ""
+        parts.append(f"### Evidence {i + 1} | {path} | source={source}\n{content}")
+    return "\n\n".join(parts) if parts else "No repository evidence retrieved."
 
 
 def critic_agent(state: ReviewState) -> dict:
