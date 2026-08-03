@@ -4,8 +4,6 @@ from typing import List
 from core.repository_intelligence.graph.store import GraphStore
 
 
-# core/repository_intelligence/graph/queries.py
-
 class GraphQueries:
     def __init__(self, store=None):
         from core.repository_intelligence.graph.store import GraphStore
