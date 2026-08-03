@@ -40,7 +40,10 @@ class ReviewState(TypedDict):
     # Specialized Findings
     correctness_findings: List[Finding]
     quality_findings: List[Finding]
-
+    critique: dict
+    merge_decision: dict
+    review_plan: dict
+    
     # Aggregated Findings
     findings: List[Finding]
 

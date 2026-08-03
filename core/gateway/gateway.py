@@ -55,6 +55,7 @@ class AIGateway:
             "summarization": {"provider": "ollama", "model": "qwen2.5:7b"},
             "code_quality_review": {"provider": "ollama", "model": "qwen2.5:7b"},
             "security_review": {"provider": "ollama", "model": "qwen2.5:7b"},
+            "testing_review": {"provider": "ollama", "model": "qwen2.5:7b"},
             "documentation_review": {"provider": "ollama", "model": "qwen2.5:7b"},
             "performance_review": {"provider": "ollama", "model": "qwen2.5:7b"},
             "api_compatibility_review": {"provider": "ollama", "model": "qwen2.5:7b"},
