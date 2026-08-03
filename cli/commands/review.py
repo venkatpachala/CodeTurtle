@@ -15,6 +15,8 @@ from core.memory.manager import MemoryManager
 from core.utils import handle_error
 from core.observability import get_logger, get_langfuse_client
 from core.knowledge_base import KnowledgeBase
+from core.knowledge_base import KnowledgeBase
+from core.query_engine import RepositoryQueryEngine
 
 logger = get_logger()
 
@@ -77,7 +79,15 @@ class ReviewPipeline:
 
     def _load_knowledge_base(self):
         collection_name = self.context.repo.replace("/", "_")
+
+        # Single shared Qdrant client for this review
         self.context.kb = KnowledgeBase(collection_name)
+
+        # Single Query Engine for this review (read path)
+        self.context.engine = RepositoryQueryEngine(
+            self.context.repo,
+            kb=self.context.kb,
+        )
 
     def _fetch_pr(self):
         g = Github(settings.github_token)
