@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List, Literal, Optional, Dict, Any
-
+from enum import Enum
 
 class PRUnderstanding(BaseModel):
     """Structured understanding of a Pull Request."""
@@ -76,3 +76,51 @@ class ReviewOutput(BaseModel):
 class Findings(BaseModel):
     """Wrapper for list of findings."""
     findings: List[Finding]
+
+# core/review_intelligence/models.py
+
+class ReviewerKind(str, Enum):
+    CORRECTNESS = "correctness"
+    CODE_QUALITY = "code_quality"
+    SECURITY = "security"
+    PERFORMANCE = "performance"
+    CONCURRENCY = "concurrency"
+    TESTING = "testing"
+    API_COMPAT = "api_compat"
+    DOCUMENTATION = "documentation"
+    ARCHITECTURE = "architecture"
+
+class RetrievalQuestion(BaseModel):
+    question: str
+    purpose: str  # e.g. "callers of invalidation"
+    prefer_paths: list[str] = []
+    prefer_symbols: list[str] = []
+
+class ReviewPlan(BaseModel):
+    intent_summary: str
+    risk_level: str  # low|medium|high|critical
+    reviewers: list[ReviewerKind]
+    retrieval_questions: list[RetrievalQuestion]
+    focus_notes: list[str] = []
+    skip_reasons: dict[str, str] = {}  # reviewer -> why skipped
+
+class GroundedFinding(BaseModel):
+    title: str
+    severity: str
+    confidence: float
+    evidence_refs: list[str]  # paths, symbol names, or [n]
+    reasoning: str
+    recommendation: str
+    reviewer: str
+
+class CritiqueResult(BaseModel):
+    kept: list[GroundedFinding]
+    dropped: list[dict]  # {title, reason}
+    notes: str = ""
+
+class MergeDecision(BaseModel):
+    recommendation: str  # MERGE | REQUEST_CHANGES | COMMENT
+    confidence: float
+    summary: str
+    blocking_issues: list[str] = []
+    residual_risks: list[str] = []

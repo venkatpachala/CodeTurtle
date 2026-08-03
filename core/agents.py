@@ -103,19 +103,18 @@ def correctness_agent(state: ReviewState) -> dict:
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a strict and experienced Correctness Reviewer.
 
-Your ONLY job is to find functional correctness issues, logic errors, edge cases, and potential bugs.
+You are a senior engineer doing a correctness review of a GitHub PR.
+
+You may ONLY use:
+- The PR title/body/diff summary provided
+- The retrieved evidence blocks (path + code)
 
 Rules:
-- Every finding MUST be supported by retrieved evidence.
-- If evidence is insufficient, return an empty findings list.
-- Be highly critical and specific.
-- Cite evidence IDs or file paths from the evidence block.
-- Never speculate or invent code that was not retrieved.
-Mandatory output rules:
-- Each finding must name at least one file path that appears in the evidence/context.
-- Each finding must quote or paraphrase a concrete code behavior from the evidence or diff.
-- If you cannot do both, return zero findings.
-- Do not comment on files that were not retrieved."""),
+1. Every finding MUST include evidence that points to a path (and line range if possible).
+2. Do NOT invent APIs, files, or behaviors not present in the evidence or diff.
+3. Prefer real bugs: logic errors, edge cases, broken invariants, missing error handling, regressions.
+4. If evidence is thin, emit fewer findings with lower confidence — never pad with generic advice.
+5. Skip pure style/naming unless it causes a real defect."""),
         ("human", """PR Understanding:
 {pr_understanding}
 
@@ -216,76 +215,114 @@ Find code quality issues in this PR.""")
         }],
     }
 
-def build_evidence_package(state: ReviewState) -> dict:
-    """
-    Build evidence for the PR using Repository Query Engine only.
-    No direct KnowledgeBase / HybridRetriever / Neo4j calls.
-    """
-    repo = state.get("repo") or ""
-    title = state.get("title") or ""
-    body = state.get("body") or ""
-    files_changed = list(state.get("files_changed") or [])
-    pr_understanding = state.get("pr_understanding") or {}
-    pr_analysis = state.get("pr_analysis") or {}
+def build_evidence_package(state: dict) -> dict:
+    from core.query_engine import RepositoryQueryEngine
+    from core.review_intelligence.models import ReviewPlan, RetrievalQuestion
 
-    # Prefer structured signals from analysis
-    symbols = []
-    for key in ("modified_functions", "added_functions", "removed_functions"):
-        val = pr_analysis.get(key) or []
-        if isinstance(val, list):
-            symbols.extend(val)
+    repo = state["repo"]
+    engine = state.get("engine")
+    if engine is None:
+        engine = RepositoryQueryEngine(repo, kb=state.get("kb"))
 
-    query = f"{title}\n{body}".strip()
-    if not query:
-        query = " ".join(files_changed[:10]) or "pull request changes"
-
-    # Reuse KB from state if pipeline already opened one (single Qdrant client)
-    kb = state.get("kb")
-
-    engine = RepositoryQueryEngine(repo, kb=kb)
-
-    evidence_package = engine.retrieve_context(
-        query=query,
-        files_changed=files_changed,
-        symbols=symbols,
-        k=8,
-        use_graph=True,
-        pr_understanding=pr_understanding if isinstance(pr_understanding, dict) else {},
-        fail_if_empty=True,
-    )
-
-    # Text context for agents (backward compatible with context_from_kb: str)
-    rich_context = _evidence_to_agent_context(evidence_package)
-
-    # Optional: impact of changed files for later agents
-    impact = None
+    plan_raw = state.get("review_plan") or {}
     try:
-        if files_changed:
-            impact = engine.impact_analysis(files_changed[:15], depth=1)
+        plan = ReviewPlan.model_validate(plan_raw) if plan_raw else None
     except Exception:
-        impact = None
+        plan = None
 
-    traces = [{
-        "agent": "BuildEvidencePackage",
-        "output": (
-            f"QueryEngine retrieve_context → {evidence_package.count} evidences; "
-            f"impact_files={len(impact.affected_files) if impact else 0}"
-        ),
-    }]
+    files_changed = list(state.get("files_changed") or [])
+    understanding = state.get("pr_understanding") or {}
 
-    out = {
+    packages = []
+    if plan and plan.retrieval_questions:
+        for q in plan.retrieval_questions[:10]:
+            if isinstance(q, dict):
+                q = RetrievalQuestion.model_validate(q)
+            pkg = engine.retrieve_context(
+                query=q.question,
+                files_changed=q.prefer_paths or files_changed,
+                symbols=q.prefer_symbols or [],
+                k=6,
+                pr_understanding=understanding if isinstance(understanding, dict) else {},
+            )
+            packages.append(pkg)
+    else:
+        query = f"{state.get('title', '')}\n{state.get('body', '')}"
+        packages.append(
+            engine.retrieve_context(
+                query=query,
+                files_changed=files_changed,
+                k=8,
+                pr_understanding=understanding if isinstance(understanding, dict) else {},
+            )
+        )
+
+    # Merge / dedupe evidences
+    evidence_package = _merge_packages(packages, max_items=16)
+    rich_context = _format_evidence(evidence_package)  # your ContextBuilder if present
+
+    return {
         "evidence_package": evidence_package,
         "context_from_kb": rich_context,
-        "traces": traces,
+        "traces": [
+            {
+                "agent": "BuildEvidencePackage",
+                "output": f"plan_questions={len(plan.retrieval_questions) if plan else 0} merged={getattr(evidence_package, 'count', len(getattr(evidence_package, 'evidences', []) or []))}",
+            }
+        ],
     }
-    if impact is not None:
-        out["impact_report"] = {
-            "seed_paths": impact.seed_paths,
-            "affected_files": impact.affected_files,
-            "edges_considered": impact.edges_considered,
-            "depth": impact.depth,
-        }
-    return out
+
+
+def _merge_packages(packages, max_items: int = 16):
+    """Dedupe by path+content prefix; keep first EvidencePackage type if possible."""
+    if not packages:
+        return packages
+    seen = set()
+    merged = []
+    for pkg in packages:
+        evs = getattr(pkg, "evidences", None) or []
+        for ev in evs:
+            path = getattr(ev, "path", "") or ""
+            content = (getattr(ev, "content", None) or getattr(ev, "page_content", "") or "")[:80]
+            key = (path, content)
+            if key in seen:
+                continue
+            seen.add(key)
+            merged.append(ev)
+            if len(merged) >= max_items:
+                break
+        if len(merged) >= max_items:
+            break
+
+    head = packages[0]
+    # Prefer mutating a copy-like structure
+    try:
+        from dataclasses import replace
+        if hasattr(head, "evidences"):
+            return replace(head, evidences=merged) if hasattr(head, "__dataclass_fields__") else head
+    except Exception:
+        pass
+    # Fallback: set attribute
+    try:
+        head.evidences = merged
+        if hasattr(head, "count"):
+            head.count = len(merged)
+    except Exception:
+        pass
+    return head
+
+
+def _format_evidence(evidence_package) -> str:
+    try:
+        from core.context_builder import ContextBuilder
+        return ContextBuilder.to_agent_context(evidence_package)
+    except Exception:
+        lines = []
+        for i, ev in enumerate(getattr(evidence_package, "evidences", None) or [], 1):
+            path = getattr(ev, "path", "")
+            content = (getattr(ev, "content", None) or getattr(ev, "page_content", "") or "")[:1500]
+            lines.append(f"[{i}] path={path}\n{content}\n")
+        return "\n".join(lines) if lines else "(no evidence)"
 
 
 def _evidence_to_agent_context(package) -> str:
@@ -337,23 +374,20 @@ def critic_agent(state: ReviewState) -> dict:
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a senior staff engineer acting as Critic for an automated PR review.
 
-You receive findings from Correctness and Code Quality agents, plus the evidence they were given.
+You are a strict review critic. Input: findings from Correctness and Code Quality.
 
-Your job is NOT to invent new bugs. Your job is to FILTER:
+For each finding decide: KEEP | DROP | MERGE.
 
-KEEP a finding only if:
-1. It is supported by the retrieved evidence or the PR diff context provided
-2. It is specific (file/symbol/behavior), not generic advice
-3. It is not a duplicate of another finding (merge duplicates; keep the stronger one)
+DROP when:
+- No valid evidence path / contradiction with evidence
+- Duplicate of another finding
+- Generic advice with no PR-specific basis
+- Conflicts with deterministic PR analysis without justification
 
-DROP a finding if:
-- No clear link to evidence / files in context
-- Pure speculation ("might", "could possibly" with no anchor)
-- Contradicts stronger evidence-backed findings
-- Generic style nits with no location
-
-Return the filtered list only. Prefer fewer high-quality findings over many weak ones.
-If nothing survives, return an empty findings list."""),
+Output:
+- kept_findings (deduplicated, tightened titles)
+- dropped_summary (short reasons)
+- overall_assessment"""),
         ("human", """PR title: {title}
 
 Evidence summary:
@@ -414,7 +448,10 @@ def final_recommender(state: ReviewState) -> dict:
 Synthesize the provided findings into a clear, actionable recommendation.
 
 Be balanced, specific, and professional.
-Recommendation must be one of: MERGE, REQUEST_CHANGES, COMMENT."""),
+Recommendation must be one of: MERGE, REQUEST_CHANGES, COMMENT.
+If any high/critical kept finding → REQUEST_CHANGES
+Else if medium findings → COMMENT or REQUEST_CHANGES based on confidence
+Else if only low / none → MERGE (with residual risk note)"""),
         ("human", """PR Context:
 {context_summary}
 

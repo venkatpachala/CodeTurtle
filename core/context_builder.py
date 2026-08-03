@@ -53,6 +53,24 @@ class ContextBuilder:
         package.summary = ContextBuilder._build_summary(package)
         return package
 
+    # core/context_builder.py (add or extend)
+
+    def format_evidence_for_agents(evidence_package, max_chars: int = 12000) -> str:
+        lines = ["### Retrieved evidence"]
+        evidences = getattr(evidence_package, "evidences", None) or []
+        used = 0
+        for i, ev in enumerate(evidences, 1):
+            path = getattr(ev, "path", "") or ""
+            content = (getattr(ev, "content", None) or getattr(ev, "page_content", "") or "")[:2000]
+            block = f"\n[{i}] path={path}\n{content}\n"
+            if used + len(block) > max_chars:
+                break
+            lines.append(block)
+            used += len(block)
+        if len(lines) == 1:
+            lines.append("\n(No evidence retrieved — do not invent file contents.)")
+        return "".join(lines)
+
     @staticmethod
     def _build_summary(package: EvidencePackage) -> str:
         lines = [

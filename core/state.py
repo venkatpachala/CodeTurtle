@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Any, Annotated
+from typing import List, NotRequired, Optional, Dict, Any, Annotated
 import operator
 from datetime import datetime
 from typing_extensions import TypedDict
@@ -35,6 +35,7 @@ class ReviewState(TypedDict):
     pr_understanding: Optional[dict] = None
     pr_analysis: Optional[PRAnalysis] = None
     evidence_package: Optional[Dict] = None
+    review_plan: NotRequired[dict]  # or Optional[dict] = None
 
     # Specialized Findings
     correctness_findings: List[Finding]
