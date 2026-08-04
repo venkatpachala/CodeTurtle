@@ -1,0 +1,68 @@
+{
+  "input": {
+    "title": "fix(build): preserve calls edges over references on undirected collap\u2026",
+    "body": "Fixes #2391.\r\n\r\nThe sort by (source, target, relation) before G.add_edge was added for deterministic collapse order, but that also meant alphabetical order picked the survivor whenever two different relations landed on the same (src, tgt) pair \u2014 references always beat calls since \"calls\" < \"references\". G.add_edge just overwrites, no merge.\r\n\r\nAdded a small _RELATION_PRIORITY table so the higher-information relation wins the collapse instead of whichever sorts last. Unlisted relations default to",
+    "files": [
+      "graphify/build.py",
+      "tests/test_build.py"
+    ]
+  },
+  "output": {
+    "summary": "This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.",
+    "change_type": [
+      "bugfix"
+    ],
+    "risk_level": "low",
+    "affected_areas": [
+      "Graph Construction Logic",
+      "Edge Collapse Handling"
+    ],
+    "files_summary": [
+      "graphify/build.py: Updated edge handling to prioritize higher-information relations during undirected graph collapses.",
+      "tests/test_build.py: Added tests to validate the fix."
+    ],
+    "focus_areas": [
+      "Review the implementation of _RELATION_PRIORITY table and its usage in edge collapse logic.",
+      "Ensure that the new test cases cover all relevant scenarios, especially order-dependent behaviors."
+    ],
+    "potential_risks": [
+      "The addition of a new priority table might introduce subtle bugs if not thoroughly tested or if it interacts poorly with existing logic.",
+      "There is a risk that the fix could unintentionally change behavior in other parts of the codebase, although the author states there should be no regressions."
+    ],
+    "has_tests": true,
+    "has_docs": false
+  },
+  "raw_agent_return": {
+    "pr_understanding": {
+      "summary": "This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.",
+      "change_type": [
+        "bugfix"
+      ],
+      "risk_level": "low",
+      "affected_areas": [
+        "Graph Construction Logic",
+        "Edge Collapse Handling"
+      ],
+      "files_summary": [
+        "graphify/build.py: Updated edge handling to prioritize higher-information relations during undirected graph collapses.",
+        "tests/test_build.py: Added tests to validate the fix."
+      ],
+      "focus_areas": [
+        "Review the implementation of _RELATION_PRIORITY table and its usage in edge collapse logic.",
+        "Ensure that the new test cases cover all relevant scenarios, especially order-dependent behaviors."
+      ],
+      "potential_risks": [
+        "The addition of a new priority table might introduce subtle bugs if not thoroughly tested or if it interacts poorly with existing logic.",
+        "There is a risk that the fix could unintentionally change behavior in other parts of the codebase, although the author states there should be no regressions."
+      ],
+      "has_tests": true,
+      "has_docs": false
+    },
+    "traces": [
+      {
+        "agent": "PRUnderstandingAgent",
+        "output": "{\n  \"summary\": \"This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.\",\n  \"change_type\": [\n    \"bugfix\"\n  ],\n  \"risk_level\": \"low\",\n  \"affected_areas\": [\n    \"Graph Construction Logic\",\n    \"Edge Collapse Handling\"\n  ],\n  \"files_summary\": [\n    \"graphify/build.py: Updated edge handling to prioritize higher-information relations during undirected graph collapses.\",\n    \"tests/test_build.py: Added tests to validate the fix.\"\n  ],\n  \"focus_areas\": [\n    \"Review the implementation of _RELATION_PRIORITY table and its usage in edge collapse logic.\",\n    \"Ensure that the new test cases cover all relevant scenarios, especially order-dependent behaviors.\"\n  ],\n  \"potential_risks\": [\n    \"The addition of a new priority table might introduce subtle bugs if not thoroughly tested or if it interacts poorly with existing logic.\",\n    \"There is a risk that the fix could unintentionally change behavior in other parts of the codebase, although the author states there should be no regressions.\"\n  ],\n  \"has_tests\": true,\n  \"has_docs\": false\n}"
+      }
+    ]
+  }
+}

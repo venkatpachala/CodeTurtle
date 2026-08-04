@@ -1,0 +1,118 @@
+{
+  "output": {
+    "intent_summary": "This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.",
+    "risk_level": "low",
+    "reviewers": [
+      "code_quality",
+      "correctness",
+      "testing"
+    ],
+    "retrieval_questions": [
+      {
+        "question": "This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in un",
+        "purpose": "intent_semantic",
+        "prefer_paths": [
+          "graphify/build.py",
+          "tests/test_build.py"
+        ],
+        "prefer_symbols": []
+      },
+      {
+        "question": "implementation and usage of graphify/build.py",
+        "purpose": "changed_file",
+        "prefer_paths": [
+          "graphify/build.py"
+        ],
+        "prefer_symbols": []
+      },
+      {
+        "question": "implementation and usage of tests/test_build.py",
+        "purpose": "changed_file",
+        "prefer_paths": [
+          "tests/test_build.py"
+        ],
+        "prefer_symbols": []
+      },
+      {
+        "question": "function _same_pair_calls_references_extraction definition and callers",
+        "purpose": "changed_symbol",
+        "prefer_paths": [
+          "graphify/build.py",
+          "tests/test_build.py"
+        ],
+        "prefer_symbols": [
+          "_same_pair_calls_references_extraction"
+        ]
+      }
+    ],
+    "focus_notes": [
+      "Changed files: 2",
+      "Added functions: ['_same_pair_calls_references_extraction']",
+      "Modified functions: []",
+      "```json\n{\n  \"intent_summary\": \"This PR fixes a data-loss bug in graph construction by prioritizing higher-information relations during undirected graph edge collapses.\",\n  \"risk_level\": \"low\",\n  \"focus_notes\": [\n    \"Verify the implementation of _RELATION_PRIORITY table and its usage in edge collapse logic.\",\n    \"Ensure that new test cases cover all relevant scenarios, especially order-dependent behaviors.\",\n    \"Check for potential interactions with existing code to avoid unintended behavior c"
+    ],
+    "skip_reasons": {}
+  },
+  "raw": {
+    "review_plan": {
+      "intent_summary": "This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.",
+      "risk_level": "low",
+      "reviewers": [
+        "code_quality",
+        "correctness",
+        "testing"
+      ],
+      "retrieval_questions": [
+        {
+          "question": "This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in un",
+          "purpose": "intent_semantic",
+          "prefer_paths": [
+            "graphify/build.py",
+            "tests/test_build.py"
+          ],
+          "prefer_symbols": []
+        },
+        {
+          "question": "implementation and usage of graphify/build.py",
+          "purpose": "changed_file",
+          "prefer_paths": [
+            "graphify/build.py"
+          ],
+          "prefer_symbols": []
+        },
+        {
+          "question": "implementation and usage of tests/test_build.py",
+          "purpose": "changed_file",
+          "prefer_paths": [
+            "tests/test_build.py"
+          ],
+          "prefer_symbols": []
+        },
+        {
+          "question": "function _same_pair_calls_references_extraction definition and callers",
+          "purpose": "changed_symbol",
+          "prefer_paths": [
+            "graphify/build.py",
+            "tests/test_build.py"
+          ],
+          "prefer_symbols": [
+            "_same_pair_calls_references_extraction"
+          ]
+        }
+      ],
+      "focus_notes": [
+        "Changed files: 2",
+        "Added functions: ['_same_pair_calls_references_extraction']",
+        "Modified functions: []",
+        "```json\n{\n  \"intent_summary\": \"This PR fixes a data-loss bug in graph construction by prioritizing higher-information relations during undirected graph edge collapses.\",\n  \"risk_level\": \"low\",\n  \"focus_notes\": [\n    \"Verify the implementation of _RELATION_PRIORITY table and its usage in edge collapse logic.\",\n    \"Ensure that new test cases cover all relevant scenarios, especially order-dependent behaviors.\",\n    \"Check for potential interactions with existing code to avoid unintended behavior c"
+      ],
+      "skip_reasons": {}
+    },
+    "traces": [
+      {
+        "agent": "ReviewPlanner",
+        "output": "{\n  \"intent_summary\": \"This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.\",\n  \"risk_level\": \"low\",\n  \"reviewers\": [\n    \"code_quality\",\n    \"correctness\",\n    \"testing\"\n  ],\n  \"retrieval_questions\": [\n    {\n      \"question\": \"This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in un\",\n      \"purpose\": \"intent_semantic\",\n      \"prefer_paths\": [\n        \"graphify/build.py\",\n        \"tests/test_build.py\"\n      ],\n      \"prefer_symbols\": []\n    },\n    {\n      \"question\": \"implementation and usage of graphify/build.py\",\n      \"purpose\": \"changed_file\",\n      \"prefer_paths\": [\n        \"graphify/build.py\"\n      ],\n      \"prefer_symbols\": []\n    },\n    {\n      \"question\": \"implementation and usage of tests/test_build.py\",\n      \"purpose\": \"changed_file\",\n      \"prefer_paths\": [\n        \"tests/test_build.py\"\n      ],\n      \"prefer_symbols\": []\n    },\n    {\n      \"question\": \"function _same_pair_calls_references_extraction definition and callers\",\n      \"purpose\": \"changed_symbol\",\n      \"prefer_paths\": [\n        \"graphify/build.py\",\n        \"tests/test_build.py\"\n      ],\n      \"prefer_symbols\": [\n        \"_same_pair_calls_references_extraction\"\n      ]\n    }\n  ],\n  \"focus_notes\": [\n    \"Changed files: 2\",\n    \"Added functions: ['_same_pair_calls_references_extraction']\",\n    \"Modified functions: []\",\n    \"```json\\n{\\n  \\\"intent_summary\\\": \\\"This PR fixes a data-loss bug in graph construction by prioritizing higher-information relations during undirected graph edge collapses.\\\",\\n  \\\"risk_level\\\": \\\"low\\\",\\n  \\\"focus_notes\\\": [\\n    \\\"Verify the implementation of _RELATION_PRIORITY table and its usage in edge collapse logic.\\\",\\n    \\\"Ensure that new test cases cover all relevant scenarios, especially order-dependent behaviors.\\\",\\n    \\\"Check for potential interactions with existing code to avoid unintended behavior c\"\n  ],\n  \"skip_reasons\": {}\n}"
+      }
+    ]
+  }
+}

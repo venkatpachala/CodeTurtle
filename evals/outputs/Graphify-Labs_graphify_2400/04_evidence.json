@@ -1,0 +1,143 @@
+{
+  "per_query": [
+    {
+      "query": "This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-info",
+      "n_evidences": 6,
+      "paths": [
+        "graphify/export.py",
+        "graphify/affected.py",
+        "graphify/security.py",
+        "graphify/callflow_html.py",
+        "graphify/callflow_html.py",
+        "graphify/reflect.py"
+      ],
+      "affected_files": [
+        "graphify/affected.py",
+        "graphify/callflow_html.py",
+        "graphify/export.py",
+        "graphify/reflect.py",
+        "graphify/security.py"
+      ],
+      "related_symbols": [
+        "_load_known_nodes",
+        "_node_link_payload",
+        "_report_highlights",
+        "load_graph",
+        "prune_dangling_edges"
+      ],
+      "summary_preview": "PR Summary: This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.\nRisk Level:"
+    },
+    {
+      "query": "implementation and usage of graphify/build.py",
+      "n_evidences": 6,
+      "paths": [
+        "graphify/install.py",
+        "graphify/install.py",
+        "graphify/build.py",
+        "graphify/install.py",
+        "graphify/install.py",
+        "graphify/install.py"
+      ],
+      "affected_files": [
+        "graphify/build.py",
+        "graphify/install.py"
+      ],
+      "related_symbols": [
+        "_agents_install",
+        "_kilo_install",
+        "_print_install_usage",
+        "_project_install",
+        "_skill_registration",
+        "edge_data"
+      ],
+      "summary_preview": "PR Summary: This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.\nRisk Level:"
+    },
+    {
+      "query": "implementation and usage of tests/test_build.py",
+      "n_evidences": 6,
+      "paths": [
+        "tests/test_install.py",
+        "tests/test_install.py",
+        "tests/test_install.py",
+        "tests/test_install.py",
+        "tests/test_install.py",
+        "tests/test_install.py"
+      ],
+      "affected_files": [
+        "tests/test_install.py"
+      ],
+      "related_symbols": [
+        "test_install_codebuddy",
+        "test_install_codex",
+        "test_install_default_claude",
+        "test_install_trae_cn",
+        "test_kilo_agents_install_writes_agents_md",
+        "test_opencode_agents_install_writes_agents_md"
+      ],
+      "summary_preview": "PR Summary: This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.\nRisk Level:"
+    },
+    {
+      "query": "function _same_pair_calls_references_extraction definition and callers",
+      "n_evidences": 6,
+      "paths": [
+        "tests/test_multilang.py",
+        "graphify/extractors/resolution.py",
+        "tests/test_extract.py",
+        "tests/test_cross_language_call_resolution.py",
+        "graphify/extractors/resolution.py",
+        "tests/test_phantom_cross_package_call.py"
+      ],
+      "affected_files": [
+        "graphify/extractors/resolution.py",
+        "tests/test_cross_language_call_resolution.py",
+        "tests/test_extract.py",
+        "tests/test_multilang.py",
+        "tests/test_phantom_cross_package_call.py"
+      ],
+      "related_symbols": [
+        "_call_pairs",
+        "_js_call_identifier",
+        "_python_call_identifier",
+        "test_calls_deduplication",
+        "test_same_file_call_unaffected",
+        "test_same_language_callback_still_resolves"
+      ],
+      "summary_preview": "PR Summary: This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.\nRisk Level:"
+    }
+  ],
+  "all_paths": [
+    "graphify/affected.py",
+    "graphify/build.py",
+    "graphify/callflow_html.py",
+    "graphify/export.py",
+    "graphify/extractors/resolution.py",
+    "graphify/install.py",
+    "graphify/reflect.py",
+    "graphify/security.py",
+    "tests/test_cross_language_call_resolution.py",
+    "tests/test_extract.py",
+    "tests/test_install.py",
+    "tests/test_multilang.py",
+    "tests/test_phantom_cross_package_call.py"
+  ],
+  "all_affected_files": [
+    "graphify/affected.py",
+    "graphify/build.py",
+    "graphify/callflow_html.py",
+    "graphify/export.py",
+    "graphify/extractors/resolution.py",
+    "graphify/install.py",
+    "graphify/reflect.py",
+    "graphify/security.py",
+    "tests/test_cross_language_call_resolution.py",
+    "tests/test_extract.py",
+    "tests/test_install.py",
+    "tests/test_multilang.py",
+    "tests/test_phantom_cross_package_call.py"
+  ],
+  "files_changed": [
+    "graphify/build.py",
+    "tests/test_build.py"
+  ],
+  "n_questions": 4
+}

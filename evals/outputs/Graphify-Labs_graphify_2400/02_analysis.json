@@ -1,0 +1,62 @@
+{
+  "output": {
+    "changed_files": [
+      "graphify/build.py",
+      "tests/test_build.py"
+    ],
+    "modified_functions": [],
+    "modified_classes": [],
+    "added_functions": [
+      "_same_pair_calls_references_extraction"
+    ],
+    "tests_added_or_modified": true,
+    "config_changed": false,
+    "documentation_changed": false,
+    "insertions": 74,
+    "deletions": 2,
+    "languages": [
+      "Python"
+    ],
+    "high_risk_files": [
+      "graphify/build.py"
+    ],
+    "added_test_functions": [
+      "test_build_from_json_calls_survives_references_collapse_either_order"
+    ],
+    "modified_test_functions": []
+  },
+  "raw": {
+    "pr_analysis": {
+      "changed_files": [
+        "graphify/build.py",
+        "tests/test_build.py"
+      ],
+      "modified_functions": [],
+      "modified_classes": [],
+      "added_functions": [
+        "_same_pair_calls_references_extraction"
+      ],
+      "tests_added_or_modified": true,
+      "config_changed": false,
+      "documentation_changed": false,
+      "insertions": 74,
+      "deletions": 2,
+      "languages": [
+        "Python"
+      ],
+      "high_risk_files": [
+        "graphify/build.py"
+      ],
+      "added_test_functions": [
+        "test_build_from_json_calls_survives_references_collapse_either_order"
+      ],
+      "modified_test_functions": []
+    },
+    "traces": [
+      {
+        "agent": "PRAnalysisAgent",
+        "output": "{'changed_files': ['graphify/build.py', 'tests/test_build.py'], 'modified_functions': [], 'modified_classes': [], 'added_functions': ['_same_pair_calls_references_extraction'], 'tests_added_or_modified': True, 'config_changed': False, 'documentation_changed': False, 'insertions': 74, 'deletions': 2, 'languages': ['Python'], 'high_risk_files': ['graphify/build.py'], 'added_test_functions': ['test_build_from_json_calls_survives_references_collapse_either_order'], 'modified_test_functions': []}"
+      }
+    ]
+  }
+}
