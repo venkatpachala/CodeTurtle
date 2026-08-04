@@ -31,17 +31,30 @@ class PRUnderstanding(BaseModel):
     has_docs: bool = False
 
 class PRAnalysis(BaseModel):
-    changed_files: List[str]
-    modified_functions: List[str] = Field(default_factory=list)
-    modified_classes: List[str] = Field(default_factory=list)
-    added_functions: List[str] = Field(default_factory=list)
+    changed_files: list[str] = Field(default_factory=list)
+    added_functions: list[str] = Field(default_factory=list)
+    modified_functions: list[str] = Field(default_factory=list)
+    modified_classes: list[str] = Field(default_factory=list)
+    removed_functions: list[str] = Field(default_factory=list)
+    constants_added: list[str] = Field(default_factory=list)
+
+    insertions: int = 0
+    deletions: int = 0
+    languages: list[str] = Field(default_factory=list)
+
     tests_added_or_modified: bool = False
     config_changed: bool = False
     documentation_changed: bool = False
-    insertions: int = 0
-    deletions: int = 0
-    languages: List[str] = Field(default_factory=list)
-    high_risk_files: List[str] = Field(default_factory=list)
+    added_test_functions: list[str] = Field(default_factory=list)
+    modified_test_functions: list[str] = Field(default_factory=list)
+
+    high_risk_files: list[str] = Field(default_factory=list)
+    high_risk_reasons: dict[str, str] = Field(default_factory=dict)
+
+    logic_changes: list[str] = Field(default_factory=list)
+    behavior_changes: list[str] = Field(default_factory=list)
+    review_hotspots: list[str] = Field(default_factory=list)
+    architectural_changes: list[str] = Field(default_factory=list)
 
 
 class Finding(BaseModel):
