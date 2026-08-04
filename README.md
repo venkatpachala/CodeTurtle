@@ -1,4 +1,4 @@
-# CodeTurtle 🐢
+# CodeTurtle 
 
 > **Autonomous, Local-First Multi-Agent Swarm for Repository-Aware GitHub Code Reviews**
 
@@ -344,7 +344,3 @@ Contributions are welcome! Please follow these guidelines:
 4. Open a Pull Request detailing your changes and verification results.
 
 ---
-
-## 📄 License
-
-Distributed under the **MIT License**. See `LICENSE` for more information.
