@@ -131,7 +131,6 @@ class ReviewPipeline:
         self.context.full_diff = "\n".join(parts)
 
     def _create_review_state(self):
-        # kb + engine must be in state so build_evidence_package / agents share one client
         self.context.state = {
             "repo": self.context.repo,
             "number": self.context.number,
@@ -173,14 +172,20 @@ class ReviewPipeline:
             console.print("\n[bold cyan]=== PR UNDERSTANDING ===[/bold cyan]")
             console.print(f"**Summary**: {understanding.get('summary', '')}")
             console.print(f"**Risk Level**: {understanding.get('risk_level', '')}")
-            change_types = understanding.get("change_type") or understanding.get("change_types") or []
+            change_types = (
+                understanding.get("change_type")
+                or understanding.get("change_types")
+                or []
+            )
             if isinstance(change_types, list):
-                console.print(f"**Change Types**: {', '.join(str(x) for x in change_types)}")
+                console.print(
+                    f"**Change Types**: {', '.join(str(x) for x in change_types)}"
+                )
             console.print(
                 f"**Focus Areas**: {', '.join(str(x) for x in (understanding.get('focus_areas') or []))}"
             )
 
-        # ── Review Plan (RI-1) ───────────────────────────────────────────
+        # ── Review Plan ──────────────────────────────────────────────────
         plan = _as_dict(final.get("review_plan"))
         if plan:
             console.print("\n[bold magenta]=== REVIEW PLAN ===[/bold magenta]")
@@ -191,30 +196,41 @@ class ReviewPipeline:
             console.print(f"**Retrieval questions**: {len(qs)}")
             for q in qs[:8]:
                 if isinstance(q, dict):
-                    console.print(f"  - [{q.get('purpose', '')}] {q.get('question', '')[:100]}")
+                    console.print(
+                        f"  - [{q.get('purpose', '')}] {str(q.get('question', ''))[:100]}"
+                    )
                 else:
                     console.print(f"  - {q}")
 
-        # ── Specialist findings (pre-critic, optional) ───────────────────
-        corr = final.get("correctness_findings") or []
-        qual = final.get("quality_findings") or []
-        if corr:
-            console.print("\n[bold red]=== CORRECTNESS (grounded) ===[/bold red]")
-            self._print_findings(corr)
-        if qual:
-            console.print("\n[bold yellow]=== CODE QUALITY (grounded) ===[/bold yellow]")
-            self._print_findings(qual)
-        if not corr and not qual:
-            # fallback older key
-            code_analysis = final.get("code_analysis")
-            if code_analysis:
-                console.print("\n[bold green]=== CODE QUALITY ANALYSIS ===[/bold green]")
-                console.print(str(code_analysis)[:2000])
+        # ── Specialists (always show meta: raw / grounded / skipped) ─────
+        console.print("\n[bold red]=== CORRECTNESS ===[/bold red]")
+        self._print_meta(
+            "CORRECTNESS",
+            final.get("correctness_meta"),
+            final.get("correctness_findings") or [],
+        )
 
-        testing = final.get("testing_findings") or []
-        if testing:
-            console.print("\n[bold blue]=== TESTING (grounded) ===[/bold blue]")
-            self._print_findings(testing)
+        console.print("\n[bold yellow]=== CODE QUALITY ===[/bold yellow]")
+        self._print_meta(
+            "CODE QUALITY",
+            final.get("quality_meta"),
+            final.get("quality_findings") or [],
+        )
+
+        console.print("\n[bold blue]=== TESTING ===[/bold blue]")
+        self._print_meta(
+            "TESTING",
+            final.get("testing_meta"),
+            final.get("testing_findings") or [],
+        )
+
+        # Legacy fallback if only old code_analysis present
+        if (
+            not (final.get("correctness_findings") or final.get("quality_findings"))
+            and final.get("code_analysis")
+        ):
+            console.print("\n[bold green]=== CODE QUALITY ANALYSIS (legacy) ===[/bold green]")
+            console.print(str(final.get("code_analysis"))[:2000])
 
         # ── Critic ───────────────────────────────────────────────────────
         critique = _as_dict(final.get("critique"))
@@ -265,6 +281,24 @@ class ReviewPipeline:
                 console.print(f"Recommendation: {d.get('recommendation')}")
             console.print("---")
 
+    def _print_meta(self, label: str, meta: Any, findings: list):
+        meta = meta if isinstance(meta, dict) else {}
+        if meta.get("skipped"):
+            console.print(f"[dim]{label}: skipped (not in plan)[/dim]")
+            return
+        raw = meta.get("raw", "?")
+        grounded = meta.get("grounded", len(findings) if findings is not None else 0)
+        extra = ""
+        if "no_issues_in_diff" in meta:
+            extra = f" no_issues_in_diff={meta.get('no_issues_in_diff')}"
+        if "tests_touched" in meta:
+            extra += f" tests_touched={meta.get('tests_touched')}"
+        console.print(f"[dim]{label}: raw={raw} grounded={grounded}{extra}[/dim]")
+        if findings:
+            self._print_findings(findings)
+        else:
+            console.print(f"[dim]{label}: no grounded findings[/dim]")
+
     def _save_to_memory(self):
         final = self.context.final_state or {}
         memory.save_review(
@@ -282,7 +316,9 @@ def review(
     repo: str = typer.Argument(..., help="Repository in format owner/repo"),
     number: int = typer.Argument(..., help="PR number"),
     dry_run: bool = typer.Option(True, "--dry-run"),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed error information"),
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Show detailed error information"
+    ),
 ):
     logger.info("Starting review", repo=repo, pr_number=number)
     ReviewPipeline().run(repo, number, dry_run, verbose)

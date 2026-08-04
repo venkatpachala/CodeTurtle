@@ -43,9 +43,13 @@ class ReviewState(TypedDict):
     critique: dict
     merge_decision: dict
     review_plan: dict
-    
+
     # Aggregated Findings
     findings: List[Finding]
+
+    correctness_meta: dict
+    testing_meta: dict
+    quality_meta: dict
 
     # Agent Outputs
     code_analysis: Dict

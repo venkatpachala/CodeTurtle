@@ -32,6 +32,73 @@ def _reviewers_from_state(state: dict) -> set[str]:
 def _should_run(state: dict, kind: str) -> bool:
     return kind in _reviewers_from_state(state)
 
+def _diff_for_review(state: dict, max_chars: int = 14000) -> str:
+    diff = (state.get("full_diff") or "").strip()
+    return diff[:max_chars] if diff else "(no diff)"
+
+
+def _files_block(state: dict) -> str:
+    files = state.get("files_changed") or []
+    return "\n".join(files) if files else "(none)"
+
+
+def _expand_evidence(
+    refs,
+    files_changed: list | None,
+    allowed: set[str],
+) -> list[str]:
+    """
+    Keep strict path evidence when possible; if the model only cited a basename
+    or a partial path, map it onto files_changed / allowed paths.
+    """
+    files_changed = list(files_changed or [])
+    primary = _normalize_evidence(refs, allowed)
+    if primary:
+        return primary
+
+    out: list[str] = []
+    blob = " ".join(str(r) for r in (refs or []))
+    lowered = blob.lower()
+
+    for f in files_changed:
+        base = f.split("/")[-1]
+        if f in blob or base in blob or f.lower() in lowered or base.lower() in lowered:
+            out.append(f)
+
+    for a in allowed:
+        base = a.split("/")[-1]
+        if a in blob or base in blob:
+            out.append(a)
+
+    # Last resort: if model returned any non-empty evidence strings and we have
+    # exactly one changed file, attribute to that file (better than dropping).
+    if not out and refs and len(files_changed) == 1:
+        out = [files_changed[0]]
+
+    return list(dict.fromkeys(out))
+
+
+def _ground_findings(
+    raw_list,
+    *,
+    files_changed: list,
+    context_from_kb: str,
+    category: str,
+    id_prefix: str,
+) -> list[dict]:
+    allowed = _paths_from_context(context_from_kb) | set(files_changed or [])
+    grounded = []
+    for i, f in enumerate(raw_list or []):
+        d = _finding_to_dict(f)
+        refs = d.get("evidence") or d.get("evidence_refs") or d.get("evidence_ids") or []
+        ev = _expand_evidence(refs, files_changed, allowed)
+        if not ev:
+            continue
+        d["evidence"] = ev
+        d["category"] = category
+        d.setdefault("id", f"{id_prefix}-{i}")
+        grounded.append(d)
+    return grounded
 
 def _paths_from_context(context_from_kb: str) -> Set[str]:
     if not context_from_kb:
@@ -191,64 +258,71 @@ Provide a concise, actionable summary for code reviewers."""),
     }
 
 
+
+
 # ── Specialist reviewers ─────────────────────────────────────────────────────
 
 def correctness_agent(state: ReviewState) -> dict:
     if not _should_run(state, "correctness"):
         return {
             "correctness_findings": [],
+            "correctness_meta": {"skipped": True, "raw": 0, "grounded": 0},
             "traces": [{"agent": "CorrectnessAgent", "output": "skipped (not in review_plan)"}],
         }
-    evidence_package = state.get("evidence_package")
-    pr_understanding = state.get("pr_understanding", {})
-    pr_analysis = state.get("pr_analysis", {})
-    rich_context = (state.get("context_from_kb") or "")[:12000]
 
-    evidence_summary = ""
-    if evidence_package is not None and hasattr(evidence_package, "summary"):
-        evidence_summary = evidence_package.summary or ""
-
+    pr_understanding = state.get("pr_understanding") or {}
+    pr_analysis = state.get("pr_analysis") or {}
     plan = state.get("review_plan") or {}
     focus = plan.get("focus_notes") if isinstance(plan, dict) else []
+    rich_context = (state.get("context_from_kb") or "")[:8000]
+    diff = _diff_for_review(state)
+    files = _files_block(state)
+    files_changed = list(state.get("files_changed") or [])
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are a Correctness Reviewer for a GitHub PR.
+        ("system", """You are a Correctness Reviewer for a GitHub Pull Request.
+
+PRIMARY SOURCE OF TRUTH: the unified DIFF of changed files.
+SECONDARY: retrieved repository evidence (for definitions/callers only).
 
 HARD RULES:
-1. You may ONLY use the PR metadata and the Evidence / context blocks provided.
-2. Every finding MUST include a non-empty "evidence" list of paths or path:line refs
-   that appear in the evidence (e.g. graphify/build.py or graphify/build.py:120-140).
-3. If you cannot ground a claim in evidence, DO NOT emit that finding.
-4. Prefer 0 findings over ungrounded or generic advice.
-5. Focus on real defects: logic errors, edge cases, broken invariants, regressions,
-   missing error handling — not style.
-6. Do not invent APIs, files, or behaviors absent from evidence/diff."""),
+1. Review the DIFF first. Every finding must point to a concrete change in the diff
+   (file path and, if possible, changed behavior).
+2. evidence MUST be a non-empty list of repo-relative paths from the changed-file list
+   when possible (e.g. graphify/build.py) or path:line from the diff.
+3. Do NOT invent files, APIs, or behaviors absent from the diff or evidence.
+4. Do NOT treat truncated evidence snippets as "incomplete code in the repo".
+5. Prefer real defects: logic errors, regressions, broken invariants, missing
+   edge cases in the changed code. Skip pure style.
+6. Prefer 0 findings over generic advice ("ensure tests", "review carefully").
+7. If the diff looks correct for the stated bugfix, return an EMPTY findings list."""),
         ("human", """PR Understanding:
 {pr_understanding}
 
 PR Analysis:
 {pr_analysis}
 
-Review focus notes:
+Review focus:
 {focus}
 
-Evidence summary:
-{evidence_summary}
+Changed files:
+{files}
 
-Retrieved evidence / context:
-{rich_context}
-
-Diff (truncated):
+=== UNIFIED DIFF (PRIMARY) ===
 {diff}
 
-Return Findings: only grounded correctness issues."""),
+=== RETRIEVED REPO EVIDENCE (SECONDARY) ===
+{rich_context}
+
+Return Findings for correctness issues grounded in the DIFF.
+If none, return findings=[]."""),
     ]).format(
         pr_understanding=pr_understanding,
         pr_analysis=pr_analysis,
         focus=focus,
-        evidence_summary=evidence_summary or "(see context)",
-        rich_context=rich_context or "(no evidence)",
-        diff=(state.get("full_diff") or "")[:8000],
+        files=files,
+        diff=diff,
+        rich_context=rich_context or "(none)",
     )
 
     result = gateway.generate_structured(
@@ -256,20 +330,39 @@ Return Findings: only grounded correctness issues."""),
         schema=Findings,
         capability="correctness_review",
         agent_name="CorrectnessAgent",
-        temperature=0.15,
+        temperature=0.1,
         max_tokens=2000,
     )
 
-    raw = result.findings if hasattr(result, "findings") else []
-    grounded = _filter_grounded_findings(raw, rich_context)
-    for d in grounded:
-        d["category"] = "correctness"
+    raw_list = list(result.findings if hasattr(result, "findings") else [])
+    grounded = _ground_findings(
+        raw_list,
+        files_changed=files_changed,
+        context_from_kb=rich_context + "\n" + diff,
+        category="correctness",
+        id_prefix="corr",
+    )
+
+    # Temporary: uncomment if raw>0 grounded==0
+    # if raw_list and not grounded:
+    #     print("CORRECTNESS DROP", [_finding_to_dict(x) for x in raw_list])
+
+    meta = {
+        "skipped": False,
+        "raw": len(raw_list),
+        "grounded": len(grounded),
+        "no_issues_in_diff": len(grounded) == 0,
+    }
 
     return {
         "correctness_findings": grounded,
+        "correctness_meta": meta,
         "traces": [{
             "agent": "CorrectnessAgent",
-            "output": f"raw={len(raw)} grounded={len(grounded)}",
+            "output": (
+                f"raw={meta['raw']} grounded={meta['grounded']} "
+                f"no_issues={meta['no_issues_in_diff']}"
+            ),
         }],
     }
 
@@ -278,49 +371,65 @@ def code_quality_agent(state: ReviewState) -> dict:
     if not _should_run(state, "code_quality"):
         return {
             "quality_findings": [],
+            "quality_meta": {"skipped": True, "raw": 0, "grounded": 0},
             "traces": [{"agent": "CodeQualityAgent", "output": "skipped (not in review_plan)"}],
         }
+
     evidence_package = state.get("evidence_package")
-    pr_understanding = state.get("pr_understanding", {})
-    pr_analysis = state.get("pr_analysis", {})
+    pr_understanding = state.get("pr_understanding") or {}
+    pr_analysis = state.get("pr_analysis") or {}
     rich_context = (state.get("context_from_kb") or "")[:12000]
+    diff = _diff_for_review(state, max_chars=10000)
+    files_changed = list(state.get("files_changed") or [])
+    files = _files_block(state)
 
     evidence_summary = ""
     if evidence_package is not None and hasattr(evidence_package, "summary"):
         evidence_summary = evidence_package.summary or ""
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are a Code Quality Reviewer.
+        ("system", """You are a Code Quality Reviewer for a GitHub Pull Request.
+
+PRIMARY: unified DIFF of changed files.
+SECONDARY: retrieved evidence/context.
 
 HARD RULES:
-1. Only use provided evidence/context and PR metadata.
-2. Every finding MUST include non-empty evidence paths from the context.
+1. Only use the diff, evidence/context, and PR metadata provided.
+2. evidence MUST be a non-empty list; prefer repo-relative paths from the
+   changed-file list (e.g. graphify/build.py).
 3. If evidence is insufficient, return zero findings.
 4. Focus on maintainability, API clarity, duplication, error-handling structure,
-   testability — not pure nitpicks.
-5. Never invent code that was not retrieved."""),
+   testability — not pure nitpicks or style-only comments.
+5. Never invent code that was not retrieved or shown in the diff.
+6. Do NOT report "incomplete functions" solely because a retrieved snippet is truncated.
+7. Prefer 0 findings over generic advice."""),
         ("human", """PR Understanding:
 {pr_understanding}
 
 PR Analysis:
 {pr_analysis}
 
+Changed files:
+{files}
+
 Evidence summary:
 {evidence_summary}
 
-Retrieved evidence / context:
-{rich_context}
-
-Diff (truncated):
+=== UNIFIED DIFF (PRIMARY) ===
 {diff}
 
-Return Findings: only grounded code quality issues."""),
+=== RETRIEVED EVIDENCE (SECONDARY) ===
+{rich_context}
+
+Return Findings: only grounded code quality issues.
+If none, return findings=[]."""),
     ]).format(
         pr_understanding=pr_understanding,
         pr_analysis=pr_analysis,
+        files=files,
         evidence_summary=evidence_summary or "(see context)",
+        diff=diff,
         rich_context=rich_context or "(no evidence)",
-        diff=(state.get("full_diff") or "")[:8000],
     )
 
     result = gateway.generate_structured(
@@ -332,16 +441,27 @@ Return Findings: only grounded code quality issues."""),
         max_tokens=2000,
     )
 
-    raw = result.findings if hasattr(result, "findings") else []
-    grounded = _filter_grounded_findings(raw, rich_context)
-    for d in grounded:
-        d["category"] = "code_quality"
+    raw_list = list(result.findings if hasattr(result, "findings") else [])
+    grounded = _ground_findings(
+        raw_list,
+        files_changed=files_changed,
+        context_from_kb=rich_context + "\n" + diff,
+        category="code_quality",
+        id_prefix="qual",
+    )
+
+    meta = {
+        "skipped": False,
+        "raw": len(raw_list),
+        "grounded": len(grounded),
+    }
 
     return {
         "quality_findings": grounded,
+        "quality_meta": meta,
         "traces": [{
             "agent": "CodeQualityAgent",
-            "output": f"raw={len(raw)} grounded={len(grounded)}",
+            "output": f"raw={meta['raw']} grounded={meta['grounded']}",
         }],
     }
 
@@ -468,6 +588,8 @@ def critic_agent(state: ReviewState) -> dict:
     quality = list(state.get("quality_findings") or [])
     testing = list(state.get("testing_findings") or [])
 
+    context = state.get("context_from_kb") or ""
+
     combined: List[dict] = []
     for src, cat in (
         (correctness, "correctness"),
@@ -584,6 +706,9 @@ Return only the findings to KEEP."""),
 def final_recommender(state: ReviewState) -> dict:
     findings = list(state.get("findings") or [])
     finding_dicts = [_finding_to_dict(f) for f in findings]
+    understanding = state.get("pr_understanding") or {}
+    risk = understanding.get("risk_level", "medium") if isinstance(understanding, dict) else "medium"
+    summary_u = understanding.get("summary", "") if isinstance(understanding, dict) else ""
 
     sev = [str(f.get("severity", "low")).lower() for f in finding_dicts]
     if any(s in ("critical", "high") for s in sev):
@@ -593,34 +718,35 @@ def final_recommender(state: ReviewState) -> dict:
     else:
         baseline = "MERGE"
 
-    understanding = state.get("pr_understanding") or {}
-    risk = understanding.get("risk_level", "medium") if isinstance(understanding, dict) else "medium"
+    corr_meta = state.get("correctness_meta") or {}
+    test_meta = state.get("testing_meta") or {}
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are the final maintainer decision for a GitHub PR.
+        ("system", """You are the final maintainer decision.
 
 Rules:
-- recommendation MUST be exactly one of: MERGE, REQUEST_CHANGES, COMMENT
-- Do not invent issues not present in the findings list
-- If findings is empty and risk is low → MERGE
-- High/critical findings → REQUEST_CHANGES
-- Medium-only → COMMENT or REQUEST_CHANGES
-- summary: max 5 sentences, decision-focused, professional"""),
-        ("human", """PR risk (understanding): {risk}
-Severity baseline: {baseline}
+- recommendation MUST be MERGE | REQUEST_CHANGES | COMMENT
+- summary MUST only use: PR understanding summary + kept findings
+- Do NOT invent features, bugs, or subsystems not present there
+- If kept findings is empty → MERGE (mention residual risk only if understanding risk is high/critical)
+- High/critical findings → REQUEST_CHANGES"""),
+        ("human", """Understanding summary: {summary_u}
+Risk: {risk}
+Baseline: {baseline}
+Correctness meta: {corr_meta}
+Testing meta: {test_meta}
 
-Kept findings (JSON):
+Kept findings JSON:
 {findings}
 
-Context summary:
-{context_summary}
-
-Return ReviewOutput with recommendation, summary, confidence."""),
+Return ReviewOutput."""),
     ]).format(
+        summary_u=summary_u,
         risk=risk,
         baseline=baseline,
+        corr_meta=corr_meta,
+        test_meta=test_meta,
         findings=json.dumps(finding_dicts, indent=2)[:6000],
-        context_summary=(state.get("context_summary") or "")[:2000],
     )
 
     try:
@@ -672,18 +798,25 @@ def testing_agent(state: ReviewState) -> dict:
     if not _should_run(state, "testing"):
         return {
             "testing_findings": [],
+            "testing_meta": {
+                "skipped": True,
+                "raw": 0,
+                "grounded": 0,
+                "tests_touched": False,
+            },
             "traces": [{"agent": "TestingAgent", "output": "skipped (not in review_plan)"}],
         }
 
     pr_understanding = state.get("pr_understanding") or {}
     pr_analysis = state.get("pr_analysis") or {}
     rich_context = (state.get("context_from_kb") or "")[:12000]
-    diff = (state.get("full_diff") or "")[:10000]
-    files = state.get("files_changed") or []
+    diff = _diff_for_review(state, max_chars=10000)
+    files_changed = list(state.get("files_changed") or [])
+    files = _files_block(state)
 
     tests_touched = any(
         "test" in str(f).lower() or str(f).endswith("_test.py")
-        for f in files
+        for f in files_changed
     )
     analysis_tests = False
     if isinstance(pr_analysis, dict):
@@ -692,9 +825,13 @@ def testing_agent(state: ReviewState) -> dict:
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a Testing Reviewer for a GitHub PR.
 
+PRIMARY: unified DIFF and changed-file list.
+SECONDARY: retrieved evidence/context.
+
 HARD RULES:
 1. Only use the PR diff, file list, and retrieved evidence/context.
-2. Every finding MUST include non-empty evidence paths from the context or changed test files.
+2. evidence MUST be a non-empty list; prefer repo-relative paths from the
+   changed-file list (e.g. tests/test_build.py, graphify/build.py).
 3. Prefer 0 findings over generic "add more tests" with no specifics.
 4. Focus on:
    - Bug/fix behavior claimed in the PR but not asserted in tests
@@ -715,17 +852,18 @@ Deterministic signals:
 - tests_in_changed_files: {tests_touched}
 - analysis.tests_added_or_modified: {analysis_tests}
 
-Diff (truncated):
+=== UNIFIED DIFF (PRIMARY) ===
 {diff}
 
-Retrieved evidence / context:
+=== RETRIEVED EVIDENCE (SECONDARY) ===
 {rich_context}
 
-Return Findings: only concrete testing gaps grounded in evidence/diff."""),
+Return Findings: only concrete testing gaps grounded in evidence/diff.
+If none, return findings=[]."""),
     ]).format(
         pr_understanding=pr_understanding,
         pr_analysis=pr_analysis,
-        files="\n".join(files) if files else "(none)",
+        files=files,
         tests_touched=tests_touched,
         analysis_tests=analysis_tests,
         diff=diff or "(no diff)",
@@ -735,35 +873,36 @@ Return Findings: only concrete testing gaps grounded in evidence/diff."""),
     result = gateway.generate_structured(
         prompt=prompt,
         schema=Findings,
-        capability="reasoning",  # or add "testing_review" to registry
+        capability="reasoning",  # or "testing_review" if registered
         agent_name="TestingAgent",
         temperature=0.15,
         max_tokens=1500,
     )
 
-    raw = result.findings if hasattr(result, "findings") else []
-    grounded = _filter_grounded_findings(raw, rich_context + "\n" + diff)
-    # For tests, also accept evidence paths that appear in files_changed
-    if not grounded and raw:
-        allowed = set(files) | _paths_from_context(rich_context)
-        grounded = []
-        for i, f in enumerate(raw):
-            d = _finding_to_dict(f)
-            ev = _normalize_evidence(d.get("evidence") or [], allowed)
-            if not ev:
-                continue
-            d["evidence"] = ev
-            d["category"] = "testing"
-            d.setdefault("id", f"test-{i}")
-            grounded.append(d)
-    else:
-        for d in grounded:
-            d["category"] = "testing"
+    raw_list = list(result.findings if hasattr(result, "findings") else [])
+    grounded = _ground_findings(
+        raw_list,
+        files_changed=files_changed,
+        context_from_kb=rich_context + "\n" + diff,
+        category="testing",
+        id_prefix="test",
+    )
+
+    meta = {
+        "skipped": False,
+        "raw": len(raw_list),
+        "grounded": len(grounded),
+        "tests_touched": tests_touched,
+    }
 
     return {
         "testing_findings": grounded,
+        "testing_meta": meta,
         "traces": [{
             "agent": "TestingAgent",
-            "output": f"raw={len(raw)} grounded={len(grounded)} tests_touched={tests_touched}",
+            "output": (
+                f"raw={meta['raw']} grounded={meta['grounded']} "
+                f"tests_touched={tests_touched}"
+            ),
         }],
     }
