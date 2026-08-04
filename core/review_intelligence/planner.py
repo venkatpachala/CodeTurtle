@@ -209,33 +209,27 @@ def _deterministic_questions(
         k in blob
         for k in ("relation", "priority", "collapse", "add_edge", "undirected")
     ):
-        policy_qs = [
-            (
-                "How are duplicate undirected edges on the same node pair resolved?",
-                "collapse_policy",
-            ),
-            (
-                "Where does add_edge overwrite existing edge relation attributes?",
-                "overwrite_semantics",
-            ),
-            (
-                "How are unknown or equal-priority relations handled in edge collapse?",
-                "priority_edge_cases",
-            ),
-            (
-                "How is reverse-direction duplicate of the same relation skipped?",
-                "reverse_edge",
-            ),
-        ]
-        for q, purpose in policy_qs:
-            questions.append(
-                RetrievalQuestion(
-                    question=q,
-                    purpose=purpose,
-                    prefer_paths=code_files[:3] or files[:3],
-                    prefer_symbols=(modified + constants)[:4],
-                )
+        questions.append(
+            RetrievalQuestion(
+                question=(
+                    "Undirected edge collapse: add_edge overwrite, _RELATION_PRIORITY, "
+                    "unknown/equal priority, reverse-direction same relation"
+                ),
+                purpose="collapse_policy",
+                prefer_paths=code_files[:3] or files[:3],
+                prefer_symbols=(modified + constants)[:5],
             )
+        )
+
+    # One blast-radius slot (diversity without noise)
+    questions.append(
+        RetrievalQuestion(
+            question="Who reads edge relation attributes? export, callflow, affected, graph queries",
+            purpose="blast_radius",
+            prefer_paths=[],
+            prefer_symbols=["edge_data"] if "edge" in blob else (modified[:2] or []),
+        )
+    )
 
     if analysis.get("tests_added_or_modified") or test_files:
         questions.append(
@@ -262,15 +256,17 @@ def _deterministic_questions(
     seen: set[str] = set()
     unique: list[RetrievalQuestion] = []
     for q in questions:
+        q_text = q.question.strip()
+        for bad_prefix in ("implementation and usage of ", "implementation of ", "usage of "):
+            if q_text.lower().startswith(bad_prefix):
+                q_text = q_text[len(bad_prefix):].strip()
+        q.question = q_text
         key = q.question.strip().lower()
-        if key in seen:
-            continue
-        # Ban file-centric RAG anti-pattern
-        if key.startswith("implementation and usage of "):
+        if key in seen or not key:
             continue
         seen.add(key)
         unique.append(q)
-    return unique[:12]
+    return unique[:8]
 
 
 def _deterministic_focus_notes(understanding: dict, analysis: dict) -> list[str]:

@@ -58,38 +58,137 @@ class KnowledgeBase:
         print(f"[KnowledgeBase] Retrieved {len(docs)} documents for query: {query[:80]}...")
         return docs
 
-    def get_by_path(self, path: str, k: int = 2) -> List[Document]:
+    def get_by_path(self, path: str, k: int = 4) -> List[Document]:
         """Exact lookup on metadata.path (supports / and \\ variants)."""
-        path = path.replace("\\", "/")
-        win_path = path.replace("/", "\\")
+        clean_path = path.replace("\\", "/").lstrip("./")
+        win_path = clean_path.replace("/", "\\")
 
         qfilter = Filter(
             should=[
-                FieldCondition(key="metadata.path", match=MatchValue(value=path)),
+                FieldCondition(key="metadata.path", match=MatchValue(value=clean_path)),
                 FieldCondition(key="metadata.path", match=MatchValue(value=win_path)),
+                FieldCondition(key="metadata.path", match=MatchValue(value=f"./{clean_path}")),
+                FieldCondition(key="metadata.path", match=MatchValue(value=f".\\{win_path}")),
             ]
         )
 
-        points, _ = self.client.scroll(
-            collection_name=self.collection_name,
-            scroll_filter=qfilter,
-            limit=k,
-            with_payload=True,
-            with_vectors=False,
-        )
+        try:
+            points, _ = self.client.scroll(
+                collection_name=self.collection_name,
+                scroll_filter=qfilter,
+                limit=k,
+                with_payload=True,
+                with_vectors=False,
+            )
+        except Exception as e:
+            print(f"[KnowledgeBase] get_by_path failed for {clean_path}: {e}")
+            points = []
 
         docs: List[Document] = []
         for p in points:
             payload = p.payload or {}
-            text = payload.get("page_content") or ""
+            text = (
+                payload.get("page_content")
+                or payload.get("text")
+                or payload.get("content")
+                or ""
+            )
             meta = payload.get("metadata") if isinstance(payload.get("metadata"), dict) else {}
             meta = dict(meta)
             # Normalize path to forward slashes for the rest of the pipeline
             if meta.get("path"):
-                meta["path"] = str(meta["path"]).replace("\\", "/")
+                meta["path"] = str(meta["path"]).replace("\\", "/").lstrip("./")
+            else:
+                meta["path"] = clean_path
+            meta.setdefault("retrieval_type", "path")
             docs.append(Document(page_content=text, metadata=meta))
 
-        print(f"[KnowledgeBase] get_by_path({path}) → {len(docs)} docs")
+        print(f"[KnowledgeBase] get_by_path({path}) -> {len(docs)} docs")
+        return docs
+
+    def search_by_metadata_symbol(self, name: str, k: int = 4) -> List[Document]:
+        """Search for exact symbol in metadata.symbols or metadata.symbol."""
+        if not name:
+            return []
+
+        qfilter = Filter(
+            should=[
+                FieldCondition(key="metadata.symbols", match=MatchValue(value=name)),
+                FieldCondition(key="metadata.symbol", match=MatchValue(value=name)),
+            ]
+        )
+
+        try:
+            points, _ = self.client.scroll(
+                collection_name=self.collection_name,
+                scroll_filter=qfilter,
+                limit=k,
+                with_payload=True,
+                with_vectors=False,
+            )
+        except Exception as e:
+            print(f"[KnowledgeBase] search_by_metadata_symbol failed for {name}: {e}")
+            points = []
+
+        docs: List[Document] = []
+        for p in points:
+            payload = p.payload or {}
+            text = (
+                payload.get("page_content")
+                or payload.get("text")
+                or payload.get("content")
+                or ""
+            )
+            meta = payload.get("metadata") if isinstance(payload.get("metadata"), dict) else {}
+            meta = dict(meta)
+            if meta.get("path"):
+                meta["path"] = str(meta["path"]).replace("\\", "/").lstrip("./")
+            meta.setdefault("retrieval_type", "symbol")
+            docs.append(Document(page_content=text, metadata=meta))
+
+        print(f"[KnowledgeBase] search_by_metadata_symbol({name}) -> {len(docs)} docs")
+        return docs
+
+    def keyword_search(self, keyword: str, k: int = 4) -> List[Document]:
+        """Search page_content for exact keyword."""
+        if not keyword:
+            return []
+
+        points = []
+        try:
+            from qdrant_client.models import MatchText
+            qfilter = Filter(
+                should=[
+                    FieldCondition(key="page_content", match=MatchText(text=keyword)),
+                ]
+            )
+            points, _ = self.client.scroll(
+                collection_name=self.collection_name,
+                scroll_filter=qfilter,
+                limit=k,
+                with_payload=True,
+                with_vectors=False,
+            )
+        except Exception as e:
+            print(f"[KnowledgeBase] keyword_search filter failed for {keyword}: {e}")
+
+        docs: List[Document] = []
+        for p in points:
+            payload = p.payload or {}
+            text = (
+                payload.get("page_content")
+                or payload.get("text")
+                or payload.get("content")
+                or ""
+            )
+            meta = payload.get("metadata") if isinstance(payload.get("metadata"), dict) else {}
+            meta = dict(meta)
+            if meta.get("path"):
+                meta["path"] = str(meta["path"]).replace("\\", "/").lstrip("./")
+            meta.setdefault("retrieval_type", "keyword")
+            docs.append(Document(page_content=text, metadata=meta))
+
+        print(f"[KnowledgeBase] keyword_search({keyword}) -> {len(docs)} docs")
         return docs
 
 

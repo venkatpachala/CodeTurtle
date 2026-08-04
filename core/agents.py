@@ -484,6 +484,7 @@ def build_evidence_package(state: dict) -> dict:
 
     files_changed = list(state.get("files_changed") or [])
     understanding = state.get("pr_understanding") or {}
+    full_diff = state.get("patch") or state.get("diff") or ""
 
     packages = []
     if plan and plan.retrieval_questions:
@@ -492,8 +493,11 @@ def build_evidence_package(state: dict) -> dict:
                 q = RetrievalQuestion.model_validate(q)
             pkg = engine.retrieve_context(
                 query=q.question,
-                files_changed=q.prefer_paths or files_changed,
+                files_changed=files_changed,
                 symbols=q.prefer_symbols or [],
+                prefer_paths=q.prefer_paths or files_changed,
+                prefer_symbols=q.prefer_symbols or [],
+                full_diff=full_diff,
                 k=6,
                 pr_understanding=understanding if isinstance(understanding, dict) else {},
             )
@@ -504,12 +508,14 @@ def build_evidence_package(state: dict) -> dict:
             engine.retrieve_context(
                 query=query,
                 files_changed=files_changed,
+                prefer_paths=files_changed,
+                full_diff=full_diff,
                 k=8,
                 pr_understanding=understanding if isinstance(understanding, dict) else {},
             )
         )
 
-    evidence_package = _merge_packages(packages, max_items=16)
+    evidence_package = _merge_packages(packages, max_items=18)
     rich_context = _format_evidence(evidence_package)
 
     n_q = len(plan.retrieval_questions) if plan else 0
@@ -525,36 +531,51 @@ def build_evidence_package(state: dict) -> dict:
     }
 
 
-def _merge_packages(packages, max_items: int = 16):
+def _merge_packages(packages, max_items: int = 18):
     if not packages:
         return None
-    seen = set()
-    merged = []
+    from core.hybrid_retriever import merge_evidence_packages
+
+    per_query_docs = []
+    all_affected = set()
+    all_symbols = set()
     for pkg in packages:
-        for ev in getattr(pkg, "evidences", None) or []:
-            path = getattr(ev, "path", "") or ""
-            content = (getattr(ev, "content", None) or getattr(ev, "page_content", "") or "")[:80]
-            key = (path, content)
-            if key in seen:
-                continue
-            seen.add(key)
-            merged.append(ev)
-            if len(merged) >= max_items:
-                break
-        if len(merged) >= max_items:
-            break
+        evs = getattr(pkg, "evidences", None) or []
+        per_query_docs.append(evs)
+        for f in getattr(pkg, "affected_files", None) or []:
+            all_affected.add(f)
+        for s in getattr(pkg, "related_symbols", None) or []:
+            all_symbols.add(s)
+
+    merged = merge_evidence_packages(per_query_docs, max_total=max_items)
+    for ev in merged:
+        p = getattr(ev, "path", None) or (getattr(ev, "metadata", {}) or {}).get("path")
+        if p:
+            all_affected.add(p)
+        syms = getattr(ev, "symbols", None) or (getattr(ev, "metadata", {}) or {}).get("symbols") or []
+        for s in syms:
+            all_symbols.add(s)
 
     head = packages[0]
     try:
         from dataclasses import replace, is_dataclass
         if is_dataclass(head) and hasattr(head, "evidences"):
-            return replace(head, evidences=merged)
+            return replace(
+                head,
+                evidences=merged,
+                affected_files=sorted(all_affected),
+                related_symbols=sorted(all_symbols),
+            )
     except Exception:
         pass
     try:
         head.evidences = merged
         if hasattr(head, "count"):
             head.count = len(merged)
+        if hasattr(head, "affected_files"):
+            head.affected_files = sorted(all_affected)
+        if hasattr(head, "related_symbols"):
+            head.related_symbols = sorted(all_symbols)
     except Exception:
         pass
     return head

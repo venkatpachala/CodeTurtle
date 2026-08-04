@@ -27,6 +27,6 @@ class PhaseReport:
         status = "PASS" if self.ok else "FAIL"
         print(f"\n=== {self.phase}: {status} ===")
         for c in self.checks:
-            mark = "✓" if c.passed else "✗"
-            print(f"  {mark} {c.name}" + (f" — {c.detail}" if c.detail else ""))
+            mark = "[+]" if c.passed else "[-]"
+            print(f"  {mark} {c.name}" + (f" -> {c.detail}" if c.detail else ""))
         print(f"Score: {sum(1 for c in self.checks if c.passed)}/{len(self.checks)}")

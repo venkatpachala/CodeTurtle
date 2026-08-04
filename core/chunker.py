@@ -60,6 +60,13 @@ class PythonChunker(BaseChunker):
             if previous_end < start:
                 code = "\n".join(lines[previous_end-1:start-1])
                 if code.strip():
+                    import re
+                    mod_symbols = [
+                        m.group(1)
+                        for line in code.splitlines()
+                        for m in [re.match(r"^([A-Z_][A-Z0-9_]*)\s*=", line.strip())]
+                        if m
+                    ]
                     chunks.append(CodeChunk(
                         path=file_model.path,
                         language=file_model.language,
@@ -69,7 +76,7 @@ class PythonChunker(BaseChunker):
                         end_line=start-1,
                         chunk_index=len(chunks),
                         chunk_type="module",
-                        symbols=[],
+                        symbols=mod_symbols,
                         imports=file_model.imports
                     ))
 
@@ -105,6 +112,13 @@ class PythonChunker(BaseChunker):
         if previous_end <= file_model.line_count:
             code = "\n".join(lines[previous_end-1:file_model.line_count])
             if code.strip():
+                import re
+                mod_symbols = [
+                    m.group(1)
+                    for line in code.splitlines()
+                    for m in [re.match(r"^([A-Z_][A-Z0-9_]*)\s*=", line.strip())]
+                    if m
+                ]
                 chunks.append(CodeChunk(
                     path=file_model.path,
                     language=file_model.language,
@@ -114,7 +128,7 @@ class PythonChunker(BaseChunker):
                     end_line=file_model.line_count,
                     chunk_index=len(chunks),
                     chunk_type="module",
-                    symbols=[],
+                    symbols=mod_symbols,
                     imports=file_model.imports
                 ))
 

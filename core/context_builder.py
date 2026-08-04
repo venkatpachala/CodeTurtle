@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional
 from langchain_core.documents import Document
 
 from core.evidence import Evidence, EvidencePackage
@@ -11,11 +11,13 @@ class ContextBuilder:
     def build(
         query: str,
         pr_understanding: dict,
-        documents: List[Union[Document, Evidence]]
+        documents: List[Union[Document, Evidence]],
+        prefer_symbols: Optional[List[str]] = None,
     ) -> EvidencePackage:
         evidences = []
         affected_files = set()
         related_symbols = set()
+        prefer_symbols = prefer_symbols or []
 
         for doc in documents:
             # Handle both LangChain Document and our Evidence model
@@ -41,6 +43,13 @@ class ContextBuilder:
             evidences.append(evidence)
             affected_files.add(evidence.path)
             related_symbols.update(evidence.symbols or [])
+            for sym in prefer_symbols:
+                if sym and sym in (evidence.content or ""):
+                    related_symbols.add(sym)
+
+        for sym in prefer_symbols:
+            if sym:
+                related_symbols.add(sym)
 
         package = EvidencePackage(
             query=query,

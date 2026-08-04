@@ -81,7 +81,6 @@ def evaluate(repo: str, number: int) -> PhaseReport:
     if not questions:
         questions = [state.get("title") or "repository code"]
 
-    # Optional understanding for retrieve() if your API accepts it
     try:
         understanding = load(repo, number, "01_understanding.json").get("output") or {}
     except FileNotFoundError:
@@ -91,26 +90,42 @@ def evaluate(repo: str, number: int) -> PhaseReport:
     kb = KnowledgeBase(collection)
     retriever = HybridRetriever(repo, kb=kb)
 
+    files_changed = [p.replace("\\", "/").lstrip("./") for p in state.get("files_changed", [])]
+    full_diff = state.get("patch") or state.get("diff") or ""
+
     all_paths: Set[str] = set()
     all_affected: Set[str] = set()
     per_q: list[dict] = []
+    raw_packages: list[Any] = []
 
     for q in questions:
         qtext = _question_text(q)
         if not qtext:
             continue
 
-        # Match production call as closely as possible
+        prefer_paths = []
+        prefer_symbols = []
+        if isinstance(q, dict):
+            prefer_paths = q.get("prefer_paths") or []
+            prefer_symbols = q.get("prefer_symbols") or []
+        elif hasattr(q, "prefer_paths"):
+            prefer_paths = getattr(q, "prefer_paths", []) or []
+            prefer_symbols = getattr(q, "prefer_symbols", []) or []
+
         try:
             pkg = retriever.retrieve(
                 query=qtext,
                 pr_understanding=understanding or state.get("pr_understanding") or {},
+                files_changed=files_changed,
+                prefer_paths=prefer_paths or files_changed,
+                prefer_symbols=prefer_symbols,
+                full_diff=full_diff,
                 k=6,
             )
         except TypeError:
-            # Older signature
             pkg = retriever.retrieve(query=qtext, k=6)
 
+        raw_packages.append(pkg)
         n, paths, affected, summary = _paths_from_package(pkg)
         symbols = list(getattr(pkg, "related_symbols", None) or []) if pkg is not None else []
 
@@ -126,12 +141,20 @@ def evaluate(repo: str, number: int) -> PhaseReport:
         all_affected.update(affected)
         all_paths.update(affected)
 
+    from core.hybrid_retriever import merge_evidence_packages
+    per_query_docs = [getattr(p, "evidences", []) for p in raw_packages]
+    merged_docs = merge_evidence_packages(per_query_docs, max_total=18)
+    merged_paths = [getattr(d, "path", None) or (getattr(d, "metadata", {}) or {}).get("path") for d in merged_docs]
+    merged_paths = [p for p in merged_paths if p]
+
     save(
         repo,
         number,
         "04_evidence.json",
         {
             "per_query": per_q,
+            "merged_count": len(merged_docs),
+            "merged_paths": sorted(set(merged_paths)),
             "all_paths": sorted(all_paths),
             "all_affected_files": sorted(all_affected),
             "files_changed": state["files_changed"],
@@ -148,19 +171,35 @@ def evaluate(repo: str, number: int) -> PhaseReport:
         f"ran={len(per_q)} plan_qs={len(questions)}",
     )
 
-    changed = set(state["files_changed"])
+    changed = set(files_changed)
     hit_direct = bool(all_paths & changed)
-    if not hit_direct and all_paths:
-        changed_dirs = {"/".join(p.replace("\\", "/").split("/")[:2]) for p in changed}
-        path_dirs = {"/".join(p.replace("\\", "/").split("/")[:2]) for p in all_paths}
-        hit_neighbor = bool(changed_dirs & path_dirs)
-    else:
-        hit_neighbor = False
+
+    # Strict target file check
+    target_hit = any(any(c in p for c in changed) for p in all_paths)
+    r.add(
+        "changed_files_in_evidence",
+        target_hit,
+        f"changed={sorted(changed)} found_sample={sorted(all_paths)[:10]}",
+    )
+
+    # Distractor check (install.py vs build.py)
+    distractors = [p for p in all_paths if "install.py" in p and not any("install.py" in c for c in changed)]
+    r.add(
+        "distractors_not_dominating",
+        len(distractors) <= len(all_paths) * 0.4,
+        f"distractors={distractors} total_unique_paths={len(all_paths)}",
+    )
+
+    r.add(
+        "global_dedupe_capped",
+        len(merged_docs) <= 20 and len(merged_docs) > 0,
+        f"merged_total={len(merged_docs)} max_cap=20 unique_paths={len(set(merged_paths))}",
+    )
 
     r.add(
         "paths_relevant_to_pr",
-        hit_direct or hit_neighbor or total == 0,
-        f"direct={hit_direct} neighbor={hit_neighbor} sample={sorted(all_paths)[:12]}",
+        hit_direct or target_hit or total == 0,
+        f"direct={hit_direct} sample={sorted(all_paths)[:12]}",
     )
     r.add(
         "package_has_affected_or_paths",

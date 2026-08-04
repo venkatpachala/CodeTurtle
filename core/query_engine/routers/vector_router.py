@@ -47,6 +47,9 @@ class VectorRouter:
         *,
         files_changed: Optional[List[str]] = None,
         symbols: Optional[List[str]] = None,
+        prefer_paths: Optional[List[str]] = None,
+        prefer_symbols: Optional[List[str]] = None,
+        full_diff: Optional[str] = None,
         k: int = 8,
         use_graph: bool = True,
         pr_understanding: Optional[dict] = None,
@@ -57,7 +60,9 @@ class VectorRouter:
 
         query = (query or "").strip()
         files_changed = [normalize_path(p) for p in (files_changed or []) if p]
+        prefer_paths = [normalize_path(p) for p in (prefer_paths or []) if p]
         symbols = list(symbols or [])
+        prefer_symbols = list(prefer_symbols or [])
 
         # Prefer HybridRetriever when present
         package = None
@@ -66,6 +71,9 @@ class VectorRouter:
                 query,
                 files_changed=files_changed,
                 symbols=symbols,
+                prefer_paths=prefer_paths,
+                prefer_symbols=prefer_symbols,
+                full_diff=full_diff,
                 k=k,
                 use_graph=use_graph,
                 pr_understanding=pr_understanding or {},
@@ -75,7 +83,7 @@ class VectorRouter:
             try:
                 package = self._via_kb_only(
                     query,
-                    files_changed=files_changed,
+                    files_changed=prefer_paths or files_changed,
                     k=k,
                 )
             except Exception as kb_err:
@@ -97,6 +105,9 @@ class VectorRouter:
         *,
         files_changed: List[str],
         symbols: List[str],
+        prefer_paths: Optional[List[str]] = None,
+        prefer_symbols: Optional[List[str]] = None,
+        full_diff: Optional[str] = None,
         k: int,
         use_graph: bool,
         pr_understanding: dict,
@@ -111,31 +122,36 @@ class VectorRouter:
             if hasattr(retriever, "kb") and self._kb is not None:
                 retriever.kb = self._kb
 
-        # Stronger query from paths + symbols
-        enriched = query
-        if files_changed:
-            enriched = f"{query}\n" + "\n".join(files_changed[:12])
-        if symbols:
-            enriched = enriched + "\n" + " ".join(f"def {s}" for s in symbols[:8])
+        target_paths = prefer_paths or files_changed
+        target_symbols = prefer_symbols or symbols
+        diff_text = full_diff or (pr_understanding or {}).get("full_diff") or ""
 
         try:
             result = retriever.retrieve(
-                query=enriched,
+                query=query,
                 pr_understanding=pr_understanding,
                 k=k,
                 files_changed=files_changed,
+                prefer_paths=target_paths,
+                prefer_symbols=target_symbols,
+                full_diff=diff_text,
             )
         except TypeError:
             try:
-                result = retriever.retrieve(enriched, k=k)
+                result = retriever.retrieve(
+                    query=query,
+                    pr_understanding=pr_understanding,
+                    k=k,
+                    files_changed=files_changed,
+                )
             except TypeError:
-                result = retriever.retrieve(enriched)
+                result = retriever.retrieve(query, k=k)
 
         package = self._normalize_to_package(result, query=query, k=k)
 
         # Floor: hybrid often reranks to 1 — pad with path/vector hits
-        if package.count < k and files_changed:
-            extra = self._via_kb_only(query, files_changed=files_changed, k=k)
+        if package.count < k and target_paths:
+            extra = self._via_kb_only(query, files_changed=target_paths, k=k)
             seen = {(e.path, e.content[:120]) for e in package.evidences}
             for e in extra.evidences:
                 key = (e.path, e.content[:120])
@@ -147,7 +163,7 @@ class VectorRouter:
             package.evidences = package.evidences[:k]
 
         elif package.count < k:
-            # No files_changed — still try pure vector pad
+            # No target paths — still try pure vector pad
             extra = self._via_kb_only(query, files_changed=[], k=k)
             seen = {(e.path, e.content[:120]) for e in package.evidences}
             for e in extra.evidences:

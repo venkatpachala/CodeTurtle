@@ -1,143 +1,219 @@
 {
   "per_query": [
     {
-      "query": "This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-info",
+      "query": "Code related to: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs",
       "n_evidences": 6,
       "paths": [
-        "graphify/export.py",
-        "graphify/affected.py",
-        "graphify/security.py",
-        "graphify/callflow_html.py",
-        "graphify/callflow_html.py",
-        "graphify/reflect.py"
+        "tests/test_build.py",
+        "tests/test_build.py",
+        "tests/test_build.py",
+        "graphify/build.py",
+        "tests/test_build.py",
+        "graphify/build.py"
       ],
       "affected_files": [
-        "graphify/affected.py",
-        "graphify/callflow_html.py",
-        "graphify/export.py",
-        "graphify/reflect.py",
-        "graphify/security.py"
+        "graphify/build.py",
+        "tests/test_build.py"
       ],
       "related_symbols": [
-        "_load_known_nodes",
-        "_node_link_payload",
-        "_report_highlights",
-        "load_graph",
-        "prune_dangling_edges"
+        "build_from_json",
+        "dedupe_nodes",
+        "test_build_from_json_ambiguous_alias_detected_despite_header_impl_salting",
+        "test_build_from_json_edge_count",
+        "test_build_from_json_preserves_first_direction_on_bidirectional_pair",
+        "test_build_from_json_relativizes_absolute_source_file"
       ],
-      "summary_preview": "PR Summary: This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.\nRisk Level:"
+      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
     },
     {
-      "query": "implementation and usage of graphify/build.py",
+      "query": "Definition of build_from_json and how it handles edges, relations, or conflict resolution",
       "n_evidences": 6,
       "paths": [
-        "graphify/install.py",
-        "graphify/install.py",
         "graphify/build.py",
-        "graphify/install.py",
-        "graphify/install.py",
-        "graphify/install.py"
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py"
       ],
       "affected_files": [
-        "graphify/build.py",
-        "graphify/install.py"
+        "graphify/build.py"
       ],
       "related_symbols": [
-        "_agents_install",
-        "_kilo_install",
-        "_print_install_usage",
-        "_project_install",
-        "_skill_registration",
+        "_doc_twin_remap",
+        "_norm_source_file",
+        "_semantic_id_remap",
+        "build",
+        "build_from_json",
         "edge_data"
       ],
-      "summary_preview": "PR Summary: This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.\nRisk Level:"
+      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
     },
     {
-      "query": "implementation and usage of tests/test_build.py",
+      "query": "Callers and downstream usages of build_from_json",
       "n_evidences": 6,
       "paths": [
-        "tests/test_install.py",
-        "tests/test_install.py",
-        "tests/test_install.py",
-        "tests/test_install.py",
-        "tests/test_install.py",
-        "tests/test_install.py"
+        "tests/test_build.py",
+        "tests/test_build.py",
+        "tests/test_build.py",
+        "graphify/build.py",
+        "tests/test_build.py",
+        "graphify/build.py"
       ],
       "affected_files": [
-        "tests/test_install.py"
+        "graphify/build.py",
+        "tests/test_build.py"
       ],
       "related_symbols": [
-        "test_install_codebuddy",
-        "test_install_codex",
-        "test_install_default_claude",
-        "test_install_trae_cn",
-        "test_kilo_agents_install_writes_agents_md",
-        "test_opencode_agents_install_writes_agents_md"
+        "build",
+        "build_from_json",
+        "test_build_from_json_ambiguous_alias_detected_despite_header_impl_salting",
+        "test_build_from_json_edge_count",
+        "test_build_from_json_node_count",
+        "test_build_from_json_relativizes_absolute_source_file"
       ],
-      "summary_preview": "PR Summary: This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.\nRisk Level:"
+      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
     },
     {
-      "query": "function _same_pair_calls_references_extraction definition and callers",
+      "query": "Definition and purpose of helper _same_pair_calls_references_extraction",
       "n_evidences": 6,
       "paths": [
-        "tests/test_multilang.py",
-        "graphify/extractors/resolution.py",
-        "tests/test_extract.py",
-        "tests/test_cross_language_call_resolution.py",
-        "graphify/extractors/resolution.py",
-        "tests/test_phantom_cross_package_call.py"
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "tests/test_build.py",
+        "tests/test_build.py"
       ],
       "affected_files": [
-        "graphify/extractors/resolution.py",
-        "tests/test_cross_language_call_resolution.py",
-        "tests/test_extract.py",
-        "tests/test_multilang.py",
-        "tests/test_phantom_cross_package_call.py"
+        "graphify/build.py",
+        "tests/test_build.py"
       ],
       "related_symbols": [
-        "_call_pairs",
-        "_js_call_identifier",
-        "_python_call_identifier",
-        "test_calls_deduplication",
-        "test_same_file_call_unaffected",
-        "test_same_language_callback_still_resolves"
+        "_doc_twin_remap",
+        "_norm_source_file",
+        "_semantic_id_remap",
+        "edge_data",
+        "load_extraction",
+        "test_build_from_json_edge_count"
       ],
-      "summary_preview": "PR Summary: This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.\nRisk Level:"
+      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
+    },
+    {
+      "query": "Definition and uses of constant _RELATION_PRIORITY",
+      "n_evidences": 6,
+      "paths": [
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "tests/test_build.py",
+        "tests/test_build.py"
+      ],
+      "affected_files": [
+        "graphify/build.py",
+        "tests/test_build.py"
+      ],
+      "related_symbols": [
+        "_doc_twin_remap",
+        "_norm_source_file",
+        "_semantic_id_remap",
+        "edge_data",
+        "load_extraction",
+        "test_build_from_json_edge_count"
+      ],
+      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
+    },
+    {
+      "query": "Undirected edge collapse: add_edge overwrite, _RELATION_PRIORITY, unknown/equal priority, reverse-direction same relation",
+      "n_evidences": 6,
+      "paths": [
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py"
+      ],
+      "affected_files": [
+        "graphify/build.py"
+      ],
+      "related_symbols": [
+        "_doc_twin_remap",
+        "_norm_source_file",
+        "_semantic_id_remap",
+        "build_from_json",
+        "dedupe_edges",
+        "edge_data"
+      ],
+      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
+    },
+    {
+      "query": "Who reads edge relation attributes? export, callflow, affected, graph queries",
+      "n_evidences": 6,
+      "paths": [
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "tests/test_build.py",
+        "tests/test_build.py"
+      ],
+      "affected_files": [
+        "graphify/build.py",
+        "tests/test_build.py"
+      ],
+      "related_symbols": [
+        "_doc_twin_remap",
+        "_norm_source_file",
+        "_semantic_id_remap",
+        "edge_data",
+        "load_extraction",
+        "test_build_from_json_edge_count"
+      ],
+      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
+    },
+    {
+      "query": "Tests covering edge collapse order, relation priority, or calls vs references",
+      "n_evidences": 6,
+      "paths": [
+        "tests/test_build.py",
+        "tests/test_build.py",
+        "tests/test_build.py",
+        "tests/test_build.py",
+        "tests/test_build.py",
+        "tests/test_build.py"
+      ],
+      "affected_files": [
+        "tests/test_build.py"
+      ],
+      "related_symbols": [
+        "load_extraction",
+        "test_build_from_json_ambiguous_alias_detected_despite_header_impl_salting",
+        "test_build_from_json_edge_count",
+        "test_build_from_json_node_count",
+        "test_build_from_json_preserves_first_direction_on_bidirectional_pair",
+        "test_build_from_json_relativizes_absolute_source_file"
+      ],
+      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
     }
   ],
-  "all_paths": [
-    "graphify/affected.py",
+  "merged_count": 18,
+  "merged_paths": [
     "graphify/build.py",
-    "graphify/callflow_html.py",
-    "graphify/export.py",
-    "graphify/extractors/resolution.py",
-    "graphify/install.py",
-    "graphify/reflect.py",
-    "graphify/security.py",
-    "tests/test_cross_language_call_resolution.py",
-    "tests/test_extract.py",
-    "tests/test_install.py",
-    "tests/test_multilang.py",
-    "tests/test_phantom_cross_package_call.py"
+    "tests/test_build.py"
+  ],
+  "all_paths": [
+    "graphify/build.py",
+    "tests/test_build.py"
   ],
   "all_affected_files": [
-    "graphify/affected.py",
     "graphify/build.py",
-    "graphify/callflow_html.py",
-    "graphify/export.py",
-    "graphify/extractors/resolution.py",
-    "graphify/install.py",
-    "graphify/reflect.py",
-    "graphify/security.py",
-    "tests/test_cross_language_call_resolution.py",
-    "tests/test_extract.py",
-    "tests/test_install.py",
-    "tests/test_multilang.py",
-    "tests/test_phantom_cross_package_call.py"
+    "tests/test_build.py"
   ],
   "files_changed": [
     "graphify/build.py",
     "tests/test_build.py"
   ],
-  "n_questions": 4
+  "n_questions": 8
 }
