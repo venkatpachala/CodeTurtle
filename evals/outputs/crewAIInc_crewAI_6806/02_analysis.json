@@ -1,0 +1,140 @@
+{
+  "output": {
+    "changed_files": [
+      "lib/crewai/src/crewai/llms/base_llm.py",
+      "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+      "lib/crewai/src/crewai/llms/providers/bedrock/completion.py",
+      "lib/crewai/tests/llms/anthropic/test_anthropic.py"
+    ],
+    "added_functions": [],
+    "modified_functions": [
+      "_ahandle_completion",
+      "_ahandle_streaming_completion",
+      "_ahandle_tool_use_conversation",
+      "_apply_stop_words",
+      "_execute_first_tool",
+      "_get_document_format",
+      "_get_video_format",
+      "_handle_tool_use_conversation",
+      "_is_nova_model",
+      "_supports_stop_words_implementation",
+      "format_text_content",
+      "get_file_uploader",
+      "supports_function_calling",
+      "supports_multimodal",
+      "supports_stop_words"
+    ],
+    "modified_classes": [],
+    "removed_functions": [],
+    "constants_added": [],
+    "insertions": 0,
+    "deletions": 287,
+    "languages": [
+      "Python"
+    ],
+    "tests_added_or_modified": true,
+    "config_changed": false,
+    "documentation_changed": false,
+    "added_test_functions": [],
+    "modified_test_functions": [
+      "test_anthropic_dict_tool_use_blocks_work_in_follow_up_conversation"
+    ],
+    "high_risk_files": [],
+    "high_risk_reasons": {},
+    "logic_changes": [
+      "_supports_stop_words_implementation"
+    ],
+    "behavior_changes": [
+      "Removed unused synchronous and asynchronous Anthropic follow-up conversation helpers",
+      "Removed unused Bedrock Nova and media-format helpers",
+      "Removed the test that directly exercised the otherwise unreachable Anthropic private method"
+    ],
+    "review_hotspots": [
+      "_supports_stop_words_implementation",
+      "_apply_stop_words",
+      "_execute_tools_and_collect_results",
+      "_get_sync_client().messages.create",
+      "_get_async_client().messages.create"
+    ],
+    "architectural_changes": [
+      "Removed policies related to unused synchronous and asynchronous Anthropic follow-up conversation helpers",
+      "Adjusted the structure of the LLM base class and provider-specific implementations to remove dead code"
+    ],
+    "design_assumptions": [],
+    "downstream_impacts": [],
+    "behavioral_invariants": []
+  },
+  "raw": {
+    "pr_analysis": {
+      "changed_files": [
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+        "lib/crewai/src/crewai/llms/providers/bedrock/completion.py",
+        "lib/crewai/tests/llms/anthropic/test_anthropic.py"
+      ],
+      "added_functions": [],
+      "modified_functions": [
+        "_ahandle_completion",
+        "_ahandle_streaming_completion",
+        "_ahandle_tool_use_conversation",
+        "_apply_stop_words",
+        "_execute_first_tool",
+        "_get_document_format",
+        "_get_video_format",
+        "_handle_tool_use_conversation",
+        "_is_nova_model",
+        "_supports_stop_words_implementation",
+        "format_text_content",
+        "get_file_uploader",
+        "supports_function_calling",
+        "supports_multimodal",
+        "supports_stop_words"
+      ],
+      "modified_classes": [],
+      "removed_functions": [],
+      "constants_added": [],
+      "insertions": 0,
+      "deletions": 287,
+      "languages": [
+        "Python"
+      ],
+      "tests_added_or_modified": true,
+      "config_changed": false,
+      "documentation_changed": false,
+      "added_test_functions": [],
+      "modified_test_functions": [
+        "test_anthropic_dict_tool_use_blocks_work_in_follow_up_conversation"
+      ],
+      "high_risk_files": [],
+      "high_risk_reasons": {},
+      "logic_changes": [
+        "_supports_stop_words_implementation"
+      ],
+      "behavior_changes": [
+        "Removed unused synchronous and asynchronous Anthropic follow-up conversation helpers",
+        "Removed unused Bedrock Nova and media-format helpers",
+        "Removed the test that directly exercised the otherwise unreachable Anthropic private method"
+      ],
+      "review_hotspots": [
+        "_supports_stop_words_implementation",
+        "_apply_stop_words",
+        "_execute_tools_and_collect_results",
+        "_get_sync_client().messages.create",
+        "_get_async_client().messages.create"
+      ],
+      "architectural_changes": [
+        "Removed policies related to unused synchronous and asynchronous Anthropic follow-up conversation helpers",
+        "Adjusted the structure of the LLM base class and provider-specific implementations to remove dead code"
+      ],
+      "design_assumptions": [],
+      "downstream_impacts": [],
+      "behavioral_invariants": []
+    },
+    "traces": [
+      {
+        "agent": "PRAnalysisAgent",
+        "output": "{'changed_files': ['lib/crewai/src/crewai/llms/base_llm.py', 'lib/crewai/src/crewai/llms/providers/anthropic/completion.py', 'lib/crewai/src/crewai/llms/providers/bedrock/completion.py', 'lib/crewai/tests/llms/anthropic/test_anthropic.py'], 'added_functions': [], 'modified_functions': ['_ahandle_completion', '_ahandle_streaming_completion', '_ahandle_tool_use_conversation', '_apply_stop_words', '_execute_first_tool', '_get_document_format', '_get_video_format', '_handle_tool_use_conversation', '_is_nova_model', '_supports_stop_words_implementation', 'format_text_content', 'get_file_uploader', 'supports_function_calling', 'supports_multimodal', 'supports_stop_words'], 'modified_classes': [], 'removed_functions': [], 'constants_added': [], 'insertions': 0, 'deletions': 287, 'languages': ['Python'], 'tests_added_or_modified': True, 'config_changed': False, 'documentation_changed': False, 'added_test_functions': [], 'modified_test_functions': ['test_anthropic_dict_tool_use_blocks_work_in_follow_up_conversation'], 'high_risk_files': [], 'high_risk_reasons': {}, 'logic_changes': ['_supports_stop_words_implementation'], 'behavior_changes': ['Removed unused synchronous and asynchronous Anthropic follow-up conversation helpers', 'Removed unused Bedrock Nova and media-format helpers', 'Removed the test that directly exercised the otherwise unreachable Anthropic private method'], 'review_hotspots': ['_supports_stop_words_implementation', '_apply_stop_words', '_execute_tools_and_collect_results', '_get_sync_client().messages.create', '_get_async_client().messages.create'], 'architectural_changes': ['Removed policies related to unused synchronous and asynchronous Anthropic follow-up conversation helpers', 'Adjusted the structure of the LLM base class and provider-specific implementations to remove dead code'], 'design_assumptions': [], 'downstream_impacts': [], 'behavioral_invariants': []}"
+      }
+    ]
+  }
+}

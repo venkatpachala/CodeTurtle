@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Literal
+from enum import Enum
+from typing import List, Literal, Dict, Any, Optional
 
 from pydantic import BaseModel, Field
-
-
-from pydantic import BaseModel, Field
-from typing import List
 
 class PRUnderstanding(BaseModel):
     summary: str
@@ -57,16 +54,43 @@ class PRAnalysis(BaseModel):
     architectural_changes: list[str] = Field(default_factory=list)
 
 
-class Finding(BaseModel):
-    id: str
+class FindingSeverity(str, Enum):
+    blocking = "blocking"
+    concern = "concern"
+    question = "question"
+    suggestion = "suggestion"
+    nit = "nit"
+    verified = "verified"   # positive confirmation
+
+
+class SpecialistFinding(BaseModel):
+    severity: FindingSeverity = FindingSeverity.concern
     title: str
-    description: str
-    severity: Literal["low", "medium", "high", "critical"]
-    confidence: float
+    detail: str
+    evidence_paths: list[str] = Field(default_factory=list)  # optional anchors
+    related_symbols: list[str] = Field(default_factory=list)
+    confidence: float = 0.5  # 0-1
+
+
+class SpecialistReview(BaseModel):
+    """One specialist's full review — never 'empty means good' without verified items."""
+    summary: str = ""  # 2-4 sentences: what was checked, what looks sound
+    findings: list[SpecialistFinding] = Field(default_factory=list)
+    assumptions_noted: list[str] = Field(default_factory=list)
+    residual_risks: list[str] = Field(default_factory=list)
+    no_blocking_issues: bool = True
+
+
+class Finding(BaseModel):
+    id: str = "finding-0"
+    title: str
+    description: str = ""
+    severity: Literal["low", "medium", "high", "critical", "blocking", "concern", "question", "suggestion", "nit", "verified"] = "medium"
+    confidence: float = 0.5
     evidence: List[str] = Field(default_factory=list)
-    reasoning: str
-    recommendation: str
-    category: str
+    reasoning: str = ""
+    recommendation: str = ""
+    category: str = "review"
 
 
 class ReviewOutput(BaseModel):

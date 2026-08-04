@@ -1,0 +1,213 @@
+{
+  "per_query": [
+    {
+      "query": "Code related to: This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime be",
+      "n_evidences": 6,
+      "paths": [
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/bedrock/completion.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py"
+      ],
+      "affected_files": [
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+        "lib/crewai/src/crewai/llms/providers/bedrock/completion.py"
+      ],
+      "related_symbols": [
+        "AnthropicCompletion",
+        "BaseLLM",
+        "BedrockCompletion",
+        "JsonResponseFormat"
+      ],
+      "summary_preview": "PR Summary: This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.\nRisk Level: low\nChange Types: refactor\nAffected Files: 3\nRelated Symbols: Ant"
+    },
+    {
+      "query": "Definition of _ahandle_completion and how it handles parameters, return values, or error conditions",
+      "n_evidences": 6,
+      "paths": [
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py"
+      ],
+      "affected_files": [
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py"
+      ],
+      "related_symbols": [
+        "AnthropicCompletion",
+        "BaseLLM",
+        "JsonResponseFormat",
+        "_tool_use_input"
+      ],
+      "summary_preview": "PR Summary: This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.\nRisk Level: low\nChange Types: refactor\nAffected Files: 2\nRelated Symbols: Ant"
+    },
+    {
+      "query": "Callers and downstream usages of _ahandle_completion",
+      "n_evidences": 6,
+      "paths": [
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py"
+      ],
+      "affected_files": [
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py"
+      ],
+      "related_symbols": [
+        "AnthropicCompletion",
+        "BaseLLM",
+        "JsonResponseFormat",
+        "_tool_use_input"
+      ],
+      "summary_preview": "PR Summary: This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.\nRisk Level: low\nChange Types: refactor\nAffected Files: 2\nRelated Symbols: Ant"
+    },
+    {
+      "query": "Definition of _ahandle_streaming_completion and how it handles parameters, return values, or error conditions",
+      "n_evidences": 6,
+      "paths": [
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py"
+      ],
+      "affected_files": [
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py"
+      ],
+      "related_symbols": [
+        "AnthropicThinkingConfig",
+        "BaseLLM",
+        "JsonResponseFormat",
+        "_tool_use_input"
+      ],
+      "summary_preview": "PR Summary: This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.\nRisk Level: low\nChange Types: refactor\nAffected Files: 2\nRelated Symbols: Ant"
+    },
+    {
+      "query": "Callers and downstream usages of _ahandle_streaming_completion",
+      "n_evidences": 6,
+      "paths": [
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py"
+      ],
+      "affected_files": [
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py"
+      ],
+      "related_symbols": [
+        "AnthropicCompletion",
+        "BaseLLM",
+        "JsonResponseFormat",
+        "_tool_use_input"
+      ],
+      "summary_preview": "PR Summary: This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.\nRisk Level: low\nChange Types: refactor\nAffected Files: 2\nRelated Symbols: Ant"
+    },
+    {
+      "query": "Definition of _ahandle_tool_use_conversation and how it handles parameters, return values, or error conditions",
+      "n_evidences": 6,
+      "paths": [
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py"
+      ],
+      "affected_files": [
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py"
+      ],
+      "related_symbols": [
+        "AnthropicThinkingConfig",
+        "BaseLLM",
+        "JsonResponseFormat",
+        "_tool_use_input"
+      ],
+      "summary_preview": "PR Summary: This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.\nRisk Level: low\nChange Types: refactor\nAffected Files: 2\nRelated Symbols: Ant"
+    },
+    {
+      "query": "Callers and downstream usages of _ahandle_tool_use_conversation",
+      "n_evidences": 6,
+      "paths": [
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py"
+      ],
+      "affected_files": [
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py"
+      ],
+      "related_symbols": [
+        "AnthropicThinkingConfig",
+        "BaseLLM",
+        "JsonResponseFormat",
+        "_tool_use_input"
+      ],
+      "summary_preview": "PR Summary: This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.\nRisk Level: low\nChange Types: refactor\nAffected Files: 2\nRelated Symbols: Ant"
+    },
+    {
+      "query": "Definition of _apply_stop_words and how it handles parameters, return values, or error conditions",
+      "n_evidences": 6,
+      "paths": [
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/bedrock/completion.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py"
+      ],
+      "affected_files": [
+        "lib/crewai/src/crewai/llms/base_llm.py",
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+        "lib/crewai/src/crewai/llms/providers/bedrock/completion.py"
+      ],
+      "related_symbols": [
+        "BaseLLM",
+        "BedrockCompletion",
+        "JsonResponseFormat",
+        "_tool_use_input"
+      ],
+      "summary_preview": "PR Summary: This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.\nRisk Level: low\nChange Types: refactor\nAffected Files: 3\nRelated Symbols: Bas"
+    }
+  ],
+  "merged_count": 18,
+  "merged_paths": [
+    "lib/crewai/src/crewai/llms/base_llm.py",
+    "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+    "lib/crewai/src/crewai/llms/providers/bedrock/completion.py"
+  ],
+  "all_paths": [
+    "lib/crewai/src/crewai/llms/base_llm.py",
+    "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+    "lib/crewai/src/crewai/llms/providers/bedrock/completion.py"
+  ],
+  "all_affected_files": [
+    "lib/crewai/src/crewai/llms/base_llm.py",
+    "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+    "lib/crewai/src/crewai/llms/providers/bedrock/completion.py"
+  ],
+  "files_changed": [
+    "lib/crewai/src/crewai/llms/base_llm.py",
+    "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+    "lib/crewai/src/crewai/llms/providers/bedrock/completion.py",
+    "lib/crewai/tests/llms/anthropic/test_anthropic.py"
+  ],
+  "n_questions": 8
+}

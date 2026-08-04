@@ -1,0 +1,236 @@
+{
+  "output": {
+    "intent_summary": "This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.",
+    "risk_level": "low",
+    "reviewers": [
+      "code_quality",
+      "correctness",
+      "testing"
+    ],
+    "retrieval_questions": [
+      {
+        "question": "Code related to: This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.",
+        "purpose": "intent_semantic",
+        "prefer_paths": [
+          "lib/crewai/src/crewai/llms/base_llm.py",
+          "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+          "lib/crewai/src/crewai/llms/providers/bedrock/completion.py",
+          "lib/crewai/tests/llms/anthropic/test_anthropic.py"
+        ],
+        "prefer_symbols": [
+          "_ahandle_completion",
+          "_ahandle_streaming_completion",
+          "_ahandle_tool_use_conversation",
+          "_apply_stop_words",
+          "_execute_first_tool"
+        ]
+      },
+      {
+        "question": "Definition of _ahandle_completion and how it handles parameters, return values, or error conditions",
+        "purpose": "changed_symbol",
+        "prefer_paths": [
+          "lib/crewai/src/crewai/llms/base_llm.py",
+          "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+          "lib/crewai/src/crewai/llms/providers/bedrock/completion.py"
+        ],
+        "prefer_symbols": [
+          "_ahandle_completion"
+        ]
+      },
+      {
+        "question": "Callers and downstream usages of _ahandle_completion",
+        "purpose": "downstream_callers",
+        "prefer_paths": [],
+        "prefer_symbols": [
+          "_ahandle_completion"
+        ]
+      },
+      {
+        "question": "Definition of _ahandle_streaming_completion and how it handles parameters, return values, or error conditions",
+        "purpose": "changed_symbol",
+        "prefer_paths": [
+          "lib/crewai/src/crewai/llms/base_llm.py",
+          "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+          "lib/crewai/src/crewai/llms/providers/bedrock/completion.py"
+        ],
+        "prefer_symbols": [
+          "_ahandle_streaming_completion"
+        ]
+      },
+      {
+        "question": "Callers and downstream usages of _ahandle_streaming_completion",
+        "purpose": "downstream_callers",
+        "prefer_paths": [],
+        "prefer_symbols": [
+          "_ahandle_streaming_completion"
+        ]
+      },
+      {
+        "question": "Definition of _ahandle_tool_use_conversation and how it handles parameters, return values, or error conditions",
+        "purpose": "changed_symbol",
+        "prefer_paths": [
+          "lib/crewai/src/crewai/llms/base_llm.py",
+          "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+          "lib/crewai/src/crewai/llms/providers/bedrock/completion.py"
+        ],
+        "prefer_symbols": [
+          "_ahandle_tool_use_conversation"
+        ]
+      },
+      {
+        "question": "Callers and downstream usages of _ahandle_tool_use_conversation",
+        "purpose": "downstream_callers",
+        "prefer_paths": [],
+        "prefer_symbols": [
+          "_ahandle_tool_use_conversation"
+        ]
+      },
+      {
+        "question": "Definition of _apply_stop_words and how it handles parameters, return values, or error conditions",
+        "purpose": "changed_symbol",
+        "prefer_paths": [
+          "lib/crewai/src/crewai/llms/base_llm.py",
+          "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+          "lib/crewai/src/crewai/llms/providers/bedrock/completion.py"
+        ],
+        "prefer_symbols": [
+          "_apply_stop_words"
+        ]
+      }
+    ],
+    "focus_notes": [
+      "_supports_stop_words_implementation",
+      "Removed unused synchronous and asynchronous Anthropic follow-up conversation helpers",
+      "Removed unused Bedrock Nova and media-format helpers",
+      "Removed the test that directly exercised the otherwise unreachable Anthropic private method",
+      "Removed policies related to unused synchronous and asynchronous Anthropic follow-up conversation helpers",
+      "Adjusted the structure of the LLM base class and provider-specific implementations to remove dead code",
+      "Verify: .venv/bin/pytest -q lib/crewai/tests/llms/anthropic/test_anthropic.py",
+      "Verify: Ruff lint and format checks",
+      "Verify: mypy static type checking",
+      "Verify: pre-commit hooks"
+    ],
+    "skip_reasons": {}
+  },
+  "raw": {
+    "review_plan": {
+      "intent_summary": "This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.",
+      "risk_level": "low",
+      "reviewers": [
+        "code_quality",
+        "correctness",
+        "testing"
+      ],
+      "retrieval_questions": [
+        {
+          "question": "Code related to: This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.",
+          "purpose": "intent_semantic",
+          "prefer_paths": [
+            "lib/crewai/src/crewai/llms/base_llm.py",
+            "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+            "lib/crewai/src/crewai/llms/providers/bedrock/completion.py",
+            "lib/crewai/tests/llms/anthropic/test_anthropic.py"
+          ],
+          "prefer_symbols": [
+            "_ahandle_completion",
+            "_ahandle_streaming_completion",
+            "_ahandle_tool_use_conversation",
+            "_apply_stop_words",
+            "_execute_first_tool"
+          ]
+        },
+        {
+          "question": "Definition of _ahandle_completion and how it handles parameters, return values, or error conditions",
+          "purpose": "changed_symbol",
+          "prefer_paths": [
+            "lib/crewai/src/crewai/llms/base_llm.py",
+            "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+            "lib/crewai/src/crewai/llms/providers/bedrock/completion.py"
+          ],
+          "prefer_symbols": [
+            "_ahandle_completion"
+          ]
+        },
+        {
+          "question": "Callers and downstream usages of _ahandle_completion",
+          "purpose": "downstream_callers",
+          "prefer_paths": [],
+          "prefer_symbols": [
+            "_ahandle_completion"
+          ]
+        },
+        {
+          "question": "Definition of _ahandle_streaming_completion and how it handles parameters, return values, or error conditions",
+          "purpose": "changed_symbol",
+          "prefer_paths": [
+            "lib/crewai/src/crewai/llms/base_llm.py",
+            "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+            "lib/crewai/src/crewai/llms/providers/bedrock/completion.py"
+          ],
+          "prefer_symbols": [
+            "_ahandle_streaming_completion"
+          ]
+        },
+        {
+          "question": "Callers and downstream usages of _ahandle_streaming_completion",
+          "purpose": "downstream_callers",
+          "prefer_paths": [],
+          "prefer_symbols": [
+            "_ahandle_streaming_completion"
+          ]
+        },
+        {
+          "question": "Definition of _ahandle_tool_use_conversation and how it handles parameters, return values, or error conditions",
+          "purpose": "changed_symbol",
+          "prefer_paths": [
+            "lib/crewai/src/crewai/llms/base_llm.py",
+            "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+            "lib/crewai/src/crewai/llms/providers/bedrock/completion.py"
+          ],
+          "prefer_symbols": [
+            "_ahandle_tool_use_conversation"
+          ]
+        },
+        {
+          "question": "Callers and downstream usages of _ahandle_tool_use_conversation",
+          "purpose": "downstream_callers",
+          "prefer_paths": [],
+          "prefer_symbols": [
+            "_ahandle_tool_use_conversation"
+          ]
+        },
+        {
+          "question": "Definition of _apply_stop_words and how it handles parameters, return values, or error conditions",
+          "purpose": "changed_symbol",
+          "prefer_paths": [
+            "lib/crewai/src/crewai/llms/base_llm.py",
+            "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+            "lib/crewai/src/crewai/llms/providers/bedrock/completion.py"
+          ],
+          "prefer_symbols": [
+            "_apply_stop_words"
+          ]
+        }
+      ],
+      "focus_notes": [
+        "_supports_stop_words_implementation",
+        "Removed unused synchronous and asynchronous Anthropic follow-up conversation helpers",
+        "Removed unused Bedrock Nova and media-format helpers",
+        "Removed the test that directly exercised the otherwise unreachable Anthropic private method",
+        "Removed policies related to unused synchronous and asynchronous Anthropic follow-up conversation helpers",
+        "Adjusted the structure of the LLM base class and provider-specific implementations to remove dead code",
+        "Verify: .venv/bin/pytest -q lib/crewai/tests/llms/anthropic/test_anthropic.py",
+        "Verify: Ruff lint and format checks",
+        "Verify: mypy static type checking",
+        "Verify: pre-commit hooks"
+      ],
+      "skip_reasons": {}
+    },
+    "traces": [
+      {
+        "agent": "ReviewPlanner",
+        "output": "{\n  \"intent_summary\": \"This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.\",\n  \"risk_level\": \"low\",\n  \"reviewers\": [\n    \"code_quality\",\n    \"correctness\",\n    \"testing\"\n  ],\n  \"retrieval_questions\": [\n    {\n      \"question\": \"Code related to: This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.\",\n      \"purpose\": \"intent_semantic\",\n      \"prefer_paths\": [\n        \"lib/crewai/src/crewai/llms/base_llm.py\",\n        \"lib/crewai/src/crewai/llms/providers/anthropic/completion.py\",\n        \"lib/crewai/src/crewai/llms/providers/bedrock/completion.py\",\n        \"lib/crewai/tests/llms/anthropic/test_anthropic.py\"\n      ],\n      \"prefer_symbols\": [\n        \"_ahandle_completion\",\n        \"_ahandle_streaming_completion\",\n        \"_ahandle_tool_use_conversation\",\n        \"_apply_stop_words\",\n        \"_execute_first_tool\"\n      ]\n    },\n    {\n      \"question\": \"Definition of _ahandle_completion and how it handles parameters, return values, or error conditions\",\n      \"purpose\": \"changed_symbol\",\n      \"prefer_paths\": [\n        \"lib/crewai/src/crewai/llms/base_llm.py\",\n        \"lib/crewai/src/crewai/llms/providers/anthropic/completion.py\",\n        \"lib/crewai/src/crewai/llms/providers/bedrock/completion.py\"\n      ],\n      \"prefer_symbols\": [\n        \"_ahandle_completion\"\n      ]\n    },\n    {\n      \"question\": \"Callers and downstream usages of _ahandle_completion\",\n      \"purpose\": \"downstream_callers\",\n      \"prefer_paths\": [],\n      \"prefer_symbols\": [\n        \"_ahandle_completion\"\n      ]\n    },\n    {\n      \"question\": \"Definition of _ahandle_streaming_completion and how it handles parameters, return values, or error conditions\",\n      \"purpose\": \"changed_symbol\",\n      \"prefer_paths\": [\n        \"lib/crewai/src/crewai/llms/base_llm.py\",\n        \"lib/crewai/src/crewai/llms/providers/anthropic/completion.py\",\n        \"lib/crewai/src/crewai/llms/providers/bedrock/completion.py\"\n      ],\n      \"prefer_symbols\": [\n        \"_ahandle_streaming_completion\"\n      ]\n    },\n    {\n      \"question\": \"Callers and downstream usages of _ahandle_streaming_completion\",\n      \"purpose\": \"downstream_callers\",\n      \"prefer_paths\": [],\n      \"prefer_symbols\": [\n        \"_ahandle_streaming_completion\"\n      ]\n    },\n    {\n      \"question\": \"Definition of _ahandle_tool_use_conversation and how it handles parameters, return values, or error conditions\",\n      \"purpose\": \"changed_symbol\",\n      \"prefer_paths\": [\n        \"lib/crewai/src/crewai/llms/base_llm.py\",\n        \"lib/crewai/src/crewai/llms/providers/anthropic/completion.py\",\n        \"lib/crewai/src/crewai/llms/providers/bedrock/completion.py\"\n      ],\n      \"prefer_symbols\": [\n        \"_ahandle_tool_use_conversation\"\n      ]\n    },\n    {\n      \"question\": \"Callers and downstream usages of _ahandle_tool_use_conversation\",\n      \"purpose\": \"downstream_callers\",\n      \"prefer_paths\": [],\n      \"prefer_symbols\": [\n        \"_ahandle_tool_use_conversation\"\n      ]\n    },\n    {\n      \"question\": \"Definition of _apply_stop_words and how it handles parameters, return values, or error conditions\",\n      \"purpose\": \"changed_symbol\",\n      \"prefer_paths\": [\n        \"lib/crewai/src/crewai/llms/base_llm.py\",\n        \"lib/crewai/src/crewai/llms/providers/anthropic/completion.py\",\n        \"lib/crewai/src/crewai/llms/providers/bedrock/completion.py\"\n      ],\n      \"prefer_symbols\": [\n        \"_apply_stop_words\"\n      ]\n    }\n  ],\n  \"focus_notes\": [\n    \"_supports_stop_words_implementation\",\n    \"Removed unused synchronous and asynchronous Anthropic follow-up conversation helpers\",\n    \"Removed unused Bedrock Nova and media-format helpers\",\n    \"Removed the test that directly exercised the otherwise unreachable Anthropic private method\",\n    \"Removed policies related to unused synchronous and asynchronous Anthropic follow-up convers"
+      }
+    ]
+  }
+}

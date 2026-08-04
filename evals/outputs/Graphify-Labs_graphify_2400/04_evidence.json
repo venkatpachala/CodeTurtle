@@ -1,14 +1,14 @@
 {
   "per_query": [
     {
-      "query": "Code related to: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs",
+      "query": "Code related to: Fixes a bug where the deterministic edge sorting in an undirected graph could result in lower-information relations overwriting higher-informat",
       "n_evidences": 6,
       "paths": [
         "tests/test_build.py",
         "tests/test_build.py",
         "tests/test_build.py",
         "graphify/build.py",
-        "tests/test_build.py",
+        "graphify/build.py",
         "graphify/build.py"
       ],
       "affected_files": [
@@ -16,17 +16,17 @@
         "tests/test_build.py"
       ],
       "related_symbols": [
+        "_doc_twin_remap",
         "build_from_json",
-        "dedupe_nodes",
+        "edge_data",
         "test_build_from_json_ambiguous_alias_detected_despite_header_impl_salting",
         "test_build_from_json_edge_count",
-        "test_build_from_json_preserves_first_direction_on_bidirectional_pair",
         "test_build_from_json_relativizes_absolute_source_file"
       ],
-      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
+      "summary_preview": "PR Summary: Fixes a bug where the deterministic edge sorting in an undirected graph could result in lower-information relations overwriting higher-information ones, leading to loss of important call edges.\nRisk Level: medium\nChange Types: b"
     },
     {
-      "query": "Definition of build_from_json and how it handles edges, relations, or conflict resolution",
+      "query": "Definition of build_from_json and how it handles parameters, return values, or error conditions",
       "n_evidences": 6,
       "paths": [
         "graphify/build.py",
@@ -34,20 +34,21 @@
         "graphify/build.py",
         "graphify/build.py",
         "graphify/build.py",
-        "graphify/build.py"
+        "tests/test_build.py"
       ],
       "affected_files": [
-        "graphify/build.py"
+        "graphify/build.py",
+        "tests/test_build.py"
       ],
       "related_symbols": [
         "_doc_twin_remap",
         "_norm_source_file",
         "_semantic_id_remap",
-        "build",
         "build_from_json",
-        "edge_data"
+        "edge_data",
+        "test_build_from_json_node_count"
       ],
-      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
+      "summary_preview": "PR Summary: Fixes a bug where the deterministic edge sorting in an undirected graph could result in lower-information relations overwriting higher-information ones, leading to loss of important call edges.\nRisk Level: medium\nChange Types: b"
     },
     {
       "query": "Callers and downstream usages of build_from_json",
@@ -72,7 +73,107 @@
         "test_build_from_json_node_count",
         "test_build_from_json_relativizes_absolute_source_file"
       ],
-      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
+      "summary_preview": "PR Summary: Fixes a bug where the deterministic edge sorting in an undirected graph could result in lower-information relations overwriting higher-information ones, leading to loss of important call edges.\nRisk Level: medium\nChange Types: b"
+    },
+    {
+      "query": "Definition of _RELATION_PRIORITY and how it handles parameters, return values, or error conditions",
+      "n_evidences": 6,
+      "paths": [
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "tests/test_build.py",
+        "tests/test_build.py"
+      ],
+      "affected_files": [
+        "graphify/build.py",
+        "tests/test_build.py"
+      ],
+      "related_symbols": [
+        "_doc_twin_remap",
+        "_norm_source_file",
+        "_semantic_id_remap",
+        "edge_data",
+        "load_extraction",
+        "test_build_from_json_edge_count"
+      ],
+      "summary_preview": "PR Summary: Fixes a bug where the deterministic edge sorting in an undirected graph could result in lower-information relations overwriting higher-information ones, leading to loss of important call edges.\nRisk Level: medium\nChange Types: b"
+    },
+    {
+      "query": "Callers and downstream usages of _RELATION_PRIORITY",
+      "n_evidences": 6,
+      "paths": [
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "tests/test_build.py",
+        "tests/test_build.py"
+      ],
+      "affected_files": [
+        "graphify/build.py",
+        "tests/test_build.py"
+      ],
+      "related_symbols": [
+        "_doc_twin_remap",
+        "_norm_source_file",
+        "_semantic_id_remap",
+        "edge_data",
+        "load_extraction",
+        "test_build_from_json_edge_count"
+      ],
+      "summary_preview": "PR Summary: Fixes a bug where the deterministic edge sorting in an undirected graph could result in lower-information relations overwriting higher-information ones, leading to loss of important call edges.\nRisk Level: medium\nChange Types: b"
+    },
+    {
+      "query": "Definition of _same_pair_calls_references_extraction and how it handles parameters, return values, or error conditions",
+      "n_evidences": 6,
+      "paths": [
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "tests/test_build.py",
+        "tests/test_build.py"
+      ],
+      "affected_files": [
+        "graphify/build.py",
+        "tests/test_build.py"
+      ],
+      "related_symbols": [
+        "_doc_twin_remap",
+        "_norm_source_file",
+        "_semantic_id_remap",
+        "edge_data",
+        "load_extraction",
+        "test_build_from_json_edge_count"
+      ],
+      "summary_preview": "PR Summary: Fixes a bug where the deterministic edge sorting in an undirected graph could result in lower-information relations overwriting higher-information ones, leading to loss of important call edges.\nRisk Level: medium\nChange Types: b"
+    },
+    {
+      "query": "Callers and downstream usages of _same_pair_calls_references_extraction",
+      "n_evidences": 6,
+      "paths": [
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "graphify/build.py",
+        "tests/test_build.py",
+        "tests/test_build.py"
+      ],
+      "affected_files": [
+        "graphify/build.py",
+        "tests/test_build.py"
+      ],
+      "related_symbols": [
+        "_doc_twin_remap",
+        "_norm_source_file",
+        "_semantic_id_remap",
+        "edge_data",
+        "load_extraction",
+        "test_build_from_json_edge_count"
+      ],
+      "summary_preview": "PR Summary: Fixes a bug where the deterministic edge sorting in an undirected graph could result in lower-information relations overwriting higher-information ones, leading to loss of important call edges.\nRisk Level: medium\nChange Types: b"
     },
     {
       "query": "Definition and purpose of helper _same_pair_calls_references_extraction",
@@ -97,105 +198,7 @@
         "load_extraction",
         "test_build_from_json_edge_count"
       ],
-      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
-    },
-    {
-      "query": "Definition and uses of constant _RELATION_PRIORITY",
-      "n_evidences": 6,
-      "paths": [
-        "graphify/build.py",
-        "graphify/build.py",
-        "graphify/build.py",
-        "graphify/build.py",
-        "tests/test_build.py",
-        "tests/test_build.py"
-      ],
-      "affected_files": [
-        "graphify/build.py",
-        "tests/test_build.py"
-      ],
-      "related_symbols": [
-        "_doc_twin_remap",
-        "_norm_source_file",
-        "_semantic_id_remap",
-        "edge_data",
-        "load_extraction",
-        "test_build_from_json_edge_count"
-      ],
-      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
-    },
-    {
-      "query": "Undirected edge collapse: add_edge overwrite, _RELATION_PRIORITY, unknown/equal priority, reverse-direction same relation",
-      "n_evidences": 6,
-      "paths": [
-        "graphify/build.py",
-        "graphify/build.py",
-        "graphify/build.py",
-        "graphify/build.py",
-        "graphify/build.py",
-        "graphify/build.py"
-      ],
-      "affected_files": [
-        "graphify/build.py"
-      ],
-      "related_symbols": [
-        "_doc_twin_remap",
-        "_norm_source_file",
-        "_semantic_id_remap",
-        "build_from_json",
-        "dedupe_edges",
-        "edge_data"
-      ],
-      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
-    },
-    {
-      "query": "Who reads edge relation attributes? export, callflow, affected, graph queries",
-      "n_evidences": 6,
-      "paths": [
-        "graphify/build.py",
-        "graphify/build.py",
-        "graphify/build.py",
-        "graphify/build.py",
-        "tests/test_build.py",
-        "tests/test_build.py"
-      ],
-      "affected_files": [
-        "graphify/build.py",
-        "tests/test_build.py"
-      ],
-      "related_symbols": [
-        "_doc_twin_remap",
-        "_norm_source_file",
-        "_semantic_id_remap",
-        "edge_data",
-        "load_extraction",
-        "test_build_from_json_edge_count"
-      ],
-      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
-    },
-    {
-      "query": "Tests covering edge collapse order, relation priority, or calls vs references",
-      "n_evidences": 6,
-      "paths": [
-        "tests/test_build.py",
-        "tests/test_build.py",
-        "tests/test_build.py",
-        "tests/test_build.py",
-        "tests/test_build.py",
-        "tests/test_build.py"
-      ],
-      "affected_files": [
-        "tests/test_build.py"
-      ],
-      "related_symbols": [
-        "load_extraction",
-        "test_build_from_json_ambiguous_alias_detected_despite_header_impl_salting",
-        "test_build_from_json_edge_count",
-        "test_build_from_json_node_count",
-        "test_build_from_json_preserves_first_direction_on_bidirectional_pair",
-        "test_build_from_json_relativizes_absolute_source_file"
-      ],
-      "summary_preview": "PR Summary: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call information.\nRisk Level: medium\nChange Types: bug"
+      "summary_preview": "PR Summary: Fixes a bug where the deterministic edge sorting in an undirected graph could result in lower-information relations overwriting higher-information ones, leading to loss of important call edges.\nRisk Level: medium\nChange Types: b"
     }
   ],
   "merged_count": 18,

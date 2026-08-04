@@ -6,11 +6,18 @@ from core.gateway import gateway
 
 
 CORE_PATH_HINTS = (
-    "build.py",
-    "graph",
+    "core",
+    "engine",
+    "main",
     "runtime",
     "auth",
     "db",
+    "api",
+    "server",
+    "client",
+    "model",
+    "service",
+    "security",
     "migrate",
     "cache",
 )
@@ -36,7 +43,6 @@ def refine_understanding(
     Nudges risk, fills out-of-scope notes, drops generic risk fluff.
     """
     files_l = " ".join(files or []).lower()
-    body_l = (body or "").lower()
 
     change_types = [str(c).lower() for c in (result.change_type or [])]
     is_bugfix = any(t in change_types for t in ("bug", "bugfix", "fix"))
@@ -47,19 +53,9 @@ def refine_understanding(
             result.risk_level = "medium"
             if not (result.risk_rationale or "").strip():
                 result.risk_rationale = (
-                    "Core path bugfix that changes collision/invariant behavior; "
-                    "small diff but non-local semantic impact."
+                    "Core component bugfix affecting system invariants; "
+                    "non-local semantic impact."
                 )
-
-    # Explicit deferred alternatives from PR body
-    noted = list(result.out_of_scope_noted or [])
-    for phrase, label in [
-        ("multigraph", "MultiGraph alternative deferred"),
-        ("also_relations", "also_relations merge deferred"),
-    ]:
-        if phrase in body_l and label not in noted:
-            noted.append(label)
-    result.out_of_scope_noted = noted
 
     # Drop banned generic risk language
     cleaned = []

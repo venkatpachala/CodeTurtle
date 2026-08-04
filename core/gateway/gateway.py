@@ -119,7 +119,10 @@ class AIGateway:
                     success=True,
                 )
 
-                console.print(f"[bold green]✅ LLM Call[/bold green] {agent_name} | {capability} | {model} | {latency:.2f}s | Tokens: {telemetry.total_tokens}")
+                try:
+                    console.print(f"[bold green][OK] LLM Call[/bold green] {agent_name} | {capability} | {model} | {latency:.2f}s | Tokens: {telemetry.total_tokens}")
+                except Exception:
+                    pass
 
                 return GatewayResponse(
                     content=response.content,
@@ -154,7 +157,10 @@ class AIGateway:
             error=last_error,
         )
 
-        console.print(f"[bold red] LLM Call Failed[/bold red] {agent_name} | {capability} | {model} | {latency:.2f}s | Retries: {retries}")
+        try:
+            console.print(f"[bold red][FAIL] LLM Call Failed[/bold red] {agent_name} | {capability} | {model} | {latency:.2f}s | Retries: {retries}")
+        except Exception:
+            pass
 
         raise Exception(f"Gateway failed after {retries} retries: {last_error}")
 

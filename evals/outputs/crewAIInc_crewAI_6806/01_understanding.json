@@ -1,0 +1,82 @@
+{
+  "input": {
+    "title": "refactor(llm): remove dead provider helpers",
+    "body": "## Summary\n\n- remove the unused BaseLLM stop-word implementation helper\n- remove unreachable synchronous and asynchronous Anthropic follow-up conversation helpers\n- remove unused Bedrock Nova and media-format helpers\n- remove the test that directly exercised the otherwise unreachable Anthropic private method\n\n## Why\n\nRepository-wide reference tracing found no production call sites for these private helpers. The Anthropic synchronous helper was only referenced by its unit test and was already mar",
+    "files": [
+      "lib/crewai/src/crewai/llms/base_llm.py",
+      "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+      "lib/crewai/src/crewai/llms/providers/bedrock/completion.py",
+      "lib/crewai/tests/llms/anthropic/test_anthropic.py"
+    ]
+  },
+  "output": {
+    "summary": "This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.",
+    "change_type": [
+      "refactor"
+    ],
+    "risk_level": "low",
+    "risk_rationale": "The removed code and tests do not affect public APIs or core functionality. The changes are confined to private helper methods and their associated test cases.",
+    "bug_mechanism": [],
+    "affected_areas": [
+      "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+      "lib/crewai/src/crewai/llms/providers/bedrock/completion.py",
+      "lib/crewai/tests/llms/anthropic/test_anthropic.py"
+    ],
+    "files_summary": [],
+    "architectural_assumptions": [],
+    "design_tradeoffs": [],
+    "out_of_scope_noted": [],
+    "focus_areas": [
+      "Code removal and refactoring in LLM providers",
+      "Test case cleanup for Anthropic provider"
+    ],
+    "verification_targets": [
+      ".venv/bin/pytest -q lib/crewai/tests/llms/anthropic/test_anthropic.py",
+      "Ruff lint and format checks",
+      "mypy static type checking",
+      "pre-commit hooks"
+    ],
+    "potential_risks": [],
+    "has_tests": true,
+    "has_docs": false
+  },
+  "raw_agent_return": {
+    "pr_understanding": {
+      "summary": "This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.",
+      "change_type": [
+        "refactor"
+      ],
+      "risk_level": "low",
+      "risk_rationale": "The removed code and tests do not affect public APIs or core functionality. The changes are confined to private helper methods and their associated test cases.",
+      "bug_mechanism": [],
+      "affected_areas": [
+        "lib/crewai/src/crewai/llms/providers/anthropic/completion.py",
+        "lib/crewai/src/crewai/llms/providers/bedrock/completion.py",
+        "lib/crewai/tests/llms/anthropic/test_anthropic.py"
+      ],
+      "files_summary": [],
+      "architectural_assumptions": [],
+      "design_tradeoffs": [],
+      "out_of_scope_noted": [],
+      "focus_areas": [
+        "Code removal and refactoring in LLM providers",
+        "Test case cleanup for Anthropic provider"
+      ],
+      "verification_targets": [
+        ".venv/bin/pytest -q lib/crewai/tests/llms/anthropic/test_anthropic.py",
+        "Ruff lint and format checks",
+        "mypy static type checking",
+        "pre-commit hooks"
+      ],
+      "potential_risks": [],
+      "has_tests": true,
+      "has_docs": false
+    },
+    "traces": [
+      {
+        "agent": "PRUnderstandingAgent",
+        "output": "{\n  \"summary\": \"This PR removes unused helper functions and tests related to Anthropic's tool use conversation flow, which is not part of the active runtime behavior.\",\n  \"change_type\": [\n    \"refactor\"\n  ],\n  \"risk_level\": \"low\",\n  \"risk_rationale\": \"The removed code and tests do not affect public APIs or core functionality. The changes are confined to private helper methods and their associated test cases.\",\n  \"bug_mechanism\": [],\n  \"affected_areas\": [\n    \"lib/crewai/src/crewai/llms/providers/anthropic/completion.py\",\n    \"lib/crewai/src/crewai/llms/providers/bedrock/completion.py\",\n    \"lib/crewai/tests/llms/anthropic/test_anthropic.py\"\n  ],\n  \"files_summary\": [],\n  \"architectural_assumptions\": [],\n  \"design_tradeoffs\": [],\n  \"out_of_scope_noted\": [],\n  \"focus_areas\": [\n    \"Code removal and refactoring in LLM providers\",\n    \"Test case cleanup for Anthropic provider\"\n  ],\n  \"verification_targets\": [\n    \".venv/bin/pytest -q lib/crewai/tests/llms/anthropic/test_anthropic.py\",\n    \"Ruff lint and format checks\",\n    \"mypy static type checking\",\n    \"pre-commit hooks\"\n  ],\n  \"potential_risks\": [],\n  \"has_tests\": true,\n  \"has_docs\": false\n}"
+      }
+    ]
+  }
+}

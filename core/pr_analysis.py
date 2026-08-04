@@ -112,7 +112,7 @@ def extract_functions(diff: str) -> dict:
             current_func = None
             continue
 
-        # @@ -a,b +c,d @@ def build_from_json(
+        # @@ -a,b +c,d @@ def foo(
         hm = HUNK_HEADER.match(line)
         if hm:
             tail = hm.group(1) or ""
@@ -162,23 +162,41 @@ def extract_functions(diff: str) -> dict:
     }
 
 
+CORE_PATH_HINTS = (
+    "core",
+    "engine",
+    "main",
+    "runtime",
+    "auth",
+    "db",
+    "api",
+    "server",
+    "client",
+    "model",
+    "service",
+    "security",
+)
+
 def boost_modified_from_diff(
-    diff: str, files: list[str], modified: list[str]
+    diff: str, files: list[str], modified: list[str], added: list[str] | None = None
 ) -> list[str]:
     """
-    Last resort when hunk context omitted the enclosing def.
-    For build.py changes, recover build_from_json if it appears in the patch.
+    Generic fallback when hunk context header omits the enclosing def or class.
+    Scans diff context and modification lines for symbol definitions, ensuring
+    functions in added_functions are not duplicated into modified_functions.
     """
     out = set(modified)
-    paths = [f.replace("\\", "/") for f in files]
+    added_set = set(added or [])
+    for line in diff.splitlines():
+        if not line.startswith(("---", "+++")):
+            m_def = re.search(r"\bdef\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", line)
+            if m_def and not m_def.group(1).startswith("test_"):
+                out.add(m_def.group(1))
+            m_cls = re.search(r"\bclass\s+([A-Za-z_][A-Za-z0-9_]*)\b", line)
+            if m_cls and not m_cls.group(1).startswith("Test"):
+                out.add(m_cls.group(1))
 
-    if any(p.endswith("build.py") or "/build.py" in p for p in paths):
-        for m in re.finditer(r"\bdef\s+(build_from_json)\s*\(", diff):
-            out.add(m.group(1))
-        if "_RELATION_PRIORITY" in diff and re.search(r"build_from_json", diff):
-            out.add("build_from_json")
-
-    return sorted(out)
+    return sorted(out - added_set)
 
 
 def classify_high_risk_files(files: list[str]) -> tuple[list[str], dict[str, str]]:
@@ -192,63 +210,9 @@ def classify_high_risk_files(files: list[str]) -> tuple[list[str], dict[str, str
             high.append(f)
             reasons[f] = (
                 f"Core-path module ({f}); structural or invariant changes here "
-                f"can affect downstream graph/build consumers."
+                f"can affect downstream consumers."
             )
     return high, reasons
-
-
-def seed_policy_fields(diff: str, analysis: dict) -> dict:
-    """Deterministic semantic seeds when priority/collapse policy is present."""
-    if "_RELATION_PRIORITY" not in diff:
-        return analysis
-
-    def _extend(key: str, items: list[str]) -> None:
-        cur = list(analysis.get(key) or [])
-        for s in items:
-            if s not in cur:
-                cur.append(s)
-        analysis[key] = cur
-
-    _extend(
-        "architectural_changes",
-        [
-            "Relation precedence policy during undirected edge collapse",
-            "Preserves single-edge undirected graph invariant (no MultiGraph)",
-        ],
-    )
-    _extend(
-        "design_assumptions",
-        [
-            "Higher _RELATION_PRIORITY wins on same undirected node pair",
-            "Unlisted relations default to priority 0",
-            "One edge per undirected pair remains the storage model",
-        ],
-    )
-    _extend(
-        "behavioral_invariants",
-        [
-            "Highest-priority relation survives collapse",
-            "Collapse outcome stable across input order for calls vs references",
-        ],
-    )
-    _extend(
-        "downstream_impacts",
-        [
-            "Call graph accuracy for same node pairs",
-            "Dependency / reference graphs that rely on relation labels",
-            "Graph export and downstream static analysis consumers",
-        ],
-    )
-    _extend(
-        "review_hotspots",
-        [
-            "build_from_json",
-            "_RELATION_PRIORITY",
-            "undirected edge collapse",
-            "reverse-direction duplicate skip",
-        ],
-    )
-    return analysis
 
 
 def pr_analysis_agent(state: ReviewState) -> dict:
@@ -261,7 +225,7 @@ def pr_analysis_agent(state: ReviewState) -> dict:
     deterministic: dict[str, Any] = analyze_diff(diff, files)
     funcs = extract_functions(diff)
     funcs["modified_functions"] = boost_modified_from_diff(
-        diff, files, funcs["modified_functions"]
+        diff, files, funcs["modified_functions"], funcs["added_functions"]
     )
     deterministic.update(funcs)
     deterministic["changed_files"] = files
@@ -282,14 +246,10 @@ Your job is ONLY to produce:
 - review_hotspots: symbols/areas specialists should inspect
 - architectural_changes: policies / invariants (not new modules only)
 
-If the diff introduces _RELATION_PRIORITY or changes undirected edge collapse:
-- architectural_changes MUST mention relation-precedence policy and single-edge invariant.
-- review_hotspots MUST include build_from_json when it appears in modified_functions.
-
 Rules:
 - NEVER invent function or class names.
-- Only refer to symbols from the deterministic lists.
-- Be concrete (e.g. "last-write-wins → priority-based collapse"), not vague.
+- Only refer to symbols from the deterministic lists or the diff.
+- Be concrete, not vague.
 - If unsure, use empty lists."""),
         ("human", """PR Title: {title}
 
@@ -363,8 +323,6 @@ Do not contradict deterministic function lists."""),
     ):
         if key in deterministic:
             analysis[key] = deterministic[key]
-
-    analysis = seed_policy_fields(diff, analysis)
 
     return {
         "pr_analysis": analysis,

@@ -1,9 +1,10 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from enum import Enum
 from typing import Any, Dict, List, Literal
 
 from pydantic import BaseModel, Field
+from core.models import FindingSeverity, SpecialistFinding, SpecialistReview
 
 
 class ReviewerKind(str, Enum):

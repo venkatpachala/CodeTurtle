@@ -49,17 +49,8 @@ def _clean_notes(notes: list[Any]) -> list[str]:
 def _resolve_modified_symbols(analysis: dict) -> list[str]:
     modified = [str(x) for x in (analysis.get("modified_functions") or [])]
     constants = [str(x) for x in (analysis.get("constants_added") or [])]
-    # Soft bias when Phase 2 still misses body-only edits on build.py
-    if not modified and any(
-        "build.py" in str(f).replace("\\", "/")
-        for f in (analysis.get("changed_files") or [])
-    ):
-        if "_RELATION_PRIORITY" in constants or any(
-            "priority" in str(x).lower()
-            for x in (analysis.get("logic_changes") or [])
-        ):
-            modified = ["build_from_json"]
-    return modified[:10]
+    added = [str(x) for x in (analysis.get("added_functions") or [])]
+    return (modified + constants + added)[:10]
 
 
 def _deterministic_reviewers(understanding: dict, analysis: dict) -> list[ReviewerKind]:
@@ -88,8 +79,9 @@ def _deterministic_reviewers(understanding: dict, analysis: dict) -> list[Review
     ).lower()
 
     # Core path bug/policy → bump risk for reviewer allocation
-    if risk == "low" and any("build" in f or "graph" in f for f in files):
-        if "bug" in body or "priority" in body or "collapse" in body:
+    core_hints = ("core", "engine", "main", "runtime", "auth", "db", "api", "server", "client", "model", "service", "security")
+    if risk == "low" and any(any(h in f for h in core_hints) for f in files):
+        if "bug" in body or "fix" in body or "invariant" in body:
             risk = "medium"
 
     # Always correctness for code
@@ -98,7 +90,7 @@ def _deterministic_reviewers(understanding: dict, analysis: dict) -> list[Review
     # Testing: present tests or missing-tests gap
     if analysis.get("tests_added_or_modified") or any("test" in f for f in files):
         reviewers.add(ReviewerKind.TESTING)
-    elif any(f.endswith((".py", ".ts", ".js", ".go", ".rs")) for f in files):
+    elif any(f.endswith((".py", ".ts", ".js", ".go", ".rs", ".java", ".cpp", ".c")) for f in files):
         reviewers.add(ReviewerKind.TESTING)
 
     # Code quality only when risk medium+ or large surface — not default for tiny policy fixes
@@ -160,8 +152,8 @@ def _deterministic_questions(
         questions.append(
             RetrievalQuestion(
                 question=(
-                    f"Definition of {sym} and how it handles edges, relations, "
-                    f"or conflict resolution"
+                    f"Definition of {sym} and how it handles parameters, "
+                    f"return values, or error conditions"
                 ),
                 purpose="changed_symbol",
                 prefer_symbols=[sym],
@@ -197,47 +189,37 @@ def _deterministic_questions(
             )
         )
 
-    blob = " ".join(
-        [
-            summary.lower(),
-            " ".join(str(x).lower() for x in (analysis.get("logic_changes") or [])),
-            " ".join(c.lower() for c in constants),
-            " ".join(files).lower(),
-        ]
-    )
-    if any(
-        k in blob
-        for k in ("relation", "priority", "collapse", "add_edge", "undirected")
-    ):
+    # Dynamic question based on review_hotspots and logic_changes
+    hotspots = list(analysis.get("review_hotspots") or [])[:3]
+    logic = list(analysis.get("logic_changes") or [])[:2]
+    if hotspots or logic:
+        focus_str = ", ".join(str(x) for x in (hotspots + logic))[:120]
         questions.append(
             RetrievalQuestion(
-                question=(
-                    "Undirected edge collapse: add_edge overwrite, _RELATION_PRIORITY, "
-                    "unknown/equal priority, reverse-direction same relation"
-                ),
+                question=f"Implementation & invariants for: {focus_str}",
                 purpose="collapse_policy",
                 prefer_paths=code_files[:3] or files[:3],
                 prefer_symbols=(modified + constants)[:5],
             )
         )
 
-    # One blast-radius slot (diversity without noise)
-    questions.append(
-        RetrievalQuestion(
-            question="Who reads edge relation attributes? export, callflow, affected, graph queries",
-            purpose="blast_radius",
-            prefer_paths=[],
-            prefer_symbols=["edge_data"] if "edge" in blob else (modified[:2] or []),
-        )
-    )
-
-    if analysis.get("tests_added_or_modified") or test_files:
+    # Blast radius / caller question
+    if modified or constants or added:
+        sym_str = ", ".join((modified + constants + added)[:3])
         questions.append(
             RetrievalQuestion(
-                question=(
-                    "Tests covering edge collapse order, relation priority, "
-                    "or calls vs references"
-                ),
+                question=f"Downstream callers, consumers, or affected callers of {sym_str}",
+                purpose="blast_radius",
+                prefer_paths=[],
+                prefer_symbols=(modified + constants + added)[:5],
+            )
+        )
+
+    if analysis.get("tests_added_or_modified") or test_files:
+        tested_target = ", ".join(modified[:3]) or "changed logic"
+        questions.append(
+            RetrievalQuestion(
+                question=f"Tests covering {tested_target}",
                 purpose="regression_tests",
                 prefer_paths=test_files[:3] or [p for p in files if "test" in p.lower()],
                 prefer_symbols=tests[:5],
@@ -285,7 +267,7 @@ def _deterministic_focus_notes(understanding: dict, analysis: dict) -> list[str]
     for t in (understanding.get("focus_areas") or [])[:3]:
         notes.append(str(t))
     if analysis.get("tests_added_or_modified"):
-        notes.append("Confirm regression tests cover both input orderings where relevant")
+        notes.append("Confirm regression tests cover changed execution paths where relevant")
     return _clean_notes(notes)[:10]
 
 
@@ -296,7 +278,8 @@ def _resolve_risk(understanding: dict, analysis: dict) -> str:
         or "medium"
     ).lower()
     files = [str(f).lower() for f in (analysis.get("changed_files") or [])]
-    if risk == "low" and any("build" in f or "graph" in f for f in files):
+    core_hints = ("core", "engine", "main", "runtime", "auth", "db", "api", "server", "client", "model", "service", "security")
+    if risk == "low" and any(any(h in f for h in core_hints) for f in files):
         risk = "medium"
     if risk not in ("low", "medium", "high", "critical"):
         risk = "medium"

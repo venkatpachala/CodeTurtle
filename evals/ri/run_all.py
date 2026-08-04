@@ -10,6 +10,7 @@ from evals.ri import (
     phase3_planner,
     phase4_retrieval,
     phase5_specialists,
+    phase6_critic_final,
 )
 
 def main(repo: str, number: int):
@@ -20,6 +21,7 @@ def main(repo: str, number: int):
         phase3_planner,
         phase4_retrieval,
         phase5_specialists,
+        phase6_critic_final,
     ]:
         print("\n" + "=" * 60)
         reports.append(mod.evaluate(repo, number))
