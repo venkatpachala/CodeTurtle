@@ -5,30 +5,30 @@ from typing import List, Literal
 from pydantic import BaseModel, Field
 
 
-class PRUnderstanding(BaseModel):
-    summary: str = Field(..., description="One-paragraph summary of what this PR does")
-    change_type: List[
-        Literal[
-            "feature", "bugfix", "refactor", "docs", "test",
-            "config", "dependency", "api", "ui", "performance", "security", "chore",
-        ]
-    ] = Field(..., description="Primary categories of change")
-    risk_level: Literal["low", "medium", "high", "critical"] = Field(
-        ..., description="Overall risk of this change"
-    )
-    affected_areas: List[str] = Field(
-        ..., description="High-level areas affected"
-    )
-    files_summary: List[str] = Field(
-        ..., description="Short description of key files changed"
-    )
-    focus_areas: List[str] = Field(
-        ..., description="What specialized reviewers should focus on"
-    )
-    potential_risks: List[str] = Field(default_factory=list)
-    has_tests: bool = Field(..., description="Whether tests were added or modified")
-    has_docs: bool = Field(..., description="Whether documentation was updated")
+from pydantic import BaseModel, Field
+from typing import List
 
+class PRUnderstanding(BaseModel):
+    summary: str
+    change_type: List[str]
+    risk_level: str  # low | medium | high | critical
+    risk_rationale: str = ""
+
+    # Causal / structural
+    bug_mechanism: List[str] = Field(default_factory=list)
+    affected_areas: List[str] = Field(default_factory=list)
+    files_summary: List[str] = Field(default_factory=list)
+
+    architectural_assumptions: List[str] = Field(default_factory=list)
+    design_tradeoffs: List[str] = Field(default_factory=list)
+    out_of_scope_noted: List[str] = Field(default_factory=list)
+
+    focus_areas: List[str] = Field(default_factory=list)
+    verification_targets: List[str] = Field(default_factory=list)
+    potential_risks: List[str] = Field(default_factory=list)
+
+    has_tests: bool = False
+    has_docs: bool = False
 
 class PRAnalysis(BaseModel):
     changed_files: List[str]
