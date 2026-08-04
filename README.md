@@ -8,7 +8,6 @@
 [![Graph Database](https://img.shields.io/badge/GraphDB-Neo4j-008CC1.svg)](https://neo4j.com/)
 [![LLM Backend](https://img.shields.io/badge/LLM-Ollama%20%7C%20OpenAI%20%7C%20LiteLLM-brightgreen.svg)](https://ollama.ai/)
 [![Observability](https://img.shields.io/badge/Observability-Langfuse-purple.svg)](https://langfuse.com/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 CodeTurtle is an **AI-native, repository-intelligent code review platform**. Unlike traditional LLM review tools that operate strictly on isolated diff snippets, CodeTurtle constructs a deep, structural understanding of your entire repository using hybrid vector-graph RAG, plans targeted evidence retrieval, and dispatches a multi-agent swarm to evaluate pull requests against real system invariants.
 
