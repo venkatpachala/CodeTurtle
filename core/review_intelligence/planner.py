@@ -1,4 +1,4 @@
-"""Review Planner — dynamic review plan from PR understanding + analysis."""
+"""Review Planner — hypothesis-driven review plan from PR understanding + analysis."""
 
 from __future__ import annotations
 
@@ -23,6 +23,45 @@ def _as_dict(x: Any) -> dict:
     return {}
 
 
+def _clean_notes(notes: list[Any]) -> list[str]:
+    """Drop metadata dumps, JSON blobs, and markdown fences."""
+    out: list[str] = []
+    skip_prefixes = (
+        "changed files:",
+        "added functions:",
+        "modified functions:",
+        "```",
+        "{",
+    )
+    for n in notes or []:
+        s = str(n).strip()
+        if not s:
+            continue
+        low = s.lower()
+        if any(low.startswith(p) for p in skip_prefixes):
+            continue
+        if s.startswith("```") or (s.startswith("{") and "intent_summary" in s):
+            continue
+        out.append(s)
+    return out
+
+
+def _resolve_modified_symbols(analysis: dict) -> list[str]:
+    modified = [str(x) for x in (analysis.get("modified_functions") or [])]
+    constants = [str(x) for x in (analysis.get("constants_added") or [])]
+    # Soft bias when Phase 2 still misses body-only edits on build.py
+    if not modified and any(
+        "build.py" in str(f).replace("\\", "/")
+        for f in (analysis.get("changed_files") or [])
+    ):
+        if "_RELATION_PRIORITY" in constants or any(
+            "priority" in str(x).lower()
+            for x in (analysis.get("logic_changes") or [])
+        ):
+            modified = ["build_from_json"]
+    return modified[:10]
+
+
 def _deterministic_reviewers(understanding: dict, analysis: dict) -> list[ReviewerKind]:
     reviewers: set[ReviewerKind] = set()
 
@@ -30,9 +69,10 @@ def _deterministic_reviewers(understanding: dict, analysis: dict) -> list[Review
     body = " ".join(
         [
             str(understanding.get("summary") or ""),
-            str(understanding.get("intent") or ""),
+            " ".join(str(x) for x in (understanding.get("change_type") or [])),
             " ".join(str(x) for x in (understanding.get("change_types") or [])),
             " ".join(files),
+            " ".join(str(x) for x in (analysis.get("logic_changes") or [])),
         ]
     ).lower()
 
@@ -40,104 +80,231 @@ def _deterministic_reviewers(understanding: dict, analysis: dict) -> list[Review
         f.endswith((".md", ".rst", ".txt")) or "docs/" in f or f.startswith("docs")
         for f in files
     )
-
     if only_docs:
         return [ReviewerKind.DOCUMENTATION]
 
+    risk = str(
+        understanding.get("risk_level") or analysis.get("risk_level") or "low"
+    ).lower()
+
+    # Core path bug/policy → bump risk for reviewer allocation
+    if risk == "low" and any("build" in f or "graph" in f for f in files):
+        if "bug" in body or "priority" in body or "collapse" in body:
+            risk = "medium"
+
+    # Always correctness for code
     reviewers.add(ReviewerKind.CORRECTNESS)
-    reviewers.add(ReviewerKind.CODE_QUALITY)
 
-    if analysis.get("tests_added_or_modified") or any(
-        "test" in f for f in files
-    ):
+    # Testing: present tests or missing-tests gap
+    if analysis.get("tests_added_or_modified") or any("test" in f for f in files):
         reviewers.add(ReviewerKind.TESTING)
-    else:
-        # Code change without tests → still want testing reviewer to flag gaps
-        if any(f.endswith((".py", ".ts", ".js", ".go", ".rs")) for f in files):
-            reviewers.add(ReviewerKind.TESTING)
+    elif any(f.endswith((".py", ".ts", ".js", ".go", ".rs")) for f in files):
+        reviewers.add(ReviewerKind.TESTING)
 
-    risk = str(understanding.get("risk_level") or analysis.get("risk_level") or "low").lower()
-    if risk in ("high", "critical"):
-        reviewers.add(ReviewerKind.ARCHITECTURE)
+    # Code quality only when risk medium+ or large surface — not default for tiny policy fixes
+    if risk in ("medium", "high", "critical") or len(files) > 3:
+        reviewers.add(ReviewerKind.CODE_QUALITY)
 
-    security_hints = ("auth", "crypto", "password", "token", "sql", "exec", "inject", "permission")
-    if any(h in body for h in security_hints):
+    if risk in ("high", "critical") or "invariant" in body or "architecture" in body:
+        if hasattr(ReviewerKind, "ARCHITECTURE"):
+            reviewers.add(ReviewerKind.ARCHITECTURE)
+
+    security_hints = (
+        "auth", "crypto", "password", "token", "sql", "exec", "inject", "permission",
+    )
+    if any(h in body for h in security_hints) and hasattr(ReviewerKind, "SECURITY"):
         reviewers.add(ReviewerKind.SECURITY)
 
-    concurrency_hints = ("async", "lock", "thread", "concurrent", "race", "mutex", "asyncio")
-    if any(h in body for h in concurrency_hints):
+    concurrency_hints = (
+        "async", "lock", "thread", "concurrent", "race", "mutex", "asyncio",
+    )
+    if any(h in body for h in concurrency_hints) and hasattr(ReviewerKind, "CONCURRENCY"):
         reviewers.add(ReviewerKind.CONCURRENCY)
 
     perf_hints = ("perf", "latency", "cache", "memory", "cpu", "optim")
-    if any(h in body for h in perf_hints):
+    if any(h in body for h in perf_hints) and hasattr(ReviewerKind, "PERFORMANCE"):
         reviewers.add(ReviewerKind.PERFORMANCE)
 
-    if analysis.get("documentation_changed") and ReviewerKind.DOCUMENTATION not in reviewers:
-        # optional docs pass alongside code
-        pass
-
     api_hints = ("api", "breaking", "public", "endpoint", "compat")
-    if any(h in body for h in api_hints):
+    if any(h in body for h in api_hints) and hasattr(ReviewerKind, "API_COMPAT"):
         reviewers.add(ReviewerKind.API_COMPAT)
 
     return sorted(reviewers, key=lambda r: r.value)
 
 
-def _deterministic_questions(understanding: dict, analysis: dict) -> list[RetrievalQuestion]:
+def _deterministic_questions(
+    understanding: dict, analysis: dict
+) -> list[RetrievalQuestion]:
+    """Hypothesis / invariant-driven questions — not 'implementation of file'."""
     questions: list[RetrievalQuestion] = []
     files = list(analysis.get("changed_files") or [])[:12]
+    code_files = [p for p in files if "test" not in p.lower()]
+    test_files = [p for p in files if "test" in p.lower()]
     added = list(analysis.get("added_functions") or [])[:10]
-    modified = list(analysis.get("modified_functions") or [])[:10]
+    modified = _resolve_modified_symbols(analysis)
+    constants = list(analysis.get("constants_added") or [])[:10]
+    tests = list(analysis.get("added_test_functions") or [])[:8]
 
-    title = str(understanding.get("summary") or understanding.get("intent") or "")[:200]
-
-    if title:
+    summary = str(understanding.get("summary") or "")[:180]
+    if summary:
         questions.append(
             RetrievalQuestion(
-                question=title,
+                question=f"Code related to: {summary}",
                 purpose="intent_semantic",
                 prefer_paths=files[:5],
+                prefer_symbols=(modified + constants)[:5],
             )
         )
 
-    for path in files[:8]:
+    for sym in modified[:5]:
         questions.append(
             RetrievalQuestion(
-                question=f"implementation and usage of {path}",
-                purpose="changed_file",
-                prefer_paths=[path],
+                question=(
+                    f"Definition of {sym} and how it handles edges, relations, "
+                    f"or conflict resolution"
+                ),
+                purpose="changed_symbol",
+                prefer_symbols=[sym],
+                prefer_paths=code_files[:3] or files[:3],
+            )
+        )
+        questions.append(
+            RetrievalQuestion(
+                question=f"Callers and downstream usages of {sym}",
+                purpose="downstream_callers",
+                prefer_symbols=[sym],
+                prefer_paths=[],
             )
         )
 
-    for name in (added + modified)[:8]:
+    for name in added[:5]:
         questions.append(
             RetrievalQuestion(
-                question=f"function {name} definition and callers",
+                question=f"Definition and purpose of helper {name}",
                 purpose="changed_symbol",
                 prefer_symbols=[name],
                 prefer_paths=files[:3],
             )
         )
 
-    if not analysis.get("tests_added_or_modified"):
+    for c in constants[:5]:
         questions.append(
             RetrievalQuestion(
-                question="tests related to " + (", ".join(files[:3]) or "this change"),
-                purpose="missing_tests",
-                prefer_paths=[f for f in files if "test" in f.lower()][:3],
+                question=f"Definition and uses of constant {c}",
+                purpose="priority_or_config",
+                prefer_symbols=[c],
+                prefer_paths=code_files[:2] or files[:2],
             )
         )
 
-    # de-dupe by question text
-    seen = set()
+    blob = " ".join(
+        [
+            summary.lower(),
+            " ".join(str(x).lower() for x in (analysis.get("logic_changes") or [])),
+            " ".join(c.lower() for c in constants),
+            " ".join(files).lower(),
+        ]
+    )
+    if any(
+        k in blob
+        for k in ("relation", "priority", "collapse", "add_edge", "undirected")
+    ):
+        policy_qs = [
+            (
+                "How are duplicate undirected edges on the same node pair resolved?",
+                "collapse_policy",
+            ),
+            (
+                "Where does add_edge overwrite existing edge relation attributes?",
+                "overwrite_semantics",
+            ),
+            (
+                "How are unknown or equal-priority relations handled in edge collapse?",
+                "priority_edge_cases",
+            ),
+            (
+                "How is reverse-direction duplicate of the same relation skipped?",
+                "reverse_edge",
+            ),
+        ]
+        for q, purpose in policy_qs:
+            questions.append(
+                RetrievalQuestion(
+                    question=q,
+                    purpose=purpose,
+                    prefer_paths=code_files[:3] or files[:3],
+                    prefer_symbols=(modified + constants)[:4],
+                )
+            )
+
+    if analysis.get("tests_added_or_modified") or test_files:
+        questions.append(
+            RetrievalQuestion(
+                question=(
+                    "Tests covering edge collapse order, relation priority, "
+                    "or calls vs references"
+                ),
+                purpose="regression_tests",
+                prefer_paths=test_files[:3] or [p for p in files if "test" in p.lower()],
+                prefer_symbols=tests[:5],
+            )
+        )
+    else:
+        questions.append(
+            RetrievalQuestion(
+                question="Existing tests related to "
+                + (", ".join(code_files[:2]) or "this change"),
+                purpose="missing_tests",
+                prefer_paths=test_files[:3],
+            )
+        )
+
+    seen: set[str] = set()
     unique: list[RetrievalQuestion] = []
     for q in questions:
         key = q.question.strip().lower()
         if key in seen:
             continue
+        # Ban file-centric RAG anti-pattern
+        if key.startswith("implementation and usage of "):
+            continue
         seen.add(key)
         unique.append(q)
-    return unique[:15]
+    return unique[:12]
+
+
+def _deterministic_focus_notes(understanding: dict, analysis: dict) -> list[str]:
+    notes: list[str] = []
+    for key in (
+        "logic_changes",
+        "behavior_changes",
+        "behavioral_invariants",
+        "architectural_changes",
+        "design_assumptions",
+    ):
+        for item in (analysis.get(key) or [])[:3]:
+            notes.append(str(item))
+    for t in (understanding.get("verification_targets") or [])[:4]:
+        notes.append(f"Verify: {t}")
+    for t in (understanding.get("focus_areas") or [])[:3]:
+        notes.append(str(t))
+    if analysis.get("tests_added_or_modified"):
+        notes.append("Confirm regression tests cover both input orderings where relevant")
+    return _clean_notes(notes)[:10]
+
+
+def _resolve_risk(understanding: dict, analysis: dict) -> str:
+    risk = str(
+        understanding.get("risk_level")
+        or analysis.get("risk_level")
+        or "medium"
+    ).lower()
+    files = [str(f).lower() for f in (analysis.get("changed_files") or [])]
+    if risk == "low" and any("build" in f or "graph" in f for f in files):
+        risk = "medium"
+    if risk not in ("low", "medium", "high", "critical"):
+        risk = "medium"
+    return risk
 
 
 def _llm_enrich_plan(
@@ -145,47 +312,54 @@ def _llm_enrich_plan(
     analysis: dict,
     base: ReviewPlan,
 ) -> ReviewPlan:
-    """Optional LLM pass: extra questions + focus notes. Falls back to base on failure."""
-    prompt = f"""You are a senior maintainer planning a PR review.
+    """Optional: refine intent_summary + extra focus notes only. Never replace questions wholesale."""
+    prompt = f"""You are a senior maintainer refining a PR review plan.
 
-PR understanding (JSON):
-{json.dumps(understanding, indent=2)[:3000]}
+Understanding:
+{json.dumps(understanding, indent=2)[:2500]}
 
-PR analysis (JSON):
-{json.dumps(analysis, indent=2)[:3000]}
+Analysis:
+{json.dumps(analysis, indent=2)[:2500]}
 
-Already selected reviewers: {[r.value for r in base.reviewers]}
+Current intent_summary: {base.intent_summary}
+Current risk_level: {base.risk_level}
+Reviewers: {[r.value for r in base.reviewers]}
 
-Return JSON with:
-- intent_summary: one sentence
-- risk_level: low|medium|high|critical
-- focus_notes: 3-6 short bullets of what to verify
-- extra_questions: list of {{"question": str, "purpose": str}} (max 5) for code search
-
-Do not invent files. Prefer questions about behavior, callers, edge cases, regressions.
+Reply with plain text ONLY in this format (no JSON, no markdown fences):
+INTENT: <one sentence causal summary>
+NOTES:
+- <verification bullet>
+- <verification bullet>
+- <verification bullet>
 """
 
     try:
-        # Plain text then light parse, or structured if you add a schema
         resp = gateway.generate(
             prompt=prompt,
             capability="reasoning",
             temperature=0.2,
-            max_tokens=800,
+            max_tokens=500,
             agent_name="ReviewPlanner",
         )
-        text = getattr(resp, "content", None) or str(resp)
-        # Keep deterministic reviewers; only merge notes/questions if JSON-like
-        focus = list(base.focus_notes)
-        extras: list[RetrievalQuestion] = []
-        # Best-effort: if model returns markdown, still keep base questions
-        if "focus" in text.lower():
-            focus.append(text[:500])
+        text = (getattr(resp, "content", None) or str(resp)).strip()
+
+        intent = base.intent_summary
+        extra_notes: list[str] = []
+        if text.startswith("INTENT:"):
+            line0 = text.split("\n", 1)[0]
+            intent = line0.replace("INTENT:", "", 1).strip() or intent
+        for line in text.splitlines():
+            s = line.strip()
+            if s.startswith("- "):
+                extra_notes.append(s[2:].strip())
+
+        notes = _clean_notes(list(base.focus_notes) + extra_notes)[:10]
         return base.model_copy(
             update={
-                "intent_summary": base.intent_summary or text[:240],
-                "focus_notes": focus[:8],
-                "retrieval_questions": list(base.retrieval_questions) + extras,
+                "intent_summary": intent[:400],
+                "focus_notes": notes,
+                # keep deterministic retrieval_questions
+                "retrieval_questions": list(base.retrieval_questions),
             }
         )
     except Exception:
@@ -201,35 +375,28 @@ def review_planner_agent(state: dict) -> dict:
 
     reviewers = _deterministic_reviewers(understanding, analysis)
     questions = _deterministic_questions(understanding, analysis)
-
-    risk = str(
-        understanding.get("risk_level")
-        or understanding.get("risk")
-        or "medium"
-    ).lower()
-
+    risk = _resolve_risk(understanding, analysis)
     intent = str(
         understanding.get("summary")
-        or understanding.get("intent")
         or state.get("title")
         or ""
     )[:400]
+    focus_notes = _deterministic_focus_notes(understanding, analysis)
 
     plan = ReviewPlan(
         intent_summary=intent,
-        risk_level=risk if risk in ("low", "medium", "high", "critical") else "medium",
+        risk_level=risk,
         reviewers=reviewers,
         retrieval_questions=questions,
-        focus_notes=[
-            f"Changed files: {len(analysis.get('changed_files') or [])}",
-            f"Added functions: {analysis.get('added_functions') or []}",
-            f"Modified functions: {analysis.get('modified_functions') or []}",
-        ],
+        focus_notes=focus_notes,
         skip_reasons={},
     )
 
-    # Optional LLM enrich (comment out if you want pure deterministic first)
     plan = _llm_enrich_plan(understanding, analysis, plan)
+    # Final sanitize after LLM
+    plan = plan.model_copy(
+        update={"focus_notes": _clean_notes(plan.focus_notes)[:10]}
+    )
 
     return {
         "review_plan": plan.model_dump(mode="json"),

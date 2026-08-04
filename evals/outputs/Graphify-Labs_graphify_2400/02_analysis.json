@@ -34,12 +34,12 @@
       "graphify/build.py": "Core-path module (graphify/build.py); structural or invariant changes here can affect downstream graph/build consumers."
     },
     "logic_changes": [
-      "Added a _RELATION_PRIORITY table to determine the priority of edge relations during undirected graph collapse.",
-      "Updated the logic in `build_from_json` to use `_RELATION_PRIORITY` for determining which edge relation survives when two edges with different relations land on the same (src, tgt) pair."
+      "Added a _RELATION_PRIORITY table to prioritize higher-information relations during edge collapse in undirected graphs.",
+      "Updated the logic for handling duplicate edges in `build_from_json` to ensure that the higher-priority relation wins the collapse, even if it arrives later."
     ],
     "behavior_changes": [
-      "Calls now survive over references during undirected graph collapse, regardless of input order.",
-      "The deterministic sort by (source, target, relation) is no longer sufficient to resolve conflicts between different edge relations; instead, the higher-priority relation as defined in _RELATION_PRIORITY wins."
+      "Calls now survive over references when both are present on the same (src, tgt) pair during undirected graph edge collapse.",
+      "The deterministic order of edges by (source, target, relation) no longer results in lower-priority relations clobbering higher-priority ones."
     ],
     "review_hotspots": [
       "build_from_json",
@@ -49,8 +49,8 @@
       "reverse-direction duplicate skip"
     ],
     "architectural_changes": [
-      "Updated the relation-precedence policy to use a single edge invariant where the highest-priority relation survives during undirected graph collapse.",
-      "The `_RELATION_PRIORITY` table must be consulted for determining which of two conflicting edges should survive.",
+      "Updated the edge collapse policy to use a priority-based approach, ensuring that the last-write-wins rule is based on relation precedence rather than alphabetical sorting.",
+      "Maintained the single-edge invariant for undirected graphs by implementing the _RELATION_PRIORITY table.",
       "Relation precedence policy during undirected edge collapse",
       "Preserves single-edge undirected graph invariant (no MultiGraph)"
     ],
@@ -105,12 +105,12 @@
         "graphify/build.py": "Core-path module (graphify/build.py); structural or invariant changes here can affect downstream graph/build consumers."
       },
       "logic_changes": [
-        "Added a _RELATION_PRIORITY table to determine the priority of edge relations during undirected graph collapse.",
-        "Updated the logic in `build_from_json` to use `_RELATION_PRIORITY` for determining which edge relation survives when two edges with different relations land on the same (src, tgt) pair."
+        "Added a _RELATION_PRIORITY table to prioritize higher-information relations during edge collapse in undirected graphs.",
+        "Updated the logic for handling duplicate edges in `build_from_json` to ensure that the higher-priority relation wins the collapse, even if it arrives later."
       ],
       "behavior_changes": [
-        "Calls now survive over references during undirected graph collapse, regardless of input order.",
-        "The deterministic sort by (source, target, relation) is no longer sufficient to resolve conflicts between different edge relations; instead, the higher-priority relation as defined in _RELATION_PRIORITY wins."
+        "Calls now survive over references when both are present on the same (src, tgt) pair during undirected graph edge collapse.",
+        "The deterministic order of edges by (source, target, relation) no longer results in lower-priority relations clobbering higher-priority ones."
       ],
       "review_hotspots": [
         "build_from_json",
@@ -120,8 +120,8 @@
         "reverse-direction duplicate skip"
       ],
       "architectural_changes": [
-        "Updated the relation-precedence policy to use a single edge invariant where the highest-priority relation survives during undirected graph collapse.",
-        "The `_RELATION_PRIORITY` table must be consulted for determining which of two conflicting edges should survive.",
+        "Updated the edge collapse policy to use a priority-based approach, ensuring that the last-write-wins rule is based on relation precedence rather than alphabetical sorting.",
+        "Maintained the single-edge invariant for undirected graphs by implementing the _RELATION_PRIORITY table.",
         "Relation precedence policy during undirected edge collapse",
         "Preserves single-edge undirected graph invariant (no MultiGraph)"
       ],
@@ -143,7 +143,7 @@
     "traces": [
       {
         "agent": "PRAnalysisAgent",
-        "output": "{'changed_files': ['graphify/build.py', 'tests/test_build.py'], 'added_functions': ['_same_pair_calls_references_extraction'], 'modified_functions': ['build_from_json'], 'modified_classes': [], 'removed_functions': [], 'constants_added': ['_RELATION_PRIORITY'], 'insertions': 74, 'deletions': 2, 'languages': ['Python'], 'tests_added_or_modified': True, 'config_changed': False, 'documentation_changed': False, 'added_test_functions': ['test_build_from_json_calls_survives_references_collapse_either_order'], 'modified_test_functions': [], 'high_risk_files': ['graphify/build.py'], 'high_risk_reasons': {'graphify/build.py': 'Core-path module (graphify/build.py); structural or invariant changes here can affect downstream graph/build consumers.'}, 'logic_changes': ['Added a _RELATION_PRIORITY table to determine the priority of edge relations during undirected graph collapse.', 'Updated the logic in `build_from_json` to use `_RELATION_PRIORITY` for determining which edge relation survives when two edges with different relations land on the same (src, tgt) pair.'], 'behavior_changes': ['Calls now survive over references during undirected graph collapse, regardless of input order.', 'The deterministic sort by (source, target, relation) is no longer sufficient to resolve conflicts between different edge relations; instead, the higher-priority relation as defined in _RELATION_PRIORITY wins.'], 'review_hotspots': ['build_from_json', '_same_pair_calls_references_extraction', '_RELATION_PRIORITY', 'undirected edge collapse', 'reverse-direction duplicate skip'], 'architectural_changes': ['Updated the relation-precedence policy to use a single edge invariant where the highest-priority relation survives during undirected graph collapse.', 'The `_RELATION_PRIORITY` table must be consulted for determining which of two conflicting edges should survive.', 'Relation precedence policy during undirected edge collapse', 'Preserves single-edge undirected graph invariant (no MultiGraph)'], 'design_assumptions': ['Higher _RELATION_PRIORITY wins on same undirected node pair', 'Unlisted relations default to priority 0', 'One edge per undirected pair remains the storage model'], 'downstream_impacts': ['Call graph accuracy for same node pairs', 'Dependency / reference graphs that rely on relation labels', 'Graph export and downstream static analysis consumers'], 'behavioral_invariants': ['Highest-priority relation survives collapse', 'Collapse outcome stable across input order for calls vs references']}"
+        "output": "{'changed_files': ['graphify/build.py', 'tests/test_build.py'], 'added_functions': ['_same_pair_calls_references_extraction'], 'modified_functions': ['build_from_json'], 'modified_classes': [], 'removed_functions': [], 'constants_added': ['_RELATION_PRIORITY'], 'insertions': 74, 'deletions': 2, 'languages': ['Python'], 'tests_added_or_modified': True, 'config_changed': False, 'documentation_changed': False, 'added_test_functions': ['test_build_from_json_calls_survives_references_collapse_either_order'], 'modified_test_functions': [], 'high_risk_files': ['graphify/build.py'], 'high_risk_reasons': {'graphify/build.py': 'Core-path module (graphify/build.py); structural or invariant changes here can affect downstream graph/build consumers.'}, 'logic_changes': ['Added a _RELATION_PRIORITY table to prioritize higher-information relations during edge collapse in undirected graphs.', 'Updated the logic for handling duplicate edges in `build_from_json` to ensure that the higher-priority relation wins the collapse, even if it arrives later.'], 'behavior_changes': ['Calls now survive over references when both are present on the same (src, tgt) pair during undirected graph edge collapse.', 'The deterministic order of edges by (source, target, relation) no longer results in lower-priority relations clobbering higher-priority ones.'], 'review_hotspots': ['build_from_json', '_same_pair_calls_references_extraction', '_RELATION_PRIORITY', 'undirected edge collapse', 'reverse-direction duplicate skip'], 'architectural_changes': ['Updated the edge collapse policy to use a priority-based approach, ensuring that the last-write-wins rule is based on relation precedence rather than alphabetical sorting.', 'Maintained the single-edge invariant for undirected graphs by implementing the _RELATION_PRIORITY table.', 'Relation precedence policy during undirected edge collapse', 'Preserves single-edge undirected graph invariant (no MultiGraph)'], 'design_assumptions': ['Higher _RELATION_PRIORITY wins on same undirected node pair', 'Unlisted relations default to priority 0', 'One edge per undirected pair remains the storage model'], 'downstream_impacts': ['Call graph accuracy for same node pairs', 'Dependency / reference graphs that rely on relation labels', 'Graph export and downstream static analysis consumers'], 'behavioral_invariants': ['Highest-priority relation survives collapse', 'Collapse outcome stable across input order for calls vs references']}"
       }
     ]
   }

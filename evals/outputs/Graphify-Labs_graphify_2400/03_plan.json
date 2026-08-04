@@ -1,7 +1,7 @@
 {
   "output": {
-    "intent_summary": "This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.",
-    "risk_level": "low",
+    "intent_summary": "This PR fixes a bug causing 'references' to overwrite 'calls' edges on undirected graphs in `build_from_json`, ensuring call information is preserved.",
+    "risk_level": "medium",
     "reviewers": [
       "code_quality",
       "correctness",
@@ -9,32 +9,37 @@
     ],
     "retrieval_questions": [
       {
-        "question": "This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in un",
+        "question": "Code related to: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call i",
         "purpose": "intent_semantic",
         "prefer_paths": [
           "graphify/build.py",
           "tests/test_build.py"
         ],
-        "prefer_symbols": []
+        "prefer_symbols": [
+          "build_from_json",
+          "_RELATION_PRIORITY"
+        ]
       },
       {
-        "question": "implementation and usage of graphify/build.py",
-        "purpose": "changed_file",
+        "question": "Definition of build_from_json and how it handles edges, relations, or conflict resolution",
+        "purpose": "changed_symbol",
         "prefer_paths": [
           "graphify/build.py"
         ],
-        "prefer_symbols": []
+        "prefer_symbols": [
+          "build_from_json"
+        ]
       },
       {
-        "question": "implementation and usage of tests/test_build.py",
-        "purpose": "changed_file",
-        "prefer_paths": [
-          "tests/test_build.py"
-        ],
-        "prefer_symbols": []
+        "question": "Callers and downstream usages of build_from_json",
+        "purpose": "downstream_callers",
+        "prefer_paths": [],
+        "prefer_symbols": [
+          "build_from_json"
+        ]
       },
       {
-        "question": "function _same_pair_calls_references_extraction definition and callers",
+        "question": "Definition and purpose of helper _same_pair_calls_references_extraction",
         "purpose": "changed_symbol",
         "prefer_paths": [
           "graphify/build.py",
@@ -43,20 +48,90 @@
         "prefer_symbols": [
           "_same_pair_calls_references_extraction"
         ]
+      },
+      {
+        "question": "Definition and uses of constant _RELATION_PRIORITY",
+        "purpose": "priority_or_config",
+        "prefer_paths": [
+          "graphify/build.py"
+        ],
+        "prefer_symbols": [
+          "_RELATION_PRIORITY"
+        ]
+      },
+      {
+        "question": "How are duplicate undirected edges on the same node pair resolved?",
+        "purpose": "collapse_policy",
+        "prefer_paths": [
+          "graphify/build.py"
+        ],
+        "prefer_symbols": [
+          "build_from_json",
+          "_RELATION_PRIORITY"
+        ]
+      },
+      {
+        "question": "Where does add_edge overwrite existing edge relation attributes?",
+        "purpose": "overwrite_semantics",
+        "prefer_paths": [
+          "graphify/build.py"
+        ],
+        "prefer_symbols": [
+          "build_from_json",
+          "_RELATION_PRIORITY"
+        ]
+      },
+      {
+        "question": "How are unknown or equal-priority relations handled in edge collapse?",
+        "purpose": "priority_edge_cases",
+        "prefer_paths": [
+          "graphify/build.py"
+        ],
+        "prefer_symbols": [
+          "build_from_json",
+          "_RELATION_PRIORITY"
+        ]
+      },
+      {
+        "question": "How is reverse-direction duplicate of the same relation skipped?",
+        "purpose": "reverse_edge",
+        "prefer_paths": [
+          "graphify/build.py"
+        ],
+        "prefer_symbols": [
+          "build_from_json",
+          "_RELATION_PRIORITY"
+        ]
+      },
+      {
+        "question": "Tests covering edge collapse order, relation priority, or calls vs references",
+        "purpose": "regression_tests",
+        "prefer_paths": [
+          "tests/test_build.py"
+        ],
+        "prefer_symbols": [
+          "test_build_from_json_calls_survives_references_collapse_either_order"
+        ]
       }
     ],
     "focus_notes": [
-      "Changed files: 2",
-      "Added functions: ['_same_pair_calls_references_extraction']",
-      "Modified functions: []",
-      "```json\n{\n  \"intent_summary\": \"This PR fixes a data-loss bug in graph construction by prioritizing higher-information relations during undirected graph edge collapses.\",\n  \"risk_level\": \"low\",\n  \"focus_notes\": [\n    \"Verify the implementation of _RELATION_PRIORITY table and its usage in edge collapse logic.\",\n    \"Ensure that new test cases cover all relevant scenarios, especially order-dependent behaviors.\",\n    \"Check for potential interactions with existing code to avoid unintended behavior c"
+      "Added a _RELATION_PRIORITY table to prioritize higher-information relations during edge collapse in undirected graphs.",
+      "Updated the logic for handling duplicate edges in `build_from_json` to ensure that the higher-priority relation wins the collapse, even if it arrives later.",
+      "Calls now survive over references when both are present on the same (src, tgt) pair during undirected graph edge collapse.",
+      "The deterministic order of edges by (source, target, relation) no longer results in lower-priority relations clobbering higher-priority ones.",
+      "Highest-priority relation survives collapse",
+      "Collapse outcome stable across input order for calls vs references",
+      "Updated the edge collapse policy to use a priority-based approach, ensuring that the last-write-wins rule is based on relation precedence rather than alphabetical sorting.",
+      "Maintained the single-edge invariant for undirected graphs by implementing the _RELATION_PRIORITY table.",
+      "Relation precedence policy during undirected edge collapse",
+      "Higher _RELATION_PRIORITY wins on same undirected node pair"
     ],
     "skip_reasons": {}
   },
   "raw": {
     "review_plan": {
-      "intent_summary": "This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.",
-      "risk_level": "low",
+      "intent_summary": "This PR fixes a bug causing 'references' to overwrite 'calls' edges on undirected graphs in `build_from_json`, ensuring call information is preserved.",
+      "risk_level": "medium",
       "reviewers": [
         "code_quality",
         "correctness",
@@ -64,32 +139,37 @@
       ],
       "retrieval_questions": [
         {
-          "question": "This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in un",
+          "question": "Code related to: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call i",
           "purpose": "intent_semantic",
           "prefer_paths": [
             "graphify/build.py",
             "tests/test_build.py"
           ],
-          "prefer_symbols": []
+          "prefer_symbols": [
+            "build_from_json",
+            "_RELATION_PRIORITY"
+          ]
         },
         {
-          "question": "implementation and usage of graphify/build.py",
-          "purpose": "changed_file",
+          "question": "Definition of build_from_json and how it handles edges, relations, or conflict resolution",
+          "purpose": "changed_symbol",
           "prefer_paths": [
             "graphify/build.py"
           ],
-          "prefer_symbols": []
+          "prefer_symbols": [
+            "build_from_json"
+          ]
         },
         {
-          "question": "implementation and usage of tests/test_build.py",
-          "purpose": "changed_file",
-          "prefer_paths": [
-            "tests/test_build.py"
-          ],
-          "prefer_symbols": []
+          "question": "Callers and downstream usages of build_from_json",
+          "purpose": "downstream_callers",
+          "prefer_paths": [],
+          "prefer_symbols": [
+            "build_from_json"
+          ]
         },
         {
-          "question": "function _same_pair_calls_references_extraction definition and callers",
+          "question": "Definition and purpose of helper _same_pair_calls_references_extraction",
           "purpose": "changed_symbol",
           "prefer_paths": [
             "graphify/build.py",
@@ -98,20 +178,90 @@
           "prefer_symbols": [
             "_same_pair_calls_references_extraction"
           ]
+        },
+        {
+          "question": "Definition and uses of constant _RELATION_PRIORITY",
+          "purpose": "priority_or_config",
+          "prefer_paths": [
+            "graphify/build.py"
+          ],
+          "prefer_symbols": [
+            "_RELATION_PRIORITY"
+          ]
+        },
+        {
+          "question": "How are duplicate undirected edges on the same node pair resolved?",
+          "purpose": "collapse_policy",
+          "prefer_paths": [
+            "graphify/build.py"
+          ],
+          "prefer_symbols": [
+            "build_from_json",
+            "_RELATION_PRIORITY"
+          ]
+        },
+        {
+          "question": "Where does add_edge overwrite existing edge relation attributes?",
+          "purpose": "overwrite_semantics",
+          "prefer_paths": [
+            "graphify/build.py"
+          ],
+          "prefer_symbols": [
+            "build_from_json",
+            "_RELATION_PRIORITY"
+          ]
+        },
+        {
+          "question": "How are unknown or equal-priority relations handled in edge collapse?",
+          "purpose": "priority_edge_cases",
+          "prefer_paths": [
+            "graphify/build.py"
+          ],
+          "prefer_symbols": [
+            "build_from_json",
+            "_RELATION_PRIORITY"
+          ]
+        },
+        {
+          "question": "How is reverse-direction duplicate of the same relation skipped?",
+          "purpose": "reverse_edge",
+          "prefer_paths": [
+            "graphify/build.py"
+          ],
+          "prefer_symbols": [
+            "build_from_json",
+            "_RELATION_PRIORITY"
+          ]
+        },
+        {
+          "question": "Tests covering edge collapse order, relation priority, or calls vs references",
+          "purpose": "regression_tests",
+          "prefer_paths": [
+            "tests/test_build.py"
+          ],
+          "prefer_symbols": [
+            "test_build_from_json_calls_survives_references_collapse_either_order"
+          ]
         }
       ],
       "focus_notes": [
-        "Changed files: 2",
-        "Added functions: ['_same_pair_calls_references_extraction']",
-        "Modified functions: []",
-        "```json\n{\n  \"intent_summary\": \"This PR fixes a data-loss bug in graph construction by prioritizing higher-information relations during undirected graph edge collapses.\",\n  \"risk_level\": \"low\",\n  \"focus_notes\": [\n    \"Verify the implementation of _RELATION_PRIORITY table and its usage in edge collapse logic.\",\n    \"Ensure that new test cases cover all relevant scenarios, especially order-dependent behaviors.\",\n    \"Check for potential interactions with existing code to avoid unintended behavior c"
+        "Added a _RELATION_PRIORITY table to prioritize higher-information relations during edge collapse in undirected graphs.",
+        "Updated the logic for handling duplicate edges in `build_from_json` to ensure that the higher-priority relation wins the collapse, even if it arrives later.",
+        "Calls now survive over references when both are present on the same (src, tgt) pair during undirected graph edge collapse.",
+        "The deterministic order of edges by (source, target, relation) no longer results in lower-priority relations clobbering higher-priority ones.",
+        "Highest-priority relation survives collapse",
+        "Collapse outcome stable across input order for calls vs references",
+        "Updated the edge collapse policy to use a priority-based approach, ensuring that the last-write-wins rule is based on relation precedence rather than alphabetical sorting.",
+        "Maintained the single-edge invariant for undirected graphs by implementing the _RELATION_PRIORITY table.",
+        "Relation precedence policy during undirected edge collapse",
+        "Higher _RELATION_PRIORITY wins on same undirected node pair"
       ],
       "skip_reasons": {}
     },
     "traces": [
       {
         "agent": "ReviewPlanner",
-        "output": "{\n  \"intent_summary\": \"This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in undirected graphs.\",\n  \"risk_level\": \"low\",\n  \"reviewers\": [\n    \"code_quality\",\n    \"correctness\",\n    \"testing\"\n  ],\n  \"retrieval_questions\": [\n    {\n      \"question\": \"This Pull Request addresses a specific data-loss bug in the graph construction process, ensuring that higher-information relations are preserved over lower-information ones during edge collapses in un\",\n      \"purpose\": \"intent_semantic\",\n      \"prefer_paths\": [\n        \"graphify/build.py\",\n        \"tests/test_build.py\"\n      ],\n      \"prefer_symbols\": []\n    },\n    {\n      \"question\": \"implementation and usage of graphify/build.py\",\n      \"purpose\": \"changed_file\",\n      \"prefer_paths\": [\n        \"graphify/build.py\"\n      ],\n      \"prefer_symbols\": []\n    },\n    {\n      \"question\": \"implementation and usage of tests/test_build.py\",\n      \"purpose\": \"changed_file\",\n      \"prefer_paths\": [\n        \"tests/test_build.py\"\n      ],\n      \"prefer_symbols\": []\n    },\n    {\n      \"question\": \"function _same_pair_calls_references_extraction definition and callers\",\n      \"purpose\": \"changed_symbol\",\n      \"prefer_paths\": [\n        \"graphify/build.py\",\n        \"tests/test_build.py\"\n      ],\n      \"prefer_symbols\": [\n        \"_same_pair_calls_references_extraction\"\n      ]\n    }\n  ],\n  \"focus_notes\": [\n    \"Changed files: 2\",\n    \"Added functions: ['_same_pair_calls_references_extraction']\",\n    \"Modified functions: []\",\n    \"```json\\n{\\n  \\\"intent_summary\\\": \\\"This PR fixes a data-loss bug in graph construction by prioritizing higher-information relations during undirected graph edge collapses.\\\",\\n  \\\"risk_level\\\": \\\"low\\\",\\n  \\\"focus_notes\\\": [\\n    \\\"Verify the implementation of _RELATION_PRIORITY table and its usage in edge collapse logic.\\\",\\n    \\\"Ensure that new test cases cover all relevant scenarios, especially order-dependent behaviors.\\\",\\n    \\\"Check for potential interactions with existing code to avoid unintended behavior c\"\n  ],\n  \"skip_reasons\": {}\n}"
+        "output": "{\n  \"intent_summary\": \"This PR fixes a bug causing 'references' to overwrite 'calls' edges on undirected graphs in `build_from_json`, ensuring call information is preserved.\",\n  \"risk_level\": \"medium\",\n  \"reviewers\": [\n    \"code_quality\",\n    \"correctness\",\n    \"testing\"\n  ],\n  \"retrieval_questions\": [\n    {\n      \"question\": \"Code related to: This PR fixes a bug where the deterministic sort order in `build_from_json` caused 'references' to overwrite 'calls' edges on undirected graphs, leading to loss of important call i\",\n      \"purpose\": \"intent_semantic\",\n      \"prefer_paths\": [\n        \"graphify/build.py\",\n        \"tests/test_build.py\"\n      ],\n      \"prefer_symbols\": [\n        \"build_from_json\",\n        \"_RELATION_PRIORITY\"\n      ]\n    },\n    {\n      \"question\": \"Definition of build_from_json and how it handles edges, relations, or conflict resolution\",\n      \"purpose\": \"changed_symbol\",\n      \"prefer_paths\": [\n        \"graphify/build.py\"\n      ],\n      \"prefer_symbols\": [\n        \"build_from_json\"\n      ]\n    },\n    {\n      \"question\": \"Callers and downstream usages of build_from_json\",\n      \"purpose\": \"downstream_callers\",\n      \"prefer_paths\": [],\n      \"prefer_symbols\": [\n        \"build_from_json\"\n      ]\n    },\n    {\n      \"question\": \"Definition and purpose of helper _same_pair_calls_references_extraction\",\n      \"purpose\": \"changed_symbol\",\n      \"prefer_paths\": [\n        \"graphify/build.py\",\n        \"tests/test_build.py\"\n      ],\n      \"prefer_symbols\": [\n        \"_same_pair_calls_references_extraction\"\n      ]\n    },\n    {\n      \"question\": \"Definition and uses of constant _RELATION_PRIORITY\",\n      \"purpose\": \"priority_or_config\",\n      \"prefer_paths\": [\n        \"graphify/build.py\"\n      ],\n      \"prefer_symbols\": [\n        \"_RELATION_PRIORITY\"\n      ]\n    },\n    {\n      \"question\": \"How are duplicate undirected edges on the same node pair resolved?\",\n      \"purpose\": \"collapse_policy\",\n      \"prefer_paths\": [\n        \"graphify/build.py\"\n      ],\n      \"prefer_symbols\": [\n        \"build_from_json\",\n        \"_RELATION_PRIORITY\"\n      ]\n    },\n    {\n      \"question\": \"Where does add_edge overwrite existing edge relation attributes?\",\n      \"purpose\": \"overwrite_semantics\",\n      \"prefer_paths\": [\n        \"graphify/build.py\"\n      ],\n      \"prefer_symbols\": [\n        \"build_from_json\",\n        \"_RELATION_PRIORITY\"\n      ]\n    },\n    {\n      \"question\": \"How are unknown or equal-priority relations handled in edge collapse?\",\n      \"purpose\": \"priority_edge_cases\",\n      \"prefer_paths\": [\n        \"graphify/build.py\"\n      ],\n      \"prefer_symbols\": [\n        \"build_from_json\",\n        \"_RELATION_PRIORITY\"\n      ]\n    },\n    {\n      \"question\": \"How is reverse-direction duplicate of the same relation skipped?\",\n      \"purpose\": \"reverse_edge\",\n      \"prefer_paths\": [\n        \"graphify/build.py\"\n      ],\n      \"prefer_symbols\": [\n        \"build_from_json\",\n        \"_RELATION_PRIORITY\"\n      ]\n    },\n    {\n      \"question\": \"Tests covering edge collapse order, relation priority, or calls vs references\",\n      \"purpose\": \"regression_tests\",\n      \"prefer_paths\": [\n        \"tests/test_build.py\"\n      ],\n      \"prefer_symbols\": [\n        \"test_build_from_json_calls_survives_references_collapse_either_order\"\n      ]\n    }\n  ],\n  \"focus_notes\": [\n    \"Added a _RELATION_PRIORITY table to prioritize higher-information relations during edge collapse in undirected graphs.\",\n    \"Updated the logic for handling duplicate edges in `build_from_json` to ensure that the higher-priority relation wins the collapse, even if it arrives later.\",\n    \"Calls now survive over references when both are present on the same (src, tgt) pair during undirected graph edge collapse.\",\n    \"The deterministic order of edges by (source, target, relation) no longer results in lower-priority relations clobbering higher-priority ones.\",\n    \"Highest-priority relation survives collapse\",\n    \"Collapse outcome stable across input order for calls vs reference"
       }
     ]
   }
