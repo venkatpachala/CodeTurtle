@@ -121,61 +121,24 @@ class GraphRouter:
         if direction not in ("out", "in"):
             raise ValueError("direction must be 'out' or 'in'")
 
-        # Try CONTAINS schema, then repo-property schema
-        queries = []
+        # Schema: (Repository)-[:CONTAINS]->(File)-[:IMPORTS]->(File)
         if direction == "out":
-            queries = [
-                """
-                MATCH (r:Repository {name: $repo})-[:CONTAINS]->(a:File {path: $path})
-                      -[:IMPORTS]->(b:File)
-                RETURN a.path AS source_path, b.path AS target_path
-                LIMIT $limit
-                """,
-                """
-                MATCH (a:File {repo: $repo, path: $path})-[:IMPORTS]->(b:File)
-                RETURN a.path AS source_path, b.path AS target_path
-                LIMIT $limit
-                """,
-                """
-                MATCH (a:File {path: $path})-[:IMPORTS]->(b:File)
-                WHERE a.repo = $repo OR a.repository = $repo OR a.repo_name = $repo
-                RETURN a.path AS source_path, b.path AS target_path
-                LIMIT $limit
-                """,
-            ]
+            cypher = """
+            MATCH (r:Repository {name: $repo})-[:CONTAINS]->(a:File {path: $path})
+                -[:IMPORTS]->(b:File)
+            RETURN a.path AS source_path, b.path AS target_path
+            LIMIT $limit
+            """
         else:
-            queries = [
-                """
-                MATCH (r:Repository {name: $repo})-[:CONTAINS]->(b:File {path: $path})
-                MATCH (a:File)-[:IMPORTS]->(b)
-                WHERE (r)-[:CONTAINS]->(a)
-                RETURN a.path AS source_path, b.path AS target_path
-                LIMIT $limit
-                """,
-                """
-                MATCH (a:File)-[:IMPORTS]->(b:File {repo: $repo, path: $path})
-                WHERE a.repo = $repo
-                RETURN a.path AS source_path, b.path AS target_path
-                LIMIT $limit
-                """,
-            ]
+            cypher = """
+            MATCH (r:Repository {name: $repo})-[:CONTAINS]->(b:File {path: $path})
+            MATCH (a:File)-[:IMPORTS]->(b)
+            WHERE (r)-[:CONTAINS]->(a)
+            RETURN a.path AS source_path, b.path AS target_path
+            LIMIT $limit
+            """
 
-        rows: list = []
-        last_err = None
-        for cypher in queries:
-            try:
-                rows = self._run(cypher, repo=self.repo_name, path=path, limit=limit)
-                if rows:
-                    break
-                # keep trying if empty — schema might still be wrong
-                if not rows:
-                    continue
-            except Exception as e:
-                last_err = e
-                continue
-
-        if not rows and last_err and not self._available:
-            raise GraphUnavailableError(str(last_err))
+        rows = self._run(cypher, repo=self.repo_name, path=path, limit=limit)
 
         kind = "IMPORTS" if direction == "out" else "reverse_IMPORTS"
         edges: List[DependencyEdge] = []

@@ -103,7 +103,7 @@ class RepositoryIntelligenceService:
                 message="refresh failed",
                 errors=[str(e)],
             )
-        return self.index(force=True)
+        return  self.index(force=True)
 
     # ── Internals ──────────────────────────────────────────────────
 

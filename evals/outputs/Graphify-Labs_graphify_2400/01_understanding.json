@@ -1,0 +1,74 @@
+{
+  "input": {
+    "title": "fix(build): preserve calls edges over references on undirected collap\u2026",
+    "body": "Fixes #2391.\r\n\r\nThe sort by (source, target, relation) before G.add_edge was added for deterministic collapse order, but that also meant alphabetical order picked the survivor whenever two different relations landed on the same (src, tgt) pair \u2014 references always beat calls since \"calls\" < \"references\". G.add_edge just overwrites, no merge.\r\n\r\nAdded a small _RELATION_PRIORITY table so the higher-information relation wins the collapse instead of whichever sorts last. Unlisted relations default to",
+    "files": [
+      "graphify/build.py",
+      "tests/test_build.py"
+    ]
+  },
+  "output": {
+    "summary": "Fixes a bug where the deterministic edge sorting in an undirected graph could result in lower-information relations overwriting higher-information ones, leading to loss of important call edges.",
+    "change_type": [
+      "bugfix"
+    ],
+    "risk_level": "medium",
+    "risk_rationale": "The fix changes how relations are prioritized during edge collapse, potentially affecting the integrity of the graph data. This could impact downstream systems that rely on accurate call graphs.",
+    "bug_mechanism": [],
+    "affected_areas": [
+      "call-graph construction in undirected graphs"
+    ],
+    "files_summary": [],
+    "architectural_assumptions": [],
+    "design_tradeoffs": [],
+    "out_of_scope_noted": [],
+    "focus_areas": [
+      "Edge collapsing logic",
+      "Relation priority handling",
+      "Deterministic sorting order"
+    ],
+    "verification_targets": [
+      "Correct edge survival when calls and references are added in both orders",
+      "No regression in existing test cases (14 pre-existing failures)"
+    ],
+    "potential_risks": [],
+    "has_tests": true,
+    "has_docs": false
+  },
+  "raw_agent_return": {
+    "pr_understanding": {
+      "summary": "Fixes a bug where the deterministic edge sorting in an undirected graph could result in lower-information relations overwriting higher-information ones, leading to loss of important call edges.",
+      "change_type": [
+        "bugfix"
+      ],
+      "risk_level": "medium",
+      "risk_rationale": "The fix changes how relations are prioritized during edge collapse, potentially affecting the integrity of the graph data. This could impact downstream systems that rely on accurate call graphs.",
+      "bug_mechanism": [],
+      "affected_areas": [
+        "call-graph construction in undirected graphs"
+      ],
+      "files_summary": [],
+      "architectural_assumptions": [],
+      "design_tradeoffs": [],
+      "out_of_scope_noted": [],
+      "focus_areas": [
+        "Edge collapsing logic",
+        "Relation priority handling",
+        "Deterministic sorting order"
+      ],
+      "verification_targets": [
+        "Correct edge survival when calls and references are added in both orders",
+        "No regression in existing test cases (14 pre-existing failures)"
+      ],
+      "potential_risks": [],
+      "has_tests": true,
+      "has_docs": false
+    },
+    "traces": [
+      {
+        "agent": "PRUnderstandingAgent",
+        "output": "{\n  \"summary\": \"Fixes a bug where the deterministic edge sorting in an undirected graph could result in lower-information relations overwriting higher-information ones, leading to loss of important call edges.\",\n  \"change_type\": [\n    \"bugfix\"\n  ],\n  \"risk_level\": \"medium\",\n  \"risk_rationale\": \"The fix changes how relations are prioritized during edge collapse, potentially affecting the integrity of the graph data. This could impact downstream systems that rely on accurate call graphs.\",\n  \"bug_mechanism\": [],\n  \"affected_areas\": [\n    \"call-graph construction in undirected graphs\"\n  ],\n  \"files_summary\": [],\n  \"architectural_assumptions\": [],\n  \"design_tradeoffs\": [],\n  \"out_of_scope_noted\": [],\n  \"focus_areas\": [\n    \"Edge collapsing logic\",\n    \"Relation priority handling\",\n    \"Deterministic sorting order\"\n  ],\n  \"verification_targets\": [\n    \"Correct edge survival when calls and references are added in both orders\",\n    \"No regression in existing test cases (14 pre-existing failures)\"\n  ],\n  \"potential_risks\": [],\n  \"has_tests\": true,\n  \"has_docs\": false\n}"
+      }
+    ]
+  }
+}
