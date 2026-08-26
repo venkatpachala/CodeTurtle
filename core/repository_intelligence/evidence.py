@@ -18,6 +18,9 @@ def build_evidence_package(state: dict) -> dict:
 
     query = f"{title}\n{body}".strip() or " ".join(files_changed[:20])
 
+    full_diff = state.get("full_diff") or state.get("patch") or state.get("diff") or ""
+    pr_number = state.get("number") or state.get("pr_number")
+
     try:
         retriever = GraphifyRetriever(repo)
         docs = retriever.retrieve(
@@ -25,6 +28,8 @@ def build_evidence_package(state: dict) -> dict:
             pr_title=title,
             pr_body=body,
             files_changed=list(files_changed),
+            full_diff=full_diff,
+            pr_number=pr_number,
             k=8,
         )
     except Exception as e:

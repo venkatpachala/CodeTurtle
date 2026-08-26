@@ -147,6 +147,8 @@ Description:
             pr_title=self.context.pr.title or "",
             pr_body=self.context.pr.body or "",
             files_changed=list(self.context.files_changed or []),
+            full_diff=self.context.full_diff,
+            pr_number=self.context.number,
         )
 
         self.context.raw_context = "\n\n---\n\n".join(

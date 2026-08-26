@@ -661,6 +661,13 @@ def is_pr_relevant_finding(
 _SHARED_SYSTEM_RULES = """
 You are reviewing THIS PULL REQUEST as a senior engineer — not documenting a codebase.
 
+GROUNDING RULES:
+1. Prefer the Change inventory and PR diff excerpt over generic repository knowledge.
+2. If classification is dependency/lockfile-only, only discuss dependency/lockfile effects.
+3. Every finding must cite at least one concrete path from Changed files or a diff hunk.
+4. If evidence is insufficient, say Uncertain — do not invent features.
+5. Graphify structure is supporting context, not a license to rewrite the PR purpose.
+
 PRIMARY source of truth: UNIFIED DIFF (section F) + Phase-2 analysis (section D).
 SECONDARY: filtered evidence (section G). If a chunk is unrelated to the diff, IGNORE IT.
 
