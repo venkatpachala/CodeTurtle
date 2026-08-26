@@ -4,38 +4,43 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Framework](https://img.shields.io/badge/Orchestration-LangGraph-orange.svg)](https://github.com/langchain-ai/langgraph)
+[![Protocol](https://img.shields.io/badge/Protocol-MCP-purple.svg)](https://modelcontextprotocol.io/)
 [![Vector Database](https://img.shields.io/badge/VectorDB-Qdrant-red.svg)](https://qdrant.tech/)
-[![Graph Database](https://img.shields.io/badge/GraphDB-Neo4j-008CC1.svg)](https://neo4j.com/)
+[![Graph Database](https://img.shields.io/badge/GraphDB-Neo4j%20%7C%20Graphify-008CC1.svg)](https://neo4j.com/)
 [![LLM Backend](https://img.shields.io/badge/LLM-Ollama%20%7C%20OpenAI%20%7C%20LiteLLM-brightgreen.svg)](https://ollama.ai/)
 [![Observability](https://img.shields.io/badge/Observability-Langfuse-purple.svg)](https://langfuse.com/)
 
-CodeTurtle is an **AI-native, repository-intelligent code review platform**. Unlike traditional LLM review tools that operate strictly on isolated diff snippets, CodeTurtle constructs a deep, structural understanding of your entire repository using hybrid vector-graph RAG, plans targeted evidence retrieval, and dispatches a multi-agent swarm to evaluate pull requests against real system invariants.
+CodeTurtle is an **AI-native, repository-intelligent code review platform**. Unlike traditional LLM review tools that operate strictly on isolated diff snippets, CodeTurtle constructs a deep, structural understanding of your entire repository using hybrid vector-graph RAG, Graphify MCP integration, hypothesis-driven review planning, and a multi-agent swarm to evaluate pull requests against real system invariants.
 
 ---
 
 ## Key Capabilities & Highlights
 
-- **Repository-Aware RAG**: Dual-store vector (`Qdrant`) + graph (`Neo4j`) indexing captures semantic embeddings, AST symbol definitions, import dependencies, and caller/callee graphs.
-- **Hypothesis-Driven Planning**: Dynamically formulates retrieval questions based on PR changes, allocating specialist agents based on risk profile and system invariants.
-- **Diff-First Context Packing**: Leads with the unified diff as primary ground truth, filtering secondary repository evidence to eliminate hallucinated repository tours.
-- **Multi-Agent Specialist Swarm**: Autonomous domain specialists (`CorrectnessAgent`, `CodeQualityAgent`, `TestingAgent`) bound by anti-summarization prompt contracts.
-- **Critic & Reasoned Decision Engine**: Deduplicates findings, resolves specialist contradictions, and generates actionable, structured final review decisions (`MERGE`, `REQUEST_CHANGES`, `COMMENT`).
-- **Local-First & Production Gateway**: Multi-provider AI Gateway supporting Ollama (e.g. `qwen2.5:7b`), OpenAI, and LiteLLM with structured output parsing, automatic retries, and Langfuse telemetry.
+- **Repository-Aware Hybrid RAG**: Dual-store vector (`Qdrant`) + graph (`Neo4j`) indexing captures semantic embeddings, AST symbol definitions, import dependencies, and caller/callee graphs.
+- **Graphify MCP Server Integration**: Native integration with Graphify via Model Context Protocol (MCP stdio connection), exposing graph queries, symbol lookup, neighborhood exploration, and shortest path traversals.
+- **Hypothesis-Driven Review Planning**: Formulates targeted retrieval questions based on PR changes, allocating plan-gated specialist agents according to risk profiles and modified symbol boundaries.
+- **Diff-First Context Packing & Deduplication**: Leads with the unified diff as primary ground truth, applying path-forced diff hunks, cross-encoder structural reranking, and global evidence deduplication (`merge_evidence_packages`).
+- **Claim-Challenging Multi-Agent Swarm**: Autonomous domain specialists (`CorrectnessAgent`, `CodeQualityAgent`, `TestingAgent`) bound by anti-summarization contracts that actively challenge core claims in pull requests instead of providing generic findings.
+- **Critic Gate & Reasoned Decision Engine**: Filters ungrounded or off-target findings, resolves specialist contradictions, and generates actionable, structured final review recommendations (`MERGE`, `REQUEST_CHANGES`, `COMMENT`).
+- **Decoupled Query Engine**: Subsystem with dedicated routers (`VectorRouter`, `GraphRouter`, `ModelRouter`) supporting contextual retrieval and automated impact analysis.
+- **Local-First AI Gateway**: Capability-based provider gateway supporting local models via Ollama (`qwen2.5:7b`, `llama3`), OpenAI (`gpt-4o`, `o3-mini`), and LiteLLM endpoints with automatic schema retries and Langfuse telemetry.
+- **Phase-by-Phase Benchmark Suite**: Built-in evaluation harness (`evals/ri/`) for continuous quantitative benchmark testing across all 6 review pipeline phases.
 
 ---
 
 ## System Architecture
 
-The following diagram illustrates CodeTurtle's end-to-end architecture across repository intelligence, multi-agent review orchestration, hybrid retrieval, and infrastructure telemetry:
+The following diagram illustrates CodeTurtle's end-to-end architecture across CLI commands, codebase ingestion, repository intelligence & Graphify MCP adapter, query engine, 6-phase review swarm, and AI gateway infrastructure:
 
 ```mermaid
 flowchart TB
     subgraph CLI ["CLI Layer (cli/)"]
         direction LR
-        CmdReview["codeturrtle review"]
-        CmdAddRepo["codeturrtle add-repo"]
-        CmdInspect["codeturrtle inspect-kb"]
-        CmdSession["codeturrtle session"]
+        CmdReview["codeturtle review"]
+        CmdAddRepo["codeturtle add-repo"]
+        CmdInspect["codeturtle inspect-kb"]
+        CmdGraphify["codeturtle graphify-test"]
+        CmdSession["codeturtle session"]
     end
 
     subgraph Ingestion ["1. Context & Codebase Ingestion"]
@@ -44,23 +49,38 @@ flowchart TB
         LocalRepo["Local Git Worktree"]
     end
 
-    subgraph RepoIntel ["2. Repository Intelligence Subsystem (core/repository_intelligence/)"]
+    subgraph KnowledgeLayer ["2. Repository Intelligence & Structural Knowledge"]
         direction TB
         ASTParser["AST Language Parsers<br/>(Python, TS, JS, Go, Java)"]
         GraphBuilder["Call Graph & Import Resolver<br/>(import_resolver.py)"]
         Chunker["Code Chunker<br/>(chunker.py)"]
         
+        subgraph GraphifyMCP ["Graphify MCP Integration (core/repository_knowledge/)"]
+            MCPAdapter["GraphifyMCPProvider<br/>(MCP stdio Adapter)"]
+            GraphifyEngine["Graphify Knowledge Graph DB"]
+            MCPAdapter <--> GraphifyEngine
+        end
+
         subgraph Databases ["Dual-Store Index Layer"]
             Qdrant[("Qdrant Vector Database<br/>(Semantic Embeddings)")]
             Neo4j[("Neo4j Graph Database<br/>(AST Symbols & Call Graphs)")]
         end
 
-        LocalRepo --> ASTParser & GraphBuilder & Chunker
+        LocalRepo --> ASTParser & GraphBuilder & Chunker & GraphifyEngine
         Chunker --> Qdrant
         ASTParser & GraphBuilder --> Neo4j
     end
 
-    subgraph Pipeline ["3. 6-Phase Review Intelligence Swarm (LangGraph)"]
+    subgraph QuerySubsystem ["3. Query Engine Subsystem (core/query_engine/)"]
+        VectorRouter["VectorRouter (Qdrant)"]
+        GraphRouter["GraphRouter (Neo4j)"]
+        ModelRouter["ModelRouter (Capabilities)"]
+        QueryEngine["QueryEngine<br/>(Retrieval & Impact Analysis)"]
+        
+        VectorRouter & GraphRouter & ModelRouter --> QueryEngine
+    end
+
+    subgraph Pipeline ["4. 6-Phase Review Intelligence Swarm (LangGraph)"]
         direction TB
         
         P1["Phase 1: PR Understanding Agent<br/>(pr_understanding.py)"]
@@ -79,16 +99,16 @@ flowchart TB
         end
 
         subgraph P5Sub ["Phase 5: Specialist Review Swarm (agents.py)"]
-            Correctness["Correctness Agent<br/>(Logic, Invariants, Edge Cases)"]
-            CodeQuality["Code Quality Agent<br/>(Structure, Naming, Modularity)"]
-            Testing["Testing Agent<br/>(Coverage Gaps, Assertions)"]
-            OptionalAgents["Optional Agents<br/>(Security, Performance, API)"]
+            Correctness["Correctness Agent<br/>(Claim Verification & Logic)"]
+            CodeQuality["Code Quality Agent<br/>(Structure & Extensibility)"]
+            Testing["Testing Agent<br/>(Assertions & Coverage Gaps)"]
+            OptionalAgents["Optional Domain Specialists"]
         end
 
         subgraph P6Sub ["Phase 6: Critic Gate & Decision Engine (agents.py)"]
             GroundingFilter["Evidence Grounding Filter"]
             RelevanceFilter["PR Relevance Filter"]
-            CriticGate["Critic Agent<br/>(Deduplication & Conflict Resolution)"]
+            CriticGate["Critic Agent<br/>(Claim Challenge & Deduplication)"]
             FinalRecommender["Final Recommender<br/>(Decision: MERGE / REQUEST_CHANGES / COMMENT)"]
 
             GroundingFilter --> RelevanceFilter --> CriticGate --> FinalRecommender
@@ -97,7 +117,7 @@ flowchart TB
         P1 --> P2 --> P3 --> P4Sub --> P5Sub --> P6Sub
     end
 
-    subgraph Infra ["4. Execution Infrastructure & Observability (core/gateway/)"]
+    subgraph Infra ["5. AI Gateway & Telemetry (core/gateway/)"]
         direction TB
         Gateway["AI Gateway (gateway.py)<br/>(Capability Routing & Schema Retries)"]
         
@@ -117,9 +137,11 @@ flowchart TB
     GitHubAPI --> P1
     CmdAddRepo --> LocalRepo
     CmdReview --> GitHubAPI
+    CmdGraphify --> MCPAdapter
     
     Qdrant --> VectorSearch
     Neo4j --> GraphExp
+    QueryEngine --> P4Sub
     
     P1 <--> Gateway
     P2 <--> Gateway
@@ -135,7 +157,7 @@ flowchart TB
 
 ## The 6-Phase Review Pipeline
 
-CodeTurtle executes reviews via a deterministic, multi-stage LangGraph workflow:
+CodeTurtle executes PR reviews via a deterministic, multi-stage LangGraph workflow:
 
 ```mermaid
 sequenceDiagram
@@ -150,14 +172,14 @@ sequenceDiagram
 
     CLI->>P1: Submit PR Metadata & Unified Diff
     P1-->>P2: PRUnderstanding (Causal Intent, Risk Level, Scope)
-    P2-->>P3: PRAnalysis (Modified Functions, Constants, Risk Hotspots)
-    P3-->>P4: ReviewPlan (Retrieval Questions, Allocated Specialists)
-    P4-->>P5: Filtered Evidence Package (Diff-First Context & Chunks)
+    P2-->>P3: PRAnalysis (Modified Functions, Symbol Context, Risk Hotspots)
+    P3-->>P4: ReviewPlan (Targeted Retrieval Questions, Gated Specialists)
+    P4-->>P5: Filtered Evidence Package (Diff-First Context & Reranked Chunks)
 
     par Specialist Swarm Execution
-        P5->>P5: CorrectnessAgent (Logic, Invariants, Edge Cases)
-        P5->>P5: CodeQualityAgent (Structure, Naming, Extensibility)
-        P5->>P5: TestingAgent (Assertions, Missing Coverage Gaps)
+        P5->>P5: CorrectnessAgent (Logic, Claim Verification, Invariants)
+        P5->>P5: CodeQualityAgent (Structure, Naming, Modularity)
+        P5->>P5: TestingAgent (Assertions, Test Coverage Gaps)
     end
 
     P5-->>P6: Structured Specialist Reviews & Findings
@@ -167,42 +189,53 @@ sequenceDiagram
 ### Phase Details
 
 1. **Phase 1: PR Understanding (`pr_understanding.py`)**
-   - Extracts causal intent (what broke → why → how fix addresses it), risk level (`low`, `medium`, `high`, `critical`), and out-of-scope boundaries from the PR title/description.
+   - Extracts causal intent (what broke → why → how the fix addresses it), risk level (`low`, `medium`, `high`, `critical`), and explicit out-of-scope boundaries from the PR title and description.
 2. **Phase 2: PR Analysis (`pr_analysis.py`)**
-   - Deterministically parses diff hunks to identify modified functions, added functions, constants, test changes, and language distributions. Scans diff context to recover enclosing symbols.
+   - Deterministically parses diff hunks to identify modified functions, added functions, constants, test changes, and modified files. Scans surrounding context to recover enclosing symbols.
 3. **Phase 3: Review Planning (`planner.py`)**
-   - Formulates targeted retrieval questions and allocates specialist agents (`CORRECTNESS`, `CODE_QUALITY`, `TESTING`, `SECURITY`, `PERFORMANCE`, etc.) based on risk profile and file touch points.
+   - Formulates targeted retrieval questions and allocates plan-gated specialist agents (`CORRECTNESS`, `CODE_QUALITY`, `TESTING`, `SECURITY`, `PERFORMANCE`, etc.) based on risk hotspots and file touch points.
 4. **Phase 4: Hybrid Retrieval & Evidence Deduplication (`hybrid_retriever.py`)**
-   - Combines vector search, metadata symbol lookup, path forcing, and graph neighbor expansion. Applies global deduplication (`merge_evidence_packages`) to prevent overlapping context walls.
+   - Combines path-forced diff hunks, metadata symbol lookup, vector similarity search, and graph neighbor expansion. Uses cross-encoder structural reranking (`reranker.py`) and global deduplication (`merge_evidence_packages`).
 5. **Phase 5: Specialist Swarm Execution (`agents.py`)**
-   - Runs domain-specialist agents with **diff-first context packing** (unified diff leads prompt, evidence is secondary). Enforces anti-summarization prompt contracts and applies post-generation PR relevance filtering.
+   - Dispatches plan-gated domain specialists with **diff-first context packing** (unified diff leads prompt, evidence is secondary). Specialists actively challenge PR claims under anti-summarization prompt contracts.
 6. **Phase 6: Critic Gate & Decision Engine (`agents.py`)**
-   - Filter out duplicate or ungrounded findings, resolves specialist contradictions, evaluates residual risks, and computes the final recommendation: `MERGE`, `REQUEST_CHANGES`, or `COMMENT`.
+   - Applies evidence grounding and relevance filters, deduplicates overlapping findings, resolves specialist contradictions, and computes the final recommendation: `MERGE`, `REQUEST_CHANGES`, or `COMMENT`.
 
 ---
 
-## Repository Intelligence & Hybrid RAG
+## Graphify MCP & Repository Knowledge Layer
 
-CodeTurtle avoids vector-only retrieval limitations by pairing semantic search with graph-based structural queries:
+CodeTurtle introduces an extensible structural knowledge abstraction boundary (`core/repository_knowledge/`):
 
-- **Vector Store (Qdrant)**: Stores code chunks with semantic metadata (file path, line ranges, symbols).
-- **Graph Database (Neo4j)**: Maps files, classes, functions, and import edges (`CALLS`, `IMPORTS`, `DEFINES`, `OVERRIDES`).
-- **Hybrid Retrieval Strategy**:
-  1. **Path-Forcing**: Guarantees changed files in the diff are always present in the context.
-  2. **Symbol Lookup**: Direct metadata matching on modified/added function and class names.
-  3. **Graph Expansion**: Fetches 1-hop and 2-hop caller/callee neighborhoods for affected symbols.
-  4. **Cross-Encoder Reranking**: Scores retrieved chunks against the plan's retrieval questions.
-  5. **Global Deduplication**: Stable union of chunks across queries to maximize token efficiency.
+- **`RepositoryKnowledgeProvider`**: Abstract interface decoupling code review agents from underlying graph engines.
+- **`GraphifyMCPProvider`**: Model Context Protocol (MCP) adapter connecting directly to Graphify knowledge graphs via stdio transport (`mcp` SDK).
+- **Exposed MCP Tools**:
+  - `query_graph`: Natural language graph queries over code relations.
+  - `get_node`: Direct symbol/file node inspection.
+  - `get_neighbors`: 1-hop caller/callee and import neighborhood retrieval.
+  - `shortest_path`: Dependency and call-chain pathfinding between two code symbols.
+  - `graph_stats`: Summary metrics of repository graph nodes and edges.
+
+---
+
+## Query Engine Subsystem
+
+CodeTurtle features a decoupled **Query Engine** (`core/query_engine/`) for structured codebase exploration:
+
+- **`VectorRouter`**: Semantic similarity search against Qdrant collection embeddings.
+- **`GraphRouter`**: Cypher structural queries against Neo4j AST and import graph edges.
+- **`ModelRouter`**: Capability-based LLM routing for context synthesis.
+- **`QueryEngine`**: Orchestrates multi-router query execution, supporting `retrieve_context` and automated `impact_analysis`.
 
 ---
 
 ## AI Gateway & Telemetry
 
-All LLM calls route through a unified, resilient **AI Gateway** (`core/gateway/gateway.py`):
+All LLM requests route through a unified **AI Gateway** (`core/gateway/gateway.py`):
 
-- **Capability-Based Routing**: Maps agent roles (`reasoning`, `correctness_review`, `code_quality_review`, `summarization`) to specified models and providers.
-- **Provider Support**: Seamlessly switches between local Ollama models (`qwen2.5:7b`, `llama3.1`, `deepseek-r1`), OpenAI (`gpt-4o`, `o3-mini`), or any LiteLLM-compatible endpoint.
-- **Structured JSON Parsing**: Pydantic schema validation with automatic retry handling.
+- **Capability-Based Routing**: Maps agent roles (`reasoning`, `correctness_review`, `code_quality_review`, `summarization`) to configured model providers.
+- **Provider Support**: Seamlessly switches between local Ollama instances (`qwen2.5:7b`, `llama3`), OpenAI (`gpt-4o`, `o3-mini`), or LiteLLM endpoints.
+- **Structured JSON Retries**: Pydantic schema enforcement with automatic retry handling.
 - **Langfuse Telemetry**: Tracks per-agent prompt/completion tokens, latency, retries, cost estimates, and full execution traces.
 
 ---
@@ -214,38 +247,54 @@ CodeTurtle/
 ├── cli/                        # Typer CLI application
 │   ├── commands/               # CLI command modules
 │   │   ├── add_repo.py         # Index repository into KnowledgeBase
+│   │   ├── graphify_cmd.py     # Graphify MCP integration CLI (`graphify-test`)
 │   │   ├── init.py             # Initialize configuration & environment
 │   │   ├── inspect_kb.py       # Inspect vector & graph stores
-│   │   ├── review.py           # Execute PR review pipeline
-│   │   └── session.py          # Manage review history & memory
-│   └── main.py                 # CLI entry point (`codeturrtle`)
+│   │   ├── review.py           # Execute 6-phase review pipeline
+│   │   └── session.py          # Manage review sessions & memory
+│   └── main.py                 # CLI entry point (`codeturtle`)
 │
-├── core/                       # Core engine logic
+├── core/                       # Core engine & agent logic
 │   ├── gateway/                # AI Gateway & provider integrations
 │   │   ├── gateway.py          # AIGateway routing & telemetry
 │   │   └── providers.py        # Ollama, OpenAI, LiteLLM adapters
 │   │
-│   ├── repository_intelligence/ # Codebase parsing & graph indexing
+│   ├── query_engine/           # Decoupled Query Engine subsystem
+│   │   ├── routers/            # Vector, Graph, and Model query routers
+│   │   │   ├── graph_router.py # Neo4j Cypher structural queries
+│   │   │   ├── model_router.py # Capability model routing
+│   │   │   └── vector_router.py# Qdrant semantic vector queries
+│   │   ├── engine.py           # Unified retrieval & impact analysis engine
+│   │   └── types.py            # Query Engine types & schemas
+│   │
+│   ├── repository_intelligence/# Codebase parsing & graph indexing
 │   │   ├── graph/              # Neo4j query builders & import resolvers
-│   │   ├── parsers/            # Language AST parsers
+│   │   ├── parsers/            # Language AST parsers (Python, TS, JS, Go, Java)
 │   │   └── pipeline.py         # Repository indexing pipeline
 │   │
+│   ├── repository_knowledge/   # Graphify MCP & Repository Knowledge Boundary
+│   │   ├── factory.py          # Provider factory (get_knowledge_provider)
+│   │   ├── graphify_mcp.py     # Graphify MCP stdio adapter (Model Context Protocol)
+│   │   ├── models.py           # Structural Node, Edge, Query response schemas
+│   │   ├── paths.py            # Repository graph path resolvers
+│   │   └── provider.py         # RepositoryKnowledgeProvider abstract interface
+│   │
 │   ├── review_intelligence/    # Planner & evidence utilities
-│   │   ├── evidence_util.py    # Evidence normalization
+│   │   ├── evidence_util.py    # Evidence package normalization
 │   │   ├── models.py           # ReviewPlan & RetrievalQuestion schemas
-│   │   └── planner.py          # Phase 3 Review Planner
+│   │   └── planner.py          # Phase 3 Review Planner Agent
 │   │
 │   ├── agents.py               # Phase 5 Specialists & Phase 6 Critic/Recommender
-│   ├── chunker.py              # Code chunking algorithms
+│   ├── chunker.py              # AST-aware code chunker
 │   ├── hybrid_retriever.py     # Phase 4 Hybrid retriever & deduplicator
 │   ├── knowledge_base.py       # Qdrant & SQLite KnowledgeBase manager
-│   ├── models.py               # Domain schemas (PRUnderstanding, SpecialistReview, etc.)
+│   ├── models.py               # Domain schemas (PRUnderstanding, PRAnalysis, SpecialistReview)
 │   ├── pr_analysis.py          # Phase 2 PR Analysis Agent
 │   ├── pr_understanding.py     # Phase 1 PR Understanding Agent
-│   ├── state.py                # LangGraph ReviewState schema
-│   └── reranker.py             # Cross-encoder & structural reranker
+│   ├── reranker.py             # Cross-encoder & structural reranker
+│   └── state.py                # LangGraph ReviewState schema
 │
-├── evals/                      # Quantitative evaluation framework
+├── evals/                      # Quantitative evaluation benchmark suite
 │   └── ri/                     # Phase-by-phase review intelligence evals
 │       ├── phase1_understanding.py
 │       ├── phase2_analysis.py
@@ -253,10 +302,10 @@ CodeTurtle/
 │       ├── phase4_retrieval.py
 │       ├── phase5_specialists.py
 │       ├── phase6_critic_final.py
-│       └── run_all.py          # Master evaluation suite runner
+│       └── run_all.py          # Master benchmark runner
 │
 ├── config.py                   # Environment & Pydantic settings
-├── pyproject.toml              # Dependencies & build configuration
+├── pyproject.toml              # Dependencies (MCP, Graphify, LangGraph, etc.)
 └── README.md
 ```
 
@@ -268,8 +317,8 @@ CodeTurtle/
 
 - **Python**: `^3.10`
 - **Package Manager**: [`uv`](https://github.com/astral-sh/uv) (recommended) or `pip`
-- **Local LLM Runner**: [Ollama](https://ollama.ai/) installed and running (if using local models)
-- **Optional Databases**: [Qdrant](https://qdrant.tech/) and [Neo4j](https://neo4j.com/) (defaults to embedded/in-memory modes)
+- **Local LLM Runner**: [Ollama](https://ollama.ai/) running locally (if using local models)
+- **Optional Databases**: [Qdrant](https://qdrant.tech/), [Neo4j](https://neo4j.com/), and [Graphify](https://github.com/Graphify-Labs/graphify)
 
 ### 1. Installation
 
@@ -293,7 +342,7 @@ pip install -e .
 Create a `.env` file in the project root:
 
 ```ini
-# GitHub Access Token (for fetching public/private PRs)
+# GitHub Access Token (for fetching PRs and repositories)
 GITHUB_TOKEN=github_pat_your_token_here
 
 # LLM Gateway Configuration
@@ -301,7 +350,7 @@ LLM_BACKEND=ollama
 OLLAMA_MODEL=qwen2.5:7b
 OLLAMA_BASE_URL=http://localhost:11434
 
-# Optional: OpenAI (if using OpenAI models)
+# Optional: OpenAI API Key (for OpenAI models)
 OPENAI_API_KEY=sk-proj-your-key-here
 
 # Optional: Langfuse Telemetry
@@ -315,7 +364,7 @@ NEO4J_USER=neo4j
 NEO4J_PASSWORD=codeturtle123
 ```
 
-Ensure your Ollama instance has the target model pulled:
+Pull the target model in Ollama:
 
 ```bash
 ollama pull qwen2.5:7b
@@ -325,53 +374,71 @@ ollama pull qwen2.5:7b
 
 ## CLI Command Reference
 
-CodeTurtle provides a CLI via `codeturrtle`:
+CodeTurtle provides a Typer CLI via `codeturtle`:
 
 ### Index a Repository
 
-Index a local codebase into vector and graph stores before running reviews:
+Index a codebase into vector and graph stores before running reviews:
 
 ```bash
-codeturrtle add-repo /path/to/your/repository
+codeturtle add-repo /path/to/your/repository
 ```
 
 ### Run a Pull Request Review
 
-Run a full 6-phase autonomous review on a GitHub PR or local patch:
+Execute the full 6-phase autonomous review pipeline on a GitHub PR:
 
 ```bash
 # Review a GitHub PR
-codeturrtle review owner/repo 2400
+codeturtle review owner/repo 2400
 
-# Review with custom model override
-codeturrtle review owner/repo 2400 --model qwen2.5:7b
+# Review with model override
+codeturtle review owner/repo 2400 --model qwen2.5:7b
+```
+
+### Test Graphify MCP Adapter
+
+Handshake with Graphify via Model Context Protocol and inspect graph structures:
+
+```bash
+# Display Graphify graph stats
+codeturtle graphify-test owner/repo --stats
+
+# Run a natural language graph query
+codeturtle graphify-test owner/repo --query "find all functions importing chunker"
+
+# Lookup node details and neighbors
+codeturtle graphify-test owner/repo --node "core/hybrid_retriever.py"
+
+# Find shortest dependency path between two symbols
+codeturtle graphify-test owner/repo --from "hybrid_retriever.py" --to "qdrant_client"
 ```
 
 ### Inspect Knowledge Base
 
-Query indexed code chunks and structural graph relationships:
+Query vector chunks and graph relationships:
 
 ```bash
-codeturrtle inspect-kb owner_repo --query "build_from_json"
+codeturtle inspect-kb owner_repo --query "build_from_json"
 ```
 
 ### Manage Review Sessions & Memory
 
-Inspect past review sessions and stored findings:
+Inspect review sessions and stored history:
 
 ```bash
-# List review sessions
-codeturrtle session list
+# Start a new review session
+codeturtle new-session
 
-# View session history
-codeturrtle session show <session-id>
+# List past review sessions
+codeturtle list-sessions
 ```
 
 ---
 
 ## Benchmark & Evaluation Suite
 
-CodeTurtle includes an automated benchmark suite (`evals/ri/`) that tests all 6 pipeline phases against real-world PRs:
+CodeTurtle includes a phase-by-phase benchmark suite (`evals/ri/`) to evaluate performance across all 6 pipeline phases:
 
 ```bash
 # Run the complete end-to-end evaluation suite
@@ -390,11 +457,9 @@ python evals/ri/phase6_critic_final.py Graphify-Labs/graphify 2400
 
 ## Contributing
 
-Contributions are welcome! Please follow these guidelines:
+Contributions are welcome! Please follow these steps:
 
 1. Fork the repository and create a feature branch (`git checkout -b feature/amazing-feature`).
-2. Ensure all 6 evaluation phases pass (`python evals/ri/run_all.py Graphify-Labs/graphify 2400`).
-3. Commit your changes with clear, descriptive messages.
-4. Open a Pull Request detailing your changes and verification results.
-
----
+2. Run the evaluation suite to ensure all phases pass (`python evals/ri/run_all.py Graphify-Labs/graphify 2400`).
+3. Commit your changes with clear, descriptive commit messages.
+4. Open a Pull Request with a breakdown of your changes and test results.
