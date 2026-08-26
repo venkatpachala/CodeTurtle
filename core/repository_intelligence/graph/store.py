@@ -34,6 +34,9 @@ class GraphStore:
             self._driver = None
 
     def health_check(self) -> bool:
+        from config import settings
+        if not getattr(settings, "neo4j_enabled", False):
+            return False
         driver = self.connect()
         try:
             with driver.session() as session:

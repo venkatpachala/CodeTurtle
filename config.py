@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     repos_root: str = "repos"
     graphify_graph_filename: str = "graphify-out/graph.json"
     graphify_transport: str = "http"   # preferred
+    graphify_only_retrieval: bool = True
+    neo4j_enabled: bool = False
 
 # Create the settings instance
 settings = Settings()

@@ -29,16 +29,19 @@ class GraphifyRetriever:
         pr_title: str = "",
         pr_body: str = "",
         files_changed: Optional[List[str]] = None,
+        full_diff: str = "",
+        pr_number: Optional[int] = None,
     ) -> List[Document]:
         files_changed = files_changed or []
         docs: List[Document] = []
 
-        # Main structural package
         structural = build_structural_context(
             self.repo_name,
             pr_title=pr_title or query,
             pr_body=pr_body,
             files_changed=files_changed,
+            full_diff=full_diff,
+            pr_number=pr_number,
             provider=self.provider,
         )
         if structural.strip():
@@ -49,28 +52,19 @@ class GraphifyRetriever:
                 )
             )
 
-        # Extra focused queries (best-effort)
-        extra_questions = [
-            query.strip(),
-            f"impact of changes in: {', '.join(files_changed[:10])}" if files_changed else "",
-        ]
-        for q in extra_questions:
-            if not q:
-                continue
+        # One extra graph query from the caller question only if non-empty
+        if query and query.strip():
             try:
-                result = self.provider.query(q, depth=3)
+                result = self.provider.query(query.strip(), depth=3)
                 if result.raw_text.strip():
                     docs.append(
                         Document(
                             page_content=result.raw_text,
-                            metadata={"source": "graphify", "type": "query_graph", "question": q},
+                            metadata={"source": "graphify", "type": "query_graph"},
                         )
                     )
             except GraphifyMCPError:
-                continue
-
-        # Optional PR impact
-        # (caller can pass pr number later; skip if unknown)
+                pass
 
         print(f"[GraphifyRetriever] Returning {len(docs)} graph documents")
-        return docs[: max(k, len(docs))]
+        return docs
