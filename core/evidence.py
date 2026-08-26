@@ -18,6 +18,11 @@ class Evidence(BaseModel):
     source_query: Optional[str] = None
     query_category: Optional[str] = None
     query_weight: Optional[float] = None
+    metadata: Optional[dict] = None
+
+    @property
+    def page_content(self) -> str:
+        return self.content
 
 
 class EvidencePackage(BaseModel):

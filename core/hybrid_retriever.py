@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 from typing import List, Optional, Set, TYPE_CHECKING, Any
 
@@ -9,6 +11,10 @@ from core.repository_persistence import RepositoryPersistence
 from core.context_builder import ContextBuilder
 from core.evidence import EvidencePackage
 from core.query_builder import RetrievalQuery
+from core.repository_knowledge.structural import (
+    build_structural_context,
+    graph_available,
+)
 
 try:
     from core.repository_intelligence.graph.queries import GraphQueries
@@ -95,14 +101,13 @@ class HybridRetriever:
         Prefer injecting a shared KnowledgeBase from the review pipeline.
         Set require_kb=False only for isolated scripts.
         """
-        self.repo_name = repo_name
         if kb is None:
             if require_kb:
                 raise RuntimeError(
-                    "HybridRetriever requires a shared KnowledgeBase instance. "
-                    "Create one KnowledgeBase in the review pipeline and pass kb=..."
+                    "HybridRetriever requires a shared KnowledgeBase instance."
                 )
             kb = KnowledgeBase(repo_name.replace("/", "_"))
+        self.repo_name = repo_name
         self.kb = kb
         self.reranker = Reranker()
         if graph_queries is not None:
@@ -123,16 +128,23 @@ class HybridRetriever:
         use_calls: bool = True,
         fail_if_empty: bool = True,
         purpose: str | None = None,
+        pr_title: str = "",
+        pr_body: str = "",
+        include_graphify: bool = True,
     ) -> EvidencePackage:
         """
+        Semantic retrieval via Qdrant + optional Graphify structural text
+        attached as a synthetic document at the front.
         Path-forced, exact-symbol-first, diff-injected, constrained-graph hybrid retrieval.
         """
         # Fix 5: Sanitize queries matching anti-patterns like "implementation and usage of %"
         if query.lower().startswith("implementation and usage of "):
             query = query[len("implementation and usage of "):].strip()
 
-        print(f"[HybridRetriever] Querying collection: {self.repo_name.replace('/', '_')}")
+        print(f"[HybridRetriever] Querying collection: {getattr(self.kb, 'collection_name', self.repo_name.replace('/', '_'))}")
         pr_understanding = pr_understanding or {}
+        pr_title = pr_title or pr_understanding.get("pr_title", "") or pr_understanding.get("title", "")
+        pr_body = pr_body or pr_understanding.get("pr_body", "") or pr_understanding.get("body", "")
         files_changed = [
             p.replace("\\", "/").lstrip("./")
             for p in (files_changed or [])
@@ -218,6 +230,33 @@ class HybridRetriever:
             files_changed=files_changed,
             prefer_paths=prefer_paths,
         )
+
+        # --- Graphify structural path (new, best-effort) ---
+        if include_graphify and graph_available(self.repo_name):
+            structural = build_structural_context(
+                self.repo_name,
+                pr_title=pr_title,
+                pr_body=pr_body,
+                files_changed=files_changed,
+            )
+            if structural.strip():
+                try:
+                    structural_doc = Document(
+                        page_content=structural,
+                        metadata={
+                            "source": "graphify",
+                            "type": "structural_context",
+                            "repo": self.repo_name,
+                        },
+                    )
+                    final_docs = [structural_doc] + list(final_docs)
+                    print("[HybridRetriever] Graphify structural context attached")
+                except Exception as e:
+                    print(f"[HybridRetriever] Graphify attach skipped: {e}")
+            else:
+                print("[HybridRetriever] Graphify returned empty structural context")
+        else:
+            print("[HybridRetriever] Graphify graph not available; semantic only")
 
         print(
             f"[HybridRetriever] Finalized {len(final_docs)} documents "

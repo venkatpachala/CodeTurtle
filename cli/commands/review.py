@@ -10,6 +10,7 @@ from rich.panel import Panel
 
 from config import settings
 from core.graph import review_graph
+from core.graphify_retriever import GraphifyRetriever
 from core.knowledge_base import KnowledgeBase
 from core.memory.manager import MemoryManager
 from core.observability import get_langfuse_client, get_logger
@@ -31,6 +32,7 @@ class PipelineContext:
     engine: Optional[object] = None
     files_changed: List[str] = field(default_factory=list)
     full_diff: str = ""
+    raw_context: str = ""
     state: Optional[dict] = None
     final_state: Optional[dict] = None
 
@@ -91,6 +93,7 @@ class ReviewPipeline:
             self._load_knowledge_base()
             self._fetch_pr()
             self._build_full_diff()
+            self._retrieve_context()
             self._create_review_state()
 
             console.print("[yellow]Running agent swarm...[/yellow]")
@@ -109,12 +112,10 @@ class ReviewPipeline:
             handle_error(e, verbose=verbose)
 
     def _load_knowledge_base(self):
-        collection_name = self.context.repo.replace("/", "_")
-        self.context.kb = KnowledgeBase(collection_name)
-        self.context.engine = RepositoryQueryEngine(
-            self.context.repo,
-            kb=self.context.kb,
-        )
+        # Graphify-only retrieval path
+        self.context.kb = None
+        self.context.engine = None
+        print("[Review] Retrieval backend: Graphify only (Qdrant disabled)")
 
     def _fetch_pr(self):
         g = Github(settings.github_token)
@@ -130,6 +131,29 @@ class ReviewPipeline:
                 parts.append(f"--- {f.filename}\n+++ {f.filename}\n{f.patch}\n")
         self.context.full_diff = "\n".join(parts)
 
+    def _retrieve_context(self):
+        retriever = GraphifyRetriever(self.context.repo)
+
+        query = f"""Title:
+{self.context.pr.title}
+
+Description:
+{self.context.pr.body or ''}
+""".strip()
+
+        docs = retriever.retrieve(
+            query,
+            k=8,
+            pr_title=self.context.pr.title or "",
+            pr_body=self.context.pr.body or "",
+            files_changed=list(self.context.files_changed or []),
+        )
+
+        self.context.raw_context = "\n\n---\n\n".join(
+            d.page_content for d in docs if d.page_content
+        )
+        print(f"[DEBUG] Graphify-only context chars={len(self.context.raw_context)}")
+
     def _create_review_state(self):
         self.context.state = {
             "repo": self.context.repo,
@@ -140,9 +164,9 @@ class ReviewPipeline:
             "full_diff": self.context.full_diff,
             "files_changed": self.context.files_changed,
             "model_used": settings.ollama_model,
-            "kb": self.context.kb,
-            "engine": self.context.engine,
-            "context_from_kb": "",
+            "kb": None,
+            "engine": None,
+            "context_from_kb": getattr(self.context, "raw_context", ""),
             "traces": [],
         }
 

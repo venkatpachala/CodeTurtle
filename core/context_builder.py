@@ -38,6 +38,7 @@ class ContextBuilder:
                     source_query=meta.get("source_query"),
                     query_category=meta.get("query_category"),
                     query_weight=meta.get("query_weight"),
+                    metadata=meta,
                 )
 
             evidences.append(evidence)

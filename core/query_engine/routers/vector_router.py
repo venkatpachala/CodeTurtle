@@ -55,47 +55,48 @@ class VectorRouter:
         pr_understanding: Optional[dict] = None,
         fail_if_empty: bool = False,
     ) -> EvidencePackage:
-        if not self._available or self._kb is None:
-            raise VectorUnavailableError(self._error or "KnowledgeBase not available")
-
         query = (query or "").strip()
         files_changed = [normalize_path(p) for p in (files_changed or []) if p]
-        prefer_paths = [normalize_path(p) for p in (prefer_paths or []) if p]
-        symbols = list(symbols or [])
-        prefer_symbols = list(prefer_symbols or [])
 
-        # Prefer HybridRetriever when present
+        # Graphify-only path (no Qdrant open during review)
+        try:
+            from core.graphify_retriever import GraphifyRetriever
+            retriever = GraphifyRetriever(self.repo_name)
+            docs = retriever.retrieve(
+                query=query,
+                k=k,
+                files_changed=files_changed,
+            )
+            items = [
+                EvidenceItem(
+                    path=(d.metadata or {}).get("path", "structural_context"),
+                    content=d.page_content,
+                    source="graphify",
+                    metadata=d.metadata or {},
+                )
+                for d in docs
+            ]
+            return EvidencePackage(query=query, evidences=items)
+        except Exception as graphify_err:
+            if not self._available or self._kb is None:
+                return EvidencePackage(query=query, evidences=[])
+
+        # Fallback to vector search if KB available
         package = None
         try:
             package = self._via_hybrid(
                 query,
                 files_changed=files_changed,
-                symbols=symbols,
-                prefer_paths=prefer_paths,
-                prefer_symbols=prefer_symbols,
+                symbols=symbols or [],
+                prefer_paths=prefer_paths or [],
+                prefer_symbols=prefer_symbols or [],
                 full_diff=full_diff,
                 k=k,
                 use_graph=use_graph,
                 pr_understanding=pr_understanding or {},
             )
-        except Exception as hybrid_err:
-            # Fallback: pure vector + path
-            try:
-                package = self._via_kb_only(
-                    query,
-                    files_changed=prefer_paths or files_changed,
-                    k=k,
-                )
-            except Exception as kb_err:
-                raise VectorUnavailableError(
-                    f"hybrid: {hybrid_err}; kb: {kb_err}"
-                )
-
-        if fail_if_empty and (package is None or package.count == 0):
-            raise VectorUnavailableError(
-                f"No evidence for query in collection '{self.collection_name}'. "
-                f"Re-index with: python -m cli.main add-repo {self.repo_name}"
-            )
+        except Exception:
+            pass
 
         return package or EvidencePackage(query=query, evidences=[])
 

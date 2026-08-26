@@ -1,16 +1,14 @@
 """PR evidence: read-only use of Repository Intelligence artifacts."""
 from __future__ import annotations
 
-from core.hybrid_retriever import HybridRetriever
+from core.graphify_retriever import GraphifyRetriever
 from core.context_builder import ContextBuilder
 
 
 def build_evidence_package(state: dict) -> dict:
     """
     Single link from PR Intelligence → Repository Intelligence.
-
-    Reads: Qdrant + Neo4j IMPORTS (via HybridRetriever).
-    Never recompiles the repository.
+    Reads: Graphify structural context (via GraphifyRetriever).
     """
     repo = state.get("repo") or ""
     title = state.get("title") or ""
@@ -20,42 +18,35 @@ def build_evidence_package(state: dict) -> dict:
 
     query = f"{title}\n{body}".strip() or " ".join(files_changed[:20])
 
-    retriever = HybridRetriever(repo, kb=state.get("kb"))
-    package = retriever.retrieve(
+    try:
+        retriever = GraphifyRetriever(repo)
+        docs = retriever.retrieve(
+            query=query,
+            pr_title=title,
+            pr_body=body,
+            files_changed=list(files_changed),
+            k=8,
+        )
+    except Exception as e:
+        print(f"[build_evidence_package] GraphifyRetriever fallback/skipped: {e}")
+        docs = []
+
+    package = ContextBuilder.build(
         query=query,
         pr_understanding=pr_understanding if isinstance(pr_understanding, dict) else {},
-        files_changed=list(files_changed),
-        k=8,
+        documents=docs,
     )
 
-    # Prefer your existing ContextBuilder API
     if hasattr(ContextBuilder, "to_agent_context"):
         rich_context = ContextBuilder.to_agent_context(package)
     else:
-        rich_context = ContextBuilder.build(
-            query=query,
-            pr_understanding=pr_understanding if isinstance(pr_understanding, dict) else {},
-            documents=getattr(package, "evidences", None) or [],
-        )
-        if hasattr(rich_context, "to_string"):
-            rich_context = rich_context.to_string()
-        elif not isinstance(rich_context, str):
-            rich_context = str(rich_context)
-
-    dep = getattr(package, "dependency_context", None) or getattr(package, "extra_context", None)
-    if dep:
-        rich_context = f"{rich_context}\n\n{dep}"
-
-    expansion = getattr(retriever, "_last_graph_expansion", []) or []
+        rich_context = "\n\n".join(d.page_content for d in docs if d.page_content)
 
     return {
         "evidence_package": package,
-        "context_from_kb": rich_context,
+        "context_from_kb": rich_context or state.get("context_from_kb", ""),
         "traces": [{
             "agent": "BuildEvidencePackage",
-            "output": (
-                f"evidence built; files_changed={len(files_changed)}; "
-                f"graph_expansion={expansion[:10]}"
-            ),
+            "output": f"evidence built via GraphifyRetriever; files_changed={len(files_changed)}",
         }],
     }
