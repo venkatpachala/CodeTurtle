@@ -11,8 +11,7 @@ class KnowledgeBase:
         self.collection_name = collection_name
         self.embeddings = OllamaEmbeddings(model="nomic-embed-text")
         self.client = QdrantClient(
-            host="localhost",
-            port=6333,
+            path="qdrant_data"
         )
 
         self._ensure_collection_exists()
