@@ -2,7 +2,9 @@ import typer
 from rich.console import Console
 from rich.prompt import Prompt
 from pathlib import Path
+from rich.panel import Panel
 import os
+from cli.commands.graphify_cmd import graphify_test
 
 console = Console()
 
