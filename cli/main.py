@@ -6,7 +6,8 @@ from cli.commands import review, init, add_repo, session
 from cli.commands.review import ReviewPipeline
 from core.utils import handle_error
 from cli.commands.inspect_kb import inspect_kb
-
+from cli.commands.graphify_cmd import graphify_test
+from cli.commands import review, init, add_repo, session
 pipeline = ReviewPipeline()
 app = typer.Typer(
     name="codeturtle",
@@ -21,6 +22,7 @@ app.command()(init.init)
 app.command()(review.review)
 app.command()(add_repo.add_repo)
 app.command()(inspect_kb)
+app.command("graphify-test")(graphify_test)
 
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context):
