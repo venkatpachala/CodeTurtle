@@ -1036,13 +1036,21 @@ def testing_agent(state: ReviewState) -> dict:
 
 # ── Evidence package (plan-driven) ───────────────────────────────────────────
 
+# ── Evidence package (Graphify-only) ─────────────────────────────────────────
+
 def build_evidence_package(state: dict) -> dict:
-    from core.query_engine import RepositoryQueryEngine
+    """
+    Build review evidence from Graphify only.
+    No Qdrant. No Neo4j. No second vector client.
+    """
+    from core.graphify_retriever import GraphifyRetriever
+    from core.repository_knowledge.structural import graph_available
 
     repo = state["repo"]
-    engine = state.get("engine")
-    if engine is None:
-        engine = RepositoryQueryEngine(repo, kb=state.get("kb"))
+    files_changed = list(state.get("files_changed") or [])
+    title = state.get("title") or ""
+    body = state.get("body") or ""
+    understanding = state.get("pr_understanding") or {}
 
     plan_raw = state.get("review_plan") or {}
     try:
@@ -1050,53 +1058,158 @@ def build_evidence_package(state: dict) -> dict:
     except Exception:
         plan = None
 
-    files_changed = list(state.get("files_changed") or [])
-    understanding = state.get("pr_understanding") or {}
-    full_diff = state.get("full_diff") or state.get("patch") or state.get("diff") or ""
+    if not graph_available(repo):
+        msg = (
+            f"Graphify graph not found for {repo}. "
+            f"Run: cd repos/{repo.replace('/', '_')} && graphify . --code-only"
+        )
+        return {
+            "evidence_package": None,
+            "context_from_kb": msg,
+            "traces": [{
+                "agent": "BuildEvidencePackage",
+                "output": "graphify_missing",
+            }],
+        }
 
-    packages = []
-    if plan and plan.retrieval_questions:
+    retriever = GraphifyRetriever(repo)
+
+    # Collect Graphify documents from plan questions (or PR title/body)
+    questions: list[str] = []
+    if plan and getattr(plan, "retrieval_questions", None):
         for q in plan.retrieval_questions[:10]:
             if isinstance(q, dict):
-                q = RetrievalQuestion.model_validate(q)
-            pkg = engine.retrieve_context(
-                query=q.question,
-                files_changed=files_changed,
-                symbols=q.prefer_symbols or [],
-                prefer_paths=q.prefer_paths or files_changed,
-                prefer_symbols=q.prefer_symbols or [],
-                full_diff=full_diff,
-                k=6,
-                pr_understanding=understanding if isinstance(understanding, dict) else {},
-            )
-            packages.append(pkg)
-    else:
-        query = f"{state.get('title', '')}\n{state.get('body', '')}"
-        packages.append(
-            engine.retrieve_context(
-                query=query,
-                files_changed=files_changed,
-                prefer_paths=files_changed,
-                full_diff=full_diff,
-                k=8,
-                pr_understanding=understanding if isinstance(understanding, dict) else {},
-            )
+                try:
+                    q = RetrievalQuestion.model_validate(q)
+                except Exception:
+                    continue
+            question = getattr(q, "question", None) or str(q)
+            if question and question.strip():
+                questions.append(question.strip())
+
+    if not questions:
+        questions = [f"{title}\n{body}".strip() or "what is the core architecture of this repository?"]
+
+    docs = []
+    for question in questions:
+        batch = retriever.retrieve(
+            question,
+            k=6,
+            pr_title=title,
+            pr_body=body,
+            files_changed=files_changed,
         )
+        docs.extend(batch)
 
-    evidence_package = _merge_packages(packages, max_items=18)
-    rich_context = _format_evidence(evidence_package)
+    # De-dupe by page_content prefix
+    seen = set()
+    unique_docs = []
+    for d in docs:
+        key = (d.page_content or "")[:240]
+        if key in seen:
+            continue
+        seen.add(key)
+        unique_docs.append(d)
 
-    n_q = len(plan.retrieval_questions) if plan else 0
-    n_ev = len(getattr(evidence_package, "evidences", None) or [])
+    rich_context = "\n\n---\n\n".join(
+        d.page_content for d in unique_docs if d.page_content
+    ).strip()
+
+    # Keep evidence_package compatible with downstream if it only needs text-ish data.
+    # If your EvidencePackage is required as a real object, map into it below.
+    evidence_package = _graphify_docs_to_evidence_package(
+        unique_docs,
+        repo=repo,
+        files_changed=files_changed,
+        understanding=understanding if isinstance(understanding, dict) else {},
+    )
+
+    n_q = len(questions)
+    n_ev = len(unique_docs)
 
     return {
         "evidence_package": evidence_package,
         "context_from_kb": rich_context,
         "traces": [{
             "agent": "BuildEvidencePackage",
-            "output": f"plan_questions={n_q} merged={n_ev}",
+            "output": f"backend=graphify plan_questions={n_q} docs={n_ev}",
         }],
     }
+
+
+def _graphify_docs_to_evidence_package(docs, *, repo: str, files_changed, understanding):
+    """
+    Best-effort adapter.
+    Prefer a real EvidencePackage if available; else return a simple namespace/dict.
+    """
+    try:
+        # Adjust import to your actual module if different
+        from core.evidence import EvidencePackage, EvidenceItem
+    except Exception:
+        try:
+            from core.query_engine.evidence import EvidencePackage, EvidenceItem
+        except Exception:
+            # Fallback: lightweight object with .evidences
+            class _Item:
+                def __init__(self, text, meta):
+                    self.text = text
+                    self.content = text
+                    self.metadata = meta
+                    self.source = meta.get("source", "graphify")
+
+            class _Pkg:
+                def __init__(self, evidences):
+                    self.evidences = evidences
+                    self.repo = repo
+                    self.files_changed = files_changed
+                    self.pr_understanding = understanding
+
+            return _Pkg([
+                _Item(d.page_content, dict(d.metadata or {}))
+                for d in docs
+            ])
+
+    items = []
+    for i, d in enumerate(docs):
+        text = d.page_content or ""
+        meta = dict(d.metadata or {})
+        try:
+            items.append(
+                EvidenceItem(
+                    id=f"G{i+1}",
+                    source="graphify",
+                    kind=meta.get("type", "graph"),
+                    content=text,
+                    metadata=meta,
+                )
+            )
+        except TypeError:
+            # Constructor shape differs — try minimal fields
+            try:
+                items.append(
+                    EvidenceItem(
+                        content=text,
+                        source="graphify",
+                    )
+                )
+            except Exception:
+                continue
+
+    try:
+        return EvidencePackage(
+            evidences=items,
+            repo=repo,
+            files_changed=files_changed,
+        )
+    except TypeError:
+        try:
+            return EvidencePackage(evidences=items)
+        except Exception:
+            class _Pkg:
+                def __init__(self, evidences):
+                    self.evidences = evidences
+
+            return _Pkg(items)
 
 
 def _merge_packages(packages, max_items: int = 18):
