@@ -5,12 +5,14 @@ from core.agents import (
     build_evidence_package,
     correctness_agent,
     code_quality_agent,
-    testing_agent,          # NEW
+    testing_agent,
     critic_agent,
     final_recommender,
     context_summarizer,
     context_gatherer,
 )
+from core.finding_validator import validate_findings_node
+from core.investigation.loop import investigate_node
 from core.pr_understanding import pr_understanding_agent
 from core.pr_analysis import pr_analysis_agent
 from core.review_intelligence.planner import review_planner_agent
@@ -27,7 +29,9 @@ def build_review_graph():
     workflow.add_node("context_gatherer", context_gatherer)
     workflow.add_node("correctness_agent", correctness_agent)
     workflow.add_node("code_quality_agent", code_quality_agent)
-    workflow.add_node("testing_agent", testing_agent)  # NEW
+    workflow.add_node("testing_agent", testing_agent)
+    workflow.add_node("validate_findings", validate_findings_node)
+    workflow.add_node("investigate", investigate_node)
     workflow.add_node("critic_agent", critic_agent)
     workflow.add_node("final_recommender", final_recommender)
 
@@ -42,13 +46,15 @@ def build_review_graph():
     workflow.add_edge("context_summarizer", "context_gatherer")
     workflow.add_edge("context_summarizer", "correctness_agent")
     workflow.add_edge("context_summarizer", "code_quality_agent")
-    workflow.add_edge("context_summarizer", "testing_agent")  # NEW
+    workflow.add_edge("context_summarizer", "testing_agent")
 
-    workflow.add_edge("context_gatherer", "critic_agent")
-    workflow.add_edge("correctness_agent", "critic_agent")
-    workflow.add_edge("code_quality_agent", "critic_agent")
-    workflow.add_edge("testing_agent", "critic_agent")  # NEW
+    workflow.add_edge("context_gatherer", "validate_findings")
+    workflow.add_edge("correctness_agent", "validate_findings")
+    workflow.add_edge("code_quality_agent", "validate_findings")
+    workflow.add_edge("testing_agent", "validate_findings")
 
+    workflow.add_edge("validate_findings", "investigate")
+    workflow.add_edge("investigate", "critic_agent")
     workflow.add_edge("critic_agent", "final_recommender")
     workflow.add_edge("final_recommender", END)
 

@@ -62,3 +62,41 @@ class RepositoryKnowledgeProvider(ABC):
 
     def list_tools(self) -> List[str]:
         return []
+
+    def investigate_file(self, path: str, symbol: Optional[str] = None) -> List[dict]:
+        """Phase 3 helper: get_node + get_neighbors for a changed file. Two Graphify calls."""
+        label = (symbol or "").strip() or (path or "").replace("\\", "/").split("/")[-1]
+        items: List[dict] = []
+        try:
+            node = self.get_node(label)
+            text = ""
+            if node is not None:
+                text = (node.raw or {}).get("text") or node.label or ""
+            if str(text).strip():
+                items.append(
+                    {
+                        "source": "graphify",
+                        "kind": "node",
+                        "path": path,
+                        "symbol": symbol or label,
+                        "text": str(text).strip()[:4000],
+                    }
+                )
+        except Exception:
+            pass
+        try:
+            neigh = self.get_neighbors(label)
+            text = getattr(neigh, "raw_text", "") or ""
+            if str(text).strip():
+                items.append(
+                    {
+                        "source": "graphify",
+                        "kind": "neighbors",
+                        "path": path,
+                        "symbol": symbol or label,
+                        "text": str(text).strip()[:4000],
+                    }
+                )
+        except Exception:
+            pass
+        return items

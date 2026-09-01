@@ -25,6 +25,12 @@ class ReviewState(TypedDict):
     author: str
     full_diff: str
     files_changed: List[str]
+    pr_facts: NotRequired[dict]
+    validated_findings: NotRequired[list]
+    validation_report: NotRequired[dict]
+    hypotheses: NotRequired[list]
+    investigation_evidence: NotRequired[list]
+    investigation_report: NotRequired[dict]
 
     # Context & Retrieval
     context_from_kb: str
@@ -40,6 +46,7 @@ class ReviewState(TypedDict):
     # Specialized Findings
     correctness_findings: List[Finding]
     quality_findings: List[Finding]
+    testing_findings: List[Finding]
     critique: dict
     merge_decision: dict
     review_plan: dict

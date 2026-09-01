@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Literal
 
 from pydantic import BaseModel, Field
 from core.models import FindingSeverity, SpecialistFinding, SpecialistReview
+from core.investigation.models import InvestigationAsk
 
 
 class ReviewerKind(str, Enum):
@@ -31,6 +32,7 @@ class ReviewPlan(BaseModel):
     risk_level: str = "medium"
     reviewers: List[ReviewerKind] = Field(default_factory=list)
     retrieval_questions: List[RetrievalQuestion] = Field(default_factory=list)
+    investigate: List[InvestigationAsk] = Field(default_factory=list)
     focus_notes: List[str] = Field(default_factory=list)
     skip_reasons: Dict[str, str] = Field(default_factory=dict)
 

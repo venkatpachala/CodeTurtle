@@ -68,3 +68,12 @@ class GraphifyRetriever:
 
         print(f"[GraphifyRetriever] Returning {len(docs)} graph documents")
         return docs
+
+    def investigate_file(
+        self,
+        path: str,
+        *,
+        symbol: Optional[str] = None,
+    ) -> List[dict]:
+        """Targeted hop: node + neighbors for one changed path. Not a full retrieve."""
+        return self.provider.investigate_file(path, symbol=symbol)

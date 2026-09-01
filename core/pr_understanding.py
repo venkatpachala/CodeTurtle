@@ -1,3 +1,5 @@
+from typing import Optional
+
 from langchain_core.prompts import ChatPromptTemplate
 
 from core.state import ReviewState
@@ -37,6 +39,7 @@ def refine_understanding(
     result: PRUnderstanding,
     files: list[str],
     body: str,
+    pr_facts: Optional[dict] = None,
 ) -> PRUnderstanding:
     """
     Deterministic post-process after structured LLM output.
@@ -79,6 +82,29 @@ def refine_understanding(
             for f in (files or [])
         )
 
+    facts = pr_facts or {}
+    if facts.get("classification") == "lockfile-only":
+        ctypes = [str(c).lower() for c in (result.change_type or [])]
+        if "dependencies" not in ctypes and "dependency" not in ctypes:
+            result.change_type = list(result.change_type or []) + ["dependencies"]
+        blob = (result.summary or "").lower()
+        lock_tokens = (
+            "lock",
+            "dependenc",
+            "version",
+            "npm",
+            "yarn",
+            "pnpm",
+            "package",
+        )
+        if not any(t in blob for t in lock_tokens):
+            locks = facts.get("lock_files") or []
+            lock_name = locks[0] if locks else "lockfile"
+            result.summary = (
+                f"Lockfile / dependency lock update ({lock_name}). "
+                + (result.summary or "")
+            ).strip()
+
     return result
 
 
@@ -91,9 +117,20 @@ def pr_understanding_agent(state: ReviewState) -> dict:
     files = state.get("files_changed") or []
     body = state.get("body") or ""
 
+    from core.pr_facts import format_pr_facts_for_prompt
+    pr_facts = state.get("pr_facts") or {}
+    facts_block = format_pr_facts_for_prompt(pr_facts) if pr_facts else ""
+
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a senior maintainer doing first-pass analysis of a GitHub PR.
 You do NOT approve or reject. You produce structured understanding for specialist reviewers.
+
+Grounding Rules:
+- Use DETERMINISTIC PR FACTS as the source of truth for what changed.
+- Do not assert that a file changed unless it is listed there.
+- Cite evidence paths only from files_changed / paths_in_diff.
+- If classification is lockfile-only: summary MUST describe a lockfile / dependency lock update; change_type MUST include dependencies. Do not describe a new product feature unless files_changed includes source.
+- If title/body disagree with files_changed, trust files_changed.
 
 Rules:
 1. Summary must state the CAUSAL chain when this is a bugfix (what went wrong → why → what the fix changes). Prefer concrete mechanisms (overwrite, sort order, API contract) over vague "improves handling".
@@ -115,6 +152,9 @@ Rules:
 
 ### PR Description
 {body}
+
+### Deterministic PR Facts
+{pr_facts_block}
 
 ### Files Changed
 {files_changed}
@@ -142,6 +182,7 @@ Also cover:
     ]).format(
         title=state.get("title", ""),
         body=body or "No description provided.",
+        pr_facts_block=facts_block,
         files_changed="\n".join(files),
         diff=(state.get("full_diff") or "")[:12000],
     )
@@ -157,7 +198,7 @@ Also cover:
     if isinstance(result, dict):
         result = PRUnderstanding.model_validate(result)
 
-    result = refine_understanding(result, files=files, body=body)
+    result = refine_understanding(result, files=files, body=body, pr_facts=pr_facts)
 
     return {
         "pr_understanding": result.model_dump(),

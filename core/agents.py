@@ -43,29 +43,27 @@ def _ground_specialist_review(
     category: str,
     id_prefix: str,
 ) -> SpecialistReview:
-    """
-    Grounding:
-    - blocking: need a path in changed files / allowed context, else demote to concern.
-    - other severities: attach best-effort paths; do not invent bugs.
-    """
-    allowed = _paths_from_context(context_from_kb) | set(files_changed or [])
+    """Map cited paths onto files_changed. Do not invent a file the model omitted."""
+    allowed = set(files_changed or [])
     grounded_findings: list[SpecialistFinding] = []
 
-    for i, f in enumerate(review.findings or []):
-        raw_paths = f.evidence_paths or []
+    for f in review.findings or []:
+        if f.file:
+            f.file = str(f.file).replace("\\", "/")
+        raw_paths = list(f.evidence_paths or [])
+        if f.file and f.file not in raw_paths:
+            raw_paths = [f.file] + raw_paths
         ev = _expand_evidence(raw_paths, files_changed, allowed)
-        sev_str = (f.severity.value if hasattr(f.severity, "value") else str(f.severity)).lower()
-
-        if sev_str == "blocking":
-            if not ev:
-                f.severity = FindingSeverity.concern
-                f.detail = f"[Ungrounded blocker converted to concern] {f.detail}"
-                f.evidence_paths = list(files_changed[:1]) if files_changed else []
-            else:
-                f.evidence_paths = ev
+        if ev:
+            f.evidence_paths = ev
+            if not f.file:
+                f.file = ev[0]
         else:
-            f.evidence_paths = ev if ev else (list(files_changed[:1]) if files_changed else [])
-
+            f.evidence_paths = [str(p).replace("\\", "/") for p in raw_paths if p]
+        sev_str = (f.severity.value if hasattr(f.severity, "value") else str(f.severity)).lower()
+        if sev_str == "blocking" and not ev:
+            f.severity = FindingSeverity.concern
+            f.detail = f"[Ungrounded blocker converted to concern] {f.detail}"
         grounded_findings.append(f)
 
     review.findings = grounded_findings
@@ -126,9 +124,6 @@ def _expand_evidence(
         if a in blob or base in blob:
             out.append(a)
 
-    if not out and refs and len(files_changed) == 1:
-        out = [files_changed[0]]
-
     return list(dict.fromkeys(out))
 
 
@@ -140,15 +135,15 @@ def _ground_findings(
     category: str,
     id_prefix: str,
 ) -> list[dict]:
-    allowed = _paths_from_context(context_from_kb) | set(files_changed or [])
+    allowed = set(files_changed or [])
     grounded = []
     for i, f in enumerate(raw_list or []):
         d = _finding_to_dict(f)
         refs = d.get("evidence") or d.get("evidence_refs") or d.get("evidence_paths") or []
         ev = _expand_evidence(refs, files_changed, allowed)
-        if not ev:
-            ev = list(files_changed[:1]) if files_changed else []
         d["evidence"] = ev
+        if not d.get("file") and ev:
+            d["file"] = ev[0]
         d["category"] = category
         d.setdefault("id", f"{id_prefix}-{i}")
         grounded.append(d)
@@ -177,33 +172,48 @@ def _paths_from_context(context_from_kb: str) -> Set[str]:
 def _finding_to_dict(f: Any) -> dict:
     if hasattr(f, "model_dump"):
         d = f.model_dump()
-        if "detail" in d and "description" not in d:
-            d["description"] = d["detail"]
-            d["reasoning"] = d["detail"]
-        if "evidence_paths" in d and "evidence" not in d:
-            d["evidence"] = d["evidence_paths"]
-        if hasattr(d.get("severity"), "value"):
-            d["severity"] = d["severity"].value
-        return d
-    if isinstance(f, dict):
+    elif isinstance(f, dict):
         d = dict(f)
-        if "detail" in d and "description" not in d:
-            d["description"] = d["detail"]
-            d["reasoning"] = d["detail"]
-        if "evidence_paths" in d and "evidence" not in d:
-            d["evidence"] = d["evidence_paths"]
-        return d
-    return {
-        "id": "unknown",
-        "title": str(f),
-        "description": str(f),
-        "severity": "low",
-        "confidence": 0.0,
-        "evidence": [],
-        "reasoning": "",
-        "recommendation": "",
-        "category": "unknown",
-    }
+    else:
+        return {
+            "id": "unknown",
+            "title": str(f),
+            "description": str(f),
+            "claim": "",
+            "severity": "low",
+            "confidence": 0.0,
+            "evidence": [],
+            "file": None,
+            "symbol": None,
+            "start_line": None,
+            "end_line": None,
+            "reasoning": "",
+            "recommendation": "",
+            "category": "unknown",
+        }
+    if "detail" in d and not d.get("description"):
+        d["description"] = d["detail"]
+    if "detail" in d and not d.get("reasoning"):
+        d["reasoning"] = d["detail"]
+    if not d.get("claim"):
+        d["claim"] = d.get("title") or ""
+    if not d.get("evidence"):
+        d["evidence"] = d.get("evidence_paths") or d.get("evidence_refs") or []
+    if hasattr(d.get("severity"), "value"):
+        d["severity"] = d["severity"].value
+    if d.get("file"):
+        d["file"] = str(d["file"]).replace("\\", "/")
+    if not d.get("file") and d.get("evidence"):
+        first = d["evidence"][0] if isinstance(d["evidence"], list) and d["evidence"] else None
+        if first:
+            d["file"] = str(first).replace("\\", "/")
+    d.setdefault("symbol", d.get("symbol"))
+    d.setdefault("start_line", d.get("start_line"))
+    d.setdefault("end_line", d.get("end_line"))
+    d.setdefault("needs_investigation", bool(d.get("needs_investigation")))
+    d.setdefault("question", d.get("question") or "")
+    d.setdefault("evidence_ids", d.get("evidence_ids") or [])
+    return d
 
 
 def _normalize_evidence(refs, allowed):
@@ -563,14 +573,19 @@ def _build_specialist_context(
         max_chunks=max_evidence_chunks,
     )
 
+    from core.pr_facts import format_pr_facts_for_prompt
+    pr_facts = state.get("pr_facts") or {}
+    facts_block = format_pr_facts_for_prompt(pr_facts) if pr_facts else ""
+
     parts: list[str] = [
         f"=== A. PR TITLE ===\n{title}",
         f"=== B. PR BODY (excerpt) ===\n{body}" if body.strip() else "",
-        f"""=== C. PR UNDERSTANDING ===
+        f"=== C. DETERMINISTIC PR FACTS ===\n{facts_block}" if facts_block else "",
+        f"""=== D. PR UNDERSTANDING ===
 Summary: {und_summary}
 Risk: {und_risk}
 Change types: {und_types}""",
-        f"=== D. PR ANALYSIS (Phase-2 structured facts — trust these) ===\n{analysis_block}",
+        f"=== E. PR ANALYSIS (Phase-2 structured facts — trust these) ===\n{analysis_block}",
     ]
     if focus_notes:
         parts.append(
@@ -668,7 +683,25 @@ GROUNDING RULES:
 4. If evidence is insufficient, say Uncertain — do not invent features.
 5. Graphify structure is supporting context, not a license to rewrite the PR purpose.
 
-PRIMARY source of truth: UNIFIED DIFF (section F) + Phase-2 analysis (section D).
+files_changed is the only allowed evidence universe.
+Set finding.file to the path the claim is about.
+Do not cite wordlist.txt, .gitignore, LICENSE unless the claim is about that file.
+If you discuss sqlserver_loader.py, evidence must be that path (or another changed source file you actually analyzed).
+
+STRUCTURED FINDING RULES:
+Each finding MUST look like:
+  file, start_line, end_line, symbol, claim, evidence[], reasoning, recommendation, confidence
+- file: one path from files_changed (the file the claim is about)
+- evidence: that same path (and optional extra related changed paths)
+- claim: one sentence, testable
+- symbol: only an identifier that appears in the diff or in that file — not a story
+Never cite .gitignore or wordlist.txt unless the finding is about that file.
+If you cannot fill file from the real change list, return no finding.
+Do not finalize "this is a bug" when you only have the first Graphify blob.
+If you need callers, neighbors, or a finally/close path, set needs_investigation=true
+and question to a concrete ask (e.g. "who calls connect and is there a close/finally?").
+
+PRIMARY source of truth: UNIFIED DIFF (section F) + Phase-2 analysis (section E).
 SECONDARY: filtered evidence (section G). If a chunk is unrelated to the diff, IGNORE IT.
 
 FORBIDDEN (will be discarded):
@@ -739,16 +772,7 @@ def correctness_agent(state: ReviewState) -> dict:
             "traces": [{"agent": "CorrectnessAgent", "output": "skipped (not in review_plan)"}],
         }
 
-    pr_analysis = state.get("pr_analysis") or {}
-    if not isinstance(pr_analysis, dict):
-        pr_analysis = {}
-    understanding = state.get("pr_understanding") or {}
-    if not isinstance(understanding, dict):
-        understanding = {}
     files_changed = list(state.get("files_changed") or [])
-    pr_symbols = _extract_pr_symbols(pr_analysis)
-    full_diff = state.get("full_diff") or ""
-    pr_keywords = _pr_keyword_set(pr_analysis, understanding, full_diff)
     diff = _diff_for_review(state)
 
     context_block = _build_specialist_context(
@@ -792,21 +816,17 @@ def correctness_agent(state: ReviewState) -> dict:
     )
 
     finding_dicts = []
-    dropped_count = 0
     for i, f in enumerate(review.findings):
         fd = _finding_to_dict(f)
         fd["id"] = f"corr-{i}"
         fd["category"] = "correctness"
-        if is_pr_relevant_finding(fd, pr_symbols, pr_keywords=pr_keywords, diff=full_diff):
-            finding_dicts.append(fd)
-        else:
-            dropped_count += 1
+        finding_dicts.append(fd)
 
     meta = {
         "skipped": False,
         "raw": len(review.findings),
         "grounded": len(finding_dicts),
-        "dropped_irrelevant": dropped_count,
+        "dropped_irrelevant": 0,
         "summary": review.summary,
         "no_blocking_issues": review.no_blocking_issues,
         "assumptions": review.assumptions_noted,
@@ -821,7 +841,6 @@ def correctness_agent(state: ReviewState) -> dict:
             "agent": "CorrectnessAgent",
             "output": (
                 f"raw={meta['raw']} grounded={meta['grounded']} "
-                f"dropped_irrelevant={dropped_count} "
                 f"summary={review.summary[:120]}"
             ),
         }],
@@ -836,16 +855,7 @@ def code_quality_agent(state: ReviewState) -> dict:
             "traces": [{"agent": "CodeQualityAgent", "output": "skipped (not in review_plan)"}],
         }
 
-    pr_analysis = state.get("pr_analysis") or {}
-    if not isinstance(pr_analysis, dict):
-        pr_analysis = {}
-    understanding = state.get("pr_understanding") or {}
-    if not isinstance(understanding, dict):
-        understanding = {}
     files_changed = list(state.get("files_changed") or [])
-    pr_symbols = _extract_pr_symbols(pr_analysis)
-    full_diff = state.get("full_diff") or ""
-    pr_keywords = _pr_keyword_set(pr_analysis, understanding, full_diff)
     diff = _diff_for_review(state, max_chars=10000)
 
     context_block = _build_specialist_context(
@@ -889,21 +899,17 @@ def code_quality_agent(state: ReviewState) -> dict:
     )
 
     finding_dicts = []
-    dropped_count = 0
     for i, f in enumerate(review.findings):
         fd = _finding_to_dict(f)
         fd["id"] = f"qual-{i}"
         fd["category"] = "code_quality"
-        if is_pr_relevant_finding(fd, pr_symbols, pr_keywords=pr_keywords, diff=full_diff):
-            finding_dicts.append(fd)
-        else:
-            dropped_count += 1
+        finding_dicts.append(fd)
 
     meta = {
         "skipped": False,
         "raw": len(review.findings),
         "grounded": len(finding_dicts),
-        "dropped_irrelevant": dropped_count,
+        "dropped_irrelevant": 0,
         "summary": review.summary,
         "no_blocking_issues": review.no_blocking_issues,
         "assumptions": review.assumptions_noted,
@@ -918,7 +924,6 @@ def code_quality_agent(state: ReviewState) -> dict:
             "agent": "CodeQualityAgent",
             "output": (
                 f"raw={meta['raw']} grounded={meta['grounded']} "
-                f"dropped_irrelevant={dropped_count} "
                 f"summary={review.summary[:120]}"
             ),
         }],
@@ -941,13 +946,7 @@ def testing_agent(state: ReviewState) -> dict:
     pr_analysis = state.get("pr_analysis") or {}
     if not isinstance(pr_analysis, dict):
         pr_analysis = {}
-    understanding = state.get("pr_understanding") or {}
-    if not isinstance(understanding, dict):
-        understanding = {}
     files_changed = list(state.get("files_changed") or [])
-    pr_symbols = _extract_pr_symbols(pr_analysis)
-    full_diff = state.get("full_diff") or ""
-    pr_keywords = _pr_keyword_set(pr_analysis, understanding, full_diff)
     diff = _diff_for_review(state, max_chars=10000)
 
     tests_touched = any(
@@ -1003,21 +1002,17 @@ def testing_agent(state: ReviewState) -> dict:
     )
 
     finding_dicts = []
-    dropped_count = 0
     for i, f in enumerate(review.findings):
         fd = _finding_to_dict(f)
         fd["id"] = f"test-{i}"
         fd["category"] = "testing"
-        if is_pr_relevant_finding(fd, pr_symbols, pr_keywords=pr_keywords, diff=full_diff):
-            finding_dicts.append(fd)
-        else:
-            dropped_count += 1
+        finding_dicts.append(fd)
 
     meta = {
         "skipped": False,
         "raw": len(review.findings),
         "grounded": len(finding_dicts),
-        "dropped_irrelevant": dropped_count,
+        "dropped_irrelevant": 0,
         "summary": review.summary,
         "no_blocking_issues": review.no_blocking_issues,
         "assumptions": review.assumptions_noted,
@@ -1033,7 +1028,6 @@ def testing_agent(state: ReviewState) -> dict:
             "agent": "TestingAgent",
             "output": (
                 f"raw={meta['raw']} grounded={meta['grounded']} "
-                f"dropped_irrelevant={dropped_count} "
                 f"tests_touched={tests_touched} "
                 f"summary={review.summary[:120]}"
             ),
@@ -1081,8 +1075,15 @@ def build_evidence_package(state: dict) -> dict:
 
     retriever = GraphifyRetriever(repo)
 
-    # Collect Graphify documents from plan questions (or PR title/body)
-    questions: list[str] = []
+    from core.pr_facts import (
+        question_grounded_in_pr,
+        dedupe_near_duplicate_questions,
+    )
+
+    diff = state.get("full_diff") or ""
+    files = list(files_changed or [])
+
+    grounded_qs: list[str] = []
     if plan and getattr(plan, "retrieval_questions", None):
         for q in plan.retrieval_questions[:10]:
             if isinstance(q, dict):
@@ -1091,24 +1092,38 @@ def build_evidence_package(state: dict) -> dict:
                 except Exception:
                     continue
             question = getattr(q, "question", None) or str(q)
-            if question and question.strip():
-                questions.append(question.strip())
+            if not question or not str(question).strip():
+                continue
+            if question_grounded_in_pr(str(question), files, diff):
+                grounded_qs.append(str(question).strip())
 
-    if not questions:
-        questions = [f"{title}\n{body}".strip() or "what is the core architecture of this repository?"]
+    grounded_qs = dedupe_near_duplicate_questions(grounded_qs)
 
-    docs = []
-    for question in questions:
-        batch = retriever.retrieve(
-            question,
-            k=6,
-            pr_title=title,
-            pr_body=body,
-            files_changed=files_changed,
+    excerpt = (diff or "")[:4000]
+    query_parts = [
+        title or "",
+        "Changed files: " + ", ".join(files[:40]),
+        excerpt,
+    ]
+    if grounded_qs:
+        query_parts.append(
+            "Retrieval focus:\n" + "\n".join(f"- {q}" for q in grounded_qs[:4])
         )
-        docs.extend(batch)
+    query = "\n".join(p for p in query_parts if p).strip() or (
+        "what related modules and call relationships matter for this change?"
+    )
 
-    # De-dupe by page_content prefix
+    # One Graphify retrieve: title + files_changed + diff excerpt (+ grounded questions)
+    docs = retriever.retrieve(
+        query,
+        k=8,
+        pr_title=title,
+        pr_body=body,
+        files_changed=files_changed,
+        full_diff=diff,
+        pr_number=state.get("number") or state.get("pr_number"),
+    )
+
     seen = set()
     unique_docs = []
     for d in docs:
@@ -1131,7 +1146,7 @@ def build_evidence_package(state: dict) -> dict:
         understanding=understanding if isinstance(understanding, dict) else {},
     )
 
-    n_q = len(questions)
+    n_q = len(grounded_qs)
     n_ev = len(unique_docs)
 
     return {
@@ -1139,7 +1154,10 @@ def build_evidence_package(state: dict) -> dict:
         "context_from_kb": rich_context,
         "traces": [{
             "agent": "BuildEvidencePackage",
-            "output": f"backend=graphify plan_questions={n_q} docs={n_ev}",
+            "output": (
+                f"backend=graphify retrieve=1 "
+                f"plan_questions_kept={n_q} docs={n_ev}"
+            ),
         }],
     }
 
@@ -1150,13 +1168,13 @@ def _graphify_docs_to_evidence_package(docs, *, repo: str, files_changed, unders
     Prefer a real EvidencePackage if available; else return a simple namespace/dict.
     """
     try:
-        # Adjust import to your actual module if different
-        from core.evidence import EvidencePackage, EvidenceItem
-    except Exception:
+        from core.evidence import EvidencePackage, Evidence
+        ItemClass = Evidence
+    except ImportError:
         try:
-            from core.query_engine.evidence import EvidencePackage, EvidenceItem
-        except Exception:
-            # Fallback: lightweight object with .evidences
+            from core.query_engine.types import EvidencePackage, EvidenceItem
+            ItemClass = EvidenceItem
+        except ImportError:
             class _Item:
                 def __init__(self, text, meta):
                     self.text = text
@@ -1182,19 +1200,17 @@ def _graphify_docs_to_evidence_package(docs, *, repo: str, files_changed, unders
         meta = dict(d.metadata or {})
         try:
             items.append(
-                EvidenceItem(
-                    id=f"G{i+1}",
-                    source="graphify",
-                    kind=meta.get("type", "graph"),
+                ItemClass(
+                    path=meta.get("path", "structural_context"),
                     content=text,
+                    source="graphify",
                     metadata=meta,
                 )
             )
-        except TypeError:
-            # Constructor shape differs — try minimal fields
+        except Exception:
             try:
                 items.append(
-                    EvidenceItem(
+                    ItemClass(
                         content=text,
                         source="graphify",
                     )
@@ -1205,12 +1221,13 @@ def _graphify_docs_to_evidence_package(docs, *, repo: str, files_changed, unders
     try:
         return EvidencePackage(
             evidences=items,
-            repo=repo,
-            files_changed=files_changed,
+            query="",
+            pr_understanding=understanding if isinstance(understanding, dict) else {},
+            affected_files=list(files_changed or []),
         )
-    except TypeError:
+    except Exception:
         try:
-            return EvidencePackage(evidences=items)
+            return EvidencePackage(evidences=items, query="")
         except Exception:
             class _Pkg:
                 def __init__(self, evidences):
@@ -1289,88 +1306,103 @@ def _format_evidence(evidence_package) -> str:
 # ── Critic ───────────────────────────────────────────────────────────────────
 
 def critic_agent(state: ReviewState) -> dict:
-    """
-    Reasoning gate: drop empty / duplicates / generic advice; keep PR-anchored findings.
-    """
-    correctness = list(state.get("correctness_findings") or [])
-    quality = list(state.get("quality_findings") or [])
-    testing = list(state.get("testing_findings") or [])
-
-    context = state.get("context_from_kb") or ""
-    files_changed = state.get("files_changed") or []
-    pr_analysis = state.get("pr_analysis") or {}
-    if not isinstance(pr_analysis, dict):
-        pr_analysis = {}
-    understanding = state.get("pr_understanding") or {}
-    if not isinstance(understanding, dict):
-        understanding = {}
-    pr_symbols = _extract_pr_symbols(pr_analysis)
-    pr_keywords = _pr_keyword_set(
-        pr_analysis, understanding, state.get("full_diff") or ""
+    """Rank VALIDATED survivors only. Must not invent findings or revive drops."""
+    from core.finding_validator import (
+        filter_findings,
+        log_validation,
+        normalize_findings,
     )
+    from core.pr_facts import extract_diff_symbols
 
-    combined: List[dict] = []
-    for src, cat in (
-        (correctness, "correctness"),
-        (quality, "code_quality"),
-        (testing, "testing"),
-    ):
-        for f in src:
-            d = _finding_to_dict(f)
-            d["category"] = d.get("category") or cat
-            if not d.get("evidence"):
-                d["evidence"] = list(files_changed[:1]) if files_changed else []
-            combined.append(d)
+    facts = state.get("pr_facts") or {}
+    files_changed = list(facts.get("files_changed") or state.get("files_changed") or [])
+    paths_in_diff = list(facts.get("paths_in_diff") or [])
+    full_diff = state.get("full_diff") or ""
+    changed_symbols = extract_diff_symbols(full_diff)
+    report = state.get("validation_report") if isinstance(state.get("validation_report"), dict) else None
 
-    pre_kept, pre_dropped = [], []
-    for d in combined:
-        title = (d.get("title") or "").lower()
-        sev = str(d.get("severity") or "").lower()
-        if sev != "verified" and (not title.strip() or title in ("looks good", "no issues", "none")):
-            pre_dropped.append({"title": d.get("title", "?"), "reason": "empty_or_no_issue"})
-            continue
-        if not is_pr_relevant_finding(d, pr_symbols, pr_keywords=pr_keywords):
-            pre_dropped.append({"title": d.get("title", "?"), "reason": "not_pr_relevant"})
-            continue
-        pre_kept.append(d)
+    if report and report.get("ran"):
+        validated_candidates = normalize_findings(
+            state.get("validated_findings")
+            if state.get("validated_findings") is not None
+            else state.get("findings")
+            or [],
+            files_changed=files_changed,
+            pr_facts=facts,
+        )
+        pre_dropped = list(report.get("dropped_summaries") or [])
+        raw_in = report.get("raw", len(validated_candidates))
+    else:
+        combined = []
+        for src, cat in (
+            (state.get("correctness_findings") or [], "correctness"),
+            (state.get("quality_findings") or [], "code_quality"),
+            (state.get("testing_findings") or [], "testing"),
+        ):
+            for f in src:
+                d = _finding_to_dict(f)
+                d["category"] = d.get("category") or cat
+                combined.append(d)
+        normalized = normalize_findings(
+            combined, files_changed=files_changed, pr_facts=facts
+        )
+        val_res = filter_findings(
+            normalized,
+            files_changed=files_changed,
+            paths_in_diff=paths_in_diff,
+            changed_symbols=changed_symbols,
+            full_diff=full_diff,
+        )
+        val_res["raw"] = len(normalized)
+        log_validation(val_res)
+        validated_candidates = val_res["kept"]
+        pre_dropped = [
+            {
+                "title": (item.get("finding") or {}).get("title"),
+                "reason": item.get("reason"),
+                "file": (item.get("finding") or {}).get("file"),
+                "evidence": (item.get("finding") or {}).get("evidence"),
+            }
+            for item in val_res["dropped"]
+        ]
+        raw_in = len(normalized)
 
-    seen_titles = set()
-    deduped = []
-    for d in pre_kept:
-        key = re.sub(r"\s+", " ", (d.get("title") or "").lower().strip())
-        if key in seen_titles:
-            pre_dropped.append({"title": d.get("title", "?"), "reason": "duplicate"})
-            continue
-        seen_titles.add(key)
-        deduped.append(d)
+    if not validated_candidates:
+        notes = "no validated findings"
+        return {
+            "findings": [],
+            "validated_findings": [],
+            "critique": {
+                "kept": [],
+                "dropped": pre_dropped,
+                "notes": notes,
+            },
+            "traces": [{"agent": "CriticAgent", "output": notes}],
+        }
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a strict PR review critic (reasoning gate), NOT a second code reviewer.
 
 Rules:
+- You only rank VALIDATED findings.
+- Do not restore findings the validator rejected.
+- If kept is empty, say there are no validated findings and do not invent new issues.
 - PRESERVE high-signal specialist findings: verified behavior, real concerns, questions, suggestions.
 - DROP documentation-only findings and claims unrelated to the PR change.
 - MERGE near-duplicates into one tighter finding.
 - Do NOT invent new findings.
+- Keep each finding.file / evidence pointing at a path from files_changed.
 
 Return Findings: the final kept list only."""),
         ("human", """PR title: {title}
 
-Context (truncated):
-{context}
-
-Candidate findings (JSON):
+VALIDATED findings (the only candidates you may rank):
 {candidates}
 
-Already dropped (informational):
-{dropped}
-
-Return only the findings to KEEP."""),
+Return only the findings to KEEP. Do not add new ones."""),
     ]).format(
         title=state.get("title", ""),
-        context=context[:6000],
-        candidates=json.dumps(deduped, indent=2)[:8000],
-        dropped=json.dumps(pre_dropped, indent=2)[:2000],
+        candidates=json.dumps(validated_candidates, indent=2)[:8000],
     )
 
     try:
@@ -1383,34 +1415,36 @@ Return only the findings to KEEP."""),
             max_tokens=2000,
         )
         llm_findings = result.findings if hasattr(result, "findings") else []
-        kept = _filter_grounded_findings(llm_findings, context)
-        if not kept and deduped:
-            kept = deduped
-        if not deduped:
-            return {
-                "findings": [],
-                "critique": {
-                    "kept": [],
-                    "dropped": pre_dropped,
-                    "notes": "in=0 after_det=0 kept=0 (no candidates; skip LLM invent)",
-                },
-                "traces": [{"agent": "CriticAgent", "output": "empty_input_no_llm"}],
-            }
+        val_post = filter_findings(
+            normalize_findings(
+                [_finding_to_dict(f) for f in llm_findings],
+                files_changed=files_changed,
+                pr_facts=facts,
+            ),
+            files_changed=files_changed,
+            paths_in_diff=paths_in_diff,
+            changed_symbols=changed_symbols,
+            full_diff=full_diff,
+        )
+        kept = val_post["kept"]
+        if not kept and validated_candidates:
+            kept = validated_candidates
     except Exception:
-        kept = deduped
+        kept = validated_candidates
 
     critique = {
         "kept": kept,
         "dropped": pre_dropped,
-        "notes": f"in={len(combined)} after_det={len(deduped)} kept={len(kept)}",
+        "notes": f"in={raw_in} validated={len(validated_candidates)} kept={len(kept)}",
     }
 
     return {
         "findings": kept,
+        "validated_findings": kept,
         "critique": critique,
         "traces": [{
             "agent": "CriticAgent",
-            "output": critique["notes"] + " dropped=" + str(pre_dropped)[:500],
+            "output": critique["notes"],
         }],
     }
 
@@ -1418,30 +1452,75 @@ Return only the findings to KEEP."""),
 # ── Final decision ───────────────────────────────────────────────────────────
 
 def final_recommender(state: ReviewState) -> dict:
-    findings = list(state.get("findings") or [])
+    findings = list(
+        state.get("validated_findings")
+        if state.get("validated_findings") is not None
+        else state.get("findings")
+        or []
+    )
     finding_dicts = [_finding_to_dict(f) for f in findings]
     understanding = state.get("pr_understanding") or {}
     risk = understanding.get("risk_level", "medium") if isinstance(understanding, dict) else "medium"
     summary_u = understanding.get("summary", "") if isinstance(understanding, dict) else ""
 
+    plan = state.get("review_plan") or {}
+    plan_risk = plan.get("risk_level") if isinstance(plan, dict) else ""
+    _rank = {"low": 0, "medium": 1, "high": 2, "critical": 3}
+    if _rank.get(str(plan_risk).lower(), -1) > _rank.get(str(risk).lower(), 0):
+        risk = plan_risk
+
+    empty = not finding_dicts
+    classification = str((state.get("pr_facts") or {}).get("classification") or "")
     sev = [str(f.get("severity", "low")).lower() for f in finding_dicts]
     if any(s in ("critical", "high", "blocking") for s in sev):
         baseline = "REQUEST_CHANGES"
     elif any(s in ("medium", "concern") for s in sev):
         baseline = "COMMENT"
+    elif empty and classification == "lockfile-only":
+        # Policy B: lockfile-only with nothing grounded → COMMENT, not MERGE
+        baseline = "COMMENT"
+    elif empty and str(risk).lower() in ("medium", "high", "critical"):
+        # Policy: medium/high risk with nothing validated → COMMENT, not MERGE 0.95
+        baseline = "COMMENT"
     else:
         baseline = "MERGE"
+    if empty:
+        corr_summary = test_summary = qual_summary = (
+            "(omitted — no validated findings; do not recap unvalidated specialist drafts)"
+        )
+        findings_json = "(none)"
+    else:
+        corr_meta = state.get("correctness_meta") or {}
+        test_meta = state.get("testing_meta") or {}
+        qual_meta = state.get("quality_meta") or {}
+        corr_summary = corr_meta.get("summary", "")
+        test_summary = test_meta.get("summary", "")
+        qual_summary = qual_meta.get("summary", "")
+        findings_json = json.dumps(finding_dicts, indent=2)[:6000]
 
-    corr_meta = state.get("correctness_meta") or {}
-    test_meta = state.get("testing_meta") or {}
-    qual_meta = state.get("quality_meta") or {}
+    uncertain = []
+    for h in state.get("hypotheses") or []:
+        d = h if isinstance(h, dict) else (h.model_dump() if hasattr(h, "model_dump") else {})
+        if d.get("status") == "uncertain":
+            uncertain.append(
+                f"{d.get('id')}: {d.get('claim') or d.get('title')} ({d.get('file')})"
+            )
+    uncertain_block = "\n".join(uncertain) if uncertain else "(none)"
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are the final maintainer decision.
 
+You may only use VALIDATED findings.
+If the list is empty, say there are no validated findings.
+Do not restate dropped or ungrounded claims.
+
 Rules:
 - recommendation MUST be MERGE | REQUEST_CHANGES | COMMENT
-- summary MUST only use: PR understanding summary + specialist reviews + kept findings
+- summary MUST only use: PR understanding summary + VALIDATED findings
+- If VALIDATED findings is empty, MERGE is allowed only as "no validated issues found" — not as a recap of rejected nits.
+- If the list is empty AND risk is medium/high, prefer COMMENT over MERGE (could not confirm issues, not high confidence merge).
+- If classification is lockfile-only AND validated findings is empty, prefer COMMENT ("lockfile-only; no grounded issue"), not MERGE.
+- Uncertain investigation hypotheses may be mentioned only as "could not confirm X" — not as proven bugs.
 - Do NOT invent features, bugs, or subsystems not present there
 - Blocking / critical issues → REQUEST_CHANGES
 - Concerns / questions / suggestions without blocking bugs → MERGE or COMMENT depending on risk"""),
@@ -1452,18 +1531,22 @@ Correctness summary: {corr_summary}
 Testing summary: {test_summary}
 Quality summary: {qual_summary}
 
-Kept findings JSON:
+VALIDATED findings (the ONLY issues you may mention):
 {findings}
+
+Uncertain investigation hypotheses (mention only as unconfirmed):
+{uncertain}
 
 Return ReviewOutput."""),
     ]).format(
         summary_u=summary_u,
         risk=risk,
         baseline=baseline,
-        corr_summary=corr_meta.get("summary", ""),
-        test_summary=test_meta.get("summary", ""),
-        qual_summary=qual_meta.get("summary", ""),
-        findings=json.dumps(finding_dicts, indent=2)[:6000],
+        corr_summary=corr_summary,
+        test_summary=test_summary,
+        qual_summary=qual_summary,
+        findings=findings_json,
+        uncertain=uncertain_block,
     )
 
     try:
@@ -1482,7 +1565,10 @@ Return ReviewOutput."""),
         confidence = float(getattr(response, "confidence", None) or 0.6)
     except Exception:
         rec = baseline
-        summary = f"Automated decision based on {len(finding_dicts)} kept findings."
+        if empty:
+            summary = "No validated findings."
+        else:
+            summary = f"Automated decision based on {len(finding_dicts)} kept findings."
         confidence = 0.55
 
     blocking = [
