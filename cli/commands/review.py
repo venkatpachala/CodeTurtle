@@ -33,6 +33,7 @@ class PipelineContext:
     files_changed: List[str] = field(default_factory=list)
     full_diff: str = ""
     raw_context: str = ""
+    pr_facts: Optional[dict] = None
     state: Optional[dict] = None
     final_state: Optional[dict] = None
 
@@ -63,6 +64,8 @@ def _finding_line(finding: Any) -> dict:
         "severity": getattr(finding, "severity", "?"),
         "confidence": getattr(finding, "confidence", 0),
         "evidence": getattr(finding, "evidence", []),
+        "file": getattr(finding, "file", None),
+        "symbol": getattr(finding, "symbol", None),
         "reasoning": getattr(finding, "reasoning", ""),
         "recommendation": getattr(finding, "recommendation", ""),
         "category": getattr(finding, "category", ""),
@@ -127,9 +130,44 @@ class ReviewPipeline:
         self.context.files_changed = [f.filename for f in files]
         parts = []
         for f in files:
+            name = (f.filename or "").replace("\\", "/")
+            prev = (getattr(f, "previous_filename", None) or name).replace("\\", "/")
+            status = (getattr(f, "status", None) or "modified").lower()
+            parts.append(f"diff --git a/{prev} b/{name}")
+            if status == "added":
+                parts.append("--- /dev/null")
+                parts.append(f"+++ b/{name}")
+            elif status in ("removed", "deleted"):
+                parts.append(f"--- a/{prev}")
+                parts.append("+++ /dev/null")
+            else:
+                parts.append(f"--- a/{prev}")
+                parts.append(f"+++ b/{name}")
             if f.patch:
-                parts.append(f"--- {f.filename}\n+++ {f.filename}\n{f.patch}\n")
+                parts.append(f.patch)
+            parts.append("")
         self.context.full_diff = "\n".join(parts)
+
+        from core.pr_facts import build_pr_facts
+        facts = build_pr_facts(
+            title=self.context.pr.title or "",
+            body=self.context.pr.body or "",
+            files_changed=list(self.context.files_changed or []),
+            full_diff=self.context.full_diff or "",
+            pr_number=self.context.number,
+            repo=self.context.repo,
+        )
+        self.context.pr_facts = facts
+
+        print(
+            f"[PRFacts] files={facts['file_count']} "
+            f"classification={facts.get('classification')} "
+            f"lock={len(facts.get('lock_files') or [])} "
+            f"source={len(facts.get('source_files') or [])} "
+            f"diff_bytes={facts['diff_bytes']} "
+            f"stat={facts['diff_stat']} "
+            f"paths={facts['files_changed'][:10]}"
+        )
 
     def _retrieve_context(self):
         retriever = GraphifyRetriever(self.context.repo)
@@ -165,6 +203,7 @@ Description:
             "author": self.context.pr.user.login,
             "full_diff": self.context.full_diff,
             "files_changed": self.context.files_changed,
+            "pr_facts": self.context.pr_facts or {},
             "model_used": settings.ollama_model,
             "kb": None,
             "engine": None,
@@ -227,6 +266,16 @@ Description:
                     )
                 else:
                     console.print(f"  - {q}")
+            asks = plan.get("investigate") or []
+            if asks:
+                console.print(f"**Investigate asks**: {len(asks)}")
+                for a in asks[:6]:
+                    if isinstance(a, dict):
+                        console.print(
+                            f"  - {a.get('file')} symbol={a.get('symbol') or ''} ask={a.get('ask')}"
+                        )
+                    else:
+                        console.print(f"  - {a}")
 
         # ── Specialists (always show meta: raw / grounded / skipped) ─────
         console.print("\n[bold red]=== CORRECTNESS ===[/bold red]")
@@ -258,9 +307,37 @@ Description:
             console.print("\n[bold green]=== CODE QUALITY ANALYSIS (legacy) ===[/bold green]")
             console.print(str(final.get("code_analysis"))[:2000])
 
-        # ── Critic ───────────────────────────────────────────────────────
+        inv = final.get("investigation_report") if isinstance(final.get("investigation_report"), dict) else {}
+        if inv:
+            console.print("\n[bold cyan]=== INVESTIGATION ===[/bold cyan]")
+            if inv.get("skipped"):
+                console.print(f"[dim]skipped reason={inv.get('reason')}[/dim]")
+            else:
+                console.print(
+                    f"[dim]hops={inv.get('hops')} calls={inv.get('calls')} "
+                    f"hypotheses={inv.get('hypotheses')}[/dim]"
+                )
+            for h in (final.get("hypotheses") or [])[:6]:
+                d = h if isinstance(h, dict) else {}
+                console.print(
+                    f"  {d.get('id')} status={d.get('status')} file={d.get('file')} "
+                    f"evidence={d.get('evidence_ids')}"
+                )
+
+        # ── Critic (validated survivors only) ────────────────────────────
+        report = final.get("validation_report") if isinstance(final.get("validation_report"), dict) else {}
+        if report:
+            console.print(
+                f"\n[dim][Grounding] raw={report.get('raw')} "
+                f"kept={report.get('kept')} dropped={report.get('dropped')}[/dim]"
+            )
         critique = _as_dict(final.get("critique"))
-        kept = final.get("findings") or critique.get("kept") or []
+        kept = (
+            final.get("validated_findings")
+            or final.get("findings")
+            or critique.get("kept")
+            or []
+        )
         console.print("\n[bold green]=== CRITIQUE ===[/bold green]")
         if critique.get("notes"):
             console.print(f"[dim]{critique.get('notes')}[/dim]")
@@ -276,7 +353,7 @@ Description:
             console.print("[bold]Kept findings:[/bold]")
             self._print_findings(kept)
         else:
-            console.print("No findings kept after critic.")
+            console.print("no validated findings")
 
         # ── Final decision ───────────────────────────────────────────────
         rec = final.get("recommendation") or _as_dict(final.get("merge_decision")).get(
@@ -299,6 +376,8 @@ Description:
             except Exception:
                 conf_s = str(conf)
             console.print(f"**{title}** ({sev}) — confidence {conf_s}")
+            if d.get("file"):
+                console.print(f"File: {d.get('file')}")
             console.print(f"Evidence: {d.get('evidence') or []}")
             reasoning = d.get("reasoning") or d.get("description") or ""
             if reasoning:
@@ -313,7 +392,7 @@ Description:
             console.print(f"[dim]{label}: skipped (not in plan)[/dim]")
             return
         raw = meta.get("raw", "?")
-        grounded = meta.get("grounded", len(findings) if findings is not None else 0)
+        grounded = meta.get("validated", meta.get("grounded", len(findings) if findings is not None else 0))
         extra = ""
         if "no_issues_in_diff" in meta:
             extra = f" no_issues_in_diff={meta.get('no_issues_in_diff')}"
@@ -323,7 +402,7 @@ Description:
         if findings:
             self._print_findings(findings)
         else:
-            console.print(f"[dim]{label}: no grounded findings[/dim]")
+            console.print(f"[dim]{label}: no validated findings[/dim]")
 
     def _save_to_memory(self):
         final = self.context.final_state or {}

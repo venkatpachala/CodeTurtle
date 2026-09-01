@@ -10,6 +10,7 @@ from core.review_intelligence.models import (
     ReviewerKind,
     RetrievalQuestion,
 )
+from core.investigation.planner import deterministic_investigate_asks
 from core.gateway import gateway
 
 
@@ -128,14 +129,26 @@ def _deterministic_questions(
     understanding: dict, analysis: dict
 ) -> list[RetrievalQuestion]:
     """Hypothesis / invariant-driven questions — not 'implementation of file'."""
+    from core.pr_facts import question_grounded_in_pr
+
     questions: list[RetrievalQuestion] = []
     files = list(analysis.get("changed_files") or [])[:12]
+    diff = analysis.get("full_diff") or ""
     code_files = [p for p in files if "test" not in p.lower()]
     test_files = [p for p in files if "test" in p.lower()]
-    added = list(analysis.get("added_functions") or [])[:10]
-    modified = _resolve_modified_symbols(analysis)
-    constants = list(analysis.get("constants_added") or [])[:10]
-    tests = list(analysis.get("added_test_functions") or [])[:8]
+
+    def _real(names: list) -> list[str]:
+        out: list[str] = []
+        for n in names or []:
+            s = str(n).strip()
+            if s and question_grounded_in_pr(s, files, diff):
+                out.append(s)
+        return out
+
+    added = _real(list(analysis.get("added_functions") or [])[:10])
+    modified = _real(_resolve_modified_symbols(analysis))
+    constants = _real(list(analysis.get("constants_added") or [])[:10])
+    tests = _real(list(analysis.get("added_test_functions") or [])[:8])
 
     summary = str(understanding.get("summary") or "")[:180]
     if summary:
@@ -286,13 +299,41 @@ def _resolve_risk(understanding: dict, analysis: dict) -> str:
     return risk
 
 
+def _filter_grounded_questions(
+    questions: list[RetrievalQuestion],
+    files_changed: list,
+    full_diff: str,
+) -> list[RetrievalQuestion]:
+    from core.pr_facts import question_grounded_in_pr
+
+    out: list[RetrievalQuestion] = []
+    for q in questions or []:
+        if question_grounded_in_pr(q.question, files_changed, full_diff):
+            out.append(q)
+    return out
+
+
 def _llm_enrich_plan(
     understanding: dict,
     analysis: dict,
     base: ReviewPlan,
 ) -> ReviewPlan:
     """Optional: refine intent_summary + extra focus notes only. Never replace questions wholesale."""
+    files_changed = analysis.get("changed_files") or []
+    full_diff = (analysis.get("full_diff") or "").strip()
+
     prompt = f"""You are a senior maintainer refining a PR review plan.
+
+Changed files (authoritative):
+{files_changed}
+
+Diff excerpt:
+{full_diff[:8000]}
+
+Retrieval questions may only name paths in files_changed
+or identifiers that appear in the diff excerpt.
+Do not invent FakeConnection / FakeCursor unless those strings are in the diff.
+Focus notes must follow the same rule.
 
 Understanding:
 {json.dumps(understanding, indent=2)[:2500]}
@@ -351,9 +392,20 @@ def review_planner_agent(state: dict) -> dict:
     """
     understanding = _as_dict(state.get("pr_understanding"))
     analysis = _as_dict(state.get("pr_analysis"))
+    files = list(state.get("files_changed") or analysis.get("changed_files") or [])
+    diff = state.get("full_diff") or ""
+    analysis = {
+        **analysis,
+        "changed_files": files or list(analysis.get("changed_files") or []),
+        "full_diff": diff,
+    }
 
     reviewers = _deterministic_reviewers(understanding, analysis)
-    questions = _deterministic_questions(understanding, analysis)
+    questions = _filter_grounded_questions(
+        _deterministic_questions(understanding, analysis),
+        files,
+        diff,
+    )
     risk = _resolve_risk(understanding, analysis)
     intent = str(
         understanding.get("summary")
@@ -362,19 +414,50 @@ def review_planner_agent(state: dict) -> dict:
     )[:400]
     focus_notes = _deterministic_focus_notes(understanding, analysis)
 
+    investigate_asks = deterministic_investigate_asks(files, diff)
+
     plan = ReviewPlan(
         intent_summary=intent,
         risk_level=risk,
         reviewers=reviewers,
         retrieval_questions=questions,
+        investigate=investigate_asks,
         focus_notes=focus_notes,
         skip_reasons={},
     )
 
     plan = _llm_enrich_plan(understanding, analysis, plan)
-    # Final sanitize after LLM
+    # Final sanitize after LLM — drop invented Fake* questions even if enrich kept them
+    investigate_asks = [
+        a
+        for a in list(plan.investigate or [])
+        if a.file
+        and any(
+            a.file.replace("\\", "/") == f.replace("\\", "/")
+            or a.file.replace("\\", "/").endswith("/" + f.replace("\\", "/").split("/")[-1])
+            or f.replace("\\", "/").endswith("/" + a.file.replace("\\", "/").split("/")[-1])
+            for f in files
+        )
+    ]
+    from core.investigation.planner import strip_ungrounded_symbol, is_investigable_path
+
+    cleaned_asks = []
+    for a in investigate_asks:
+        path = is_investigable_path(a.file, files)
+        if not path:
+            continue
+        a.file = path
+        a.symbol = strip_ungrounded_symbol(a.symbol, files, diff)
+        cleaned_asks.append(a)
+
     plan = plan.model_copy(
-        update={"focus_notes": _clean_notes(plan.focus_notes)[:10]}
+        update={
+            "focus_notes": _clean_notes(plan.focus_notes)[:10],
+            "retrieval_questions": _filter_grounded_questions(
+                list(plan.retrieval_questions), files, diff
+            ),
+            "investigate": cleaned_asks[:3],
+        }
     )
 
     return {

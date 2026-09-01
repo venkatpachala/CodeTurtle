@@ -67,8 +67,15 @@ class SpecialistFinding(BaseModel):
     severity: FindingSeverity = FindingSeverity.concern
     title: str
     detail: str
+    claim: str = ""  # one sentence, testable
     evidence_paths: list[str] = Field(default_factory=list)  # optional anchors
     related_symbols: list[str] = Field(default_factory=list)
+    file: Optional[str] = None
+    symbol: Optional[str] = None
+    start_line: Optional[int] = None
+    end_line: Optional[int] = None
+    needs_investigation: bool = False
+    question: str = ""
     confidence: float = 0.5  # 0-1
 
 
@@ -85,12 +92,20 @@ class Finding(BaseModel):
     id: str = "finding-0"
     title: str
     description: str = ""
+    claim: str = ""  # one sentence, testable
     severity: Literal["low", "medium", "high", "critical", "blocking", "concern", "question", "suggestion", "nit", "verified"] = "medium"
     confidence: float = 0.5
     evidence: List[str] = Field(default_factory=list)
+    file: Optional[str] = None
+    symbol: Optional[str] = None
+    start_line: Optional[int] = None
+    end_line: Optional[int] = None
     reasoning: str = ""
     recommendation: str = ""
     category: str = "review"
+    needs_investigation: bool = False
+    question: str = ""
+    evidence_ids: List[str] = Field(default_factory=list)
 
 
 class ReviewOutput(BaseModel):
