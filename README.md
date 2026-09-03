@@ -1,4 +1,4 @@
-# 🐢 CodeTurtle
+# CodeTurtle
 
 > **Autonomous, Local-First Multi-Agent Swarm for Repository-Aware GitHub Code Reviews**
 
@@ -10,11 +10,10 @@
 [![Cloud LLM](https://img.shields.io/badge/LLM-OpenAI%20%7C%20LiteLLM-10A37F.svg?style=flat&logo=openai&logoColor=white)](https://openai.com/)
 [![Observability](https://img.shields.io/badge/Observability-Langfuse-6366F1.svg?style=flat)](https://langfuse.com/)
 [![CLI Framework](https://img.shields.io/badge/CLI-Typer%20%2B%20Rich-0284C7.svg?style=flat)](https://typer.tiangolo.com/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](LICENSE)
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
 - [Overview](#-overview)
 - [Key Architectural Highlights](#-key-architectural-highlights)
@@ -40,7 +39,7 @@
 
 ---
 
-## 💡 Overview
+## Overview
 
 Standard LLM-powered code review bots operate under a severe structural handicap: **they inspect diff hunks in complete isolation**. Without context of the enclosing project, callers, callees, symbol hierarchies, and architectural patterns, they hallucinate API assumptions, report superficial formatting trivia, and miss critical runtime invariants and regression risks.
 
@@ -55,7 +54,7 @@ Standard LLM-powered code review bots operate under a severe structural handicap
 
 ---
 
-## 🌟 Key Architectural Highlights
+## Key Architectural Highlights
 
 - **Dual-Store Repository Intelligence**: Integrates **Qdrant** for semantic vector embeddings and **Neo4j** for AST call graphs (`CALLS`), inheritance hierarchies, and import dependencies (`IMPORTS`).
 - **Diff-First Context Packing**: The unified diff is treated as **primary ground truth**. Path-forced diff hunks are permanently pinned at the top of prompt contexts, guaranteeing that review specialists never hallucinate or critique unchanged code.
@@ -69,7 +68,7 @@ Standard LLM-powered code review bots operate under a severe structural handicap
 
 ---
 
-## 🎨 System Architecture
+## System Architecture
 
 The following diagram illustrates CodeTurtle's complete multi-layer architecture as implemented in the `main` branch. It visualizes the end-to-end data flow spanning CLI commands, ingestion, dual-store knowledge indexing, the query engine, the 6-phase LangGraph swarm, and the AI gateway infrastructure:
 
@@ -236,69 +235,11 @@ flowchart TB
 
 ---
 
-## 🔄 The 6-Phase Review Intelligence Swarm
+## The 6-Phase Review Intelligence Swarm
 
 CodeTurtle uses a compiled **LangGraph `StateGraph`** (`core/graph.py`) passing a centralized `ReviewState` structure across deterministic guardrails and LLM specialist agents.
 
 ### Phase Sequence & Data Flow
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Dev as Developer / CI
-    participant CLI as CLI ReviewPipeline
-    participant P1 as Phase 1: PR Understanding
-    participant P2 as Phase 2: PR Analysis
-    participant P3 as Phase 3: Review Planner
-    participant P4 as Phase 4: Hybrid Retriever & Summarizer
-    participant P5 as Phase 5: Parallel Specialist Swarm
-    participant P6 as Phase 6: Critic & Final Recommender
-    participant GW as AI Gateway (Ollama / OpenAI)
-    participant Mem as SQLite Session Memory
-
-    Dev->>CLI: codeturtle review owner/repo 2400
-    CLI->>CLI: Load KnowledgeBase & PyGithub PR diff
-    CLI->>P1: Invoke LangGraph with initial ReviewState
-
-    Note over P1,GW: Phase 1: Causal Intent & Risk Scoring
-    P1->>GW: Classify intent, causal chain, blast radius
-    P1->>P1: refine_understanding(): bump core-path bugfixes, drop banned fluff
-    P1->>P2: Emit PRUnderstanding
-
-    Note over P2,GW: Phase 2: Structural Diff Hunk Analysis
-    P2->>P2: analyze_diff() & extract_functions() (AST/regex parsing)
-    P2->>GW: Identify logic changes, invariants & risk hotspots
-    P2->>P3: Emit PRAnalysis
-
-    Note over P3,GW: Phase 3: Review Planning & Gating
-    P3->>P3: _deterministic_reviewers(): allocate Correctness, Testing, Quality
-    P3->>P3: Formulate hypothesis-driven RetrievalQuestions
-    P3->>P4: Emit ReviewPlan
-
-    Note over P4,P4: Phase 4: Diff-First Hybrid Retrieval
-    P4->>P4: Force diff hunks (primary ground truth)
-    P4->>P4: Query Qdrant vector store + Neo4j call graph expansion
-    P4->>P4: Cross-encoder structural rerank + merge_evidence_packages dedupe
-    P4->>GW: context_summarizer distills context
-    P4->>P5: Emit EvidencePackage & summarized context
-
-    Note over P5,GW: Phase 5: Parallel Specialist Swarm (Fan-Out)
-    par Concurrent Specialists Execution
-        P5->>GW: CorrectnessAgent (Claims, Invariants, Edge Cases)
-        P5->>GW: CodeQualityAgent (Structure, Naming, Modularity)
-        P5->>GW: TestingAgent (Assertions, Coverage Gaps)
-        P5->>GW: ContextGatherer (Synthesis & Downstream Impact)
-    end
-    P5->>P5: Grounding: _ground_specialist_review() & is_pr_relevant_finding()
-    P5->>P6: Fan-In raw & grounded specialist findings
-
-    Note over P6,GW: Phase 6: Critic Gate & Decision Engine
-    P6->>GW: CriticAgent (Deduplicate, drop boilerplate, filter ungrounded)
-    P6->>GW: FinalRecommender (Synthesize findings, evaluate residual risks)
-    P6->>Mem: Save review state & findings to SQLite
-    P6-->>CLI: Final ReviewState (Decision, Confidence, Comment)
-    CLI->>Dev: Render Rich Terminal Markdown Review
-```
 
 ### Detailed Phase Breakdown
 
@@ -370,7 +311,7 @@ sequenceDiagram
 
 ---
 
-## 🔍 Repository Intelligence & Dual-Store Hybrid RAG
+## Repository Intelligence & Dual-Store Hybrid RAG
 
 CodeTurtle rejects simplistic vector-only RAG. A repository is not an unstructured corpus of text; it is an interconnected graph of syntax trees, module boundaries, and execution paths.
 
@@ -411,7 +352,7 @@ flowchart LR
 
 ---
 
-## ⚡ Decoupled Query Engine Subsystem
+## Decoupled Query Engine Subsystem
 
 Located in `core/query_engine/`, CodeTurtle features a standalone, decoupled read API that isolates storage engines from the rest of the application:
 
@@ -435,7 +376,7 @@ core/query_engine/
 
 ---
 
-## 🛡️ AI Gateway & Observability
+## AI Gateway & Observability
 
 All LLM interactions pass through a centralized **AI Gateway** (`core/gateway/gateway.py`):
 
@@ -452,7 +393,7 @@ All LLM interactions pass through a centralized **AI Gateway** (`core/gateway/ga
 
 ---
 
-## 💾 Session Memory & Persistence
+## Session Memory & Persistence
 
 CodeTurtle maintains conversation history and multi-turn state in a local SQLite database (`data/codeturtle.db`):
 
@@ -463,7 +404,7 @@ CodeTurtle maintains conversation history and multi-turn state in a local SQLite
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 The following tree represents the complete codebase layout as built in the `main` branch:
 
@@ -567,7 +508,7 @@ CodeTurtle/
 
 ---
 
-## 🚀 Quick Start Guide
+## Quick Start Guide
 
 ### Prerequisites
 
@@ -662,7 +603,7 @@ ollama pull qwen2.5:7b
 
 ---
 
-## 💻 CLI Command Reference
+## CLI Command Reference
 
 All CLI commands are executed via `python -m cli.main`:
 
@@ -747,7 +688,7 @@ python -m cli.main review Graphify-Labs/graphify 2400 --dry-run
 
 ---
 
-## 📊 Quantitative Evaluation & Benchmark Suite
+## Quantitative Evaluation & Benchmark Suite
 
 CodeTurtle includes an automated benchmark suite (`evals/ri/`) that tests each phase of the review pipeline against real-world pull requests with known bugs and changes:
 
@@ -777,7 +718,7 @@ python evals/ri/phase6_critic_final.py  Graphify-Labs/graphify 2400
 
 ---
 
-## 🛠️ Configuration Reference
+## Configuration Reference
 
 | Environment Variable | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -797,7 +738,7 @@ python evals/ri/phase6_critic_final.py  Graphify-Labs/graphify 2400
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are warmly welcomed! To contribute:
 
@@ -811,6 +752,3 @@ Contributions are warmly welcomed! To contribute:
 
 ---
 
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
