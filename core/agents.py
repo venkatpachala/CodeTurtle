@@ -1387,6 +1387,10 @@ Rules:
 - You only rank VALIDATED findings.
 - Do not restore findings the validator rejected.
 - If kept is empty, say there are no validated findings and do not invent new issues.
+- verification_status is computed from the diff hunks, not from you.
+- Only supported findings may be treated as blocking.
+- Uncertain findings are COMMENT-grade only.
+- Unsupported findings cannot justify REQUEST_CHANGES.
 - PRESERVE high-signal specialist findings: verified behavior, real concerns, questions, suggestions.
 - DROP documentation-only findings and claims unrelated to the PR change.
 - MERGE near-duplicates into one tighter finding.
@@ -1432,6 +1436,10 @@ Return only the findings to KEEP. Do not add new ones."""),
     except Exception:
         kept = validated_candidates
 
+    from core.verification.policy import reattach_stamps
+
+    kept = reattach_stamps(kept, validated_candidates)
+
     critique = {
         "kept": kept,
         "dropped": pre_dropped,
@@ -1471,19 +1479,29 @@ def final_recommender(state: ReviewState) -> dict:
 
     empty = not finding_dicts
     classification = str((state.get("pr_facts") or {}).get("classification") or "")
-    sev = [str(f.get("severity", "low")).lower() for f in finding_dicts]
-    if any(s in ("critical", "high", "blocking") for s in sev):
-        baseline = "REQUEST_CHANGES"
-    elif any(s in ("medium", "concern") for s in sev):
-        baseline = "COMMENT"
-    elif empty and classification == "lockfile-only":
-        # Policy B: lockfile-only with nothing grounded → COMMENT, not MERGE
-        baseline = "COMMENT"
-    elif empty and str(risk).lower() in ("medium", "high", "critical"):
-        # Policy: medium/high risk with nothing validated → COMMENT, not MERGE 0.95
-        baseline = "COMMENT"
+    from core.verification.policy import recommendation_from_verification
+
+    vrep = state.get("verification_report") if isinstance(state.get("verification_report"), dict) else {}
+    exrep = state.get("execution_report") if isinstance(state.get("execution_report"), dict) else {}
+    if vrep.get("ran") or any(f.get("verification_status") for f in finding_dicts) or exrep:
+        baseline = recommendation_from_verification(
+            finding_dicts,
+            classification=classification,
+            risk=str(risk or "medium"),
+            execution=exrep or None,
+        )
     else:
-        baseline = "MERGE"
+        sev = [str(f.get("severity", "low")).lower() for f in finding_dicts]
+        if any(s in ("critical", "high", "blocking") for s in sev):
+            baseline = "REQUEST_CHANGES"
+        elif any(s in ("medium", "concern") for s in sev):
+            baseline = "COMMENT"
+        elif empty and classification == "lockfile-only":
+            baseline = "COMMENT"
+        elif empty and str(risk).lower() in ("medium", "high", "critical"):
+            baseline = "COMMENT"
+        else:
+            baseline = "MERGE"
     if empty:
         corr_summary = test_summary = qual_summary = (
             "(omitted — no validated findings; do not recap unvalidated specialist drafts)"
@@ -1521,6 +1539,8 @@ Rules:
 - If the list is empty AND risk is medium/high, prefer COMMENT over MERGE (could not confirm issues, not high confidence merge).
 - If classification is lockfile-only AND validated findings is empty, prefer COMMENT ("lockfile-only; no grounded issue"), not MERGE.
 - Uncertain investigation hypotheses may be mentioned only as "could not confirm X" — not as proven bugs.
+- verification_status: only supported findings with severity >= medium may justify REQUEST_CHANGES.
+- Uncertain = COMMENT-grade. Unsupported cannot REQUEST_CHANGES.
 - Do NOT invent features, bugs, or subsystems not present there
 - Blocking / critical issues → REQUEST_CHANGES
 - Concerns / questions / suggestions without blocking bugs → MERGE or COMMENT depending on risk"""),
@@ -1561,6 +1581,9 @@ Return ReviewOutput."""),
         rec = str(getattr(response, "recommendation", None) or baseline).upper()
         if rec not in ("MERGE", "REQUEST_CHANGES", "COMMENT"):
             rec = baseline
+        _rank_rec = {"MERGE": 0, "COMMENT": 1, "REQUEST_CHANGES": 2}
+        if _rank_rec.get(rec, 0) > _rank_rec.get(baseline, 0):
+            rec = baseline
         summary = getattr(response, "summary", None) or ""
         confidence = float(getattr(response, "confidence", None) or 0.6)
     except Exception:
@@ -1574,8 +1597,11 @@ Return ReviewOutput."""),
     blocking = [
         f.get("title")
         for f in finding_dicts
-        if str(f.get("severity", "")).lower() in ("high", "critical", "blocking")
+        if f.get("verification_status") == "supported"
+        and str(f.get("severity", "")).lower() in ("high", "critical", "blocking", "medium", "concern")
     ]
+    if rec != "REQUEST_CHANGES":
+        blocking = []
 
     final_comment = (
         f"**{rec}** (confidence={confidence:.2f})\n\n"

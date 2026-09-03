@@ -36,6 +36,9 @@ class PipelineContext:
     pr_facts: Optional[dict] = None
     state: Optional[dict] = None
     final_state: Optional[dict] = None
+    execute_tests: bool = False
+    execute_install: bool = False
+    pr_head_sha: str = ""
 
 
 def get_current_session() -> str:
@@ -78,10 +81,20 @@ class ReviewPipeline:
     def __init__(self):
         self.context = PipelineContext()
 
-    def run(self, repo: str, number: int, dry_run: bool, verbose: bool):
+    def run(
+        self,
+        repo: str,
+        number: int,
+        dry_run: bool,
+        verbose: bool,
+        execute_tests: bool = False,
+        execute_install: bool = False,
+    ):
         try:
             self.context.repo = repo
             self.context.number = number
+            self.context.execute_tests = bool(execute_tests)
+            self.context.execute_install = bool(execute_install)
             self.context.conversation_id = get_current_session()
 
             console.print(
@@ -124,6 +137,8 @@ class ReviewPipeline:
         g = Github(settings.github_token)
         repo_obj = g.get_repo(self.context.repo)
         self.context.pr = repo_obj.get_pull(self.context.number)
+        head = getattr(self.context.pr, "head", None)
+        self.context.pr_head_sha = str(getattr(head, "sha", "") or "")
 
     def _build_full_diff(self):
         files = list(self.context.pr.get_files())
@@ -209,6 +224,18 @@ Description:
             "engine": None,
             "context_from_kb": getattr(self.context, "raw_context", ""),
             "traces": [],
+            "execute_tests": bool(self.context.execute_tests),
+            "execute_install": bool(self.context.execute_install),
+            "pr_head_sha": self.context.pr_head_sha or "",
+            "execute_timeout_s": int(getattr(settings, "execute_timeout_s", 120)),
+            "execute_max_files": int(getattr(settings, "execute_max_files", 8)),
+            "execute_install_timeout_s": int(
+                getattr(settings, "execute_install_timeout_s", 180)
+            ),
+            "execute_allow_npm": bool(getattr(settings, "execute_allow_npm", True)),
+            "execute_allow_npm_scripts": bool(
+                getattr(settings, "execute_allow_npm_scripts", False)
+            ),
         }
 
     def _add_langfuse_metadata(self):
@@ -324,6 +351,57 @@ Description:
                     f"evidence={d.get('evidence_ids')}"
                 )
 
+        vrep = final.get("verification_report") if isinstance(final.get("verification_report"), dict) else {}
+        if vrep:
+            console.print("\n[bold cyan]=== VERIFICATION ===[/bold cyan]")
+            console.print(
+                f"[dim]supported={vrep.get('supported')} "
+                f"uncertain={vrep.get('uncertain')} "
+                f"unsupported={vrep.get('unsupported')} "
+                f"tests_touched={vrep.get('tests_touched')}/{vrep.get('tests_touched_of')} "
+                f"suggested={vrep.get('suggested_recommendation')}[/dim]"
+            )
+            for rec in (vrep.get("records") or [])[:12]:
+                if not isinstance(rec, dict):
+                    continue
+                console.print(
+                    f"  {str(rec.get('status') or '').upper()} "
+                    f"file={rec.get('file')} "
+                    f"reasons={rec.get('reasons')} "
+                    f"tokens={rec.get('matched_tokens')}"
+                )
+                if rec.get("tests_touched") and rec.get("related_tests"):
+                    console.print(
+                        f"  related: {rec.get('file')} → {rec.get('related_tests')}"
+                    )
+
+        ex = final.get("execution_report") if isinstance(final.get("execution_report"), dict) else {}
+        if ex:
+            console.print("\n[bold cyan]=== EXECUTION ===[/bold cyan]")
+            py = ex.get("python") if isinstance(ex.get("python"), dict) else {}
+            js = ex.get("js") if isinstance(ex.get("js"), dict) else {}
+            if ex.get("python_env") or py.get("env"):
+                console.print(
+                    f"[dim]python_env={ex.get('python_env') or py.get('env')} "
+                    f"frozen={py.get('frozen')} cached={py.get('cached')}[/dim]"
+                )
+            if ex.get("skipped"):
+                console.print(f"[dim]skipped reason={ex.get('skip_reason')}[/dim]")
+            else:
+                console.print(
+                    f"[dim]cmd={ex.get('cmd')} exit={ex.get('exit_code')} "
+                    f"elapsed={ex.get('elapsed_s')}s "
+                    f"passed={ex.get('passed')} failed={ex.get('failed')}[/dim]"
+                )
+            if js.get("skip_reason") or js.get("cmd"):
+                if js.get("skipped"):
+                    console.print(f"[dim]js skip reason={js.get('skip_reason')}[/dim]")
+                else:
+                    console.print(
+                        f"[dim]js_cwd={js.get('cwd')} js_cmd={js.get('cmd')} "
+                        f"js_exit={js.get('exit_code')}[/dim]"
+                    )
+
         # ── Critic (validated survivors only) ────────────────────────────
         report = final.get("validation_report") if isinstance(final.get("validation_report"), dict) else {}
         if report:
@@ -424,7 +502,27 @@ def review(
     verbose: bool = typer.Option(
         False, "--verbose", "-v", help="Show detailed error information"
     ),
+    execute_tests: bool = typer.Option(
+        False,
+        "--execute-tests",
+        help="Opt-in: checkout PR HEAD and run pytest on related test files only",
+    ),
+    execute_install: bool = typer.Option(
+        False,
+        "--execute-install",
+        help=(
+            "Opt-in: uv sync / pip / npm ci --ignore-scripts in the worktree "
+            "so tests can import. Implies network. No-op without --execute-tests."
+        ),
+    ),
 ):
     logger.info("Starting review", repo=repo, pr_number=number)
-    ReviewPipeline().run(repo, number, dry_run, verbose)
+    ReviewPipeline().run(
+        repo,
+        number,
+        dry_run,
+        verbose,
+        execute_tests=execute_tests,
+        execute_install=execute_install,
+    )
       

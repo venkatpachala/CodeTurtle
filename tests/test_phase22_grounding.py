@@ -640,6 +640,7 @@ class TestCriticAndFinalSurvivorsOnly(unittest.TestCase):
             def fake_gen(rec=rec, **kwargs):
                 return ReviewOutput(summary="x", recommendation=rec, confidence=0.5)
 
+            vstat = "supported" if rec == "REQUEST_CHANGES" else "uncertain"
             state = {
                 "validated_findings": [
                     {
@@ -647,9 +648,12 @@ class TestCriticAndFinalSurvivorsOnly(unittest.TestCase):
                         "file": LOADER,
                         "evidence": [LOADER],
                         "severity": "concern",
+                        "verification_status": vstat,
                     }
                 ],
                 "pr_understanding": {"summary": "fix", "risk_level": "medium"},
+                "pr_facts": {"classification": "source"},
+                "verification_report": {"ran": True},
             }
             with patch("core.agents.gateway") as gw:
                 gw.generate_structured.side_effect = fake_gen
@@ -665,6 +669,7 @@ class TestGraphHasValidatorNode(unittest.TestCase):
         nodes = set(g.get_graph().nodes)
         self.assertIn("validate_findings", nodes)
         self.assertIn("investigate", nodes)
+        self.assertIn("verify_findings", nodes)
         self.assertIn("critic_agent", nodes)
         self.assertNotIn("qdrant", str(nodes).lower())
 
