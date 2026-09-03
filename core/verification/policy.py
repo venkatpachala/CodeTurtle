@@ -168,3 +168,25 @@ def recommendation_from_verification(
     if str(risk).lower() in ("medium", "high", "critical"):
         return "COMMENT"
     return "MERGE"
+
+
+_REC_RANK = {"MERGE": 0, "COMMENT": 1, "REQUEST_CHANGES": 2}
+
+
+def clamp_recommendation(
+    rec: str,
+    baseline: str,
+    classification: str = "",
+) -> str:
+    """Final cannot be stricter than policy. Lockfile-only cannot MERGE or REQUEST_CHANGES."""
+    rec = str(rec or baseline or "COMMENT").upper()
+    base = str(baseline or "COMMENT").upper()
+    if rec not in _REC_RANK:
+        rec = base if base in _REC_RANK else "COMMENT"
+    if base not in _REC_RANK:
+        base = "COMMENT"
+    if _REC_RANK.get(rec, 0) > _REC_RANK.get(base, 0):
+        rec = base
+    if classification == "lockfile-only" and rec in ("MERGE", "REQUEST_CHANGES"):
+        return "COMMENT"
+    return rec

@@ -1479,7 +1479,7 @@ def final_recommender(state: ReviewState) -> dict:
 
     empty = not finding_dicts
     classification = str((state.get("pr_facts") or {}).get("classification") or "")
-    from core.verification.policy import recommendation_from_verification
+    from core.verification.policy import clamp_recommendation, recommendation_from_verification
 
     vrep = state.get("verification_report") if isinstance(state.get("verification_report"), dict) else {}
     exrep = state.get("execution_report") if isinstance(state.get("execution_report"), dict) else {}
@@ -1579,11 +1579,6 @@ Return ReviewOutput."""),
             max_tokens=800,
         )
         rec = str(getattr(response, "recommendation", None) or baseline).upper()
-        if rec not in ("MERGE", "REQUEST_CHANGES", "COMMENT"):
-            rec = baseline
-        _rank_rec = {"MERGE": 0, "COMMENT": 1, "REQUEST_CHANGES": 2}
-        if _rank_rec.get(rec, 0) > _rank_rec.get(baseline, 0):
-            rec = baseline
         summary = getattr(response, "summary", None) or ""
         confidence = float(getattr(response, "confidence", None) or 0.6)
     except Exception:
@@ -1593,6 +1588,8 @@ Return ReviewOutput."""),
         else:
             summary = f"Automated decision based on {len(finding_dicts)} kept findings."
         confidence = 0.55
+
+    rec = clamp_recommendation(rec, baseline, classification)
 
     blocking = [
         f.get("title")

@@ -258,6 +258,38 @@ class TestVerifyNodeAndPolicy(unittest.TestCase):
             out = final_recommender(state)
         self.assertEqual(out["recommendation"], "COMMENT")
 
+    def test_lockfile_merge_clamped_to_comment(self):
+        from core.agents import final_recommender
+        from core.models import ReviewOutput
+        from unittest.mock import patch
+
+        def fake_gen(**kwargs):
+            return ReviewOutput(
+                summary="looks fine",
+                recommendation="MERGE",
+                confidence=0.9,
+            )
+
+        state = {
+            "validated_findings": [
+                {
+                    "title": "Dependency Update",
+                    "file": LOCK,
+                    "evidence": [LOCK],
+                    "severity": "nit",
+                    "verification_status": "supported",
+                }
+            ],
+            "pr_facts": {"classification": "lockfile-only"},
+            "pr_understanding": {"summary": "lockfile", "risk_level": "low"},
+            "review_plan": {"risk_level": "low"},
+            "verification_report": {"ran": True, "suggested_recommendation": "COMMENT"},
+        }
+        with patch("core.agents.gateway") as gw:
+            gw.generate_structured.side_effect = fake_gen
+            out = final_recommender(state)
+        self.assertEqual(out["recommendation"], "COMMENT")
+
     def test_lockfile_supported_is_comment_not_request_changes(self):
         findings = [
             {

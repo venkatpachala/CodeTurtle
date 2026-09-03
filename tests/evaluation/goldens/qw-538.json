@@ -1,0 +1,19 @@
+{
+  "id": "qw-538",
+  "repo": "FalkorDB/QueryWeaver",
+  "number": 538,
+  "classification": "mixed",
+  "must_include_files": [
+    "api/loaders/sqlserver_loader.py",
+    "api/core/pipeline.py",
+    "api/core/schema_loader.py",
+    "api/sql_utils/sql_sanitizer.py"
+  ],
+  "lockfile_only": false,
+  "investigate": "run",
+  "max_investigate_calls": 6,
+  "final_allowed": ["COMMENT", "REQUEST_CHANGES", "MERGE"],
+  "forbid_request_changes_unless_supported_medium": true,
+  "execute_default": "skip_disabled",
+  "notes": "SQL Server loader + sanitizer + UI + docs"
+}

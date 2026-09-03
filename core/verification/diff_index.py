@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set
+from typing import Dict, Iterable, List, Optional, Set
 
 from core.pr_facts import normalize_path
 
@@ -64,6 +64,59 @@ class DiffIndex:
 
     def has_file(self, path: str) -> bool:
         return self._resolve(path) is not None
+
+    def first_added_line(self, hunk: Hunk) -> Optional[int]:
+        """RIGHT-side line of the first '+' row in a hunk."""
+        n = int(hunk.new_start or 0)
+        if n < 1:
+            return None
+        for raw in (hunk.body or "").splitlines():
+            if raw.startswith("-") and not raw.startswith("---"):
+                continue
+            if raw.startswith("+") and not raw.startswith("+++"):
+                return n
+            n += 1
+        if hunk.new_count > 0 and hunk.new_start >= 1:
+            return int(hunk.new_start)
+        return None
+
+    def line_for_finding(
+        self,
+        path: str,
+        start_line: Optional[int] = None,
+        hunk_header: str = "",
+        tokens: Optional[Iterable[str]] = None,
+    ) -> Optional[int]:
+        """Resolve a GitHub RIGHT-side line, or None (do not guess line 1)."""
+        hunks = self.hunks_for(path)
+        if not hunks:
+            return None
+        if start_line is not None:
+            try:
+                n = int(start_line)
+            except (TypeError, ValueError):
+                n = 0
+            if n >= 1 and self.line_in_new_file(path, n):
+                return n
+        header = (hunk_header or "").strip()
+        toks = [str(t) for t in (tokens or []) if t]
+        matched: Optional[Hunk] = None
+        if header:
+            for h in hunks:
+                if (h.header or "").strip() == header or header in (h.header or ""):
+                    matched = h
+                    break
+        if matched is None and toks:
+            for h in hunks:
+                blob = f"{h.body or ''}\n{h.added or ''}"
+                if any(t.lower() in blob.lower() for t in toks):
+                    matched = h
+                    break
+        if matched is not None:
+            if matched.new_start >= 1 and matched.new_count > 0:
+                return int(matched.new_start)
+            return self.first_added_line(matched)
+        return self.first_added_line(hunks[0])
 
     def _resolve(self, path: str) -> Optional[str]:
         p = normalize_path(path)
