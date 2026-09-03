@@ -78,6 +78,8 @@ def _finding_line(finding: Any) -> dict:
 class ReviewPipeline:
     """CLI orchestration: GitHub + KB setup, then LangGraph owns the review."""
 
+    last_snapshot = None
+
     def __init__(self):
         self.context = PipelineContext()
 
@@ -89,6 +91,7 @@ class ReviewPipeline:
         verbose: bool,
         execute_tests: bool = False,
         execute_install: bool = False,
+        comment: bool = False,
     ):
         try:
             self.context.repo = repo
@@ -114,16 +117,18 @@ class ReviewPipeline:
 
             console.print("[yellow]Running agent swarm...[/yellow]")
             self.context.final_state = review_graph.invoke(self.context.state)
+            self._write_eval_snapshot()
 
             self._add_langfuse_metadata()
             self._display_results()
             self._save_to_memory()
 
-            if not dry_run:
-                console.print("[red]Auto-posting to GitHub is not implemented yet.[/red]")
-            else:
-                console.print("[dim]--dry-run mode[/dim]")
+            posted = self._maybe_post(dry_run=dry_run, comment=comment)
+            if posted is False:
+                raise SystemExit(1)
 
+        except SystemExit:
+            raise
         except Exception as e:
             handle_error(e, verbose=verbose)
 
@@ -237,6 +242,19 @@ Description:
                 getattr(settings, "execute_allow_npm_scripts", False)
             ),
         }
+
+    def _write_eval_snapshot(self):
+        """Always write artifacts/last_review_snapshot.json for run_eval --live."""
+        try:
+            from core.evaluation.snapshot import write_review_snapshot
+
+            state = dict(self.context.final_state or {})
+            if self.context.pr_facts and not state.get("pr_facts"):
+                state["pr_facts"] = self.context.pr_facts
+            snap = write_review_snapshot(state)
+            ReviewPipeline.last_snapshot = snap
+        except Exception:
+            ReviewPipeline.last_snapshot = None
 
     def _add_langfuse_metadata(self):
         langfuse_client = get_langfuse_client()
@@ -482,6 +500,36 @@ Description:
         else:
             console.print(f"[dim]{label}: no validated findings[/dim]")
 
+    def _maybe_post(self, *, dry_run: bool, comment: bool) -> Optional[bool]:
+        """Return True if posted/skipped, False on hard failure, None if dry-run."""
+        from core.github_review import post_pull_request_review, should_post
+
+        if not should_post(dry_run=dry_run, comment=comment):
+            console.print("[dim]--dry-run mode (not posted)[/dim]")
+            return None
+
+        state = dict(self.context.final_state or {})
+        if self.context.pr_facts and not state.get("pr_facts"):
+            state["pr_facts"] = self.context.pr_facts
+        sha = self.context.pr_head_sha or ""
+        result = post_pull_request_review(self.context.pr, state, sha=sha)
+        if result.skipped:
+            console.print(f"[dim][GitHub] skip: {result.skip_reason}[/dim]")
+            return True
+        if result.ok:
+            console.print(
+                f"[green][GitHub] posted event={result.event} "
+                f"inlines={result.inlines} skipped_inline={result.skipped_inline} "
+                f"url={result.url or result.pr_url}[/green]"
+            )
+            return True
+        console.print(f"[red][GitHub] post failed: {result.error}[/red]")
+        if result.pr_url:
+            console.print(f"[dim]PR: {result.pr_url}[/dim]")
+        console.print("[dim]--- review body (not posted) ---[/dim]")
+        console.print(result.body)
+        return False
+
     def _save_to_memory(self):
         final = self.context.final_state or {}
         memory.save_review(
@@ -498,7 +546,16 @@ Description:
 def review(
     repo: str = typer.Argument(..., help="Repository in format owner/repo"),
     number: int = typer.Argument(..., help="PR number"),
-    dry_run: bool = typer.Option(True, "--dry-run"),
+    dry_run: bool = typer.Option(
+        True,
+        "--dry-run/--no-dry-run",
+        help="Default: do not post to GitHub. Use --no-dry-run or --comment to post.",
+    ),
+    comment: bool = typer.Option(
+        False,
+        "--comment",
+        help="Post one GitHub PR review (summary only). Overrides default dry-run.",
+    ),
     verbose: bool = typer.Option(
         False, "--verbose", "-v", help="Show detailed error information"
     ),
@@ -524,5 +581,6 @@ def review(
         verbose,
         execute_tests=execute_tests,
         execute_install=execute_install,
+        comment=comment,
     )
       

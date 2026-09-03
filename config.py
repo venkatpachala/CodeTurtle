@@ -48,5 +48,9 @@ class Settings(BaseSettings):
     execute_allow_npm_scripts: bool = False
     execute_network: bool = False
 
+    # Phase 6.2 — inline review comments (post path only)
+    inline_max: int = 8
+    inline_lockfile: bool = False
+
 # Create the settings instance
 settings = Settings()

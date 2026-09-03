@@ -1,0 +1,48 @@
+{
+  "repo": "FalkorDB/QueryWeaver",
+  "number": 538,
+  "classification": "mixed",
+  "files_changed": [
+    "api/loaders/sqlserver_loader.py",
+    "api/core/pipeline.py",
+    "api/core/schema_loader.py",
+    "api/sql_utils/sql_sanitizer.py",
+    "app/src/components/modals/DatabaseModal.tsx",
+    "tests/test_sql_sanitizer.py",
+    "docs/sqlserver_loader.md"
+  ],
+  "lock_files": [],
+  "source_files": [
+    "api/loaders/sqlserver_loader.py",
+    "api/core/pipeline.py",
+    "api/core/schema_loader.py",
+    "api/sql_utils/sql_sanitizer.py"
+  ],
+  "investigate_skipped": false,
+  "skip_reason": null,
+  "hops": 5,
+  "calls": 5,
+  "hyp_files": [
+    "api/sql_utils/sql_sanitizer.py",
+    "api/core/pipeline.py"
+  ],
+  "grounding_raw": 4,
+  "grounding_kept": 2,
+  "grounding_dropped": 2,
+  "keep_files": [
+    "api/sql_utils/sql_sanitizer.py",
+    "api/core/pipeline.py"
+  ],
+  "keep_verification_status": ["supported", "uncertain"],
+  "keep_severity": ["concern", "suggestion"],
+  "drop_reasons": ["missing_evidence_path"],
+  "verify_supported": 1,
+  "verify_uncertain": 1,
+  "verify_unsupported": 0,
+  "tests_touched_count": 1,
+  "execute_skipped": true,
+  "execute_skip_reason": "disabled",
+  "final_decision": "COMMENT",
+  "suggested_policy": "COMMENT",
+  "qdrant_used": false
+}

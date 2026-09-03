@@ -25,5 +25,5 @@ data/
 # Debug
 debug_*.txt
 
-
-# Notes
+# Eval snapshots from live reviews
+artifacts/

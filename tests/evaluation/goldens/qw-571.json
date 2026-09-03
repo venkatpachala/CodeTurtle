@@ -1,0 +1,16 @@
+{
+  "id": "qw-571",
+  "repo": "FalkorDB/QueryWeaver",
+  "number": 571,
+  "classification": "lockfile-only",
+  "must_include_files": ["package-lock.json"],
+  "lockfile_only": true,
+  "investigate": "skip",
+  "skip_reason_contains": "lockfile-only|no_changed_path",
+  "keep_files_allowed": ["package-lock.json"],
+  "tests_touched_max": 0,
+  "execute_default": "skip_disabled",
+  "execute_even_with_flags": "skip_lockfile-only",
+  "final_allowed": ["COMMENT"],
+  "notes": "single lockfile"
+}
