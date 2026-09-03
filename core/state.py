@@ -31,6 +31,16 @@ class ReviewState(TypedDict):
     hypotheses: NotRequired[list]
     investigation_evidence: NotRequired[list]
     investigation_report: NotRequired[dict]
+    verification_report: NotRequired[dict]
+    execution_report: NotRequired[dict]
+    execute_tests: NotRequired[bool]
+    execute_install: NotRequired[bool]
+    pr_head_sha: NotRequired[str]
+    execute_timeout_s: NotRequired[int]
+    execute_max_files: NotRequired[int]
+    execute_install_timeout_s: NotRequired[int]
+    execute_allow_npm: NotRequired[bool]
+    execute_allow_npm_scripts: NotRequired[bool]
 
     # Context & Retrieval
     context_from_kb: str

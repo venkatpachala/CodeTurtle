@@ -297,6 +297,7 @@ class TestGraphAndFinalPolicy(unittest.TestCase):
         nodes = set(g.get_graph().nodes)
         self.assertIn("investigate", nodes)
         self.assertIn("validate_findings", nodes)
+        self.assertIn("verify_findings", nodes)
         self.assertIn("critic_agent", nodes)
 
     def test_final_comment_when_empty_and_medium_risk(self):

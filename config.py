@@ -37,5 +37,16 @@ class Settings(BaseSettings):
     graphify_only_retrieval: bool = True
     neo4j_enabled: bool = False
 
+    # Phase 4.3 — optional isolated pytest (off by default)
+    execute_tests: bool = False
+    execute_timeout_s: int = 120
+    execute_max_files: int = 8
+    # 4.3b/c — install in the PR worktree (off by default; implies network)
+    execute_install: bool = False
+    execute_install_timeout_s: int = 180
+    execute_allow_npm: bool = True
+    execute_allow_npm_scripts: bool = False
+    execute_network: bool = False
+
 # Create the settings instance
 settings = Settings()

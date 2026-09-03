@@ -13,6 +13,8 @@ from core.agents import (
 )
 from core.finding_validator import validate_findings_node
 from core.investigation.loop import investigate_node
+from core.verification.loop import verify_findings_node
+from core.verification.execute import execute_tests_node
 from core.pr_understanding import pr_understanding_agent
 from core.pr_analysis import pr_analysis_agent
 from core.review_intelligence.planner import review_planner_agent
@@ -32,6 +34,8 @@ def build_review_graph():
     workflow.add_node("testing_agent", testing_agent)
     workflow.add_node("validate_findings", validate_findings_node)
     workflow.add_node("investigate", investigate_node)
+    workflow.add_node("verify_findings", verify_findings_node)
+    workflow.add_node("execute_tests", execute_tests_node)
     workflow.add_node("critic_agent", critic_agent)
     workflow.add_node("final_recommender", final_recommender)
 
@@ -54,7 +58,9 @@ def build_review_graph():
     workflow.add_edge("testing_agent", "validate_findings")
 
     workflow.add_edge("validate_findings", "investigate")
-    workflow.add_edge("investigate", "critic_agent")
+    workflow.add_edge("investigate", "verify_findings")
+    workflow.add_edge("verify_findings", "execute_tests")
+    workflow.add_edge("execute_tests", "critic_agent")
     workflow.add_edge("critic_agent", "final_recommender")
     workflow.add_edge("final_recommender", END)
 
