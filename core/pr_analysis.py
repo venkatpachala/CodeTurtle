@@ -6,6 +6,17 @@ import re
 from typing import Any
 
 
+def _units_or_diff(state: dict, full_diff: str, max_chars: int) -> str:
+    from core.change_units import specialist_code_view
+
+    view = specialist_code_view(state, max_chars=max_chars)
+    if view and view not in ("(no change units)", "(no diff)"):
+        return view
+    if state.get("change_units") is not None:
+        return view or "(no change units)"
+    return (full_diff or "")[:max_chars]
+
+
 CORE_PATH_HINTS = (
     "build.py",
     "graph",
@@ -261,7 +272,7 @@ Files Changed:
 Deterministic Analysis:
 {deterministic}
 
-Full Diff (truncated):
+Change units (hunks — cite file and start_line from CU headers):
 {diff}
 
 Fill logic_changes, behavior_changes, review_hotspots, architectural_changes only.
@@ -271,7 +282,7 @@ Do not contradict deterministic function lists."""),
         body=state.get("body", "") or "",
         files_changed="\n".join(files),
         deterministic=deterministic,
-        diff=diff[:8000],
+        diff=_units_or_diff(state, diff, 8000),
     )
 
     try:

@@ -321,14 +321,15 @@ def _llm_enrich_plan(
     """Optional: refine intent_summary + extra focus notes only. Never replace questions wholesale."""
     files_changed = analysis.get("changed_files") or []
     full_diff = (analysis.get("full_diff") or "").strip()
+    units_view = (analysis.get("review_diff") or "").strip() or full_diff[:8000]
 
     prompt = f"""You are a senior maintainer refining a PR review plan.
 
 Changed files (authoritative):
 {files_changed}
 
-Diff excerpt:
-{full_diff[:8000]}
+Change units (hunks — cite these files/lines only):
+{units_view}
 
 Retrieval questions may only name paths in files_changed
 or identifiers that appear in the diff excerpt.
@@ -394,10 +395,14 @@ def review_planner_agent(state: dict) -> dict:
     analysis = _as_dict(state.get("pr_analysis"))
     files = list(state.get("files_changed") or analysis.get("changed_files") or [])
     diff = state.get("full_diff") or ""
+    from core.change_units import specialist_code_view
+
+    review_diff = state.get("review_diff") or specialist_code_view(state, max_chars=8000)
     analysis = {
         **analysis,
         "changed_files": files or list(analysis.get("changed_files") or []),
         "full_diff": diff,
+        "review_diff": review_diff,
     }
 
     reviewers = _deterministic_reviewers(understanding, analysis)

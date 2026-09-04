@@ -25,6 +25,24 @@ class Hunk:
     added: str
     removed: str
 
+    @property
+    def new_end(self) -> int:
+        """Inclusive new-side end line."""
+        start = int(self.new_start or 0)
+        count = int(self.new_count or 0)
+        if count <= 0:
+            return start
+        return start + count - 1
+
+    @property
+    def raw(self) -> str:
+        parts: List[str] = []
+        if self.header:
+            parts.append(self.header)
+        if self.body:
+            parts.append(self.body)
+        return "\n".join(parts)
+
 
 @dataclass
 class DiffIndex:

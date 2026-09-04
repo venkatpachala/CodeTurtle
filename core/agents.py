@@ -91,6 +91,14 @@ def _should_run(state: dict, kind: str) -> bool:
 
 
 def _diff_for_review(state: dict, max_chars: int = 14000) -> str:
+    """Packed ChangeUnits for the LLM. full_diff stays on state for 4.1."""
+    from core.change_units import specialist_code_view
+
+    view = specialist_code_view(state, max_chars=max_chars)
+    if view and view not in ("(no change units)", "(no diff)"):
+        return view
+    if state.get("change_units") is not None:
+        return view or "(no change units)"
     diff = (state.get("full_diff") or "").strip()
     return diff[:max_chars] if diff else "(no diff)"
 
@@ -556,13 +564,12 @@ def _build_specialist_context(
                 verification_targets.append(t)
 
     full_diff = (state.get("full_diff") or "").strip()
-    if not full_diff:
+    diff_block = _diff_for_review(state, max_chars=max_diff_chars)
+    if not full_diff and (not diff_block or diff_block in ("(no diff)", "(no change units)")):
         diff_block = (
             "(no unified diff available — you MUST still reason from "
             "title/analysis only; do NOT invent file behavior)"
         )
-    else:
-        diff_block = full_diff[:max_diff_chars]
 
     raw_context = str(state.get("context_from_kb") or "")
     filtered_evidence = filter_evidence_for_pr(
@@ -597,7 +604,10 @@ Change types: {und_types}""",
             "=== VERIFICATION TARGETS ===\n"
             + "\n".join(f"  - {t}" for t in verification_targets[:8])
         )
-    parts.append(f"=== F. UNIFIED DIFF (PRIMARY TRUTH — review THIS) ===\n{diff_block}")
+    parts.append(
+        "=== F. CHANGE UNITS (PRIMARY TRUTH — review THESE HUNKS) ===\n"
+        + diff_block
+    )
     parts.append(
         "=== G. FILTERED REPO EVIDENCE (SECONDARY — ignore if unrelated to the diff) ===\n"
         + filtered_evidence
@@ -701,7 +711,8 @@ Do not finalize "this is a bug" when you only have the first Graphify blob.
 If you need callers, neighbors, or a finally/close path, set needs_investigation=true
 and question to a concrete ask (e.g. "who calls connect and is there a close/finally?").
 
-PRIMARY source of truth: UNIFIED DIFF (section F) + Phase-2 analysis (section E).
+PRIMARY source of truth: CHANGE UNITS (section F) + Phase-2 analysis (section E).
+Cite `file` and `start_line` from a CU header (`### CU-… path:start-end`). Do not invent files.
 SECONDARY: filtered evidence (section G). If a chunk is unrelated to the diff, IGNORE IT.
 
 FORBIDDEN (will be discarded):
@@ -736,6 +747,7 @@ You MUST try to cover (when applicable to the diff):
 
 Do NOT document unrelated helpers in the same file.
 Prefer concern/question over fabricating a definite bug when evidence is incomplete.
+Cite `file` and `start_line` from a CU header. Do not invent files.
 """
 
 _CODE_QUALITY_ROLE_FOCUS = """
