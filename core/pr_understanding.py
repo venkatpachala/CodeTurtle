@@ -7,6 +7,17 @@ from core.models import PRUnderstanding
 from core.gateway import gateway
 
 
+def _units_or_diff(state: dict, max_chars: int) -> str:
+    from core.change_units import specialist_code_view
+
+    view = specialist_code_view(state, max_chars=max_chars)
+    if view and view not in ("(no change units)", "(no diff)"):
+        return view
+    if state.get("change_units") is not None:
+        return view or "(no change units)"
+    return (state.get("full_diff") or "")[:max_chars]
+
+
 CORE_PATH_HINTS = (
     "core",
     "engine",
@@ -159,7 +170,7 @@ Rules:
 ### Files Changed
 {files_changed}
 
-### Full Diff (truncated if very long)
+### Change units (hunks — cite file and start_line from CU headers)
 {diff}
 
 ---
@@ -184,7 +195,7 @@ Also cover:
         body=body or "No description provided.",
         pr_facts_block=facts_block,
         files_changed="\n".join(files),
-        diff=(state.get("full_diff") or "")[:12000],
+        diff=_units_or_diff(state, 12000),
     )
 
     result = gateway.generate_structured(

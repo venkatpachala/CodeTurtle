@@ -25,6 +25,9 @@ class ReviewState(TypedDict):
     author: str
     full_diff: str
     files_changed: List[str]
+    change_units: NotRequired[list]
+    review_diff: NotRequired[str]
+    review_coverage: NotRequired[dict]
     pr_facts: NotRequired[dict]
     validated_findings: NotRequired[list]
     classified_findings: NotRequired[list]

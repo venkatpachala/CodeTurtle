@@ -47,6 +47,7 @@ class PipelineContext:
     pr_head_sha: str = ""
     config_path: str = ""
     repo_cfg: Optional[object] = None
+    change_units_payload: Optional[dict] = None
 
 
 def get_current_session() -> str:
@@ -286,6 +287,21 @@ class ReviewPipeline:
             f"stat={facts['diff_stat']} "
             f"paths={facts['files_changed'][:10]}"
         )
+        self.context.change_units_payload = None
+        try:
+            from core.change_units import attach_change_units
+
+            payload = attach_change_units(
+                {
+                    "full_diff": self.context.full_diff or "",
+                    "files_changed": list(self.context.files_changed or []),
+                    "pr_facts": facts,
+                }
+            )
+            self.context.change_units_payload = payload
+        except Exception as exc:
+            print(f"[ChangeUnits] attach failed: {type(exc).__name__}")
+            self.context.change_units_payload = None
 
     def _retrieve_context(self):
         retriever = GraphifyRetriever(self.context.repo)
@@ -322,6 +338,7 @@ Description:
             "full_diff": self.context.full_diff,
             "files_changed": self.context.files_changed,
             "pr_facts": self.context.pr_facts or {},
+            **dict(getattr(self.context, "change_units_payload", None) or {}),
             "model_used": settings.ollama_model,
             "kb": None,
             "engine": None,
