@@ -22,6 +22,12 @@ console = Console()
 memory = MemoryManager()
 
 
+class _SkipReview(Exception):
+    def __init__(self, reason: str):
+        super().__init__(reason)
+        self.reason = reason
+
+
 @dataclass
 class PipelineContext:
     repo: str = ""
@@ -39,13 +45,14 @@ class PipelineContext:
     execute_tests: bool = False
     execute_install: bool = False
     pr_head_sha: str = ""
+    config_path: str = ""
+    repo_cfg: Optional[object] = None
 
 
 def get_current_session() -> str:
-    if not os.path.exists(".current_session"):
-        raise Exception("No active session found. Run: python -m cli.main new-session")
-    with open(".current_session", "r") as f:
-        return f.read().strip()
+    from core.ci import ensure_session
+
+    return ensure_session()
 
 
 def _as_dict(obj: Any) -> dict:
@@ -92,12 +99,64 @@ class ReviewPipeline:
         execute_tests: bool = False,
         execute_install: bool = False,
         comment: bool = False,
+        config_path: str = "",
     ):
         try:
+            from core.repo_config import (
+                RepoConfigError,
+                find_config_path,
+                load_repo_config,
+                merge_review_config,
+            )
+
             self.context.repo = repo
             self.context.number = number
-            self.context.execute_tests = bool(execute_tests)
-            self.context.execute_install = bool(execute_install)
+            self.context.config_path = config_path or ""
+
+            try:
+                cfg_path = find_config_path(config_path or None)
+                repo_yaml = load_repo_config(cfg_path)
+            except RepoConfigError as exc:
+                console.print(f"[red]{exc}[/red]")
+                raise SystemExit(1) from exc
+
+            cfg = merge_review_config(
+                repo=repo_yaml,
+                cli_execute_tests=bool(execute_tests),
+                cli_execute_install=bool(execute_install),
+                settings=settings,
+                config_path=cfg_path,
+            )
+            self.context.repo_cfg = cfg
+            self.context.execute_tests = bool(cfg.execute_tests)
+            self.context.execute_install = bool(cfg.execute_install)
+            if cfg.model:
+                settings.ollama_model = cfg.model
+            if cfg.llm_backend:
+                settings.llm_backend = cfg.llm_backend
+            if cfg_path:
+                print(f"[Review] config={cfg_path}")
+
+            from core.ci import should_skip_pr_review
+
+            if os.environ.get("GITHUB_ACTIONS"):
+                draft = (os.environ.get("CODETURTLE_PR_DRAFT") or "").strip().lower() in (
+                    "1",
+                    "true",
+                    "yes",
+                )
+                review_drafts = (
+                    os.environ.get("CODETURTLE_REVIEW_DRAFTS") or ""
+                ).strip().lower() in ("1", "true", "yes")
+                skip, why = should_skip_pr_review(
+                    actor=os.environ.get("GITHUB_ACTOR") or "",
+                    draft=draft,
+                    review_drafts=review_drafts,
+                )
+                if skip:
+                    console.print(f"[dim][CI] skip reason={why}[/dim]")
+                    return
+
             self.context.conversation_id = get_current_session()
 
             console.print(
@@ -127,6 +186,9 @@ class ReviewPipeline:
             if posted is False:
                 raise SystemExit(1)
 
+        except _SkipReview as skip:
+            console.print(f"[dim][Review] skip reason={skip.reason}[/dim]")
+            return
         except SystemExit:
             raise
         except Exception as e:
@@ -139,14 +201,50 @@ class ReviewPipeline:
         print("[Review] Retrieval backend: Graphify only (Qdrant disabled)")
 
     def _fetch_pr(self):
-        g = Github(settings.github_token)
+        from core.ci import resolve_github_token
+
+        token = resolve_github_token(fallback=str(settings.github_token or ""))
+        g = Github(token)
         repo_obj = g.get_repo(self.context.repo)
         self.context.pr = repo_obj.get_pull(self.context.number)
         head = getattr(self.context.pr, "head", None)
         self.context.pr_head_sha = str(getattr(head, "sha", "") or "")
+        from core.repo_config import review_skip_reason
+
+        cfg = self.context.repo_cfg
+        author = ""
+        try:
+            author = str(self.context.pr.user.login or "")
+        except Exception:
+            author = ""
+        draft = bool(getattr(self.context.pr, "draft", False))
+        why = review_skip_reason(author=author, draft=draft, cfg=cfg) if cfg else None
+        if why:
+            raise _SkipReview(why)
 
     def _build_full_diff(self):
+        from core.ignore import is_ignored
+
         files = list(self.context.pr.get_files())
+        patterns = []
+        cfg = self.context.repo_cfg
+        if cfg is not None:
+            patterns = list(getattr(cfg, "ignore_paths", None) or [])
+        if patterns:
+            kept = []
+            dropped = []
+            for f in files:
+                name = (f.filename or "").replace("\\", "/")
+                if is_ignored(name, patterns):
+                    dropped.append(name)
+                else:
+                    kept.append(f)
+            if dropped:
+                print(f"[Review] ignore_paths dropped={dropped[:12]}")
+            files = kept
+            if not files:
+                print("[Review] skip reason=all_files_ignored")
+                raise _SkipReview("all_files_ignored")
         self.context.files_changed = [f.filename for f in files]
         parts = []
         for f in files:
@@ -231,6 +329,9 @@ Description:
             "traces": [],
             "execute_tests": bool(self.context.execute_tests),
             "execute_install": bool(self.context.execute_install),
+            "inline_max": int(getattr(self.context.repo_cfg, "inline_max", 8) or 8),
+            "inline_lockfile": bool(getattr(self.context.repo_cfg, "inline_lockfile", False)),
+            "ignore_paths": list(getattr(self.context.repo_cfg, "ignore_paths", None) or []),
             "pr_head_sha": self.context.pr_head_sha or "",
             "execute_timeout_s": int(getattr(settings, "execute_timeout_s", 120)),
             "execute_max_files": int(getattr(settings, "execute_max_files", 8)),
@@ -572,6 +673,11 @@ def review(
             "so tests can import. Implies network. No-op without --execute-tests."
         ),
     ),
+    config_path: Optional[str] = typer.Option(
+        None,
+        "--config",
+        help="Path to .codeturtle.yaml (else CODETURTLE_CONFIG or ./.codeturtle.yaml)",
+    ),
 ):
     logger.info("Starting review", repo=repo, pr_number=number)
     ReviewPipeline().run(
@@ -582,5 +688,6 @@ def review(
         execute_tests=execute_tests,
         execute_install=execute_install,
         comment=comment,
+        config_path=config_path or "",
     )
       

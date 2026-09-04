@@ -1,0 +1,82 @@
+# Self-review workflow for the CodeTurtle repo.
+# For other repos, copy examples/github-action.yml instead.
+# See docs/github-action.md
+name: CodeTurtle review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Do not post to GitHub"
+        type: boolean
+        default: false
+      execute_tests:
+        description: "Opt-in pytest in the PR worktree"
+        type: boolean
+        default: false
+      python_version:
+        type: string
+        default: "3.12"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    if: >
+      github.event_name != 'pull_request'
+      || (
+        github.event.pull_request.draft != true
+        && github.actor != 'dependabot[bot]'
+      )
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CODETURTLE_GITHUB_TOKEN: ${{ secrets.CODETURTLE_GITHUB_TOKEN }}
+      CODETURTLE_PR_DRAFT: ${{ github.event.pull_request.draft }}
+      GRAPHIFY_GRAPH_PATH: ${{ github.workspace }}/graphify-out/graph.json
+      CODETURTLE_CONFIG: ${{ github.workspace }}/.codeturtle.yaml
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version || '3.12' }}
+
+      - uses: astral-sh/setup-uv@v4
+
+      - name: Install
+        run: uv sync --frozen || uv sync
+
+      - name: Graphify (code-only)
+        continue-on-error: true
+        run: uv run graphify . --code-only || true
+
+      - name: Review PR
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: |
+          REPO="${{ github.repository }}"
+          PR="${{ github.event.pull_request.number }}"
+          if [ -z "$PR" ]; then
+            echo "No pull_request.number" >&2
+            exit 1
+          fi
+          DRY="${{ inputs.dry_run || false }}"
+          EX="${{ inputs.execute_tests || false }}"
+          ARGS=(uv run python -m cli.main review "$REPO" "$PR")
+          if [ "$DRY" = "true" ]; then
+            ARGS+=(--dry-run)
+          else
+            ARGS+=(--comment)
+          fi
+          if [ "$EX" = "true" ]; then
+            ARGS+=(--execute-tests)
+          fi
+          "${ARGS[@]}"

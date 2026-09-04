@@ -28,4 +28,5 @@ dependencies = [
     "mcp>=1,<3",
     "graphifyy[mcp]>=0.9.50",
     "panel>=1.9.4",
+    "pyyaml>=6.0",
 ]

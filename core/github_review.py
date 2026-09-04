@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 from config import settings
+from core.ignore import is_ignored
 from core.pr_facts import _is_docs_or_trivia, is_lockfile, normalize_path
 from core.verification.diff_index import DiffIndex, build_diff_index
 from core.verification.policy import (
@@ -155,13 +156,16 @@ def build_inline_comments(
     """KEEP ∩ supported ∩ resolvable RIGHT line. Cap inline_max. No lockfile-only."""
     facts = state.get("pr_facts") or {}
     classification = str(facts.get("classification") or "")
-    allow_lock = (
-        inline_lockfile
-        if inline_lockfile is not None
-        else bool(getattr(settings, "inline_lockfile", False))
-    )
+    if inline_lockfile is None:
+        if state.get("inline_lockfile") is not None:
+            inline_lockfile = bool(state.get("inline_lockfile"))
+        else:
+            inline_lockfile = bool(getattr(settings, "inline_lockfile", False))
+    allow_lock = bool(inline_lockfile)
     if classification == "lockfile-only" and not allow_lock:
         return [], 0
+    if inline_max is None and state.get("inline_max") is not None:
+        inline_max = state.get("inline_max")
     cap = int(
         inline_max
         if inline_max is not None
@@ -179,6 +183,11 @@ def build_inline_comments(
         if str(d.get("verification_status") or "") != "supported":
             continue
         fp = normalize_path(str(d.get("file") or ""))
+        ignore = list(state.get("ignore_paths") or [])
+        if is_ignored(fp, ignore):
+            skipped += 1
+            print(f"[GitHub] inline skip file={fp} reason=ignored")
+            continue
         if is_lockfile(fp) and not allow_lock:
             skipped += 1
             print(f"[GitHub] inline skip file={fp} reason=lockfile")
