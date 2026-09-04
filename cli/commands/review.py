@@ -348,6 +348,9 @@ Description:
             "execute_install": bool(self.context.execute_install),
             "inline_max": int(getattr(self.context.repo_cfg, "inline_max", 8) or 8),
             "inline_lockfile": bool(getattr(self.context.repo_cfg, "inline_lockfile", False)),
+            "coverage_merge_min": float(
+                getattr(self.context.repo_cfg, "coverage_merge_min", 0.5) or 0.5
+            ),
             "ignore_paths": list(getattr(self.context.repo_cfg, "ignore_paths", None) or []),
             "pr_head_sha": self.context.pr_head_sha or "",
             "execute_timeout_s": int(getattr(settings, "execute_timeout_s", 120)),
@@ -569,12 +572,34 @@ Description:
         else:
             console.print("no validated findings")
 
+        # ── Coverage (7.3) ──────────────────────────────────────────────
+        cov = final.get("review_coverage") if isinstance(final.get("review_coverage"), dict) else {}
+        packed = int(cov.get("units_packed") or 0)
+        total = int(cov.get("units_total") or 0)
+        ratio = final.get("coverage_ratio")
+        if ratio is None and total:
+            ratio = packed / total
+        low = final.get("coverage_low")
+        reason = final.get("policy_reason") or _as_dict(final.get("merge_decision")).get(
+            "policy_reason", ""
+        )
+        if cov or ratio is not None or reason:
+            console.print("\n[bold cyan]=== COVERAGE ===[/bold cyan]")
+            ratio_s = f"{float(ratio):.2f}" if ratio is not None else "?"
+            console.print(
+                f"units {packed}/{total} ({ratio_s}) low={str(bool(low)).lower()}"
+            )
+            if reason:
+                console.print(f"policy_reason={reason}")
+
         # ── Final decision ───────────────────────────────────────────────
         rec = final.get("recommendation") or _as_dict(final.get("merge_decision")).get(
             "recommendation", "N/A"
         )
         console.print("\n[bold cyan]=== FINAL RECOMMENDATION ===[/bold cyan]")
         console.print(f"[bold]Decision: {rec}[/bold]")
+        if reason:
+            console.print(f"[dim]{rec} ({reason})[/dim]")
         final_comment = final.get("final_comment", "")
         if final_comment:
             console.print(Markdown(str(final_comment)))

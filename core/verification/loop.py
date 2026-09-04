@@ -38,8 +38,14 @@ def verify_findings_node(state: dict) -> dict:
     plan = state.get("review_plan") or {}
     if isinstance(plan, dict) and plan.get("risk_level"):
         risk = str(plan.get("risk_level") or risk)
+    cov = state.get("review_coverage") if isinstance(state.get("review_coverage"), dict) else None
     suggested = recommendation_from_verification(
-        stamped, classification=classification, risk=risk or "medium"
+        stamped,
+        classification=classification,
+        risk=risk or "medium",
+        coverage=cov,
+        files_changed=files_changed,
+        coverage_merge_min=state.get("coverage_merge_min"),
     )
 
     by_cat = {"correctness": [], "code_quality": [], "testing": []}

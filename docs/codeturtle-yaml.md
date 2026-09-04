@@ -38,6 +38,7 @@ Template: [`examples/codeturtle.yaml`](../examples/codeturtle.yaml).
 | `execute_tests` / `execute_install` | YAML `true` can turn execute **on** without a flag (dangerous). CLI `--execute-tests` still turns it on even if YAML is false |
 | `model` | Chat model name for this run (`settings.ollama_model`) |
 | `post_on_github` | Does **not** override CLI `--dry-run`. Do not rely on this alone to post |
+| `coverage_merge_min` | Optional. Empty KEEP may MERGE only if `units_packed / units_total` ≥ this (default `0.5`). Low coverage is COMMENT, never REQUEST_CHANGES |
 
 ## `ignore_paths` and lockfiles
 

@@ -1181,11 +1181,15 @@ def execute_tests_node(
             plan = state.get("review_plan") or {}
             if isinstance(plan, dict) and plan.get("risk_level"):
                 risk = str(plan.get("risk_level") or risk)
+            cov = state.get("review_coverage") if isinstance(state.get("review_coverage"), dict) else None
             vrep["suggested_recommendation"] = recommendation_from_verification(
                 stamped,
                 classification=str(facts.get("classification") or ""),
                 risk=risk or "medium",
                 execution=rec.model_dump(),
+                coverage=cov,
+                files_changed=list(facts.get("files_changed") or state.get("files_changed") or []),
+                coverage_merge_min=state.get("coverage_merge_min"),
             )
             result["verification_report"] = vrep
         return result

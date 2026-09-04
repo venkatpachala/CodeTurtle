@@ -3,7 +3,7 @@
 from core.verification.diff_index import DiffIndex, Hunk, build_diff_index
 from core.verification.hunk_verifier import verify_finding, verify_findings
 from core.verification.models import VerificationRecord, VerificationStatus
-from core.verification.policy import recommendation_from_verification
+from core.verification.policy import decide, recommendation_from_verification
 
 __all__ = [
     "DiffIndex",
@@ -11,6 +11,7 @@ __all__ = [
     "VerificationRecord",
     "VerificationStatus",
     "build_diff_index",
+    "decide",
     "recommendation_from_verification",
     "verify_finding",
     "verify_findings",
