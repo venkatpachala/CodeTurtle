@@ -47,20 +47,28 @@ class AIGateway:
             "openai": openai_provider,
         }
         self.default_provider = "ollama"
+        default_model = "qwen2.5-coder:7b"
+        try:
+            from config import settings
+            if getattr(settings, "ollama_model", None):
+                default_model = settings.ollama_model
+        except Exception:
+            pass
+
         self.model_registry = {
-            "reasoning": {"provider": "ollama", "model": "qwen2.5:7b"},
-            "correctness_review": {"provider": "ollama", "model": "qwen2.5:7b"},
-            "final_recommendation": {"provider": "ollama", "model": "qwen2.5:7b"},
-            "fast": {"provider": "ollama", "model": "qwen2.5:7b"},
-            "summarization": {"provider": "ollama", "model": "qwen2.5:7b"},
-            "code_quality_review": {"provider": "ollama", "model": "qwen2.5:7b"},
-            "security_review": {"provider": "ollama", "model": "qwen2.5:7b"},
-            "testing_review": {"provider": "ollama", "model": "qwen2.5:7b"},
-            "documentation_review": {"provider": "ollama", "model": "qwen2.5:7b"},
-            "performance_review": {"provider": "ollama", "model": "qwen2.5:7b"},
-            "api_compatibility_review": {"provider": "ollama", "model": "qwen2.5:7b"},
-            "context_gathering": {"provider": "ollama", "model": "qwen2.5:7b"},   # ← Added
-            "default": {"provider": "ollama", "model": "qwen2.5:7b"},
+            "reasoning": {"provider": "ollama", "model": default_model},
+            "correctness_review": {"provider": "ollama", "model": default_model},
+            "final_recommendation": {"provider": "ollama", "model": default_model},
+            "fast": {"provider": "ollama", "model": default_model},
+            "summarization": {"provider": "ollama", "model": default_model},
+            "code_quality_review": {"provider": "ollama", "model": default_model},
+            "security_review": {"provider": "ollama", "model": default_model},
+            "testing_review": {"provider": "ollama", "model": default_model},
+            "documentation_review": {"provider": "ollama", "model": default_model},
+            "performance_review": {"provider": "ollama", "model": default_model},
+            "api_compatibility_review": {"provider": "ollama", "model": default_model},
+            "context_gathering": {"provider": "ollama", "model": default_model},   # ← Added
+            "default": {"provider": "ollama", "model": default_model},
         }
 
     def _get_provider(self, capability: str):

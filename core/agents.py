@@ -1322,14 +1322,20 @@ def critic_agent(state: ReviewState) -> dict:
     report = state.get("validation_report") if isinstance(state.get("validation_report"), dict) else None
 
     if report and report.get("ran"):
-        validated_candidates = normalize_findings(
-            state.get("validated_findings")
-            if state.get("validated_findings") is not None
-            else state.get("findings")
-            or [],
-            files_changed=files_changed,
-            pr_facts=facts,
-        )
+        from core.hypothesis import is_keep_for_post
+
+        validated_candidates = [
+            f
+            for f in normalize_findings(
+                state.get("validated_findings")
+                if state.get("validated_findings") is not None
+                else state.get("findings")
+                or [],
+                files_changed=files_changed,
+                pr_facts=facts,
+            )
+            if is_keep_for_post(f)
+        ]
         pre_dropped = list(report.get("dropped_summaries") or [])
         raw_in = report.get("raw", len(validated_candidates))
     else:
@@ -1355,7 +1361,9 @@ def critic_agent(state: ReviewState) -> dict:
         )
         val_res["raw"] = len(normalized)
         log_validation(val_res)
-        validated_candidates = val_res["kept"]
+        from core.hypothesis import is_keep_for_post
+
+        validated_candidates = [f for f in val_res["kept"] if is_keep_for_post(f)]
         pre_dropped = [
             {
                 "title": (item.get("finding") or {}).get("title"),

@@ -6,6 +6,7 @@ import time
 from typing import Any, Dict, List, Optional
 
 from core.finding_validator import filter_findings
+from core.hypothesis import KEEP, PLAUSIBLE, UNRESOLVED
 from core.investigation.models import EvidenceItem, GraphifyCall, Hypothesis
 from core.investigation.planner import (
     MAX_GRAPHIFY_CALLS_IN_INVESTIGATE,
@@ -17,7 +18,8 @@ from core.investigation.planner import (
     plan_graphify_calls,
     strip_ungrounded_symbol,
 )
-from core.pr_facts import extract_diff_symbols, question_grounded_in_pr
+from core.finding_validator import _is_source_path, _is_trivial
+from core.pr_facts import extract_diff_symbols, normalize_path, question_grounded_in_pr
 from core.repository_knowledge.graphify_mcp import GraphifyMCPError
 
 
@@ -135,10 +137,28 @@ def _attach_evidence(finding: dict, items: List[EvidenceItem]) -> dict:
     return finding
 
 
+def _pr_paths_in_blob(blob: str, files_changed: List[str]) -> List[str]:
+    text = (blob or "").replace("\\", "/")
+    hits: List[str] = []
+    for p in files_changed or []:
+        n = normalize_path(p)
+        if not n or _is_trivial(n) or not _is_source_path(n):
+            continue
+        base = n.split("/")[-1]
+        if n in text or (base and base in text):
+            hits.append(n)
+    return list(dict.fromkeys(hits))
+
+
 def _collect_hypotheses(state: dict, files_changed: List[str], full_diff: str) -> List[Hypothesis]:
-    kept = list(state.get("validated_findings") or state.get("findings") or [])
+    facts = state.get("pr_facts") or {}
+    if str(facts.get("classification") or "") == "lockfile-only":
+        return []
+    pool = list(state.get("hypothesis_pool") or [])
+    if not pool:
+        pool = list(state.get("validated_findings") or state.get("findings") or [])
     hyps = findings_to_hypotheses(
-        kept, files_changed=files_changed, full_diff=full_diff, max_n=MAX_HYPOTHESES
+        pool, files_changed=files_changed, full_diff=full_diff, max_n=MAX_HYPOTHESES
     )
     # No kept finding with a real changed path → skip (don't Graphify for nothing)
     if not hyps:
@@ -192,9 +212,13 @@ def run_investigation(state: dict, provider: Any) -> dict:
         if time.monotonic() > deadline:
             print("[Investigate] timeout")
             break
-        # Never hop on a path that is not in the PR
+        # Never hop on trivia / paths outside the PR (symbol-only calls may have empty path)
         if call.path and not is_investigable_path(call.path, files_changed):
-            if call.tool != "get_pr_impact":
+            if call.tool == "get_pr_impact":
+                pass
+            elif call.symbol:
+                call.path = ""
+            else:
                 continue
         if call.symbol:
             if not strip_ungrounded_symbol(call.symbol, files_changed, full_diff):
@@ -222,18 +246,28 @@ def run_investigation(state: dict, provider: Any) -> dict:
             for h in hyps:
                 by_hyp[h.id].append(item)
 
-    # Merge onto findings + set hypothesis status
+    # Merge onto KEEP + PLAUSIBLE pool, then promote PLAUSIBLE when evidence names a PR path
+    classified = [
+        dict(f) if isinstance(f, dict) else f
+        for f in (state.get("classified_findings") or [])
+    ]
     kept = [dict(f) if isinstance(f, dict) else f for f in (state.get("validated_findings") or [])]
+    if classified:
+        kept = [f for f in classified if isinstance(f, dict)]
     for f in kept:
         if isinstance(f, dict) and f.get("symbol"):
             f["symbol"] = strip_ungrounded_symbol(
                 f.get("symbol"), files_changed, full_diff
             )
-    kept_by_id = {str(f.get("id") or ""): f for f in kept if isinstance(f, dict)}
-    kept_by_file = {}
+    kept_by_id = {
+        str(f.get("id") or ""): f
+        for f in kept
+        if isinstance(f, dict) and f.get("id")
+    }
+    kept_by_file: Dict[str, List[dict]] = {}
     for f in kept:
         if isinstance(f, dict) and f.get("file"):
-            kept_by_file.setdefault(f["file"], []).append(f)
+            kept_by_file.setdefault(str(f["file"]), []).append(f)
 
     for h in hyps:
         items = by_hyp.get(h.id) or []
@@ -244,20 +278,58 @@ def run_investigation(state: dict, provider: Any) -> dict:
             h.status = "uncertain"
 
         targets: List[dict] = []
+        seen_t: set[int] = set()
+
+        def _add_target(f: dict) -> None:
+            i = id(f)
+            if i in seen_t:
+                return
+            seen_t.add(i)
+            targets.append(f)
+
         if h.finding_id and h.finding_id in kept_by_id:
-            targets.append(kept_by_id[h.finding_id])
-        else:
-            targets.extend(kept_by_file.get(h.file) or [])
+            _add_target(kept_by_id[h.finding_id])
+        for f in kept_by_file.get(h.file) or []:
+            _add_target(f)
+        if not targets and (h.symbol or h.file_hint):
+            for f in kept:
+                if not isinstance(f, dict):
+                    continue
+                if h.symbol and str(f.get("symbol") or "") == h.symbol:
+                    _add_target(f)
+                elif h.file_hint and str(f.get("file_hint") or "") == h.file_hint:
+                    _add_target(f)
         for f in targets:
             _attach_evidence(f, items)
             f["investigation_status"] = h.status
             if h.question and not f.get("question"):
                 f["question"] = h.question
+            kind = str(f.get("hypothesis_status") or h.hypothesis_kind or KEEP)
+            if kind == PLAUSIBLE:
+                blob = " ".join(
+                    [(e.path or "") + " " + (e.text or "") for e in items]
+                )
+                paths = _pr_paths_in_blob(blob, files_changed)
+                if paths:
+                    f["file"] = paths[0]
+                    ev = list(f.get("evidence") or [])
+                    if paths[0] not in ev:
+                        ev = [paths[0]] + ev
+                    f["evidence"] = ev
+                    f["hypothesis_status"] = KEEP
+                else:
+                    f["hypothesis_status"] = UNRESOLVED
 
-    # Re-run the same 2.2 validator
+    keep_only = [
+        f
+        for f in kept
+        if isinstance(f, dict) and str(f.get("hypothesis_status") or KEEP) == KEEP
+    ]
+
+    # Re-run the same 2.2 validator on KEEP (including promoted PLAUSIBLE)
     changed_symbols = extract_diff_symbols(full_diff)
     val = filter_findings(
-        kept,
+        keep_only,
         files_changed=files_changed,
         paths_in_diff=paths_in_diff,
         changed_symbols=changed_symbols,
@@ -265,6 +337,8 @@ def run_investigation(state: dict, provider: Any) -> dict:
     )
     survivors = val["kept"]
     dropped = val["dropped"]
+    for f in survivors:
+        f["hypothesis_status"] = KEEP
     print(
         f"[Investigate] re-validate kept={len(survivors)} dropped={len(dropped)}"
     )
@@ -309,7 +383,15 @@ def run_investigation(state: dict, provider: Any) -> dict:
     prev["kept"] = len(survivors)
     prev["post_investigate_dropped"] = len(dropped)
 
+    pool = [
+        f
+        for f in kept
+        if isinstance(f, dict)
+        and str(f.get("hypothesis_status") or KEEP) in (KEEP, PLAUSIBLE)
+    ]
     return {
+        "classified_findings": kept,
+        "hypothesis_pool": pool,
         "validated_findings": survivors,
         "findings": survivors,
         "hypotheses": [h.model_dump() for h in hyps],
@@ -332,7 +414,7 @@ def run_investigation(state: dict, provider: Any) -> dict:
 
 
 def investigate_node(state: dict) -> dict:
-    """LangGraph node: after validate_findings, before critic."""
+    """LangGraph node: after classify_hypotheses, before validate_findings."""
     repo = state.get("repo") or ""
     try:
         from core.graphify_retriever import GraphifyRetriever

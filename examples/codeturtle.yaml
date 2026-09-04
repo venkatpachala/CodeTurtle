@@ -26,5 +26,5 @@ post_on_github: false
 execute_tests: false
 execute_install: false
 
-model: qwen2.5:7b
+model: qwen2.5-coder:7b
 # llm_backend: ollama

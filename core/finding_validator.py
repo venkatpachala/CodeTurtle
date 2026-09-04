@@ -564,7 +564,14 @@ def _category_bucket(cat: str) -> str:
 
 
 def validate_findings_node(state: dict) -> dict:
-    """LangGraph node: normalize → validate → log → pass kept only."""
+    """LangGraph node: normalize → validate → log → pass kept only.
+
+    After Phase 7.1 this runs after investigate. If classified_findings is
+    present, only KEEP (including promoted PLAUSIBLE) is re-validated for 4.1.
+    Direct unit tests still collect from specialist buckets.
+    """
+    from core.hypothesis import KEEP
+
     buckets = (
         ("correctness_findings", "correctness"),
         ("quality_findings", "code_quality"),
@@ -577,13 +584,25 @@ def validate_findings_node(state: dict) -> dict:
 
     raw_items: List[Dict[str, Any]] = []
     raw_counts = {"correctness": 0, "code_quality": 0, "testing": 0}
-    for key, cat in buckets:
-        src = list(state.get(key) or [])
-        raw_counts[cat] = len(src)
-        for item in src:
+    classified_raw = state.get("classified_findings")
+    if classified_raw is not None:
+        for item in classified_raw:
             d = _as_dict(item)
-            d["category"] = d.get("category") or cat
+            if str(d.get("hypothesis_status") or KEEP) != KEEP:
+                continue
+            cat = str(d.get("category") or "correctness")
+            bucket = _category_bucket(cat)
+            if bucket in raw_counts:
+                raw_counts[bucket] += 1
             raw_items.append(d)
+    else:
+        for key, cat in buckets:
+            src = list(state.get(key) or [])
+            raw_counts[cat] = len(src)
+            for item in src:
+                d = _as_dict(item)
+                d["category"] = d.get("category") or cat
+                raw_items.append(d)
 
     normalized = normalize_findings(
         raw_items, files_changed=files_changed, pr_facts=facts
@@ -606,6 +625,8 @@ def validate_findings_node(state: dict) -> dict:
 
     kept: List[Dict[str, Any]] = result["kept"]
     dropped = result["dropped"]
+    for f in kept:
+        f["hypothesis_status"] = KEEP
 
     by_cat = {"correctness": [], "code_quality": [], "testing": []}
     for f in kept:

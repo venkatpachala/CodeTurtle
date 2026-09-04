@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Iterable, List, Optional
 
 from core.finding_validator import _is_source_path, _is_trivial, _path_in_allowed
+from core.hypothesis import KEEP, PLAUSIBLE, REJECTED
 from core.investigation.models import GraphifyCall, Hypothesis, InvestigationAsk
 from core.pr_facts import extract_diff_symbols, question_grounded_in_pr
 
@@ -62,7 +63,9 @@ def plan_graphify_calls(
         labels: List[str] = []
         if h.symbol:
             labels.append(h.symbol.split(".")[-1] if "." in h.symbol else h.symbol)
-        labels.append(file_label(h.file))
+        target = h.file or h.file_hint or ""
+        if target:
+            labels.append(file_label(target))
         for lab in dict.fromkeys(l for l in labels if l):
             if lab not in seen_node:
                 calls.append(
@@ -70,7 +73,7 @@ def plan_graphify_calls(
                         tool="get_node",
                         label=lab,
                         hypothesis_id=h.id,
-                        path=h.file,
+                        path=target,
                         symbol=h.symbol,
                     )
                 )
@@ -81,7 +84,7 @@ def plan_graphify_calls(
                         tool="get_neighbors",
                         label=lab,
                         hypothesis_id=h.id,
-                        path=h.file,
+                        path=target,
                         symbol=h.symbol,
                     )
                 )
@@ -89,16 +92,17 @@ def plan_graphify_calls(
 
         if h.symbol or (h.question or "").strip():
             q = (h.question or "").strip() or (
-                f"callers of {h.symbol or file_label(h.file)} in {h.file}"
+                f"callers of {h.symbol or file_label(target or 'symbol')} "
+                f"in {target or 'diff'}"
             )
             key = q.strip().lower()
             if key not in seen_query:
                 calls.append(
                     GraphifyCall(
                         tool="query",
-                        label=h.symbol or file_label(h.file),
+                        label=h.symbol or file_label(target or "symbol"),
                         hypothesis_id=h.id,
-                        path=h.file,
+                        path=target,
                         symbol=h.symbol,
                         question=q,
                     )
@@ -160,6 +164,22 @@ def asks_to_hypotheses(
     return hyps
 
 
+def _pool_priority(finding: dict, files_changed: List[str], full_diff: str) -> tuple:
+    st = str(finding.get("hypothesis_status") or KEEP)
+    if st == REJECTED:
+        return (9, 9)
+    if st == KEEP:
+        return (0, 0)
+    # PLAUSIBLE: symbol-in-diff first, then token/file_hint
+    if finding.get("symbol") and strip_ungrounded_symbol(
+        finding.get("symbol"), files_changed, full_diff
+    ):
+        return (1, 0)
+    if finding.get("file_hint") or finding.get("matched_tokens"):
+        return (1, 1)
+    return (1, 2)
+
+
 def findings_to_hypotheses(
     findings: List[dict],
     *,
@@ -167,14 +187,32 @@ def findings_to_hypotheses(
     full_diff: str,
     max_n: int = MAX_HYPOTHESES,
 ) -> List[Hypothesis]:
+    ordered = sorted(
+        list(findings or []),
+        key=lambda f: _pool_priority(f if isinstance(f, dict) else {}, files_changed, full_diff),
+    )
     hyps: List[Hypothesis] = []
-    for f in findings or []:
+    for f in ordered:
         if len(hyps) >= max_n:
             break
-        path = is_investigable_path(str(f.get("file") or ""), files_changed)
-        if not path:
+        if not isinstance(f, dict):
             continue
-        if not _is_thin(f) and not f.get("needs_investigation"):
+        kind = str(f.get("hypothesis_status") or KEEP)
+        if kind == REJECTED:
+            continue
+        path = is_investigable_path(
+            str(f.get("file") or f.get("file_hint") or ""), files_changed
+        )
+        if not path:
+            path = is_investigable_path(str(f.get("file_hint") or ""), files_changed)
+        if path and _is_trivial(path):
+            path = None
+        if not path:
+            if kind != PLAUSIBLE:
+                continue
+            if not f.get("symbol"):
+                continue
+        if kind != PLAUSIBLE and not _is_thin(f) and not f.get("needs_investigation"):
             continue
         symbol = strip_ungrounded_symbol(f.get("symbol"), files_changed, full_diff)
         question = str(f.get("question") or "")
@@ -185,7 +223,8 @@ def findings_to_hypotheses(
             Hypothesis(
                 id=hid,
                 claim=str(f.get("claim") or f.get("title") or ""),
-                file=path,
+                file=path or "",
+                file_hint=str(f.get("file_hint") or path or "") or None,
                 symbol=symbol,
                 question=question,
                 status="open",
@@ -193,6 +232,7 @@ def findings_to_hypotheses(
                 finding_id=str(f.get("id") or ""),
                 category=str(f.get("category") or "review"),
                 title=str(f.get("title") or ""),
+                hypothesis_kind=kind,
             )
         )
     return hyps
