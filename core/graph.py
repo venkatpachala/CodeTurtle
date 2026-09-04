@@ -12,6 +12,7 @@ from core.agents import (
     context_gatherer,
 )
 from core.finding_validator import validate_findings_node
+from core.hypothesis import classify_hypotheses_node
 from core.investigation.loop import investigate_node
 from core.verification.loop import verify_findings_node
 from core.verification.execute import execute_tests_node
@@ -32,8 +33,9 @@ def build_review_graph():
     workflow.add_node("correctness_agent", correctness_agent)
     workflow.add_node("code_quality_agent", code_quality_agent)
     workflow.add_node("testing_agent", testing_agent)
-    workflow.add_node("validate_findings", validate_findings_node)
+    workflow.add_node("classify_hypotheses", classify_hypotheses_node)
     workflow.add_node("investigate", investigate_node)
+    workflow.add_node("validate_findings", validate_findings_node)
     workflow.add_node("verify_findings", verify_findings_node)
     workflow.add_node("execute_tests", execute_tests_node)
     workflow.add_node("critic_agent", critic_agent)
@@ -52,13 +54,14 @@ def build_review_graph():
     workflow.add_edge("context_summarizer", "code_quality_agent")
     workflow.add_edge("context_summarizer", "testing_agent")
 
-    workflow.add_edge("context_gatherer", "validate_findings")
-    workflow.add_edge("correctness_agent", "validate_findings")
-    workflow.add_edge("code_quality_agent", "validate_findings")
-    workflow.add_edge("testing_agent", "validate_findings")
+    workflow.add_edge("context_gatherer", "classify_hypotheses")
+    workflow.add_edge("correctness_agent", "classify_hypotheses")
+    workflow.add_edge("code_quality_agent", "classify_hypotheses")
+    workflow.add_edge("testing_agent", "classify_hypotheses")
 
-    workflow.add_edge("validate_findings", "investigate")
-    workflow.add_edge("investigate", "verify_findings")
+    workflow.add_edge("classify_hypotheses", "investigate")
+    workflow.add_edge("investigate", "validate_findings")
+    workflow.add_edge("validate_findings", "verify_findings")
     workflow.add_edge("verify_findings", "execute_tests")
     workflow.add_edge("execute_tests", "critic_agent")
     workflow.add_edge("critic_agent", "final_recommender")

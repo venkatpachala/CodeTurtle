@@ -9,7 +9,7 @@ load_dotenv()
 class Settings(BaseSettings):
     # LLM Configuration
     llm_backend: str = "ollama"                    # ← Added this
-    ollama_model: str = "qwen2.5:7b"
+    ollama_model: str = "qwen2.5-coder:7b"
     ollama_base_url: str = "http://localhost:11434"
 
     # GitHub

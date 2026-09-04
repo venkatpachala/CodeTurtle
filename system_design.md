@@ -100,7 +100,7 @@ flowchart TB
         AIGateway["AI Gateway (gateway.py)<br/>• Capability Registry<br/>• Schema Enforcement & Retries<br/>• Cost & Latency Tracking"]
         
         subgraph Providers ["LLM Provider Adapters"]
-            Ollama["Ollama (Local Default)<br/>qwen2.5:7b, llama3"]
+            Ollama["Ollama (Local Default)<br/>qwen2.5-coder:7b, llama3"]
             OpenAI["OpenAI<br/>gpt-4o, o3-mini"]
             LiteLLM["LiteLLM Unified"]
         end
@@ -337,7 +337,7 @@ flowchart LR
     end
 
     subgraph Backends ["LLM Providers"]
-        OllamaLocal["Ollama (qwen2.5:7b, llama3)"]
+        OllamaLocal["Ollama (qwen2.5-coder:7b, llama3)"]
         OpenAICloud["OpenAI (gpt-4o, o3-mini)"]
         LiteLLMProvider["LiteLLM Endpoint"]
     end
@@ -354,7 +354,7 @@ flowchart LR
     Telemetry --> LangfuseCloud & RichConsole
 ```
 
-- **Capability Mapping**: Decouples prompt requirements from concrete models (e.g. `correctness_review` $\rightarrow$ `ollama / qwen2.5:7b`).
+- **Capability Mapping**: Decouples prompt requirements from concrete models (e.g. `correctness_review` $\rightarrow$ `ollama / qwen2.5-coder:7b`).
 - **Pydantic Structured Output**: Enforces valid JSON according to strongly typed schemas; re-prompts on parsing errors up to configurable retry limits.
 - **Full Observability**: Logs prompt tokens, completion tokens, latency, retry counts, and estimated cost per agent execution into **Langfuse**.
 

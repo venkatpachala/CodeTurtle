@@ -23,7 +23,7 @@ CodeTurtle is an **AI-native, repository-intelligent code review platform**. Unl
 - **Claim-Challenging Multi-Agent Swarm**: Autonomous domain specialists (`CorrectnessAgent`, `CodeQualityAgent`, `TestingAgent`) bound by anti-summarization contracts that actively challenge core claims in pull requests instead of providing generic findings.
 - **Critic Gate & Reasoned Decision Engine**: Filters ungrounded or off-target findings, resolves specialist contradictions, and generates actionable, structured final review recommendations (`MERGE`, `REQUEST_CHANGES`, `COMMENT`).
 - **Decoupled Query Engine**: Subsystem with dedicated routers (`VectorRouter`, `GraphRouter`, `ModelRouter`) supporting contextual retrieval and automated impact analysis.
-- **Local-First AI Gateway**: Capability-based provider gateway supporting local models via Ollama (`qwen2.5:7b`, `llama3`), OpenAI (`gpt-4o`, `o3-mini`), and LiteLLM endpoints with automatic schema retries and Langfuse telemetry.
+- **Local-First AI Gateway**: Capability-based provider gateway supporting local models via Ollama (`qwen2.5-coder:7b`, `llama3`), OpenAI (`gpt-4o`, `o3-mini`), and LiteLLM endpoints with automatic schema retries and Langfuse telemetry.
 - **Phase-by-Phase Benchmark Suite**: Built-in evaluation harness (`evals/ri/`) for continuous quantitative benchmark testing across all 6 review pipeline phases.
 
 ---
@@ -122,7 +122,7 @@ flowchart TB
         Gateway["AI Gateway (gateway.py)<br/>(Capability Routing & Schema Retries)"]
         
         subgraph LLMProviders ["LLM Provider Adapters"]
-            Ollama["Ollama (qwen2.5:7b, llama3)"]
+            Ollama["Ollama (qwen2.5-coder:7b, llama3)"]
             OpenAI["OpenAI (gpt-4o, o3-mini)"]
             LiteLLM["LiteLLM Unified Adapter"]
         end
@@ -234,7 +234,7 @@ CodeTurtle features a decoupled **Query Engine** (`core/query_engine/`) for stru
 All LLM requests route through a unified **AI Gateway** (`core/gateway/gateway.py`):
 
 - **Capability-Based Routing**: Maps agent roles (`reasoning`, `correctness_review`, `code_quality_review`, `summarization`) to configured model providers.
-- **Provider Support**: Seamlessly switches between local Ollama instances (`qwen2.5:7b`, `llama3`), OpenAI (`gpt-4o`, `o3-mini`), or LiteLLM endpoints.
+- **Provider Support**: Seamlessly switches between local Ollama instances (`qwen2.5-coder:7b`, `llama3`), OpenAI (`gpt-4o`, `o3-mini`), or LiteLLM endpoints.
 - **Structured JSON Retries**: Pydantic schema enforcement with automatic retry handling.
 - **Langfuse Telemetry**: Tracks per-agent prompt/completion tokens, latency, retries, cost estimates, and full execution traces.
 
@@ -347,7 +347,7 @@ GITHUB_TOKEN=github_pat_your_token_here
 
 # LLM Gateway Configuration
 LLM_BACKEND=ollama
-OLLAMA_MODEL=qwen2.5:7b
+OLLAMA_MODEL=qwen2.5-coder:7b
 OLLAMA_BASE_URL=http://localhost:11434
 
 # Optional: OpenAI API Key (for OpenAI models)
@@ -367,7 +367,7 @@ NEO4J_PASSWORD=codeturtle123
 Pull the target model in Ollama:
 
 ```bash
-ollama pull qwen2.5:7b
+ollama pull qwen2.5-coder:7b
 ```
 
 ---
@@ -393,7 +393,7 @@ Execute the full 6-phase autonomous review pipeline on a GitHub PR:
 codeturtle review owner/repo 2400
 
 # Review with model override
-codeturtle review owner/repo 2400 --model qwen2.5:7b
+codeturtle review owner/repo 2400 --model qwen2.5-coder:7b
 ```
 
 ### Test Graphify MCP Adapter

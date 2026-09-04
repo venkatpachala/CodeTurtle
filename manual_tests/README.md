@@ -42,10 +42,10 @@ you'll be iterating on.
 ## Prerequisites
 
 1. **Ollama running locally** with the model in your `.env` / `config.py`
-   pulled (default `qwen2.5:7b`), plus the embedding model:
+   pulled (default `qwen2.5-coder:7b`), plus the embedding model:
    ```
    ollama serve
-   ollama pull qwen2.5:7b
+   ollama pull qwen2.5-coder:7b
    ollama pull nomic-embed-text
    ```
 2. **Qdrant running locally**, with `NousResearch/hermes-agent` already indexed

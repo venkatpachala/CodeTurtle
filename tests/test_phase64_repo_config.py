@@ -83,7 +83,7 @@ class TestMerge(unittest.TestCase):
         s.inline_lockfile = False
         s.execute_tests = False
         s.execute_install = False
-        s.ollama_model = "qwen2.5:7b"
+        s.ollama_model = "qwen2.5-coder:7b"
         s.llm_backend = "ollama"
         eff = merge_review_config(
             repo=repo,
@@ -111,7 +111,7 @@ class TestMerge(unittest.TestCase):
         s.inline_lockfile = False
         s.execute_tests = False
         s.execute_install = False
-        s.ollama_model = "qwen2.5:7b"
+        s.ollama_model = "qwen2.5-coder:7b"
         s.llm_backend = "ollama"
         eff = merge_review_config(repo=None, cli_execute_tests=False, settings=s)
         self.assertFalse(eff.execute_tests)

@@ -11,7 +11,7 @@ logger = structlog.get_logger()
 
 class LLMGateway:
     def __init__(self):
-        self.default_model = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+        self.default_model = os.getenv("OLLAMA_MODEL", "qwen2.5-coder:7b")
         self.ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
     def get_llm(self, model: str = None, temperature: float = 0.3, max_tokens: int = 1024) -> BaseChatModel:

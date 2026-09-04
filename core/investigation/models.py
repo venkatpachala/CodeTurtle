@@ -16,10 +16,14 @@ class EvidenceItem(BaseModel):
     text: str = ""
 
 
+HypothesisStatus = Literal["KEEP", "PLAUSIBLE", "REJECTED", "UNRESOLVED"]
+
+
 class Hypothesis(BaseModel):
     id: str
     claim: str = ""
-    file: str  # required; must come from files_changed
+    file: str = ""
+    file_hint: Optional[str] = None
     symbol: Optional[str] = None
     question: str = ""
     status: Literal["open", "confirmed", "rejected", "uncertain"] = "open"
@@ -28,6 +32,7 @@ class Hypothesis(BaseModel):
     finding_id: Optional[str] = None
     category: str = "review"
     title: str = ""
+    hypothesis_kind: Optional[HypothesisStatus] = None
 
 
 class InvestigationAsk(BaseModel):

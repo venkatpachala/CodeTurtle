@@ -14,7 +14,7 @@ def structured_generate(
     schema: type[BaseModel],
     temperature: float = 0.2,
     max_tokens: int = 1500,
-    model: str = "qwen2.5:7b",
+    model: str = "qwen2.5-coder:7b",
 ) -> OllamaResponse:
     llm = ChatOllama(
         model=model,
@@ -35,7 +35,7 @@ def generate(
     prompt: str,
     temperature: float = 0.2,
     max_tokens: int = 1500,
-    model: str = "qwen2.5:7b",
+    model: str = "qwen2.5-coder:7b",
 ) -> OllamaResponse:
     """Plain text generation for non-structured calls."""
     llm = ChatOllama(

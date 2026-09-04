@@ -667,6 +667,7 @@ class TestGraphHasValidatorNode(unittest.TestCase):
 
         g = build_review_graph()
         nodes = set(g.get_graph().nodes)
+        self.assertIn("classify_hypotheses", nodes)
         self.assertIn("validate_findings", nodes)
         self.assertIn("investigate", nodes)
         self.assertIn("verify_findings", nodes)

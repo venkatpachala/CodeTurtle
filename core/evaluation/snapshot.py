@@ -90,7 +90,7 @@ def from_state(state: dict) -> ReviewSnapshot:
     hyp_files: List[str] = []
     for h in hyps:
         d = _as_dict(h)
-        fp = normalize_path(str(d.get("file") or ""))
+        fp = normalize_path(str(d.get("file") or d.get("file_hint") or ""))
         if fp:
             hyp_files.append(fp)
 

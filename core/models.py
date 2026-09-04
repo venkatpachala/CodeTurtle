@@ -106,6 +106,8 @@ class Finding(BaseModel):
     needs_investigation: bool = False
     question: str = ""
     evidence_ids: List[str] = Field(default_factory=list)
+    file_hint: Optional[str] = None
+    hypothesis_status: Optional[str] = None  # KEEP | PLAUSIBLE | REJECTED | UNRESOLVED
 
 
 class ReviewOutput(BaseModel):

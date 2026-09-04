@@ -89,6 +89,10 @@ def clamped_decision(state: dict) -> str:
 
 def is_postable_finding(finding: Dict[str, Any] | None) -> bool:
     d = finding or {}
+    from core.hypothesis import is_keep_for_post
+
+    if not is_keep_for_post(d):
+        return False
     fp = normalize_path(str(d.get("file") or d.get("path") or ""))
     if not fp:
         return False
