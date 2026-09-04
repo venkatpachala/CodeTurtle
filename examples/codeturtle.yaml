@@ -1,0 +1,30 @@
+# Copy to the repo root as .codeturtle.yaml
+# See docs/codeturtle-yaml.md
+#
+# Merge order: Settings/.env  <  this file  <  CLI flags
+# Missing file = CodeTurtle defaults. Dry-run still does not post.
+#
+# execute_tests: true here turns execution on without a CLI flag — leave false
+# unless you accept running untrusted PR code.
+
+version: 1
+
+skip_drafts: true
+skip_authors:
+  - dependabot[bot]
+  - renovate[bot]
+
+ignore_paths:
+  - "**/*.md"
+  - "**/package-lock.json"
+  - "**/*.lock"
+
+inline_max: 8
+inline_lockfile: false
+post_on_github: false
+
+execute_tests: false
+execute_install: false
+
+model: qwen2.5:7b
+# llm_backend: ollama
