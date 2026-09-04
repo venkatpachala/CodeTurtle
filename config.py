@@ -9,7 +9,7 @@ load_dotenv()
 class Settings(BaseSettings):
     # LLM Configuration
     llm_backend: str = "ollama"                    # ← Added this
-    ollama_model: str = "qwen2.5-coder:7b"
+    ollama_model: str = "qwen2.5:7b"
     ollama_base_url: str = "http://localhost:11434"
 
     # GitHub
@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     # Phase 6.2 — inline review comments (post path only)
     inline_max: int = 8
     inline_lockfile: bool = False
+
+    # Phase 7.3 — MERGE only if packed/total >= this (empty KEEP)
+    coverage_merge_min: float = 0.5
 
 # Create the settings instance
 settings = Settings()

@@ -43,6 +43,9 @@ class ReviewSnapshot(BaseModel):
     final_decision: str = ""
     suggested_policy: Optional[str] = None
     qdrant_used: bool = False
+    coverage_low: Optional[bool] = None
+    policy_reason: Optional[str] = None
+    coverage_ratio: Optional[float] = None
 
 
 def _as_dict(obj: Any) -> dict:
@@ -145,6 +148,15 @@ def from_state(state: dict) -> ReviewSnapshot:
         final_decision=rec,
         suggested_policy=(str(vrep.get("suggested_recommendation") or "") or None),
         qdrant_used=bool(qdrant),
+        coverage_low=(
+            bool(state.get("coverage_low")) if state.get("coverage_low") is not None else None
+        ),
+        policy_reason=(str(state.get("policy_reason") or "") or None),
+        coverage_ratio=(
+            float(state["coverage_ratio"])
+            if state.get("coverage_ratio") is not None
+            else None
+        ),
     )
 
 
@@ -160,6 +172,9 @@ _VERIFY_RE = re.compile(
 )
 _EXEC_SKIP_RE = re.compile(r"\[Execute\] skip reason=(\S+)")
 _DECISION_RE = re.compile(r"Decision:\s*(MERGE|COMMENT|REQUEST_CHANGES)")
+_COVERAGE_RE = re.compile(
+    r"\[Coverage\] packed=(\d+) total=(\d+) ratio=([0-9.]+) low=(\S+) → (\S+) \((\S+)\)"
+)
 _SUGGESTED_RE = re.compile(r"suggested=(\S+)")
 _PATHS_RE = re.compile(r"paths=\[([^\]]*)\]")
 
@@ -205,6 +220,7 @@ def from_logs(text: str, *, repo: str = "", number: int = 0) -> ReviewSnapshot:
     ex = _EXEC_SKIP_RE.search(blob)
     dec = _DECISION_RE.search(blob)
     sug = _SUGGESTED_RE.search(blob)
+    covm = _COVERAGE_RE.search(blob)
 
     qdrant = "qdrant" in blob.lower() and "qdrant disabled" not in blob.lower()
     if "graphify only" in blob.lower() or "Qdrant disabled" in blob:
@@ -240,6 +256,9 @@ def from_logs(text: str, *, repo: str = "", number: int = 0) -> ReviewSnapshot:
         final_decision=(dec.group(1) if dec else ""),
         suggested_policy=(sug.group(1) if sug else None),
         qdrant_used=qdrant,
+        coverage_low=(covm.group(4).lower() == "true") if covm else None,
+        policy_reason=(covm.group(6) if covm else None),
+        coverage_ratio=(float(covm.group(3)) if covm else None),
     )
 
 

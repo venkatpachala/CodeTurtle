@@ -28,6 +28,7 @@ class RepoConfig(BaseModel):
     execute_install: Optional[bool] = None
     model: Optional[str] = None
     llm_backend: Optional[str] = None
+    coverage_merge_min: Optional[float] = None
 
 
 @dataclass
@@ -42,6 +43,7 @@ class EffectiveReviewConfig:
     model: str = ""
     llm_backend: str = ""
     post_on_github: bool = False
+    coverage_merge_min: float = 0.5
     config_path: Optional[Path] = None
 
 
@@ -115,6 +117,7 @@ def merge_review_config(
         execute_install=bool(getattr(settings, "execute_install", False)),
         model=str(getattr(settings, "ollama_model", "") or ""),
         llm_backend=str(getattr(settings, "llm_backend", "") or ""),
+        coverage_merge_min=float(getattr(settings, "coverage_merge_min", 0.5) or 0.5),
         config_path=config_path,
     )
     if repo is not None:
@@ -135,6 +138,8 @@ def merge_review_config(
         if repo.llm_backend:
             out.llm_backend = str(repo.llm_backend)
         out.post_on_github = bool(repo.post_on_github)
+        if repo.coverage_merge_min is not None:
+            out.coverage_merge_min = float(repo.coverage_merge_min)
     if cli_execute_tests:
         out.execute_tests = True
     if cli_execute_install:

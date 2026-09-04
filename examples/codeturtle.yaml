@@ -23,8 +23,11 @@ inline_max: 8
 inline_lockfile: false
 post_on_github: false
 
+# Empty KEEP may MERGE only if packed/total >= this (default 0.5)
+# coverage_merge_min: 0.5
+
 execute_tests: false
 execute_install: false
 
-model: qwen2.5-coder:7b
+model: qwen2.5:7b
 # llm_backend: ollama

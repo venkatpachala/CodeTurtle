@@ -9,10 +9,7 @@ from config import settings
 from core.ignore import is_ignored
 from core.pr_facts import _is_docs_or_trivia, is_lockfile, normalize_path
 from core.verification.diff_index import DiffIndex, build_diff_index
-from core.verification.policy import (
-    clamp_recommendation,
-    recommendation_from_verification,
-)
+from core.verification.policy import clamp_recommendation
 
 MARKER = "<!-- codeturtle-review -->"
 SHA_PREFIX = "<!-- codeturtle-sha:"
@@ -73,18 +70,13 @@ def clamped_decision(state: dict) -> str:
     findings = list(state.get("validated_findings") or state.get("findings") or [])
     vrep = state.get("verification_report") if isinstance(state.get("verification_report"), dict) else {}
     exrep = state.get("execution_report") if isinstance(state.get("execution_report"), dict) else {}
-    understanding = state.get("pr_understanding") or {}
-    risk = ""
-    if isinstance(understanding, dict):
-        risk = str(understanding.get("risk_level") or "")
-    baseline = recommendation_from_verification(
-        findings,
-        classification=classification,
-        risk=risk or "medium",
-        execution=exrep or None,
+    from core.verification.policy import policy_from_state
+
+    baseline, reason, _ratio, _low = policy_from_state(
+        state, findings, execution=exrep or None
     )
     rec = str(state.get("recommendation") or vrep.get("suggested_recommendation") or baseline)
-    return clamp_recommendation(rec, baseline, classification)
+    return clamp_recommendation(rec, baseline, classification, policy_reason=reason)
 
 
 def is_postable_finding(finding: Dict[str, Any] | None) -> bool:

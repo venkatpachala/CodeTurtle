@@ -1499,29 +1499,40 @@ def final_recommender(state: ReviewState) -> dict:
 
     empty = not finding_dicts
     classification = str((state.get("pr_facts") or {}).get("classification") or "")
-    from core.verification.policy import clamp_recommendation, recommendation_from_verification
+    from core.verification.policy import clamp_recommendation, policy_from_state
 
     vrep = state.get("verification_report") if isinstance(state.get("verification_report"), dict) else {}
     exrep = state.get("execution_report") if isinstance(state.get("execution_report"), dict) else {}
-    if vrep.get("ran") or any(f.get("verification_status") for f in finding_dicts) or exrep:
-        baseline = recommendation_from_verification(
-            finding_dicts,
-            classification=classification,
-            risk=str(risk or "medium"),
-            execution=exrep or None,
-        )
-    else:
-        sev = [str(f.get("severity", "low")).lower() for f in finding_dicts]
-        if any(s in ("critical", "high", "blocking") for s in sev):
-            baseline = "REQUEST_CHANGES"
-        elif any(s in ("medium", "concern") for s in sev):
-            baseline = "COMMENT"
-        elif empty and classification == "lockfile-only":
-            baseline = "COMMENT"
-        elif empty and str(risk).lower() in ("medium", "high", "critical"):
-            baseline = "COMMENT"
-        else:
-            baseline = "MERGE"
+    baseline, policy_reason, coverage_ratio, coverage_low = policy_from_state(
+        state,
+        finding_dicts,
+        execution=exrep or None,
+    )
+    if not (
+        vrep.get("ran")
+        or any(f.get("verification_status") for f in finding_dicts)
+        or exrep
+        or state.get("review_coverage") is not None
+    ):
+        # Legacy path when 4.1/7.2 have not run: keep prior empty/risk heuristic
+        # unless decide() already applied lockfile / coverage / blocking.
+        if policy_reason in ("empty_keep_risk", "no_validated_issues", "default", "keep_non_blocking"):
+            sev = [str(f.get("severity", "low")).lower() for f in finding_dicts]
+            if any(s in ("critical", "high", "blocking") for s in sev):
+                baseline = "REQUEST_CHANGES"
+                policy_reason = "supported_medium"
+            elif any(s in ("medium", "concern") for s in sev):
+                baseline = "COMMENT"
+                policy_reason = "keep_non_blocking"
+            elif empty and classification == "lockfile-only":
+                baseline = "COMMENT"
+                policy_reason = "lockfile-only"
+            elif empty and str(risk).lower() in ("medium", "high", "critical"):
+                baseline = "COMMENT"
+                policy_reason = "empty_keep_risk"
+            elif empty:
+                baseline = "MERGE"
+                policy_reason = "no_validated_issues"
     if empty:
         corr_summary = test_summary = qual_summary = (
             "(omitted — no validated findings; do not recap unvalidated specialist drafts)"
@@ -1556,7 +1567,8 @@ Rules:
 - recommendation MUST be MERGE | REQUEST_CHANGES | COMMENT
 - summary MUST only use: PR understanding summary + VALIDATED findings
 - If VALIDATED findings is empty, MERGE is allowed only as "no validated issues found" — not as a recap of rejected nits.
-- If the list is empty AND risk is medium/high, prefer COMMENT over MERGE (could not confirm issues, not high confidence merge).
+- If the list is empty AND coverage is low (insufficient_coverage), you MUST COMMENT, never MERGE.
+- If the list is empty AND risk is medium/high AND coverage was not measured, prefer COMMENT over MERGE.
 - If classification is lockfile-only AND validated findings is empty, prefer COMMENT ("lockfile-only; no grounded issue"), not MERGE.
 - Uncertain investigation hypotheses may be mentioned only as "could not confirm X" — not as proven bugs.
 - verification_status: only supported findings with severity >= medium may justify REQUEST_CHANGES.
@@ -1567,6 +1579,8 @@ Rules:
         ("human", """Understanding summary: {summary_u}
 Risk: {risk}
 Baseline: {baseline}
+Policy reason: {policy_reason}
+Coverage low: {coverage_low}
 Correctness summary: {corr_summary}
 Testing summary: {test_summary}
 Quality summary: {qual_summary}
@@ -1582,6 +1596,8 @@ Return ReviewOutput."""),
         summary_u=summary_u,
         risk=risk,
         baseline=baseline,
+        policy_reason=policy_reason,
+        coverage_low=coverage_low,
         corr_summary=corr_summary,
         test_summary=test_summary,
         qual_summary=qual_summary,
@@ -1609,7 +1625,9 @@ Return ReviewOutput."""),
             summary = f"Automated decision based on {len(finding_dicts)} kept findings."
         confidence = 0.55
 
-    rec = clamp_recommendation(rec, baseline, classification)
+    rec = clamp_recommendation(
+        rec, baseline, classification, policy_reason=policy_reason
+    )
 
     blocking = [
         f.get("title")
@@ -1621,7 +1639,7 @@ Return ReviewOutput."""),
         blocking = []
 
     final_comment = (
-        f"**{rec}** (confidence={confidence:.2f})\n\n"
+        f"**{rec}** ({policy_reason}) (confidence={confidence:.2f})\n\n"
         f"{summary}\n\n"
         f"Findings kept: {len(finding_dicts)}\n"
         f"Blocking: {blocking or 'none'}"
@@ -1630,11 +1648,15 @@ Return ReviewOutput."""),
     return {
         "final_comment": final_comment,
         "recommendation": rec,
+        "coverage_ratio": coverage_ratio,
+        "coverage_low": coverage_low,
+        "policy_reason": policy_reason,
         "merge_decision": {
             "recommendation": rec,
             "confidence": confidence,
             "summary": summary,
             "blocking_issues": blocking,
+            "policy_reason": policy_reason,
         },
         "traces": [{"agent": "FinalRecommender", "output": final_comment[:2000]}],
     }
