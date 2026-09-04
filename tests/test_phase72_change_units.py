@@ -294,7 +294,8 @@ class TestGraphAndLockfileEvalShape(unittest.TestCase):
                 src, tgt = e[0], e[1]
             if src and tgt:
                 edges.add((str(src), str(tgt)))
-        self.assertIn(("change_units", "pr_understanding"), edges)
+        self.assertIn(("change_units", "extract_failure_paths"), edges)
+        self.assertIn(("extract_failure_paths", "pr_understanding"), edges)
 
     def test_571_shaped_lockfile_has_unit(self):
         facts = build_pr_facts(files_changed=[LOCK], full_diff=DIFF_LOCK, title="lock")

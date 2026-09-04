@@ -179,8 +179,8 @@ class TestFakeStripped(unittest.TestCase):
         self.assertNotIn("FakeCursor", blob)
         self.assertNotIn("FakeConnection", blob)
         self.assertTrue(provider.calls)  # hops on the real file still happen
-        tools = [c[0] for c in provider.calls]
-        self.assertNotIn("query", tools)  # FakeCursor question was stripped
+        blob_q = " ".join(str(c[1]) for c in provider.calls if c[0] == "query")
+        self.assertNotIn("FakeCursor", blob_q)
         self.assertEqual(len(out["validated_findings"]), 1)
         self.assertEqual(out["validated_findings"][0]["file"], LOADER)
         self.assertIsNone(out["validated_findings"][0].get("symbol"))

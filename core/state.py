@@ -28,6 +28,8 @@ class ReviewState(TypedDict):
     change_units: NotRequired[list]
     review_diff: NotRequired[str]
     review_coverage: NotRequired[dict]
+    failure_path_findings: NotRequired[list]
+    failure_path_report: NotRequired[dict]
     coverage_ratio: NotRequired[float]
     coverage_low: NotRequired[bool]
     policy_reason: NotRequired[str]

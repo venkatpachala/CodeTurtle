@@ -7,15 +7,17 @@ from typing import Any, Dict, List, Optional
 
 from core.finding_validator import filter_findings
 from core.hypothesis import KEEP, PLAUSIBLE, UNRESOLVED
-from core.investigation.models import EvidenceItem, GraphifyCall, Hypothesis
+from core.investigation.graphify_ops import hit_count, run_op
+from core.investigation.models import EvidenceItem, GraphOp, GraphifyCall, Hypothesis, InvestigationAsk
 from core.investigation.planner import (
     MAX_GRAPHIFY_CALLS_IN_INVESTIGATE,
     MAX_HYPOTHESES,
     TIMEOUT_S,
     asks_to_hypotheses,
+    file_label,
     findings_to_hypotheses,
     is_investigable_path,
-    plan_graphify_calls,
+    plan_typed_asks,
     strip_ungrounded_symbol,
 )
 from core.finding_validator import _is_source_path, _is_trivial
@@ -198,53 +200,138 @@ def run_investigation(state: dict, provider: Any) -> dict:
     if not hyps:
         return _skip("no_changed_path_hypotheses", state)
 
-    calls = plan_graphify_calls(hyps, pr_number=pr_number, repo=repo)
+    asks = plan_typed_asks(hyps, pr_number=pr_number, repo=repo)
     deadline = time.monotonic() + TIMEOUT_S
     evidence: List[EvidenceItem] = []
     by_hyp: Dict[str, List[EvidenceItem]] = {h.id: [] for h in hyps}
     n_calls = 0
     n_hops = 0  # successful evidence-producing calls
     eid = 1
+    op_log: List[dict] = []
+    typed_hits: Dict[str, Dict[str, int]] = {
+        h.id: {"callers": 0, "callees": 0, "tests": 0} for h in hyps
+    }
 
-    for call in calls:
+    def _dispatch(ask: InvestigationAsk) -> List[EvidenceItem]:
+        nonlocal n_calls, n_hops, eid
         if n_calls >= MAX_GRAPHIFY_CALLS_IN_INVESTIGATE:
-            break
+            return []
         if time.monotonic() > deadline:
             print("[Investigate] timeout")
-            break
-        # Never hop on trivia / paths outside the PR (symbol-only calls may have empty path)
-        if call.path and not is_investigable_path(call.path, files_changed):
-            if call.tool == "get_pr_impact":
-                pass
-            elif call.symbol:
-                call.path = ""
+            return []
+        op = ask.op or GraphOp.GET_NEIGHBORS
+        path = ask.file or ""
+        symbol = ask.symbol
+        if path and not is_investigable_path(path, files_changed):
+            if op == GraphOp.PR_IMPACT:
+                path = ""
+            elif symbol:
+                path = ""
             else:
-                continue
-        if call.symbol:
-            if not strip_ungrounded_symbol(call.symbol, files_changed, full_diff):
-                call.symbol = None
-        if call.tool == "query" and call.question:
-            if not question_grounded_in_pr(call.question, files_changed, full_diff):
-                continue
-
+                return []
+        if symbol:
+            grounded = strip_ungrounded_symbol(symbol, files_changed, full_diff)
+            if not grounded:
+                symbol = None
+                if op in (GraphOp.FIND_CALLERS, GraphOp.FIND_CALLEES, GraphOp.GET_NODE):
+                    symbol = file_label(path) or None
+                    if not symbol and op != GraphOp.GET_NEIGHBORS:
+                        return []
+        q = ask.question or ""
+        if op in (GraphOp.FIND_CALLERS, GraphOp.FIND_CALLEES, GraphOp.FIND_TESTS) and q:
+            if not question_grounded_in_pr(q, files_changed, full_diff):
+                # Retarget the question at the grounded label
+                lab = symbol or file_label(path)
+                if not lab or not question_grounded_in_pr(
+                    f"{op.value} {lab}", files_changed, full_diff
+                ):
+                    if op != GraphOp.GET_NODE:
+                        return []
         n_calls += 1
+        hid = ask.hypothesis_id or "-"
         print(
-            f"[Investigate] {call.hypothesis_id or '-'} "
-            f"file={call.path} call={call.tool} label={call.label}"
+            f"[Investigate] {hid} ask={op.value} "
+            f"symbol={symbol or ''} file={path}"
         )
-        item = execute_call(provider, call)
-        if item is None:
-            continue
-        item.id = _evidence_id(eid)
-        eid += 1
+        op_log.append({"hyp": hid, "op": op.value, "symbol": symbol or "", "file": path})
+        items = run_op(
+            provider,
+            op,
+            symbol=str(symbol or ""),
+            path=path or None,
+            pr_number=ask.pr_number if ask.pr_number is not None else pr_number,
+            repo=ask.repo or repo,
+        )
+        if not items:
+            return []
         n_hops += 1
-        evidence.append(item)
-        hid = call.hypothesis_id
-        if hid and hid in by_hyp:
-            by_hyp[hid].append(item)
-        else:
-            for h in hyps:
-                by_hyp[h.id].append(item)
+        for it in items:
+            it.id = _evidence_id(eid)
+            eid += 1
+            evidence.append(it)
+            if hid in by_hyp:
+                by_hyp[hid].append(it)
+            else:
+                for hyp in hyps:
+                    by_hyp[hyp.id].append(it)
+        return items
+
+    impact_asks = [a for a in asks if a.op == GraphOp.PR_IMPACT]
+    typed_asks = [a for a in asks if a.op != GraphOp.PR_IMPACT]
+    by_ask_hyp: Dict[str, List[InvestigationAsk]] = {}
+    for a in typed_asks:
+        by_ask_hyp.setdefault(a.hypothesis_id or "", []).append(a)
+
+    timed_out = False
+    for h in hyps:
+        if n_calls >= MAX_GRAPHIFY_CALLS_IN_INVESTIGATE or timed_out:
+            break
+        for ask in by_ask_hyp.get(h.id, []):
+            if n_calls >= MAX_GRAPHIFY_CALLS_IN_INVESTIGATE:
+                break
+            if time.monotonic() > deadline:
+                print("[Investigate] timeout")
+                timed_out = True
+                break
+            items = _dispatch(ask)
+            op = ask.op
+            n = hit_count(items)
+            if op == GraphOp.FIND_CALLERS:
+                typed_hits[h.id]["callers"] = n
+            elif op == GraphOp.FIND_CALLEES:
+                typed_hits[h.id]["callees"] = n
+            elif op == GraphOp.FIND_TESTS:
+                typed_hits[h.id]["tests"] = n
+        hits = typed_hits[h.id]
+        if (
+            hits["callers"] + hits["callees"] + hits["tests"] == 0
+            and n_calls < MAX_GRAPHIFY_CALLS_IN_INVESTIGATE
+            and not timed_out
+        ):
+            target = h.file or h.file_hint or ""
+            lab = h.symbol or file_label(target)
+            if lab and (not target or is_investigable_path(target, files_changed) or h.symbol):
+                _dispatch(
+                    InvestigationAsk(
+                        op=GraphOp.GET_NEIGHBORS,
+                        ask="get_neighbors",
+                        file=target if is_investigable_path(target, files_changed) else "",
+                        symbol=h.symbol or lab,
+                        hypothesis_id=h.id,
+                    )
+                )
+        print(
+            f"[Investigate] {h.id} callers={hits['callers']} "
+            f"callees={hits['callees']} tests={hits['tests']}"
+        )
+
+    if (
+        impact_asks
+        and n_calls < MAX_GRAPHIFY_CALLS_IN_INVESTIGATE
+        and not timed_out
+        and time.monotonic() <= deadline
+    ):
+        _dispatch(impact_asks[0])
 
     # Merge onto KEEP + PLAUSIBLE pool, then promote PLAUSIBLE when evidence names a PR path
     classified = [
@@ -365,6 +452,8 @@ def run_investigation(state: dict, provider: Any) -> dict:
         "calls": n_calls,
         "hypotheses": len(hyps),
         "statuses": {h.id: h.status for h in hyps},
+        "asks": op_log,
+        "typed_hits": typed_hits,
     }
 
     # Split survivors by category for display

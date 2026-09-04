@@ -224,6 +224,11 @@ def classify_hypotheses_node(state: dict) -> dict:
             d = _as_dict(item)
             d["category"] = d.get("category") or cat
             raw_items.append(d)
+    for item in list(state.get("failure_path_findings") or []):
+        d = _as_dict(item)
+        d["category"] = d.get("category") or "correctness"
+        d["failure_path"] = True
+        raw_items.append(d)
     if not raw_items:
         for item in list(state.get("findings") or state.get("validated_findings") or []):
             raw_items.append(_as_dict(item))
