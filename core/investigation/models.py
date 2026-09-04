@@ -2,15 +2,27 @@
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
 
+class GraphOp(str, Enum):
+    GET_NODE = "get_node"
+    FIND_CALLERS = "find_callers"
+    FIND_CALLEES = "find_callees"
+    FIND_TESTS = "find_tests"
+    PR_IMPACT = "pr_impact"
+    GET_NEIGHBORS = "get_neighbors"
+
+
 class EvidenceItem(BaseModel):
     id: str
     source: Literal["graphify", "diff", "github"] = "graphify"
-    kind: Literal["query", "node", "neighbors", "pr_impact", "hunk"] = "query"
+    kind: Literal[
+        "query", "node", "neighbors", "pr_impact", "hunk", "callers", "callees", "tests"
+    ] = "query"
     path: str = ""
     symbol: Optional[str] = None
     text: str = ""
@@ -33,20 +45,27 @@ class Hypothesis(BaseModel):
     category: str = "review"
     title: str = ""
     hypothesis_kind: Optional[HypothesisStatus] = None
+    risk_hint: Optional[str] = None
 
 
 class InvestigationAsk(BaseModel):
-    """Planner output: one Graphify follow-up about a changed file."""
+    """Planner output: one typed Graphify follow-up about a changed file/symbol."""
 
-    file: str
+    file: str = ""
     symbol: Optional[str] = None
-    ask: str = "neighbors"  # neighbors | node | callers | impact | query
+    ask: str = "neighbors"  # backward compat alias of op
+    op: Optional[GraphOp] = None
+    hypothesis_id: Optional[str] = None
+    question: str = ""
+    pr_number: Optional[int] = None
+    repo: Optional[str] = None
 
 
 class GraphifyCall(BaseModel):
     """Deterministic tool plan item. Maps 1:1 to existing Graphify MCP tools."""
 
     tool: Literal["get_node", "get_neighbors", "query", "get_pr_impact"]
+    op: str = ""
     label: str = ""
     hypothesis_id: Optional[str] = None
     path: str = ""
