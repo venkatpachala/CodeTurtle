@@ -172,24 +172,30 @@ class TestUvSync(unittest.TestCase):
                 "title": "quoter",
             }
         ]
-        out = execute_tests_node(
-            {
-                "execute_tests": True,
-                "execute_install": True,
-                "repo": "FalkorDB/QueryWeaver",
-                "number": 538,
-                "pr_head_sha": "abc",
-                "pr_facts": {
-                    "classification": "source",
-                    "files_changed": [SANITIZER, TEST_SAN],
-                    "source_files": [SANITIZER],
-                },
-                "validated_findings": findings,
-            },
-            runner=runner,
-            checkout=fake_checkout,
-            which=_which_map(uv="uv", pytest="pytest"),
-        )
+        with tempfile.TemporaryDirectory() as td:
+            missing_clone = Path(td) / "no-clone"
+            with patch(
+                "core.verification.execute.resolve_repo_dir",
+                return_value=missing_clone,
+            ):
+                out = execute_tests_node(
+                    {
+                        "execute_tests": True,
+                        "execute_install": True,
+                        "repo": "FalkorDB/QueryWeaver",
+                        "number": 538,
+                        "pr_head_sha": "abc",
+                        "pr_facts": {
+                            "classification": "source",
+                            "files_changed": [SANITIZER, TEST_SAN],
+                            "source_files": [SANITIZER],
+                        },
+                        "validated_findings": findings,
+                    },
+                    runner=runner,
+                    checkout=fake_checkout,
+                    which=_which_map(uv="uv", pytest="pytest"),
+                )
         self.assertFalse(out["execution_report"]["skipped"])
         self.assertEqual(out["execution_report"]["python_env"], "uv_sync")
         self.assertTrue(out["execution_report"]["python"]["frozen"])
