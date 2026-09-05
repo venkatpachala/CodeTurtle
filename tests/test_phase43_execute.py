@@ -183,19 +183,26 @@ class TestExecuteHappyAndFail(unittest.TestCase):
         }
         with tempfile.TemporaryDirectory() as td:
             dest = Path(td) / "wt"
-            # execute_tests_node builds dest under tmp/codeturtle-exec — inject checkout
-            out = execute_tests_node(
-                state,
-                runner=runner,
-                checkout=self._checkout(dest),
-                which=lambda n: "pytest",
-            )
+            # Do not pick up repos/<clone>/.venv from a live checkout on this machine.
+            missing_clone = Path(td) / "no-clone"
+            with patch(
+                "core.verification.execute.resolve_repo_dir",
+                return_value=missing_clone,
+            ):
+                out = execute_tests_node(
+                    state,
+                    runner=runner,
+                    checkout=self._checkout(dest),
+                    which=lambda n: "pytest",
+                )
         self.assertFalse(out["execution_report"]["skipped"])
         self.assertEqual(out["execution_report"]["exit_code"], 0)
         self.assertEqual(out["validated_findings"][0]["verification_status"], "supported")
         self.assertTrue(out["validated_findings"][0]["tests_run"])
         self.assertTrue(out["validated_findings"][0]["tests_passed"])
-        pytest_cmds = [c for c in calls if c and "pytest" in str(c[0])]
+        pytest_cmds = [
+            c for c in calls if any("pytest" in str(x) for x in c)
+        ]
         self.assertTrue(pytest_cmds)
         self.assertIn(TEST_SAN, pytest_cmds[0] or pytest_cmds[-1])
 
