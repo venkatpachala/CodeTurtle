@@ -5,6 +5,11 @@ from __future__ import annotations
 import re
 from typing import Iterable, List, Optional, Set, Tuple
 
+from core.agent.contract import (
+    has_failure_mode,
+    is_changelog_title,
+    is_test_name_restatement,
+)
 from core.change_units import _TEST_BASENAME_RE
 from core.graphctx.symbols import is_valid_symbol
 from core.pr_facts import normalize_path
@@ -72,11 +77,7 @@ def _looks_like_path_or_py(symbol: str) -> bool:
     s = (symbol or "").strip()
     if not s:
         return False
-    if s.lower() == "py" or s == "*.py" or s.lower().endswith(".py"):
-        return True
-    if "." in s or "/" in s or "\\" in s:
-        return True
-    return not is_valid_symbol(s) and ("/" in s or s.endswith(".py"))
+    return not is_valid_symbol(s)
 
 
 def _distinctive_tokens(text: str) -> List[str]:
@@ -111,10 +112,20 @@ def reflect_candidate(
         )
         return False, reason
 
+    if str(getattr(candidate, "kind", "") or "").lower() == "note":
+        return _drop("note")
+
+    title = candidate.title or ""
+    claim = candidate.claim or ""
+    if is_changelog_title(title):
+        return _drop("changelog")
+    if is_test_name_restatement(title, claim):
+        return _drop("test_restatement")
+
     if not _in_pr(path, allowed, index):
         return _drop("file_not_in_pr")
 
-    if _TEST_FOR_RE.search(candidate.title or "") and not _is_test_path(path):
+    if _TEST_FOR_RE.search(title) and not _is_test_path(path):
         return _drop("test_for_on_nontest")
 
     for ep in candidate.evidence_paths or []:

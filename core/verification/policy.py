@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Tuple
 
+from core.agent.contract import (
+    as_finding_kind,
+    is_changelog_title,
+    is_test_name_restatement,
+)
 from core.pr_facts import is_source_file
 
 COVERAGE_MERGE_MIN = 0.5
@@ -188,6 +193,21 @@ def coverage_score(
     return ratio, low
 
 
+def _cap_changelog_severity(finding: Dict[str, Any]) -> Dict[str, Any]:
+    f = dict(finding or {})
+    title = str(f.get("title") or "")
+    claim = str(f.get("claim") or f.get("description") or "")
+    if is_changelog_title(title) or is_test_name_restatement(title, claim):
+        if str(f.get("severity") or "").lower() in MEDIUM_PLUS:
+            f["severity"] = "nit"
+        f["kind"] = "note"
+    return f
+
+
+def _is_blocking_defect(finding: Dict[str, Any] | None) -> bool:
+    return as_finding_kind(finding or {}) == "defect"
+
+
 def decide(
     findings: List[Dict[str, Any]] | None,
     *,
@@ -216,12 +236,16 @@ def decide(
     if _execution_failed(execution) or any(f.get("tests_passed") is False for f in findings):
         return "REQUEST_CHANGES", "tests_failed"
 
+    findings = [_cap_changelog_severity(f) for f in findings]
+    findings = [f for f in findings if as_finding_kind(f) != "note"]
+
     supported = [f for f in findings if f.get("verification_status") == "supported"]
     uncertain = [f for f in findings if f.get("verification_status") == "uncertain"]
     blocking = [
         f
         for f in supported
         if str(f.get("severity") or "").lower() in MEDIUM_PLUS
+        and _is_blocking_defect(f)
     ]
     if blocking:
         return "REQUEST_CHANGES", "supported_medium"

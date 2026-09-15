@@ -103,5 +103,48 @@ class TestBundleBuilder(unittest.TestCase):
         self.assertNotIn(TEST_OTHER, all_paths)
 
 
+class TestFeatureStemJoin(unittest.TestCase):
+    def test_hosted_jobs_joins_matching_test_not_jobs_py(self):
+        hosted_jobs = "pkg/cli/hosted_jobs.py"
+        jobs = "pkg/cli/jobs.py"
+        hosted_cfg = "pkg/hosted/config.py"
+        test_regrade = "tests/test_hosted_regrade.py"
+        files = [hosted_jobs, jobs, hosted_cfg, test_regrade]
+        diff = "".join(
+            [
+                _hunk(hosted_jobs, "+def run_hosted_regrade():\n+    return 1\n"),
+                _hunk(jobs, "+def regrade():\n+    pass\n"),
+                _hunk(hosted_cfg, "+class HostedRegradeSource:\n+    pass\n"),
+                _hunk(test_regrade, "+def test_hosted_regrade():\n+    assert True\n"),
+            ]
+        )
+        units = build_change_units(diff, files)
+        bundles = BundleBuilder().build(
+            files_changed=files,
+            units=units,
+            classification="source",
+        )
+        self.assertTrue(bundles)
+        self.assertLessEqual(len(bundles), 4)
+        matched = [
+            b
+            for b in bundles
+            if hosted_jobs in b.paths and test_regrade in b.paths
+        ]
+        self.assertTrue(
+            matched,
+            f"expected hosted_jobs+test together, got {[b.paths for b in bundles]}",
+        )
+        for b in bundles:
+            if b.paths == [test_regrade] or (
+                all(p.endswith(".py") and "test_" in p.split("/")[-1] for p in b.paths)
+                and not any("hosted_jobs" in p or "/hosted/" in p for p in b.paths)
+            ):
+                self.fail(f"test-only bundle: {b.paths}")
+            self.assertNotEqual(b.paths, [test_regrade])
+        hosted_bundle = matched[0]
+        self.assertNotIn(jobs, hosted_bundle.paths)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

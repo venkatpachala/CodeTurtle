@@ -29,13 +29,17 @@ class TestValidSymbol(unittest.TestCase):
         self.assertTrue(is_valid_symbol("Loader"))
         self.assertTrue(is_valid_symbol("_private"))
 
+    def test_accept_dotted_identifiers(self):
+        self.assertTrue(is_valid_symbol("Foo.bar"))
+        self.assertTrue(is_valid_symbol("JobPlan.resolve_task_configs"))
+
     def test_reject_dot_slash_and_py(self):
         self.assertFalse(is_valid_symbol("py"))
         self.assertFalse(is_valid_symbol("PY"))
         self.assertFalse(is_valid_symbol("loader.py"))
         self.assertFalse(is_valid_symbol("*.py"))
         self.assertFalse(is_valid_symbol("pkg/api/loader.py"))
-        self.assertFalse(is_valid_symbol("pkg.api.loader"))
+        self.assertFalse(is_valid_symbol("notes.md"))
         self.assertFalse(is_valid_symbol(""))
 
 
@@ -45,7 +49,7 @@ class TestExtractIdentifiers(unittest.TestCase):
         self.assertIn("refresh_schema", names)
         self.assertIn("Loader", names)
         self.assertNotIn("py", names)
-        self.assertFalse(any("." in n or "/" in n for n in names))
+        self.assertFalse(any("/" in n for n in names))
 
     def test_fallback_def_name(self):
         excerpt = "+def load_data(x):\n+    return x\n"

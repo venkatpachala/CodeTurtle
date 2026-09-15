@@ -94,7 +94,7 @@ class TestReflector(unittest.TestCase):
             line=2,
         )
         self.assertFalse(keep)
-        self.assertEqual(reason, "test_for_on_nontest")
+        self.assertIn(reason, ("test_for_on_nontest", "changelog", "test_restatement"))
 
     def test_drop_evidence_not_in_pr(self):
         keep, reason = reflect_candidate(
@@ -179,7 +179,10 @@ class TestReflector(unittest.TestCase):
             line=2,
         )
         self.assertFalse(keep)
-        self.assertIn(reason, ("test_for_on_nontest", "evidence_not_in_pr"))
+        self.assertIn(
+            reason,
+            ("test_for_on_nontest", "evidence_not_in_pr", "changelog", "test_restatement"),
+        )
         self.assertNotIn(TEST_OTHER, FILES)
 
     def test_synthetic_keep_refresh_schema_in_hunk(self):

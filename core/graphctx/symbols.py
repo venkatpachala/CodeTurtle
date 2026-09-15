@@ -6,21 +6,24 @@ import ast
 import re
 from typing import Iterable, List, Optional
 
-_IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+_IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
+_BAD_SUFFIX = (".py", ".ts", ".tsx", ".js", ".jsx", ".md", ".mdx")
 _DEF_FALLBACK = re.compile(r"(?:async\s+)?def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(")
 _CLASS_FALLBACK = re.compile(r"\bclass\s+([A-Za-z_][A-Za-z0-9_]*)\b")
 _FUNC_JS = re.compile(r"(?:async\s+)?function\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(")
 
 
 def is_valid_symbol(sym: str) -> bool:
+    """Identifiers including Foo.bar / JobPlan.resolve_task_configs. Not paths."""
     s = (sym or "").strip()
     if not s:
         return False
     if s.lower() == "py":
         return False
-    if "." in s or "/" in s or "\\" in s:
+    if "/" in s or "\\" in s:
         return False
-    if s.endswith(".py") or s == "*.py":
+    low = s.lower()
+    if low.endswith(_BAD_SUFFIX) or s == "*.py":
         return False
     return bool(_IDENT_RE.match(s))
 

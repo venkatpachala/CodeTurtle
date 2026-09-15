@@ -29,6 +29,8 @@ codeturtle review https://github.com/owner/repo/pull/123 --dry-run
 
 Default is **dry-run** and **v4** (`ReviewRuntime`: bundles → Graphify-by-identifier → reflector → Policy). Nothing is posted unless you pass `--comment`. Qdrant is off on the default path. Set `runtime: legacy` in `.codeturtle.yaml` for the 17-node LangGraph.
 
+Optional sandbox (default **off**): `--execute-tests` runs jailed pytest on this PR’s related tests in a detached worktree at `pr.head.sha`. `--execute-install` may sync uv/npm in that worktree only. A green run is evidence and never auto-MERGEs. A red run can set Decision to `REQUEST_CHANGES` (`tests_failed`). Decision is still Policy.
+
 ---
 
 ## What is CodeTurtle?
@@ -107,6 +109,7 @@ codeturtle
 codeturtle review owner/repo 123 --dry-run
 codeturtle review owner/repo#123 --dry-run
 codeturtle review https://github.com/owner/repo/pull/123 --dry-run
+codeturtle review owner/repo 123 --dry-run --execute-tests
 codeturtle review owner/repo 123 --comment
 codeturtle graphify-test owner/repo --stats
 ```

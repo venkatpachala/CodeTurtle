@@ -43,6 +43,7 @@ class Candidate:
     severity: str = "medium"
     source: str = "agent"  # agent | rule
     evidence_paths: List[str] = field(default_factory=list)
+    kind: str = "defect"  # defect | note
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -61,6 +62,8 @@ class Comment:
     evidence_paths: List[str] = field(default_factory=list)
     line: int = 0
     verification: str = "supported"
+    kind: str = "defect"
+    tests_run: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -79,6 +82,7 @@ def comment_from_candidate(cand: Candidate, line: int) -> Comment:
         evidence_paths=list(cand.evidence_paths or []),
         line=int(line),
         verification="supported",
+        kind=str(cand.kind or "defect"),
     )
 
 
@@ -90,6 +94,7 @@ class ReviewResult:
     dropped: List[Dict[str, Any]] = field(default_factory=list)
     bundles: List[Bundle] = field(default_factory=list)
     coverage: Dict[str, Any] = field(default_factory=dict)
+    execution: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -99,4 +104,5 @@ class ReviewResult:
             "dropped": list(self.dropped),
             "bundles": [b.to_dict() for b in self.bundles],
             "coverage": dict(self.coverage or {}),
+            "execution": dict(self.execution or {}),
         }

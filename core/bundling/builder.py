@@ -20,6 +20,25 @@ MAX_FILES_PER_BUNDLE = 6
 MAX_BUNDLES = 4
 
 _JS_TEST_RE = re.compile(r".*\.test\.(ts|tsx|js|jsx)$", re.I)
+_GENERIC_DIRS = {
+    "cli",
+    "src",
+    "pkg",
+    "lib",
+    "app",
+    "core",
+    "unit",
+    "tests",
+    "test",
+    "api",
+    "models",
+    "utils",
+    "bin",
+    "scripts",
+    "python",
+    "js",
+    "ts",
+}
 
 
 def _is_test_path(path: str) -> bool:
@@ -52,6 +71,20 @@ def _dir_key(path: str) -> str:
     if len(parts) <= 1:
         return "."
     return "/".join(parts[:-1])
+
+
+def _feature_key(path: str) -> str:
+    """Group by feature stem, not only parent dir (hosted_jobs + hosted/)."""
+    n = normalize_path(path)
+    parents = [p.lower() for p in n.split("/")[:-1] if p]
+    for parent in reversed(parents):
+        if parent not in _GENERIC_DIRS:
+            return parent
+    stem = _stem(n).lower()
+    parts = [p for p in stem.split("_") if p]
+    if parts and len(parts[0]) >= 4:
+        return parts[0]
+    return stem or n
 
 
 def _as_unit(item: Any) -> Any:
@@ -227,18 +260,34 @@ class BundleBuilder:
                 bucket.append(path)
 
         for p in sources:
-            _add(_dir_key(p), p)
+            _add(_feature_key(p), p)
 
+        source_keys = list(groups.keys())
         for t in tests:
-            stem = _stem(t).lower()
-            matches = [s for s in sources if _stem(s).lower() == stem]
-            if matches:
-                _add(_dir_key(matches[0]), t)
+            key = _feature_key(t)
+            if key in groups:
+                _add(key, t)
+                continue
+            exact = [s for s in sources if _stem(s).lower() == _stem(t).lower()]
+            if exact:
+                _add(_feature_key(exact[0]), t)
+                continue
+            if sources and source_keys:
+                _add(source_keys[0], t)
             else:
-                _add(_dir_key(t), t)
+                _add(key, t)
 
         for p in others:
-            _add(_dir_key(p), p)
+            _add(_feature_key(p), p)
+
+        if sources:
+            for key in list(groups.keys()):
+                paths = list(groups.get(key) or [])
+                if paths and all(_is_test_path(p) for p in paths):
+                    dest = source_keys[0] if source_keys else key
+                    groups.pop(key, None)
+                    for t in paths:
+                        _add(dest, t)
 
         ranked_groups = sorted(
             groups.values(),

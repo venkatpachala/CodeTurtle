@@ -44,7 +44,7 @@ class TestSymbols(unittest.TestCase):
         self.assertFalse(is_valid_symbol("py"))
         self.assertFalse(is_valid_symbol("loader.py"))
         self.assertFalse(is_valid_symbol("pkg/api/loader.py"))
-        self.assertFalse(is_valid_symbol("pkg.api.loader"))
+        self.assertTrue(is_valid_symbol("Foo.bar"))
         self.assertTrue(is_valid_symbol("load"))
 
 

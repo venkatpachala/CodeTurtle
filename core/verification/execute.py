@@ -1113,7 +1113,14 @@ def execute_tests_node(
     sha = str(state.get("pr_head_sha") or "")
     number = state.get("number") or 0
 
-    wanted_py = collect_test_paths(findings, files_changed, max_files=max_files)
+    extra = [
+        normalize_path(p)
+        for p in (state.get("sandbox_test_paths") or [])
+        if p
+    ]
+    wanted_py = list(
+        dict.fromkeys(extra + collect_test_paths(findings, files_changed, max_files=max_files))
+    )[:max_files]
     wanted_js = collect_js_test_paths(findings, files_changed, max_files=max_files)
     if not wanted_py and not wanted_js:
         print("[Execute] skip reason=missing_test_file")

@@ -135,12 +135,9 @@ class ReviewPipeline:
                 settings.ollama_model = cfg.model
             if cfg.llm_backend:
                 settings.llm_backend = cfg.llm_backend
-            if cfg.runtime:
-                settings.runtime = str(cfg.runtime).strip().lower()
-            if cfg.bundle_max:
-                settings.bundle_max = int(cfg.bundle_max)
-            if cfg.agent_max_steps:
-                settings.agent_max_steps = int(cfg.agent_max_steps)
+            # runtime / bundle_max / agent_max_steps stay on repo_cfg.
+            # Do not assign them onto Settings — extra="ignore" rejects unknown fields
+            # and YAML defaults (bundle_max=4) would always trigger a write.
             if cfg_path:
                 print(f"[Review] config={cfg_path}")
 
@@ -200,7 +197,11 @@ class ReviewPipeline:
             self._load_knowledge_base()
             self._build_full_diff()
 
-            runtime = str(getattr(settings, "runtime", "v4") or "v4").strip().lower()
+            runtime = str(
+                getattr(cfg, "runtime", None)
+                or getattr(settings, "runtime", "v4")
+                or "v4"
+            ).strip().lower()
             if runtime == "legacy":
                 self._retrieve_context()
                 self._create_review_state()
@@ -433,8 +434,74 @@ Description:
         except Exception:
             pass
 
+    def _display_v4(self, final: dict) -> None:
+        console.print("\n[bold cyan]=== BUNDLES ===[/bold cyan]")
+        bundles = final.get("v4_bundles") or []
+        if not bundles:
+            console.print("[dim](none)[/dim]")
+        for b in bundles:
+            if not isinstance(b, dict):
+                continue
+            paths = ",".join(str(p) for p in (b.get("paths") or []))
+            console.print(f"  {b.get('id')} kind={b.get('kind')} files={paths}")
+
+        console.print("\n[bold green]=== COMMENTS (kept defects) ===[/bold green]")
+        kept = final.get("validated_findings") or final.get("findings") or []
+        if kept:
+            self._print_findings(kept)
+        else:
+            console.print("no kept defects")
+
+        console.print("\n[bold yellow]=== DROPPED ===[/bold yellow]")
+        dropped = final.get("v4_dropped") or []
+        if not dropped:
+            console.print("[dim](none)[/dim]")
+        for d in dropped[:20]:
+            if isinstance(d, dict):
+                console.print(
+                    f"  - {d.get('title') or d.get('file')} reason={d.get('drop_reason')}"
+                )
+            else:
+                console.print(f"  - {d}")
+
+        console.print("\n[bold cyan]=== SANDBOX ===[/bold cyan]")
+        ex = final.get("execution_report") if isinstance(final.get("execution_report"), dict) else {}
+        if ex.get("skipped") or not ex:
+            console.print(f"[dim]skip reason={ex.get('skip_reason') or 'disabled'}[/dim]")
+        else:
+            console.print(
+                f"[dim]cmd={ex.get('cmd')} exit={ex.get('exit_code')} "
+                f"passed={ex.get('passed')} failed={ex.get('failed')}[/dim]"
+            )
+
+        cov = final.get("review_coverage") if isinstance(final.get("review_coverage"), dict) else {}
+        packed = int(cov.get("units_packed") or 0)
+        total = int(cov.get("units_total") or 0)
+        ratio = final.get("coverage_ratio")
+        if ratio is None and total:
+            ratio = packed / total
+        low = final.get("coverage_low")
+        rec = str(final.get("recommendation") or "COMMENT")
+        reason = str(final.get("policy_reason") or "")
+        console.print("\n[bold cyan]=== DECISION ===[/bold cyan]")
+        if total:
+            ratio_s = f"{float(ratio):.2f}" if ratio is not None else "?"
+            console.print(
+                f"[dim]coverage packed={packed} total={total} ratio={ratio_s} "
+                f"low={str(bool(low)).lower()}[/dim]"
+            )
+        console.print(f"[bold]Decision: {rec}[/bold]")
+        if reason:
+            console.print(f"[dim]{rec} ({reason})[/dim]")
+        final_comment = final.get("final_comment", "")
+        if final_comment:
+            console.print(Markdown(str(final_comment)))
+
     def _display_results(self):
         final = self.context.final_state or {}
+        if str(final.get("runtime") or "") == "v4":
+            self._display_v4(final)
+            return
 
         # ── PR Understanding ─────────────────────────────────────────────
         understanding = _as_dict(final.get("pr_understanding"))

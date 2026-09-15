@@ -12,5 +12,5 @@
   "final_allowed": ["MERGE"],
   "decision_equals_policy": true,
   "qdrant": false,
-  "notes": "synthetic: no KEEP outside files_changed; Decision === Policy"
+  "notes": "synthetic: no KEEP outside files_changed; changelog titles must not KEEP as medium blockers; Decision === Policy"
 }

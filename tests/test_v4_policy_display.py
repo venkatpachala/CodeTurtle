@@ -63,6 +63,36 @@ def _blocking_state():
     }
 
 
+class TestChangelogCannotBlock(unittest.TestCase):
+    def test_eight_restated_test_names_not_request_changes(self):
+        from core.verification.policy import decide
+
+        findings = []
+        for i in range(8):
+            findings.append(
+                {
+                    "file": "tests/test_foo.py",
+                    "title": f"Test Foo case {i}",
+                    "claim": f"test foo case {i}",
+                    "severity": "medium",
+                    "verification_status": "supported",
+                    "kind": "note",
+                }
+            )
+        rec, reason = decide(
+            findings,
+            classification="source",
+            coverage={
+                "units_total": 4,
+                "units_packed": 4,
+                "source_units": 2,
+            },
+            files_changed=["pkg/foo.py", "tests/test_foo.py"],
+        )
+        self.assertNotEqual(rec, "REQUEST_CHANGES")
+        self.assertNotEqual(reason, "supported_medium")
+
+
 class TestPolicyOwnsDisplay(unittest.TestCase):
     def test_clamped_decision_is_request_changes(self):
         rec = clamped_decision(_blocking_state())

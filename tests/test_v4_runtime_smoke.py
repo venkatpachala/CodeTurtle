@@ -96,6 +96,12 @@ class TestRuntimeSmoke(unittest.TestCase):
     def test_settings_runtime_defaults_v4(self):
         self.assertEqual(str(getattr(settings, "runtime", "")).lower(), "v4")
 
+    def test_review_does_not_write_bundle_max_onto_settings(self):
+        text = (ROOT / "cli" / "commands" / "review.py").read_text(encoding="utf-8")
+        self.assertNotIn("settings.bundle_max", text)
+        self.assertNotIn("settings.agent_max_steps", text)
+        self.assertNotIn("settings.runtime =", text)
+
     def test_legacy_flag_still_imports_graph(self):
         from core.graph import build_review_graph
 
@@ -122,6 +128,7 @@ class TestCliWiresRuntime(unittest.TestCase):
                 "units_omitted": 0,
                 "source_units": 1,
             }
+            execution = {"skipped": True, "skip_reason": "disabled"}
 
             def to_dict(self):
                 return {}

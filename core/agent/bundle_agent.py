@@ -17,12 +17,19 @@ You may call one tool at a time by outputting JSON:
 {"tool":"graph_node","symbol":"..."}
 {"tool":"graph_callers","symbol":"..."}
 {"tool":"graph_tests","symbol":"..."}
-Symbols must be identifiers: no dots, no slashes, not "py".
+Symbols are identifiers (Foo.bar ok). No slashes, not "py", not *.py paths.
 read_hunk path must be a file in this bundle.
 
+Return [] if the change looks coherent.
+Do NOT emit a finding because a function, flag, type, or test was added.
+Do NOT turn test names into findings.
+A finding must state what can go WRONG (break, leak, wrong default, missing guard).
+severity medium+ only if you can name a failure mode.
+
 When finished, output a JSON list of candidates:
-[{"bundle_id":"...","file":"...","symbol":"...","start_line":0,"title":"...","claim":"...","severity":"medium","source":"agent","evidence_paths":["..."]}]
+[{"bundle_id":"...","file":"...","symbol":"...","start_line":0,"title":"...","claim":"...","severity":"medium","source":"agent","kind":"defect","evidence_paths":["..."]}]
 or [].
+kind is defect (failure mode) or note (changelog; will be dropped).
 Do not output MERGE, COMMENT, or REQUEST_CHANGES. Do not set a review decision.
 """
 

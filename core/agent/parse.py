@@ -6,6 +6,8 @@ import json
 import re
 from typing import Any, Dict, List, Tuple
 
+from core.agent.contract import classify_kind
+
 _FENCE_RE = re.compile(r"```(?:json)?\s*(.*?)```", re.S | re.I)
 
 
@@ -65,14 +67,18 @@ def candidate_dict(raw: Any, *, bundle_id: str) -> Dict[str, Any] | None:
     if isinstance(evidence, str):
         evidence = [evidence]
     paths = [str(p).replace("\\", "/") for p in evidence if p]
+    title = str(raw.get("title") or raw.get("claim") or "").strip()
+    claim = str(raw.get("claim") or raw.get("title") or "").strip()
+    kind = classify_kind(title, claim, str(raw.get("kind") or "") or None)
     return {
         "bundle_id": str(raw.get("bundle_id") or bundle_id),
         "file": file,
         "symbol": str(raw.get("symbol") or ""),
         "start_line": start_line,
-        "title": str(raw.get("title") or raw.get("claim") or "").strip(),
-        "claim": str(raw.get("claim") or raw.get("title") or "").strip(),
+        "title": title,
+        "claim": claim,
         "severity": str(raw.get("severity") or "medium"),
         "source": source,
         "evidence_paths": paths,
+        "kind": kind,
     }
