@@ -27,6 +27,22 @@ def _run(*args: str, timeout: int = 60) -> subprocess.CompletedProcess:
 
 
 class TestCliHelp(unittest.TestCase):
+    def test_no_args_noninteractive_does_not_hang(self):
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(ROOT) + os.pathsep + env.get("PYTHONPATH", "")
+        env["CODETURTLE_NO_WIZARD"] = "1"
+        proc = subprocess.run(
+            [sys.executable, "-m", "cli.main"],
+            capture_output=True,
+            text=True,
+            cwd=str(ROOT),
+            env=env,
+            timeout=60,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        blob = ((proc.stdout or "") + (proc.stderr or "")).lower()
+        self.assertIn("review", blob)
+
     def test_root_help_lists_commands(self):
         proc = _run("--help")
         self.assertEqual(proc.returncode, 0, proc.stderr)

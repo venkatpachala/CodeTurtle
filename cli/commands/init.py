@@ -18,6 +18,9 @@ def init():
     token = Prompt.ask("Enter your GitHub Token (or press Enter to use GITHUB_TOKEN env)")
     if token:
         os.environ["GITHUB_TOKEN"] = token
+        from core.user_config import save_user_config
+
+        save_user_config({"github_token": token})
 
     console.print("[green]✓[/green] CodeTurtle initialized successfully!")
-    console.print("You can now run: [bold]codeturtle review owner/repo PR_NUMBER[/bold]")
+    console.print("You can now run: [bold]codeturtle[/bold] or [bold]codeturtle review owner/repo PR_NUMBER[/bold]")

@@ -1,3 +1,6 @@
+import os
+import sys
+
 import typer
 from rich.console import Console
 from rich.panel import Panel
@@ -24,15 +27,24 @@ app.command("graphify-test")(graphify_test)
 
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context):
-    """Global entry point with error handling"""
-    if ctx.invoked_subcommand is None:
+    """Open the first-run menu, or run a subcommand."""
+    if ctx.invoked_subcommand is not None:
+        return
+    if os.environ.get("CODETURTLE_NO_WIZARD") or not sys.stdin.isatty():
         console = Console()
-        console.print(Panel.fit(
-            "[bold cyan]CodeTurtle[/bold cyan]\n\n"
-            "Use [bold]codeturtle --help[/bold] to see available commands.\n"
-            "Start with: [bold]codeturtle new-session[/bold]",
-            title="Welcome"
-        ))
+        console.print(
+            Panel.fit(
+                "[bold cyan]CodeTurtle[/bold cyan]\n\n"
+                "Use [bold]codeturtle --help[/bold] to see commands.\n"
+                "Interactive: run [bold]codeturtle[/bold] in a terminal.\n"
+                "Scripts: [bold]codeturtle review owner/repo 123 --dry-run[/bold]",
+                title="Welcome",
+            )
+        )
+        return
+    from cli.commands.wizard import run_wizard
+
+    run_wizard()
 
 
 if __name__ == "__main__":
@@ -40,4 +52,5 @@ if __name__ == "__main__":
         app()
     except Exception as e:
         from core.utils import handle_error
+
         handle_error(e, verbose=False)

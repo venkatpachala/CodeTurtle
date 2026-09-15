@@ -18,7 +18,7 @@ class TestPyproject(unittest.TestCase):
     def test_project_name_and_version(self):
         project = self.data["project"]
         self.assertEqual(project["name"], "codeturtle-review")
-        self.assertEqual(project["version"], "0.2.0")
+        self.assertEqual(project["version"], "0.3.0")
         self.assertGreaterEqual(project["requires-python"], ">=3.11")
 
     def test_console_script(self):
@@ -30,9 +30,10 @@ class TestPyproject(unittest.TestCase):
         self.assertIn("hatchling", " ".join(build["requires"]))
         self.assertEqual(build["build-backend"], "hatchling.build")
 
-    def test_required_deps_do_not_force_optional_backends(self):
+    def test_required_deps_include_graphify_not_qdrant(self):
         deps = " ".join(self.data["project"]["dependencies"]).lower()
-        for needle in ("qdrant", "neo4j", "langfuse", "graphifyy", "langchain-ollama"):
+        self.assertIn("graphifyy", deps)
+        for needle in ("qdrant", "neo4j", "langfuse"):
             self.assertNotIn(needle, deps)
 
     def test_optional_extras_declared(self):
