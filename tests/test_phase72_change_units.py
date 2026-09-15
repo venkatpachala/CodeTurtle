@@ -275,8 +275,8 @@ class TestSpecialistPayload(unittest.TestCase):
         rec = recommendation_from_verification(
             [], classification="source", risk="medium"
         )
-        # 7.2 must not change MERGE policy
-        self.assertEqual(rec, "COMMENT")
+        # Coverage does not set Decision; empty KEEP is MERGE.
+        self.assertEqual(rec, "MERGE")
 
 
 class TestGraphAndLockfileEvalShape(unittest.TestCase):

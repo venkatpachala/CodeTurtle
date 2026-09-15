@@ -123,7 +123,14 @@ class TestReflectorChangelog(unittest.TestCase):
         idx = build_diff_index(DIFF)
         title = "validate_selection allows both source_job_id and source_trial_ids empty"
         keep, reason = reflect_candidate(
-            _cand(title=title, claim=title, symbol="validate_selection"),
+            _cand(
+                title=title,
+                claim=title,
+                symbol="validate_selection",
+                existing_code="def validate_selection",
+                invariant="a source selector is required",
+                violating_condition="both source_job_id and source_trial_ids empty",
+            ),
             files_changed=[LOADER],
             index=idx,
             line=2,

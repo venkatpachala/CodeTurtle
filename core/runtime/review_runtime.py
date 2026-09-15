@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Dict, List, Optional
 
-from core.agent.contract import classify_kind
+from core.agent.contract import classify_kind, proof_complete
 from core.bundling.builder import BundleBuilder
 from core.change_units import attach_change_units, build_change_units
 from core.graphctx.symbols import is_valid_symbol, symbols_from_units
@@ -57,6 +57,16 @@ def _finding_from_comment(c: Comment) -> Dict[str, Any]:
         "bundle_id": c.bundle_id,
         "kind": str(getattr(c, "kind", "") or "defect"),
         "tests_run": bool(getattr(c, "tests_run", False)),
+        "existing_code": str(getattr(c, "existing_code", "") or ""),
+        "invariant": str(getattr(c, "invariant", "") or ""),
+        "violating_condition": str(getattr(c, "violating_condition", "") or ""),
+        "expected": str(getattr(c, "expected", "") or ""),
+        "actual": str(getattr(c, "actual", "") or ""),
+        "execution_path": list(getattr(c, "execution_path", None) or []),
+        "evidence": list(getattr(c, "evidence", None) or []),
+        "counter_evidence": list(getattr(c, "counter_evidence", None) or []),
+        "verify_status": str(getattr(c, "verify_status", "") or "candidate"),
+        "confidence": float(getattr(c, "confidence", 0.5) or 0.5),
     }
 
 
@@ -347,6 +357,7 @@ class ReviewRuntime:
 
         comments: List[Comment] = []
         dropped: List[Dict[str, Any]] = []
+        survivors: List[tuple] = []
         for cand in candidates:
             kind = classify_kind(cand.title, cand.claim, getattr(cand, "kind", None))
             cand.kind = kind
@@ -354,6 +365,12 @@ class ReviewRuntime:
                 dropped.append({**cand.to_dict(), "drop_reason": "note"})
                 print(
                     f"[Reflector] DROP reason=note file={cand.file} title={cand.title!r}"
+                )
+                continue
+            if not proof_complete(cand.to_dict()):
+                dropped.append({**cand.to_dict(), "drop_reason": "incomplete_proof"})
+                print(
+                    f"[Reflector] DROP reason=incomplete_proof file={cand.file} title={cand.title!r}"
                 )
                 continue
             line = position_candidate(cand, index)
@@ -366,7 +383,25 @@ class ReviewRuntime:
             if not keep or not line:
                 dropped.append({**cand.to_dict(), "drop_reason": reason if not keep else "no_line"})
                 continue
-            comments.append(comment_from_candidate(cand, line))
+            survivors.append((cand, line))
+
+        from core.runtime.verify_loop import verify_candidates
+
+        verified_cands, vdrop = verify_candidates(
+            [c for c, _ in survivors],
+            index=index,
+            bundles=bundles,
+            client=client,
+            llm=self.llm,
+        )
+        dropped.extend(vdrop)
+        line_by_id = {id(c): ln for c, ln in survivors}
+        comments = []
+        for cand in verified_cands:
+            ln = line_by_id.get(id(cand))
+            if ln is None:
+                ln = position_candidate(cand, index) or cand.start_line or 1
+            comments.append(comment_from_candidate(cand, int(ln)))
 
         coverage = _coverage_from_units(units, bundles)
         findings = [_finding_from_comment(c) for c in comments]
@@ -454,7 +489,7 @@ class ReviewRuntime:
         total = int(coverage.get("units_total") or 0)
         print(
             f"[Coverage] packed={packed} total={total} ratio={ratio:.2f} "
-            f"low={str(low).lower()} → {decision} ({policy_reason})"
+            f"low={str(low).lower()} (observational)"
         )
         print(f"[Review] Decision={decision} reason={policy_reason}")
         return ReviewResult(

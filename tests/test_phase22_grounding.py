@@ -629,8 +629,8 @@ class TestCriticAndFinalSurvivorsOnly(unittest.TestCase):
         self.assertNotIn("Naming and Documentation", prompt)
         self.assertIn("VALIDATED findings", prompt)
         self.assertIn("(none)", prompt)
-        self.assertEqual(out["recommendation"], "COMMENT")
-        self.assertEqual(out["policy_reason"], "empty_keep_risk")
+        self.assertEqual(out["recommendation"], "MERGE")
+        self.assertEqual(out["policy_reason"], "no_findings")
         self.assertIn("no validated", (out["merge_decision"]["summary"] or "").lower())
 
     def test_decision_enum_not_hardcoded(self):

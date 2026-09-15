@@ -70,6 +70,16 @@ def candidate_dict(raw: Any, *, bundle_id: str) -> Dict[str, Any] | None:
     title = str(raw.get("title") or raw.get("claim") or "").strip()
     claim = str(raw.get("claim") or raw.get("title") or "").strip()
     kind = classify_kind(title, claim, str(raw.get("kind") or "") or None)
+    path_syms = raw.get("execution_path") or []
+    if isinstance(path_syms, str):
+        path_syms = [s.strip() for s in path_syms.split(",") if s.strip()]
+    evidence = raw.get("evidence") or paths
+    if isinstance(evidence, str):
+        evidence = [evidence]
+    try:
+        confidence = float(raw.get("confidence") if raw.get("confidence") is not None else 0.5)
+    except (TypeError, ValueError):
+        confidence = 0.5
     return {
         "bundle_id": str(raw.get("bundle_id") or bundle_id),
         "file": file,
@@ -77,8 +87,18 @@ def candidate_dict(raw: Any, *, bundle_id: str) -> Dict[str, Any] | None:
         "start_line": start_line,
         "title": title,
         "claim": claim,
+        "existing_code": str(raw.get("existing_code") or "").strip(),
+        "invariant": str(raw.get("invariant") or "").strip(),
+        "violating_condition": str(raw.get("violating_condition") or "").strip(),
+        "expected": str(raw.get("expected") or "").strip(),
+        "actual": str(raw.get("actual") or "").strip(),
+        "execution_path": [str(s).strip() for s in path_syms if s],
+        "evidence": [str(p).replace("\\", "/") for p in evidence if p],
+        "counter_evidence": [],
+        "verify_status": str(raw.get("verify_status") or "candidate"),
         "severity": str(raw.get("severity") or "medium"),
+        "confidence": confidence,
         "source": source,
-        "evidence_paths": paths,
+        "evidence_paths": paths or [str(p).replace("\\", "/") for p in evidence if p],
         "kind": kind,
     }

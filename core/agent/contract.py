@@ -13,6 +13,8 @@ TEST_FUNC_RE = re.compile(r"^test_[A-Za-z0-9_]+$")
 FAILURE_TOKEN_RE = re.compile(
     r"(?i)\b(fail|fails|failed|miss|missing|not|wrong|leak|crash|break|broken|empty)\b"
 )
+HEDGE_RE = re.compile(r"(?i)\b(potential|possible|may|might|could)\b")
+PROOF_FIELDS = ("claim", "existing_code", "invariant", "violating_condition")
 
 
 def has_failure_mode(text: str) -> bool:
@@ -57,6 +59,23 @@ def classify_kind(
     if raw == "note":
         return "note"
     return "defect"
+
+
+def is_hedge(title: str, claim: str = "", confidence: Optional[float] = None) -> bool:
+    if HEDGE_RE.search(f"{title or ''} {claim or ''}"):
+        return True
+    if confidence is not None:
+        try:
+            if float(confidence) < 0.4:
+                return True
+        except (TypeError, ValueError):
+            pass
+    return False
+
+
+def proof_complete(item: Dict[str, Any] | None) -> bool:
+    d = item or {}
+    return all(str(d.get(k) or "").strip() for k in PROOF_FIELDS)
 
 
 def as_finding_kind(item: Dict[str, Any] | None) -> str:

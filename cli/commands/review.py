@@ -447,10 +447,21 @@ Description:
 
         console.print("\n[bold green]=== COMMENTS (kept defects) ===[/bold green]")
         kept = final.get("validated_findings") or final.get("findings") or []
-        if kept:
-            self._print_findings(kept)
-        else:
+        if not kept:
             console.print("no kept defects")
+        for d in kept:
+            if not isinstance(d, dict):
+                continue
+            status = d.get("verify_status") or d.get("verification_status") or ""
+            console.print(
+                f"status={status} file={d.get('file')} line={d.get('start_line') or d.get('line')}"
+            )
+            if d.get("invariant"):
+                console.print(f"invariant={d.get('invariant')}")
+            snippet = d.get("existing_code") or ""
+            if snippet:
+                console.print(f"snippet={snippet[:200]}")
+            self._print_findings([d])
 
         console.print("\n[bold yellow]=== DROPPED ===[/bold yellow]")
         dropped = final.get("v4_dropped") or []
@@ -458,8 +469,10 @@ Description:
             console.print("[dim](none)[/dim]")
         for d in dropped[:20]:
             if isinstance(d, dict):
+                why = d.get("drop_reason") or ""
+                prefix = "disproved: " if why == "disproved" else ""
                 console.print(
-                    f"  - {d.get('title') or d.get('file')} reason={d.get('drop_reason')}"
+                    f"  - {prefix}{d.get('title') or d.get('file')} reason={why}"
                 )
             else:
                 console.print(f"  - {d}")

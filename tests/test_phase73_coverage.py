@@ -48,8 +48,9 @@ class TestDecideTable(unittest.TestCase):
             files_changed=[LOADER],
             risk="low",
         )
-        self.assertEqual(rec, "COMMENT")
-        self.assertEqual(reason, "insufficient_coverage")
+        self.assertEqual(rec, "MERGE")
+        self.assertEqual(reason, "no_findings")
+        self.assertNotIn("coverage", reason)
 
     def test_empty_keep_high_coverage_merge(self):
         rec, reason = decide(
@@ -60,15 +61,19 @@ class TestDecideTable(unittest.TestCase):
             risk="medium",
         )
         self.assertEqual(rec, "MERGE")
-        self.assertEqual(reason, "no_validated_issues")
+        self.assertEqual(reason, "no_findings")
 
     def test_supported_medium_wins_over_low_coverage(self):
         rec, reason = decide(
             [
                 {
                     "file": LOADER,
+                    "title": "load swallows errors",
+                    "claim": "errors are swallowed",
                     "verification_status": "supported",
+                    "verify_status": "verified",
                     "severity": "concern",
+                    "kind": "defect",
                 }
             ],
             classification="source",
@@ -76,7 +81,7 @@ class TestDecideTable(unittest.TestCase):
             files_changed=[LOADER],
         )
         self.assertEqual(rec, "REQUEST_CHANGES")
-        self.assertEqual(reason, "supported_medium")
+        self.assertEqual(reason, "verified_medium")
 
     def test_uncertain_only_comment_even_if_packed(self):
         rec, reason = decide(
@@ -92,7 +97,7 @@ class TestDecideTable(unittest.TestCase):
             files_changed=[LOADER],
         )
         self.assertEqual(rec, "COMMENT")
-        self.assertEqual(reason, "keep_non_blocking")
+        self.assertEqual(reason, "uncertain_only")
 
     def test_source_files_zero_units_is_low(self):
         ratio, low = coverage_score(
@@ -106,8 +111,8 @@ class TestDecideTable(unittest.TestCase):
             coverage=ZERO_UNITS,
             files_changed=[LOADER],
         )
-        self.assertEqual(rec, "COMMENT")
-        self.assertEqual(reason, "insufficient_coverage")
+        self.assertEqual(rec, "MERGE")
+        self.assertEqual(reason, "no_findings")
 
     def test_lockfile_coverage_score_enough(self):
         ratio, low = coverage_score(
@@ -122,7 +127,7 @@ class TestDecideTable(unittest.TestCase):
         rec = recommendation_from_verification(
             [], classification="source", risk="medium"
         )
-        self.assertEqual(rec, "COMMENT")
+        self.assertEqual(rec, "MERGE")
         rec2 = recommendation_from_verification(
             [], classification="source", risk="low"
         )
@@ -158,11 +163,11 @@ class TestClampCoverage(unittest.TestCase):
         with redirect_stdout(buf), patch("core.agents.gateway") as gw:
             gw.generate_structured.side_effect = fake_gen
             out = final_recommender(state)
-        self.assertEqual(out["recommendation"], "COMMENT")
-        self.assertEqual(out["policy_reason"], "insufficient_coverage")
+        self.assertEqual(out["recommendation"], "MERGE")
+        self.assertEqual(out["policy_reason"], "no_findings")
         self.assertTrue(out["coverage_low"])
-        self.assertIn("insufficient_coverage", buf.getvalue())
         self.assertIn("[Coverage]", buf.getvalue())
+        self.assertNotIn("→ REQUEST_CHANGES", buf.getvalue())
 
     def test_llm_request_changes_low_coverage_empty_keep_stays_comment(self):
         from core.agents import final_recommender
@@ -187,8 +192,8 @@ class TestClampCoverage(unittest.TestCase):
         with patch("core.agents.gateway") as gw:
             gw.generate_structured.side_effect = fake_gen
             out = final_recommender(state)
-        self.assertEqual(out["recommendation"], "COMMENT")
-        self.assertEqual(out["policy_reason"], "insufficient_coverage")
+        self.assertEqual(out["recommendation"], "MERGE")
+        self.assertEqual(out["policy_reason"], "no_findings")
 
     def test_high_coverage_empty_keep_allows_merge(self):
         from core.agents import final_recommender
@@ -214,7 +219,7 @@ class TestClampCoverage(unittest.TestCase):
             gw.generate_structured.side_effect = fake_gen
             out = final_recommender(state)
         self.assertEqual(out["recommendation"], "MERGE")
-        self.assertEqual(out["policy_reason"], "no_validated_issues")
+        self.assertEqual(out["policy_reason"], "no_findings")
         self.assertFalse(out["coverage_low"])
 
     def test_clamp_helper_insufficient_coverage(self):
@@ -251,7 +256,7 @@ class TestGithubClampUsesCoverage(unittest.TestCase):
             "pr_understanding": {"risk_level": "low"},
             "verification_report": {"ran": True, "suggested_recommendation": "MERGE"},
         }
-        self.assertEqual(clamped_decision(state), "COMMENT")
+        self.assertEqual(clamped_decision(state), "MERGE")
 
 
 if __name__ == "__main__":

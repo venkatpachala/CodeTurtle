@@ -8,7 +8,9 @@ from typing import Iterable, List, Optional, Set, Tuple
 from core.agent.contract import (
     has_failure_mode,
     is_changelog_title,
+    is_hedge,
     is_test_name_restatement,
+    proof_complete,
 )
 from core.change_units import _TEST_BASENAME_RE
 from core.graphctx.symbols import is_valid_symbol
@@ -121,6 +123,17 @@ def reflect_candidate(
         return _drop("changelog")
     if is_test_name_restatement(title, claim):
         return _drop("test_restatement")
+
+    if str(getattr(candidate, "kind", "") or "defect") == "defect":
+        payload = candidate.to_dict() if hasattr(candidate, "to_dict") else {}
+        if not proof_complete(payload):
+            return _drop("incomplete_proof")
+
+    conf = getattr(candidate, "confidence", None)
+    if is_hedge(title, claim, conf):
+        candidate.severity = "nit"
+        if hasattr(candidate, "verify_status"):
+            candidate.verify_status = "uncertain"
 
     if not _in_pr(path, allowed, index):
         return _drop("file_not_in_pr")

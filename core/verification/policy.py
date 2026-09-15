@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from core.agent.contract import (
     as_finding_kind,
     is_changelog_title,
+    is_hedge,
     is_test_name_restatement,
 )
 from core.pr_facts import is_source_file
@@ -193,6 +194,15 @@ def coverage_score(
     return ratio, low
 
 
+def _confidence(finding: Dict[str, Any]) -> Optional[float]:
+    if "confidence" not in finding:
+        return None
+    try:
+        return float(finding.get("confidence"))
+    except (TypeError, ValueError):
+        return None
+
+
 def _cap_changelog_severity(finding: Dict[str, Any]) -> Dict[str, Any]:
     f = dict(finding or {})
     title = str(f.get("title") or "")
@@ -204,8 +214,30 @@ def _cap_changelog_severity(finding: Dict[str, Any]) -> Dict[str, Any]:
     return f
 
 
+def _cap_hedge(finding: Dict[str, Any]) -> Dict[str, Any]:
+    f = dict(finding or {})
+    title = str(f.get("title") or "")
+    claim = str(f.get("claim") or f.get("description") or "")
+    if is_hedge(title, claim, _confidence(f)):
+        f["severity"] = "nit"
+        f["verify_status"] = "uncertain"
+    return f
+
+
 def _is_blocking_defect(finding: Dict[str, Any] | None) -> bool:
     return as_finding_kind(finding or {}) == "defect"
+
+
+def _verify_status(finding: Dict[str, Any]) -> str:
+    vs = str(finding.get("verify_status") or "").strip().lower()
+    if vs in ("verified", "disproved", "uncertain", "candidate"):
+        return vs
+    vstat = str(finding.get("verification_status") or "").lower()
+    if vstat == "uncertain":
+        return "uncertain"
+    if vstat == "supported":
+        return "verified"
+    return "candidate"
 
 
 def decide(
@@ -219,16 +251,8 @@ def decide(
     files_changed: Optional[List[str]] = None,
     coverage_merge_min: Optional[float] = None,
 ) -> Tuple[str, str]:
-    """First match wins. Returns (decision, policy_reason).
-
-    1 lockfile-only → COMMENT
-    2 4.1 blocking (supported+medium or failed tests) → REQUEST_CHANGES
-    3 KEEP empty + coverage low → COMMENT insufficient_coverage
-    4 KEEP empty + coverage high → MERGE no_validated_issues
-    5 any KEEP not blocking → COMMENT
-    6 else existing 4.1 (empty + medium risk COMMENT; else MERGE)
-    """
-    _ = suggested_from_4_1
+    """RC only on verified medium+ defects. Coverage is observational."""
+    _ = suggested_from_4_1, coverage, risk, files_changed, coverage_merge_min
     findings = list(findings or [])
     if classification == "lockfile-only":
         return "COMMENT", "lockfile-only"
@@ -237,42 +261,23 @@ def decide(
         return "REQUEST_CHANGES", "tests_failed"
 
     findings = [_cap_changelog_severity(f) for f in findings]
+    findings = [_cap_hedge(f) for f in findings]
     findings = [f for f in findings if as_finding_kind(f) != "note"]
+    findings = [f for f in findings if _verify_status(f) != "disproved"]
 
-    supported = [f for f in findings if f.get("verification_status") == "supported"]
-    uncertain = [f for f in findings if f.get("verification_status") == "uncertain"]
-    blocking = [
+    verified_block = [
         f
-        for f in supported
-        if str(f.get("severity") or "").lower() in MEDIUM_PLUS
+        for f in findings
+        if _verify_status(f) == "verified"
+        and str(f.get("severity") or "").lower() in MEDIUM_PLUS
         and _is_blocking_defect(f)
     ]
-    if blocking:
-        return "REQUEST_CHANGES", "supported_medium"
+    if verified_block:
+        return "REQUEST_CHANGES", "verified_medium"
 
-    keep_empty = not findings
-    coverage_known = coverage is not None
-    ratio, low = (1.0, False)
-    if coverage_known:
-        ratio, low = coverage_score(
-            coverage,
-            classification=classification,
-            files_changed=files_changed,
-            coverage_merge_min=coverage_merge_min,
-        )
-
-    if keep_empty and coverage_known and low:
-        return "COMMENT", "insufficient_coverage"
-    if keep_empty and coverage_known and not low:
-        return "MERGE", "no_validated_issues"
-    if keep_empty:
-        if str(risk).lower() in ("medium", "high", "critical"):
-            return "COMMENT", "empty_keep_risk"
-        return "MERGE", "no_validated_issues"
-
-    if supported or uncertain or findings:
-        return "COMMENT", "keep_non_blocking"
-    return "COMMENT", "default"
+    if findings:
+        return "COMMENT", "uncertain_only"
+    return "MERGE", "no_findings"
 
 
 def recommendation_from_verification(
@@ -352,7 +357,7 @@ def policy_from_state(
         total = int(coverage.get("units_total") or 0)
         print(
             f"[Coverage] packed={packed} total={total} ratio={ratio:.2f} "
-            f"low={str(low).lower()} → {rec} ({reason})"
+            f"low={str(low).lower()} (observational)"
         )
     return rec, reason, ratio, low
 

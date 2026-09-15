@@ -219,7 +219,10 @@ class TestVerifyNodeAndPolicy(unittest.TestCase):
         findings = [
             {
                 "verification_status": "supported",
+                "verify_status": "verified",
                 "severity": "concern",
+                "kind": "defect",
+                "title": "quote skips empty name",
                 "file": SANITIZER,
             }
         ]

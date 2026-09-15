@@ -20,17 +20,18 @@ You may call one tool at a time by outputting JSON:
 Symbols are identifiers (Foo.bar ok). No slashes, not "py", not *.py paths.
 read_hunk path must be a file in this bundle.
 
-Return [] if the change looks coherent.
+Return [] if you cannot name a violating_condition.
+Do not emit Potential/may/might as defects.
+existing_code must be copied from the hunk.
+execution_path is function names in call order.
+If a test in this bundle already asserts the invariant, do not file that defect.
 Do NOT emit a finding because a function, flag, type, or test was added.
-Do NOT turn test names into findings.
 A finding must state what can go WRONG (break, leak, wrong default, missing guard).
-severity medium+ only if you can name a failure mode.
 
-When finished, output a JSON list of candidates:
-[{"bundle_id":"...","file":"...","symbol":"...","start_line":0,"title":"...","claim":"...","severity":"medium","source":"agent","kind":"defect","evidence_paths":["..."]}]
+When finished, output a JSON list:
+[{"bundle_id":"...","file":"...","symbol":"...","start_line":0,"title":"...","claim":"...","existing_code":"...","invariant":"...","violating_condition":"...","expected":"...","actual":"...","execution_path":["fn"],"evidence":["file"],"severity":"medium","confidence":0.7,"source":"agent","kind":"defect"}]
 or [].
-kind is defect (failure mode) or note (changelog; will be dropped).
-Do not output MERGE, COMMENT, or REQUEST_CHANGES. Do not set a review decision.
+Do not output MERGE, COMMENT, or REQUEST_CHANGES.
 """
 
 

@@ -137,7 +137,7 @@ class TestSandboxResults(unittest.TestCase):
         self.assertNotEqual(result.policy_reason, "tests_failed")
         # green tests must not be the reason for MERGE
         if result.decision == "MERGE":
-            self.assertEqual(result.policy_reason, "no_validated_issues")
+            self.assertEqual(result.policy_reason, "no_findings")
 
     def test_dotdot_never_jailed(self):
         self.assertIsNone(jail_relpath(Path("."), "../secret.py"))
