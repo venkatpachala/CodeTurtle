@@ -49,8 +49,11 @@ class PipelineContext:
 
 def get_current_session() -> str:
     from core.ci import ensure_session
+    from core.user_config import session_file
 
-    return ensure_session()
+    path = session_file()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return ensure_session(str(path))
 
 
 def _as_dict(obj: Any) -> dict:
@@ -165,6 +168,17 @@ class ReviewPipeline:
                     f"Model: {settings.ollama_model} (Ollama)"
                 )
             )
+
+            from core.ci import resolve_github_token
+            from core.workspace import WorkspaceError, ensure_workspace
+
+            token = resolve_github_token(fallback=str(settings.github_token or ""))
+            try:
+                graph = ensure_workspace(repo, number, token=token)
+                print(f"[Workspace] graph={graph}")
+            except WorkspaceError as exc:
+                console.print(f"[red]{exc}[/red]")
+                raise SystemExit(1) from exc
 
             self._load_knowledge_base()
             self._fetch_pr()

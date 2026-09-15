@@ -90,14 +90,20 @@ class TestSessionAndToken(unittest.TestCase):
             cwd = os.getcwd()
             try:
                 os.chdir(td)
-                with patch("core.memory.manager.init_db"):
-                    with patch(
-                        "core.memory.manager.MemoryManager.create_new_session",
-                        return_value="auto-sess",
-                    ):
-                        sid = get_current_session()
-                self.assertEqual(sid, "auto-sess")
-                self.assertTrue(Path(".current_session").is_file())
+                with patch.dict(
+                    os.environ,
+                    {"CODETURTLE_HOME": td, "GITHUB_ACTIONS": ""},
+                    clear=False,
+                ):
+                    os.environ.pop("GITHUB_ACTIONS", None)
+                    with patch("core.memory.manager.init_db"):
+                        with patch(
+                            "core.memory.manager.MemoryManager.create_new_session",
+                            return_value="auto-sess",
+                        ):
+                            sid = get_current_session()
+                    self.assertEqual(sid, "auto-sess")
+                    self.assertTrue((Path(td) / "current_session").is_file())
             finally:
                 os.chdir(cwd)
 

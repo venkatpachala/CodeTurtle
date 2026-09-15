@@ -1,15 +1,34 @@
 # CodeTurtle
 
-Local-first GitHub pull request reviewer.
-
-Deterministic gates (PR facts, path grounding, hunk verification, coverage clamp)
-plus a specialist agent swarm. Structure comes from Graphify. Reviews run on
-your machine. Nothing is posted unless you pass `--comment`.
+Local-first GitHub PR reviewer. Graphify structure, clamped **MERGE** / **COMMENT** / **REQUEST_CHANGES**. Runs on your machine.
 
 ```bash
-uv tool install git+https://github.com/venkatpachala/CodeTurtle.git@v0.2.0
+uv tool install "git+https://github.com/venkatpachala/CodeTurtle.git@v0.3.0"
+codeturtle
+```
+
+Requires: **Ollama** (or `OPENAI_API_KEY`), **git**, and a **GitHub token** (`gh auth login` or paste once).
+
+`codeturtle` with no arguments opens a menu: save token → pick an Ollama model → type `owner/repo` and a PR number. The CLI clones into `~/.codeturtle/repos/`, builds a Graphify code-only graph if needed, and dry-runs the review.
+
+```text
+CodeTurtle
+  [1] GitHub token      detected / paste once → ~/.codeturtle/config.toml
+  [2] Model             list from Ollama: qwen2.5:7b, llama3.2, ...
+  [3] Review a PR       owner/repo  3292
+  [4] Quit
+```
+
+Scripts still work:
+
+```bash
+codeturtle review confident-ai/deepeval 3292
 codeturtle review owner/repo 123 --dry-run
 ```
+
+Default is **dry-run**. Nothing is posted unless you pass `--comment`. Qdrant and Neo4j are not required.
+
+---
 
 ## What is CodeTurtle?
 
@@ -17,6 +36,8 @@ CodeTurtle is a CLI. It fetches a GitHub PR with your token, builds a
 code-only Graphify graph of the repository, reviews **change units** (hunks)
 instead of a truncated diff, and emits **MERGE**, **COMMENT**, or
 **REQUEST_CHANGES**.
+
+Config lives in `%USERPROFILE%\.codeturtle\config.toml` (or `~/.codeturtle/config.toml`), not a random project `.env`.
 
 Agents propose findings. Gates decide what ships:
 
@@ -54,45 +75,34 @@ The model does not own file selection, line identity, or the final GitHub event 
 ### Prerequisites
 
 - Python >= 3.11
-- GitHub token with `public_repo` (or fine-grained PR read)
-- An LLM: Ollama (default) or OpenAI-compatible
-- Graphify code-only graph for the repo you review
+- git
+- GitHub token with `public_repo` (or fine-grained PR read), or `gh auth login`
+- An LLM: [Ollama](https://ollama.com/download) (`ollama pull qwen2.5:7b`) or `OPENAI_API_KEY`
+
+You cannot ship a 7B model inside `uv tool install`. Ollama (or an API key) is the only extra install.
 
 ### Install
 
 ```bash
-uv tool install git+https://github.com/venkatpachala/CodeTurtle.git@v0.2.0
+uv tool install "git+https://github.com/venkatpachala/CodeTurtle.git@v0.3.0"
+codeturtle
+```
 
-# from a clone
+From a clone:
+
+```bash
 git clone https://github.com/venkatpachala/CodeTurtle.git
 cd CodeTurtle
-pip install -e ".[ollama,graphify]"
+pip install -e .
 codeturtle --help
 ```
 
-### Setup
+Graphify is included in the default install.
+
+### Commands
 
 ```bash
-cp .env.example .env
-# set GITHUB_TOKEN
-# OLLAMA_MODEL=qwen2.5:7b
-ollama pull qwen2.5:7b
-```
-
-Index structure once per repo:
-
-```bash
-git clone https://github.com/owner/repo repos/owner_repo
-cd repos/owner_repo
-graphify . --code-only
-```
-
-Qdrant and Neo4j are not required for `--help` or `--dry-run`.
-
-### Review
-
-```bash
-codeturtle new-session
+codeturtle
 codeturtle review owner/repo 123 --dry-run
 codeturtle review owner/repo 123 --comment
 codeturtle graphify-test owner/repo --stats
@@ -100,17 +110,7 @@ codeturtle graphify-test owner/repo --stats
 
 Default is dry-run. `--comment` on a repo without write access fails closed and prints the body.
 
-### Smoke test (v0.2.0)
-
-| Field | Value |
-|-------|--------|
-| PR | [confident-ai/deepeval#3288](https://github.com/confident-ai/deepeval/pull/3288) |
-| Classification | source |
-| Change units | 2 |
-| Investigate | 6 hops |
-| Decision | REQUEST_CHANGES |
-| Graphify | ~19k nodes / ~57k edges |
-| Post | none (`--dry-run`) |
+### Dev eval
 
 ```bash
 uv run python -m tests.evaluation.run_eval --offline
@@ -139,4 +139,3 @@ scripts/      # maintainer helpers
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
-

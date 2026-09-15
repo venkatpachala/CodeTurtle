@@ -27,6 +27,9 @@ def graphify_test(
 ):
     """Handshake Graphify MCP for a specific repository graph."""
     try:
+        from core.workspace import ensure_workspace
+
+        ensure_workspace(repo)
         graph_path = resolve_graph_path(repo)
         provider = get_knowledge_provider(repo=repo)
 

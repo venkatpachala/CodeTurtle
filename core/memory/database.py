@@ -3,13 +3,21 @@ from pathlib import Path
 from datetime import datetime
 import json
 
-DB_PATH = Path("data/codeturtle.db")
-DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+def _db_path() -> Path:
+    try:
+        from core.user_config import home_dir
+
+        p = home_dir() / "codeturtle.db"
+    except Exception:
+        p = Path("data/codeturtle.db")
+    p.parent.mkdir(parents=True, exist_ok=True)
+    return p
 
 
 def get_connection():
     """Get SQLite connection"""
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(_db_path())
     conn.row_factory = sqlite3.Row
     return conn
 

@@ -12,9 +12,9 @@ def get_knowledge_provider(repo: Optional[str] = None) -> RepositoryKnowledgePro
     Build a Graphify-backed knowledge provider.
 
     If repo is given (owner/name), resolve:
-        repos/<owner_name>/graphify-out/graph.json
+        ~/.codeturtle/repos/<owner_name>/graphify-out/graph.json
 
-    If repo is None, fall back to settings.graphify_graph_path (manual override).
+    If repo is None, fall back to settings.graphify_graph_path.
     """
     from config import settings
 

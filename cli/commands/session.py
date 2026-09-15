@@ -16,10 +16,12 @@ def new_session():
     try:
         conversation_id = memory.create_new_session()
 
-        # Save as current active session
         try:
-            with open(".current_session", "w") as f:
-                f.write(conversation_id)
+            from core.user_config import session_file
+
+            path = session_file()
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(conversation_id + "\n", encoding="utf-8")
         except Exception as e:
             raise Exception("Failed to save current session") from e
 
