@@ -403,9 +403,12 @@ class ReviewRuntime:
         line_by_id = {id(c): ln for c, ln in survivors}
         comments = []
         for cand in verified_cands:
-            ln = line_by_id.get(id(cand))
+            ln = position_candidate(cand, index)
             if ln is None:
-                ln = position_candidate(cand, index) or cand.start_line or 1
+                ln = line_by_id.get(id(cand))
+            if not ln:
+                dropped.append({**cand.to_dict(), "drop_reason": "no_line"})
+                continue
             comments.append(comment_from_candidate(cand, int(ln)))
 
         coverage = _coverage_from_units(units, bundles)

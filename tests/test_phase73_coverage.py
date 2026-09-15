@@ -96,8 +96,9 @@ class TestDecideTable(unittest.TestCase):
             coverage=HIGH,
             files_changed=[LOADER],
         )
-        self.assertEqual(rec, "COMMENT")
-        self.assertEqual(reason, "uncertain_only")
+        self.assertNotEqual(rec, "REQUEST_CHANGES")
+        self.assertEqual(rec, "MERGE")
+        self.assertEqual(reason, "no_findings")
 
     def test_source_files_zero_units_is_low(self):
         ratio, low = coverage_score(

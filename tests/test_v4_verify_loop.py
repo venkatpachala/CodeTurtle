@@ -87,7 +87,7 @@ class TestVerifyLoop(unittest.TestCase):
         self.assertTrue(any(d.get("drop_reason") == "disproved" for d in dropped))
 
     def test_hedge_not_promoted_to_verified(self):
-        kept, _dropped = verify_candidates(
+        kept, dropped = verify_candidates(
             [
                 _cand(
                     title="Potential UUID collision",
@@ -99,36 +99,36 @@ class TestVerifyLoop(unittest.TestCase):
             bundles=[self.bundle],
             llm=lambda _p: "VERIFIED",
         )
-        self.assertEqual(len(kept), 1)
-        self.assertEqual(kept[0].verify_status, "uncertain")
+        self.assertEqual(kept, [])
+        self.assertTrue(any(d.get("drop_reason") == "unproven" for d in dropped))
         rec, reason = decide(
             [
                 {
                     "file": LOADER,
-                    "title": kept[0].title,
-                    "claim": kept[0].claim,
-                    "severity": kept[0].severity,
+                    "title": "Potential UUID collision",
+                    "claim": "ids may not belong to source_job",
+                    "severity": "nit",
                     "kind": "defect",
-                    "verify_status": kept[0].verify_status,
+                    "verify_status": "uncertain",
                     "confidence": 0.0,
                 }
             ],
             classification="source",
             files_changed=[LOADER],
         )
-        self.assertEqual(rec, "COMMENT")
+        self.assertNotEqual(rec, "REQUEST_CHANGES")
         self.assertNotEqual(reason, "verified_medium")
         self.assertNotEqual(reason, "supported_medium")
 
     def test_parse_fail_uncertain(self):
-        kept, _dropped = verify_candidates(
+        kept, dropped = verify_candidates(
             [_cand()],
             index=self.idx,
             bundles=[self.bundle],
             llm=lambda _p: "not sure really",
         )
-        self.assertEqual(len(kept), 1)
-        self.assertEqual(kept[0].verify_status, "uncertain")
+        self.assertEqual(kept, [])
+        self.assertTrue(any(d.get("drop_reason") == "unproven" for d in dropped))
 
     def test_incomplete_proof_drops(self):
         kept, dropped = verify_candidates(
@@ -152,14 +152,14 @@ class TestVerifyLoop(unittest.TestCase):
             ],
             kind="source",
         )
-        kept, _dropped = verify_candidates(
+        kept, dropped = verify_candidates(
             [_cand()],
             index=self.idx,
             bundles=[bundle],
             llm=lambda _p: "VERIFIED",
         )
-        self.assertEqual(len(kept), 1)
-        self.assertEqual(kept[0].verify_status, "uncertain")
+        self.assertEqual(kept, [])
+        self.assertTrue(any(d.get("drop_reason") == "disproved" for d in dropped))
 
 
 class TestVerifyPolicy(unittest.TestCase):
@@ -180,9 +180,10 @@ class TestVerifyPolicy(unittest.TestCase):
             classification="source",
             files_changed=[LOADER],
         )
-        self.assertEqual(rec, "COMMENT")
+        self.assertNotEqual(rec, "REQUEST_CHANGES")
         self.assertNotEqual(reason, "supported_medium")
-        self.assertEqual(reason, "uncertain_only")
+        self.assertEqual(rec, "MERGE")
+        self.assertEqual(reason, "no_findings")
 
     def test_verified_snippet_requests_changes(self):
         rec, reason = decide(
@@ -215,6 +216,114 @@ class TestVerifyPolicy(unittest.TestCase):
         )
         self.assertNotEqual(rec, "REQUEST_CHANGES")
         self.assertEqual(reason, "no_findings")
+
+
+class TestQualificationGate(unittest.TestCase):
+    """Live #3237-shaped false positives must DROP, not COMMENT."""
+
+    def test_guard_snippet_is_not_a_defect(self):
+        jobs = "pkg/cli/jobs.py"
+        snippet = (
+            "if not task_paths and not task_refs and not dataset_specs:\n"
+            '    console.print(\n'
+            '        "Error: Provide at least one verifier source via "'
+        )
+        diff = (
+            f"diff --git a/{jobs} b/{jobs}\n"
+            f"--- a/{jobs}\n"
+            f"+++ b/{jobs}\n"
+            f"@@ -1,1 +1,8 @@\n"
+            f" context\n"
+            f"+if not task_paths and not task_refs and not dataset_specs:\n"
+            f'+    console.print(\n'
+            f'+        "Error: Provide at least one verifier source via "\n'
+        )
+        idx = build_diff_index(diff)
+        kept, dropped = verify_candidates(
+            [
+                _cand(
+                    file=jobs,
+                    title="Missing error handling for missing verifier sources",
+                    claim="regrade should handle missing verifier sources",
+                    existing_code=snippet,
+                    invariant="regrade should handle the case where no verifier sources are provided",
+                    violating_condition="no verifier sources",
+                    execution_path=["regrade"],
+                    evidence=[jobs],
+                    evidence_paths=[jobs],
+                )
+            ],
+            index=idx,
+            bundles=[Bundle(id="B-001", paths=[jobs], units=[], kind="source")],
+            llm=lambda _p: "VERIFIED",
+        )
+        self.assertEqual(kept, [])
+        self.assertTrue(any(d.get("drop_reason") == "not_a_defect" for d in dropped))
+
+    def test_raise_valueerror_is_not_a_defect(self):
+        trials = "pkg/cli/trials.py"
+        snippet = (
+            "if (task_path is None) == (task_ref is None):\n"
+            '    raise ValueError("Provide exactly one of -p/--task-path or -t/--task.")'
+        )
+        diff = (
+            f"diff --git a/{trials} b/{trials}\n"
+            f"--- a/{trials}\n"
+            f"+++ b/{trials}\n"
+            f"@@ -1,1 +1,6 @@\n"
+            f" context\n"
+            f"+if (task_path is None) == (task_ref is None):\n"
+            f'+    raise ValueError("Provide exactly one of -p/--task-path or -t/--task.")\n'
+        )
+        idx = build_diff_index(diff)
+        kept, dropped = verify_candidates(
+            [
+                _cand(
+                    file=trials,
+                    title="Inconsistent task path and reference handling",
+                    claim="Exactly one of task_path or task_ref should be provided",
+                    existing_code=snippet,
+                    invariant="Exactly one of task_path or task_ref should be provided",
+                    violating_condition="both or neither supplied",
+                    execution_path=["regrade"],
+                    evidence=[trials],
+                    evidence_paths=[trials],
+                )
+            ],
+            index=idx,
+            bundles=[Bundle(id="B-001", paths=[trials], units=[], kind="source")],
+            llm=lambda _p: "UNCERTAIN",
+        )
+        self.assertEqual(kept, [])
+        self.assertTrue(any(d.get("drop_reason") == "not_a_defect" for d in dropped))
+
+    def test_potential_guard_is_unproven(self):
+        kept, dropped = verify_candidates(
+            [
+                _cand(
+                    title="Potential missing guard for task_configs",
+                    claim="removing the empty guard might be dangerous",
+                    existing_code="if not task_configs:",
+                    invariant="task_configs should not be empty",
+                    violating_condition="empty task_configs",
+                )
+            ],
+            index=build_diff_index(DIFF),
+            bundles=[Bundle(id="B-001", paths=[LOADER], units=[], kind="source")],
+            llm=lambda _p: "VERIFIED",
+        )
+        self.assertEqual(kept, [])
+        self.assertTrue(any(d.get("drop_reason") == "unproven" for d in dropped))
+
+    def test_unproven_n_trials_drops(self):
+        kept, dropped = verify_candidates(
+            [_cand()],
+            index=build_diff_index(DIFF),
+            bundles=[Bundle(id="B-001", paths=[LOADER], units=[], kind="source")],
+            llm=lambda _p: "UNCERTAIN cannot trace consumers",
+        )
+        self.assertEqual(kept, [])
+        self.assertTrue(any(d.get("drop_reason") == "unproven" for d in dropped))
 
 
 class TestRuntimeHedgesNotRc(unittest.TestCase):

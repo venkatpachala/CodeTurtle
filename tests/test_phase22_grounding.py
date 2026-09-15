@@ -654,7 +654,7 @@ class TestCriticAndFinalSurvivorsOnly(unittest.TestCase):
                 },
             ),
             (
-                "COMMENT",
+                "MERGE",
                 [
                     {
                         "title": "load_schema swallows errors",

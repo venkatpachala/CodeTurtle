@@ -23,10 +23,12 @@ read_hunk path must be a file in this bundle.
 Return [] if you cannot name a violating_condition.
 Do not emit Potential/may/might as defects.
 existing_code must be copied from the hunk.
+start_line must be the line of existing_code in the hunk, not the first line of the file.
 execution_path is function names in call order.
+If existing_code is the guard that enforces the invariant (raise, Error print, assert), that is NOT a defect — return [].
 If a test in this bundle already asserts the invariant, do not file that defect.
 Do NOT emit a finding because a function, flag, type, or test was added.
-A finding must state what can go WRONG (break, leak, wrong default, missing guard).
+A finding must state where the invariant is VIOLATED, not that the invariant exists.
 
 When finished, output a JSON list:
 [{"bundle_id":"...","file":"...","symbol":"...","start_line":0,"title":"...","claim":"...","existing_code":"...","invariant":"...","violating_condition":"...","expected":"...","actual":"...","execution_path":["fn"],"evidence":["file"],"severity":"medium","confidence":0.7,"source":"agent","kind":"defect"}]

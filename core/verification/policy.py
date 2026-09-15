@@ -263,20 +263,19 @@ def decide(
     findings = [_cap_changelog_severity(f) for f in findings]
     findings = [_cap_hedge(f) for f in findings]
     findings = [f for f in findings if as_finding_kind(f) != "note"]
-    findings = [f for f in findings if _verify_status(f) != "disproved"]
+    findings = [f for f in findings if _verify_status(f) == "verified"]
 
     verified_block = [
         f
         for f in findings
-        if _verify_status(f) == "verified"
-        and str(f.get("severity") or "").lower() in MEDIUM_PLUS
+        if str(f.get("severity") or "").lower() in MEDIUM_PLUS
         and _is_blocking_defect(f)
     ]
     if verified_block:
         return "REQUEST_CHANGES", "verified_medium"
 
     if findings:
-        return "COMMENT", "uncertain_only"
+        return "COMMENT", "verified_nit"
     return "MERGE", "no_findings"
 
 

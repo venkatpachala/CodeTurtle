@@ -471,7 +471,11 @@ Description:
         for d in dropped[:20]:
             if isinstance(d, dict):
                 why = d.get("drop_reason") or ""
-                prefix = "disproved: " if why == "disproved" else ""
+                prefix = ""
+                if why in ("disproved", "not_a_defect"):
+                    prefix = "disproved: "
+                elif why == "unproven":
+                    prefix = "unproven: "
                 console.print(
                     f"  - {prefix}{d.get('title') or d.get('file')} reason={why}"
                 )

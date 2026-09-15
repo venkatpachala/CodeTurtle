@@ -109,10 +109,11 @@ class TestHedgeAndCoveragePolicy(unittest.TestCase):
             coverage={"units_total": 10, "units_packed": 2, "source_units": 8},
             files_changed=[LOADER],
         )
-        self.assertEqual(rec, "COMMENT")
+        self.assertNotEqual(rec, "REQUEST_CHANGES")
         self.assertNotEqual(reason, "supported_medium")
         self.assertNotIn("coverage", reason)
-        self.assertEqual(reason, "uncertain_only")
+        self.assertEqual(rec, "MERGE")
+        self.assertEqual(reason, "no_findings")
 
     def test_verified_empty_source_job_id_requests_changes(self):
         from core.verification.policy import decide

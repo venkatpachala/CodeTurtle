@@ -74,6 +74,33 @@ class TestPositioner(unittest.TestCase):
         line = position_candidate(_cand(file="pkg/missing.py", symbol="nope"), idx)
         self.assertIsNone(line)
 
+    def test_snippet_line_not_first_hunk(self):
+        diff = (
+            f"diff --git a/{LOADER} b/{LOADER}\n"
+            f"--- a/{LOADER}\n"
+            f"+++ b/{LOADER}\n"
+            f"@@ -1,2 +5,4 @@\n"
+            f" import os\n"
+            f"+from x import y\n"
+            f"@@ -600,3 +670,6 @@\n"
+            f" context\n"
+            f"+n_trials = len(launch_config.tasks) * len(config.agents)\n"
+            f"+return n_trials\n"
+        )
+        idx = build_diff_index(diff)
+        line = position_candidate(
+            _cand(
+                start_line=5,
+                existing_code="n_trials = len(launch_config.tasks) * len(config.agents)",
+                title="Incorrect calculation of n_trials",
+                symbol="",
+            ),
+            idx,
+        )
+        self.assertIsNotNone(line)
+        self.assertGreaterEqual(int(line), 670)
+        self.assertNotEqual(int(line), 5)
+
 
 class TestReflector(unittest.TestCase):
     def setUp(self):

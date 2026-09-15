@@ -15,12 +15,52 @@ MAX_VERIFY = 3
 MAX_GRAPHIFY = 4
 _STATUS_RE = re.compile(r"\b(DISPROVED|VERIFIED|UNCERTAIN)\b", re.I)
 _GUARD_TOKS = ("raise", "validate", "if trial.job_id", "job_id")
+_ENFORCE_RE = re.compile(
+    r"(?i)(\braise\b|\bValueError\b|\bTypeError\b|\bAssertionError\b|"
+    r"console\.print\(\s*[\"']Error|[\"']Error:|\bassert\b)"
+)
+_INV_STOP = {
+    "that",
+    "this",
+    "with",
+    "from",
+    "should",
+    "must",
+    "when",
+    "where",
+    "case",
+    "function",
+    "provided",
+    "handle",
+    "handling",
+    "missing",
+    "error",
+    "exactly",
+    "into",
+    "have",
+    "been",
+    "will",
+    "would",
+    "the",
+    "and",
+    "for",
+    "not",
+    "only",
+    "than",
+    "then",
+    "does",
+    "already",
+}
 
 _FALSIFY_SYS = (
     "You only try to DISPROVE the claim. Cite code. "
-    "If you find validation/test/contract that prevents the bug, say DISPROVED. "
-    "If the path is real and unguarded, say VERIFIED. "
-    "If you cannot tell, UNCERTAIN. "
+    "Ask: where is the violation? Not: is this concern plausible. "
+    "If the snippet is a guard that already enforces the invariant "
+    "(raise, Error print, assert), say DISPROVED. "
+    "If you cannot show a violating execution path to an observable "
+    "consequence, say UNCERTAIN. "
+    "If the path is real, unguarded, and the consequence is observable, "
+    "say VERIFIED. "
     "Do not invent files."
 )
 
@@ -45,6 +85,33 @@ def _snippet_in_hunk(snippet: str, hunk: str) -> bool:
     # tolerate +/- prefixes stripped
     s2 = s.lstrip("+-").strip()
     return bool(s2) and s2 in h
+
+
+def _inv_tokens(text: str) -> List[str]:
+    out: List[str] = []
+    seen = set()
+    for tok in re.findall(r"[A-Za-z_][A-Za-z0-9_]{3,}", text or ""):
+        low = tok.lower()
+        if low in _INV_STOP or low in seen:
+            continue
+        seen.add(low)
+        out.append(low)
+    return out
+
+
+def snippet_enforces_invariant(cand: Candidate, hunk: str = "") -> bool:
+    """True when existing_code is the guard that already enforces the invariant."""
+    _ = hunk
+    blob = cand.existing_code or ""
+    if not blob or not _ENFORCE_RE.search(blob):
+        return False
+    inv = f"{cand.invariant or ''} {cand.claim or ''} {cand.title or ''}"
+    low = blob.lower()
+    hits = 0
+    for t in _inv_tokens(inv):
+        if t in low or (t.endswith("s") and t[:-1] in low):
+            hits += 1
+    return hits >= 1
 
 
 def _last_symbol(path: Sequence[str]) -> str:
@@ -136,6 +203,12 @@ def _falsify_llm(cand: Candidate, llm: Optional[Callable[[str], str]], hunk: str
     return m.group(1).upper()
 
 
+def _drop(cand: Candidate, reason: str, dropped: List[dict]) -> None:
+    cand.verify_status = "disproved" if reason in ("disproved", "not_a_defect") else "uncertain"
+    dropped.append({**cand.to_dict(), "drop_reason": reason})
+    print(f"[Verify] DROP reason={reason} file={cand.file} title={cand.title!r}")
+
+
 def verify_candidates(
     candidates: Sequence[Candidate],
     *,
@@ -144,38 +217,39 @@ def verify_candidates(
     client: Any = None,
     llm: Optional[Callable[[str], str]] = None,
 ) -> Tuple[List[Candidate], List[dict]]:
-    """Return (survivors, dropped). Max 3 defects, ≤1 LLM falsify each."""
+    """Return (verified survivors, dropped). Uncertain is not a comment."""
     kept: List[Candidate] = []
     dropped: List[dict] = []
     graph_budget = [0]
     verified_n = 0
     for cand in candidates:
         if str(getattr(cand, "kind", "defect") or "defect").lower() != "defect":
-            dropped.append({**cand.to_dict(), "drop_reason": "note"})
+            _drop(cand, "note", dropped)
             continue
         if not proof_complete(cand.to_dict()):
-            dropped.append({**cand.to_dict(), "drop_reason": "incomplete_proof"})
-            print(f"[Verify] DROP reason=incomplete_proof file={cand.file}")
+            _drop(cand, "incomplete_proof", dropped)
             continue
         if verified_n >= MAX_VERIFY:
-            cand.verify_status = "uncertain"
-            kept.append(cand)
+            _drop(cand, "unproven", dropped)
             continue
         if is_hedge(cand.title, cand.claim, getattr(cand, "confidence", None)):
             cand.severity = "nit"
-            cand.verify_status = "uncertain"
-            kept.append(cand)
-            verified_n += 1
+            _drop(cand, "unproven", dropped)
             continue
         hunk = _hunk_text(index, cand.file)
         if not _snippet_in_hunk(cand.existing_code, hunk):
-            dropped.append({**cand.to_dict(), "drop_reason": "snippet_not_in_hunk"})
-            print(f"[Verify] DROP reason=snippet_not_in_hunk file={cand.file}")
+            _drop(cand, "snippet_not_in_hunk", dropped)
+            continue
+        if snippet_enforces_invariant(cand, hunk):
+            _drop(cand, "not_a_defect", dropped)
+            continue
+        if not (cand.execution_path or cand.symbol):
+            _drop(cand, "no_execution_path", dropped)
             continue
         bad_sym = False
         for s in cand.execution_path or []:
             if not is_valid_symbol(str(s)):
-                dropped.append({**cand.to_dict(), "drop_reason": "symbol_is_path"})
+                _drop(cand, "symbol_is_path", dropped)
                 bad_sym = True
                 break
         if bad_sym:
@@ -183,33 +257,30 @@ def verify_candidates(
         last = _last_symbol(cand.execution_path) or cand.symbol
         disproved, counter = _graph_disproves(client, last, cand.invariant, graph_budget)
         if disproved:
-            cand.verify_status = "disproved"
             if counter:
                 cand.counter_evidence = list(cand.counter_evidence or []) + [counter]
-            dropped.append({**cand.to_dict(), "drop_reason": "disproved"})
-            print(f"[Verify] DROP reason=disproved file={cand.file} title={cand.title!r}")
+            _drop(cand, "disproved", dropped)
             continue
         bundle = _bundle_for(cand, bundles or [])
         if _test_covers_invariant(cand, bundle):
             claim = f"{cand.title} {cand.claim}".lower()
             if "test does not cover" not in claim:
-                cand.verify_status = "uncertain"
                 cand.counter_evidence = list(cand.counter_evidence or []) + [
                     "same-bundle test asserts invariant"
                 ]
-                kept.append(cand)
-                verified_n += 1
+                _drop(cand, "disproved", dropped)
                 continue
         status = _falsify_llm(cand, llm, hunk)
         if status == "DISPROVED":
-            cand.verify_status = "disproved"
-            dropped.append({**cand.to_dict(), "drop_reason": "disproved"})
-            print(f"[Verify] DROP reason=disproved file={cand.file} title={cand.title!r}")
+            _drop(cand, "disproved", dropped)
             continue
-        if status == "VERIFIED":
-            cand.verify_status = "verified"
-        else:
-            cand.verify_status = "uncertain"
+        if status != "VERIFIED":
+            _drop(cand, "unproven", dropped)
+            continue
+        if snippet_enforces_invariant(cand, hunk):
+            _drop(cand, "not_a_defect", dropped)
+            continue
+        cand.verify_status = "verified"
         kept.append(cand)
         verified_n += 1
     return kept, dropped

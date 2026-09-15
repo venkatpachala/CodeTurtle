@@ -22,6 +22,10 @@ def position_candidate(
     path = normalize_path(candidate.file)
     if not path or index is None:
         return None
+    snippet = str(getattr(candidate, "existing_code", "") or "")
+    snip_line = index.line_for_snippet(path, snippet)
+    if snip_line:
+        return snip_line
     start = candidate.start_line or None
     if start is not None:
         try:
@@ -35,7 +39,7 @@ def position_candidate(
     tokens: List[str] = []
     if candidate.symbol:
         tokens.append(str(candidate.symbol))
-    blob = f"{candidate.title or ''} {candidate.claim or ''}"
+    blob = f"{snippet} {candidate.title or ''} {candidate.claim or ''}"
     tokens.extend(_TOKEN_RE.findall(blob))
     if extra_tokens:
         tokens.extend(str(t) for t in extra_tokens if t)
