@@ -8,7 +8,6 @@ version = "0.2.0"
 description = "Local-first agentic GitHub PR reviewer"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
 authors = [
     { name = "Venkat Pachala" },
 ]
