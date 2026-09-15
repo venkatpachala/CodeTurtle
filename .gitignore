@@ -1,31 +1,36 @@
 # Python-generated files
 __pycache__/
 *.py[oc]
+*.pyc
 build/
 dist/
 wheels/
-*.egg-info
+*.egg-info/
 
 # Virtual environments
-.venv
-.venv-ship
+.venv/
+.venv-ship/
 .env
 
+# Secrets / sessions
+.current_session
+
+# Local runtime data
 qdrant_data/
 repos/
 graphify-out/
-.env
-# Generated repository intelligence
+tmp/
+data/
+outputs/
+
+# Snapshots / artifacts
+artifacts/last_review_snapshot.json
+
+# Codeturtle generated intelligence
 .codeturtle/
 
-# Local DB
-data/
-
-# Sessions
-.current_session
-
-# Debug
+# Debug text dumps
 debug_*.txt
 
-# Eval snapshots from live reviews
-artifacts/
+# GitHub
+.github/copilot-instructions.md
