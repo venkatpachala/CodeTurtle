@@ -1,0 +1,107 @@
+"""V4.1 — BundleBuilder. Synthetic paths only."""
+
+from __future__ import annotations
+
+import sys
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from core.bundling.builder import BundleBuilder
+from core.change_units import build_change_units, format_units
+from core.pr_facts import build_pr_facts, source_first_paths
+
+LOADER = "pkg/api/loader.py"
+PIPELINE = "pkg/api/pipeline.py"
+MAIN = "pkg/cli/main.py"
+TEST_LOADER = "tests/test_loader.py"
+TEST_OTHER = "tests/test_other.py"
+README = "README.md"
+LOCK = "package-lock.json"
+
+FILES = [LOADER, PIPELINE, MAIN, TEST_LOADER, README, LOCK]
+
+
+def _hunk(path: str, added: str) -> str:
+    return (
+        f"diff --git a/{path} b/{path}\n"
+        f"--- a/{path}\n"
+        f"+++ b/{path}\n"
+        f"@@ -1,1 +1,4 @@\n"
+        f" context\n"
+        f"{added}"
+    )
+
+
+DIFF = "".join(
+    [
+        _hunk(LOADER, "+def load():\n+    return 1\n"),
+        _hunk(PIPELINE, "+def run():\n+    return load()\n"),
+        _hunk(MAIN, "+def main():\n+    pass\n"),
+        _hunk(TEST_LOADER, "+def test_load():\n+    assert load() == 1\n"),
+        _hunk(README, "+# docs\n"),
+        _hunk(LOCK, '+  "lockfileVersion": 3\n'),
+    ]
+)
+
+
+class TestSourceFirstPacking(unittest.TestCase):
+    def test_md_and_lock_not_first_when_source_present(self):
+        ordered = source_first_paths([README, LOCK, LOADER])
+        self.assertEqual(ordered[0], LOADER)
+        self.assertIn(README, ordered)
+        self.assertIn(LOCK, ordered)
+
+    def test_format_units_does_not_lead_with_docs(self):
+        units = build_change_units(DIFF, [README, LOADER, LOCK])
+        packed, _cov = format_units(units, lockfile_only=False)
+        first = packed.find("### CU-")
+        self.assertGreaterEqual(first, 0)
+        window = packed[first : first + 80]
+        self.assertIn("loader.py", window)
+        self.assertNotIn("README.md:", window)
+
+
+class TestBundleBuilder(unittest.TestCase):
+    def test_loader_grouped_with_its_test_docs_dropped(self):
+        facts = build_pr_facts(title="api", files_changed=FILES, full_diff=DIFF)
+        units = build_change_units(DIFF, FILES)
+        bundles = BundleBuilder().build(
+            files_changed=FILES,
+            units=units,
+            classification=str(facts.get("classification") or "mixed"),
+        )
+        self.assertTrue(bundles)
+        self.assertLessEqual(len(bundles), 4)
+        all_paths = [p for b in bundles for p in b.paths]
+        self.assertNotIn(TEST_OTHER, all_paths)
+        self.assertNotIn(README, all_paths)
+        self.assertNotIn(LOCK, all_paths)
+        matched = [
+            b
+            for b in bundles
+            if LOADER in b.paths and TEST_LOADER in b.paths
+        ]
+        self.assertTrue(matched, f"expected loader+test_loader together, got {all_paths}")
+        for b in matched:
+            self.assertEqual(b.kind, "source")
+            self.assertNotIn(README, b.paths)
+        for b in bundles:
+            self.assertLessEqual(len(b.paths), 6)
+
+    def test_unlisted_test_not_invented(self):
+        units = build_change_units(DIFF, FILES)
+        bundles = BundleBuilder().build(
+            files_changed=FILES,
+            units=units,
+            classification="mixed",
+        )
+        all_paths = [p for b in bundles for p in b.paths]
+        self.assertNotIn(TEST_OTHER, all_paths)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

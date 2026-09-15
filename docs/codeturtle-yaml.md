@@ -39,6 +39,9 @@ Template: [`examples/codeturtle.yaml`](../examples/codeturtle.yaml).
 | `model` | Chat model name for this run (`settings.ollama_model`) |
 | `post_on_github` | Does **not** override CLI `--dry-run`. Do not rely on this alone to post |
 | `coverage_merge_min` | Optional. Empty KEEP may MERGE only if `units_packed / units_total` ≥ this (default `0.5`). Low coverage is COMMENT, never REQUEST_CHANGES |
+| `runtime` | `v4` (default ReviewRuntime) or `legacy` (17-node LangGraph) |
+| `bundle_max` | Max review bundles (default 4) |
+| `agent_max_steps` | Max BundleAgent tool steps (default 4) |
 
 ## `ignore_paths` and lockfiles
 

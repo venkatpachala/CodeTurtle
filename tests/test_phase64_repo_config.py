@@ -105,6 +105,24 @@ class TestMerge(unittest.TestCase):
         eff = merge_review_config(repo=repo, cli_execute_tests=False, settings=s)
         self.assertTrue(eff.execute_tests)
 
+    def test_yaml_runtime_legacy(self):
+        repo = RepoConfig(runtime="legacy", bundle_max=2, agent_max_steps=3)
+        s = MagicMock()
+        s.inline_max = 8
+        s.inline_lockfile = False
+        s.execute_tests = False
+        s.execute_install = False
+        s.ollama_model = "x"
+        s.llm_backend = "ollama"
+        s.runtime = "v4"
+        s.bundle_max = 4
+        s.agent_max_steps = 4
+        s.coverage_merge_min = 0.5
+        eff = merge_review_config(repo=repo, settings=s)
+        self.assertEqual(eff.runtime, "legacy")
+        self.assertEqual(eff.bundle_max, 2)
+        self.assertEqual(eff.agent_max_steps, 3)
+
     def test_no_repo_yaml_like_today(self):
         s = MagicMock()
         s.inline_max = 8

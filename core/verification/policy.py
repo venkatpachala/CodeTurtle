@@ -342,19 +342,16 @@ def clamp_recommendation(
     classification: str = "",
     policy_reason: str = "",
 ) -> str:
-    """Final cannot be stricter than policy. Lockfile-only cannot MERGE or REQUEST_CHANGES.
+    """Policy owns MERGE / COMMENT / REQUEST_CHANGES. LLM text cannot change it.
 
+    Lockfile-only cannot MERGE or REQUEST_CHANGES.
     Low coverage never MERGE (LLM cannot override insufficient_coverage).
-    Low coverage never escalates COMMENT → REQUEST_CHANGES.
     """
-    rec = str(rec or baseline or "COMMENT").upper()
+    _ = rec
     base = str(baseline or "COMMENT").upper()
-    if rec not in _REC_RANK:
-        rec = base if base in _REC_RANK else "COMMENT"
     if base not in _REC_RANK:
         base = "COMMENT"
-    if _REC_RANK.get(rec, 0) > _REC_RANK.get(base, 0):
-        rec = base
+    rec = base
     if policy_reason == "insufficient_coverage" and rec == "MERGE":
         rec = "COMMENT"
     if classification == "lockfile-only" and rec in ("MERGE", "REQUEST_CHANGES"):

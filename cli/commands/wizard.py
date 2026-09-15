@@ -131,20 +131,19 @@ def _run_review(repo: str, number: int) -> None:
 
 
 def _prompt_pr() -> Optional[tuple[str, int]]:
-    repo = Prompt.ask("Repository (owner/repo)", default="").strip().strip("/")
-    if not repo or "/" not in repo:
-        console.print("[red]Expected owner/repo (e.g. confident-ai/deepeval).[/red]")
+    from core.cli_parse import parse_review_target
+
+    raw = Prompt.ask(
+        "PR (owner/repo N, owner/repo#N, or GitHub pull URL)",
+        default="",
+    ).strip()
+    if not raw:
         return None
-    raw = Prompt.ask("PR number", default="").strip()
     try:
-        number = int(raw)
-    except ValueError:
-        console.print("[red]PR number must be an integer.[/red]")
+        return parse_review_target(raw)
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/red]")
         return None
-    if number <= 0:
-        console.print("[red]PR number must be positive.[/red]")
-        return None
-    return repo, number
 
 
 def run_wizard() -> None:
@@ -161,7 +160,7 @@ def run_wizard() -> None:
         console.print()
         console.print(f"  [1] GitHub token      {token_state} → {config_path()}")
         console.print(f"  [2] Model             {model}")
-        console.print("  [3] Review a PR       owner/repo  N")
+        console.print("  [3] Review a PR       owner/repo N  |  owner/repo#N  |  URL")
         console.print("  [4] Quit")
         choice = Prompt.ask("Select", choices=["1", "2", "3", "4"], default="3")
         if choice == "1":

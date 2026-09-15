@@ -31,3 +31,8 @@ execute_install: false
 
 model: qwen2.5:7b
 # llm_backend: ollama
+
+# Default review path is v4 (ReviewRuntime). Use legacy for the 17-node graph.
+# runtime: legacy
+# bundle_max: 4
+# agent_max_steps: 4

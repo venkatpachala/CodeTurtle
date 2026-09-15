@@ -79,7 +79,7 @@ def unit_kind(path: str) -> str:
         return "lockfile"
     if _TEST_BASENAME_RE.match(base or ""):
         return "test"
-    if _is_docs_or_trivia(n) or n.lower().endswith((".md", ".rst")):
+    if _is_docs_or_trivia(n) or n.lower().endswith((".md", ".mdx", ".rst")):
         return "docs"
     if is_source_file(n):
         return "source"

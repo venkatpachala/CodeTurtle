@@ -159,6 +159,56 @@ def fetch_pull_ref(
         return
 
 
+def checkout_sha(
+    repo_dir: Path,
+    sha: str,
+    *,
+    number: int = 0,
+    run: Optional[RunFn] = None,
+) -> None:
+    """If clone HEAD ≠ pr.head.sha, fetch and check out that commit."""
+    run = run or _run_default
+    want = (sha or "").strip()
+    if not want:
+        if number:
+            fetch_pull_ref(repo_dir, number, run=run)
+        return
+    current = _head_sha(repo_dir, run)
+    if current == want:
+        return
+    print(f"[Workspace] checkout sha={want[:12]}")
+    try:
+        run(
+            ["git", "-C", str(repo_dir), "fetch", "origin", want, "--depth", "1"],
+            check=True,
+            capture_output=True,
+            timeout=180,
+        )
+        run(
+            ["git", "-C", str(repo_dir), "checkout", "--force", want],
+            check=True,
+            capture_output=True,
+            timeout=60,
+        )
+        return
+    except Exception:
+        pass
+    if number:
+        fetch_pull_ref(repo_dir, number, run=run)
+        current = _head_sha(repo_dir, run)
+        if current == want:
+            return
+        try:
+            run(
+                ["git", "-C", str(repo_dir), "checkout", "--force", want],
+                check=True,
+                capture_output=True,
+                timeout=60,
+            )
+        except Exception:
+            return
+
+
 def _graphify_argv(repo_dir: Path) -> List[str]:
     return [
         graphify_executable(),
@@ -213,10 +263,10 @@ def ensure_workspace(
     run: Optional[RunFn] = None,
     token: str = "",
     force_index: bool = False,
+    head_sha: str = "",
 ) -> Path:
-    """Clone (if needed) + Graphify code-only index. Returns graph.json path."""
+    """Clone (if needed) + checkout PR SHA + Graphify if graph missing or SHA changed."""
     run = run or _run_default
     dest = ensure_clone(repo, run=run, token=token)
-    if number:
-        fetch_pull_ref(dest, number, run=run)
+    checkout_sha(dest, head_sha, number=number, run=run)
     return ensure_index(repo, run=run, force=force_index)

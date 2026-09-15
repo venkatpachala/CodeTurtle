@@ -1,0 +1,37 @@
+{
+  "repo": "acme/widgets",
+  "number": 1,
+  "classification": "source",
+  "files_changed": [
+    "pkg/api/loader.py",
+    "tests/test_loader.py"
+  ],
+  "lock_files": [],
+  "source_files": [
+    "pkg/api/loader.py"
+  ],
+  "investigate_skipped": true,
+  "skip_reason": "v4_runtime",
+  "hops": 0,
+  "calls": 0,
+  "hyp_files": [],
+  "grounding_raw": 0,
+  "grounding_kept": 0,
+  "grounding_dropped": 1,
+  "keep_files": [],
+  "keep_verification_status": [],
+  "keep_severity": [],
+  "drop_reasons": ["evidence_not_in_pr"],
+  "verify_supported": 0,
+  "verify_uncertain": 0,
+  "verify_unsupported": 0,
+  "tests_touched_count": 0,
+  "execute_skipped": true,
+  "execute_skip_reason": "disabled",
+  "final_decision": "MERGE",
+  "suggested_policy": "MERGE",
+  "qdrant_used": false,
+  "coverage_low": false,
+  "policy_reason": "no_validated_issues",
+  "coverage_ratio": 1.0
+}

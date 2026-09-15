@@ -1,6 +1,6 @@
 # CodeTurtle
 
-Local-first GitHub PR reviewer. Graphify structure, clamped **MERGE** / **COMMENT** / **REQUEST_CHANGES**. Runs on your machine.
+Local-first GitHub PR reviewer. Graphify structure. **Decision is Policy** (`MERGE` / `COMMENT` / **REQUEST_CHANGES**), not leftover LLM Final text. Default **v4** runtime. Runs on your machine.
 
 ```bash
 uv tool install "git+https://github.com/venkatpachala/CodeTurtle.git@v0.3.0"
@@ -9,7 +9,7 @@ codeturtle
 
 Requires: **Ollama** (or `OPENAI_API_KEY`), **git**, and a **GitHub token** (`gh auth login` or paste once).
 
-`codeturtle` with no arguments opens a menu: save token → pick an Ollama model → type `owner/repo` and a PR number. The CLI clones into `~/.codeturtle/repos/`, builds a Graphify code-only graph if needed, and dry-runs the review.
+`codeturtle` with no arguments opens a menu: save token → pick an Ollama model → paste `owner/repo N`, `owner/repo#N`, or a GitHub pull URL. The CLI clones into `~/.codeturtle/repos/`, checks out the PR SHA, builds a Graphify code-only graph if the SHA changed, and dry-runs the review.
 
 ```text
 CodeTurtle
@@ -22,11 +22,12 @@ CodeTurtle
 Scripts still work:
 
 ```bash
-codeturtle review confident-ai/deepeval 3292
 codeturtle review owner/repo 123 --dry-run
+codeturtle review owner/repo#123 --dry-run
+codeturtle review https://github.com/owner/repo/pull/123 --dry-run
 ```
 
-Default is **dry-run**. Nothing is posted unless you pass `--comment`. Qdrant and Neo4j are not required.
+Default is **dry-run** and **v4** (`ReviewRuntime`: bundles → Graphify-by-identifier → reflector → Policy). Nothing is posted unless you pass `--comment`. Qdrant is off on the default path. Set `runtime: legacy` in `.codeturtle.yaml` for the 17-node LangGraph.
 
 ---
 
@@ -34,7 +35,7 @@ Default is **dry-run**. Nothing is posted unless you pass `--comment`. Qdrant an
 
 CodeTurtle is a CLI. It fetches a GitHub PR with your token, builds a
 code-only Graphify graph of the repository, reviews **change units** (hunks)
-instead of a truncated diff, and emits **MERGE**, **COMMENT**, or
+in impl+test bundles, and prints **Decision** from Policy: **MERGE**, **COMMENT**, or
 **REQUEST_CHANGES**.
 
 Config lives in `%USERPROFILE%\.codeturtle\config.toml` (or `~/.codeturtle/config.toml`), not a random project `.env`.
@@ -104,6 +105,8 @@ Graphify is included in the default install.
 ```bash
 codeturtle
 codeturtle review owner/repo 123 --dry-run
+codeturtle review owner/repo#123 --dry-run
+codeturtle review https://github.com/owner/repo/pull/123 --dry-run
 codeturtle review owner/repo 123 --comment
 codeturtle graphify-test owner/repo --stats
 ```

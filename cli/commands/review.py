@@ -9,7 +9,6 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 
 from config import settings
-from core.graph import review_graph
 from core.memory.manager import MemoryManager
 from core.observability import get_langfuse_client, get_logger
 from core.utils import handle_error
@@ -45,6 +44,7 @@ class PipelineContext:
     config_path: str = ""
     repo_cfg: Optional[object] = None
     change_units_payload: Optional[dict] = None
+    repo_dir: str = ""
 
 
 def get_current_session() -> str:
@@ -135,6 +135,12 @@ class ReviewPipeline:
                 settings.ollama_model = cfg.model
             if cfg.llm_backend:
                 settings.llm_backend = cfg.llm_backend
+            if cfg.runtime:
+                settings.runtime = str(cfg.runtime).strip().lower()
+            if cfg.bundle_max:
+                settings.bundle_max = int(cfg.bundle_max)
+            if cfg.agent_max_steps:
+                settings.agent_max_steps = int(cfg.agent_max_steps)
             if cfg_path:
                 print(f"[Review] config={cfg_path}")
 
@@ -170,24 +176,44 @@ class ReviewPipeline:
             )
 
             from core.ci import resolve_github_token
+            from core.repository_knowledge.paths import resolve_repo_dir
             from core.workspace import WorkspaceError, ensure_workspace
 
             token = resolve_github_token(fallback=str(settings.github_token or ""))
+            self._fetch_pr()
             try:
-                graph = ensure_workspace(repo, number, token=token)
+                graph = ensure_workspace(
+                    repo,
+                    number,
+                    token=token,
+                    head_sha=self.context.pr_head_sha or "",
+                )
                 print(f"[Workspace] graph={graph}")
             except WorkspaceError as exc:
                 console.print(f"[red]{exc}[/red]")
                 raise SystemExit(1) from exc
+            try:
+                self.context.repo_dir = str(resolve_repo_dir(repo))
+            except Exception:
+                self.context.repo_dir = ""
 
             self._load_knowledge_base()
-            self._fetch_pr()
             self._build_full_diff()
-            self._retrieve_context()
-            self._create_review_state()
 
-            console.print("[yellow]Running agent swarm...[/yellow]")
-            self.context.final_state = review_graph.invoke(self.context.state)
+            runtime = str(getattr(settings, "runtime", "v4") or "v4").strip().lower()
+            if runtime == "legacy":
+                self._retrieve_context()
+                self._create_review_state()
+                console.print("[yellow]Running agent swarm...[/yellow]")
+                from core.graph import review_graph
+
+                self.context.final_state = review_graph.invoke(self.context.state)
+            else:
+                from core.runtime.review_runtime import ReviewRuntime, result_to_review_state
+
+                console.print("[yellow]Running v4 review runtime...[/yellow]")
+                result = ReviewRuntime().run(self.context)
+                self.context.final_state = result_to_review_state(result, self.context)
             self._write_eval_snapshot()
 
             self._add_langfuse_metadata()
@@ -605,10 +631,14 @@ Description:
             if reason:
                 console.print(f"policy_reason={reason}")
 
-        # ── Final decision ───────────────────────────────────────────────
-        rec = final.get("recommendation") or _as_dict(final.get("merge_decision")).get(
-            "recommendation", "N/A"
-        )
+        # ── Final decision (Policy owns MERGE/COMMENT/REQUEST_CHANGES) ──
+        rec = "N/A"
+        if final:
+            from core.verification.policy import policy_from_state
+
+            rec, pol_reason, _ratio, _low = policy_from_state(final)
+            if pol_reason:
+                reason = pol_reason
         console.print("\n[bold cyan]=== FINAL RECOMMENDATION ===[/bold cyan]")
         console.print(f"[bold]Decision: {rec}[/bold]")
         if reason:
@@ -700,8 +730,13 @@ Description:
 
 
 def review(
-    repo: str = typer.Argument(..., help="Repository in format owner/repo"),
-    number: int = typer.Argument(..., help="PR number"),
+    target: str = typer.Argument(
+        ...,
+        help="owner/repo, owner/repo#N, or https://github.com/owner/repo/pull/N",
+    ),
+    number: Optional[int] = typer.Argument(
+        None, help="PR number if not included in TARGET"
+    ),
     dry_run: bool = typer.Option(
         True,
         "--dry-run/--no-dry-run",
@@ -734,6 +769,18 @@ def review(
         help="Path to .codeturtle.yaml (else CODETURTLE_CONFIG or ./.codeturtle.yaml)",
     ),
 ):
+    from core.cli_parse import parse_review_target
+
+    raw = (target or "").strip()
+    if number is not None and not (
+        "#" in raw.split("/")[-1] or "/pull/" in raw.lower()
+    ):
+        raw = f"{raw} {int(number)}"
+    try:
+        repo, number = parse_review_target(raw)
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise SystemExit(2) from exc
     logger.info("Starting review", repo=repo, pr_number=number)
     ReviewPipeline().run(
         repo,

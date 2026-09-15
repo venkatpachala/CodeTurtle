@@ -56,6 +56,11 @@ class Settings(BaseSettings):
 
     coverage_merge_min: float = 0.5
 
+    # v4 ReviewRuntime is default. "legacy" still calls review_graph.invoke.
+    runtime: str = "v4"
+    bundle_max: int = 4
+    agent_max_steps: int = 4
+
 
 settings = Settings()
 if not (getattr(settings, "repos_root", None) or "").strip():

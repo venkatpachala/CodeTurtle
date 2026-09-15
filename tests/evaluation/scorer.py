@@ -203,6 +203,16 @@ def score(
         _chk("final", dec in allowed, f"expected {allowed} got {dec}")
     )
 
+    if golden.decision_equals_policy:
+        pol_dec = str(snap.suggested_policy or "").upper()
+        checks.append(
+            _chk(
+                "decision_equals_policy",
+                bool(dec) and pol_dec == dec,
+                f"Decision={dec} Policy={pol_dec}",
+            )
+        )
+
     if golden.forbid_request_changes_unless_supported_medium and dec == "REQUEST_CHANGES":
         has_supported_medium = False
         for st, sev in zip(snap.keep_verification_status, snap.keep_severity):

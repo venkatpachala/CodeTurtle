@@ -20,7 +20,11 @@ Review a GitHub pull request.
 
 ```bash
 codeturtle review owner/repo 123 --dry-run
+codeturtle review owner/repo#123 --dry-run
+codeturtle review https://github.com/owner/repo/pull/123 --dry-run
 ```
+
+Default runtime is **v4**. Printed `Decision:` is Policy (`MERGE` / `COMMENT` / `REQUEST_CHANGES`), not leftover LLM Final text. Set `runtime: legacy` in `.codeturtle.yaml` to use the 17-node graph.
 
 **Options**
 

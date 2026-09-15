@@ -211,7 +211,7 @@ class TestPostInlines(unittest.TestCase):
         self.assertEqual(out.inlines, 1)
         self.assertEqual(len(captured.get("comments") or []), 1)
         self.assertEqual(captured["comments"][0]["side"], "RIGHT")
-        self.assertEqual(captured["event"], "COMMENT")
+        self.assertEqual(captured["event"], "REQUEST_CHANGES")
 
     def test_api_line_error_retries_summary(self):
         calls = []
