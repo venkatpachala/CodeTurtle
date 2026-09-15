@@ -452,7 +452,8 @@ Description:
         for d in kept:
             if not isinstance(d, dict):
                 continue
-            status = d.get("verify_status") or d.get("verification_status") or ""
+            vs = str(d.get("verify_status") or "").strip().lower()
+            status = "verified" if vs == "verified" else "uncertain"
             console.print(
                 f"status={status} file={d.get('file')} line={d.get('start_line') or d.get('line')}"
             )
@@ -505,7 +506,7 @@ Description:
             )
         console.print(f"[bold]Decision: {rec}[/bold]")
         if reason:
-            console.print(f"[dim]{rec} ({reason})[/dim]")
+            console.print(f"[dim]reason={reason}[/dim]")
         final_comment = final.get("final_comment", "")
         if final_comment:
             console.print(Markdown(str(final_comment)))

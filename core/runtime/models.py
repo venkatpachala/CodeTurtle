@@ -95,7 +95,8 @@ def comment_from_candidate(cand: Candidate, line: int) -> Comment:
         "verified": "supported",
         "uncertain": "uncertain",
         "disproved": "unsupported",
-    }.get(status, "supported")
+        "candidate": "uncertain",
+    }.get(status, "uncertain")
     return Comment(
         bundle_id=cand.bundle_id,
         file=cand.file,

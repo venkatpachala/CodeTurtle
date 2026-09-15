@@ -144,6 +144,64 @@ class TestFeatureStemJoin(unittest.TestCase):
             self.assertNotEqual(b.paths, [test_regrade])
         hosted_bundle = matched[0]
         self.assertNotIn(jobs, hosted_bundle.paths)
+        self.assertIn(hosted_cfg, hosted_bundle.paths)
+
+    def test_harbor_shaped_paths_split_jobs_and_trials(self):
+        hosted_jobs = "src/harbor/cli/hosted_jobs.py"
+        jobs = "src/harbor/cli/jobs.py"
+        trials = "src/harbor/cli/trials.py"
+        hosted_cfg = "src/harbor/hosted/config.py"
+        hosted_submit = "src/harbor/hosted/submit.py"
+        job = "src/harbor/job.py"
+        test_regrade = "tests/unit/test_hosted_regrade.py"
+        files = [
+            hosted_jobs,
+            jobs,
+            trials,
+            hosted_cfg,
+            hosted_submit,
+            job,
+            test_regrade,
+        ]
+        diff = "".join(
+            [
+                _hunk(hosted_jobs, "+def run_hosted_regrade():\n+    return 1\n"),
+                _hunk(jobs, "+def regrade():\n+    pass\n"),
+                _hunk(trials, "+def list_trials():\n+    pass\n"),
+                _hunk(hosted_cfg, "+class HostedRegradeSource:\n+    pass\n"),
+                _hunk(hosted_submit, "+def submit():\n+    pass\n"),
+                _hunk(job, "+class Job:\n+    pass\n"),
+                _hunk(test_regrade, "+def test_hosted_regrade():\n+    assert True\n"),
+            ]
+        )
+        units = build_change_units(diff, files)
+        bundles = BundleBuilder().build(
+            files_changed=files,
+            units=units,
+            classification="source",
+        )
+        self.assertTrue(bundles)
+        self.assertLessEqual(len(bundles), 4)
+        hosted = [
+            b
+            for b in bundles
+            if hosted_jobs in b.paths and test_regrade in b.paths
+        ]
+        self.assertTrue(
+            hosted,
+            f"expected hosted_jobs+test together, got {[b.paths for b in bundles]}",
+        )
+        hb = hosted[0]
+        self.assertIn(hosted_cfg, hb.paths)
+        self.assertIn(hosted_submit, hb.paths)
+        self.assertNotIn(jobs, hb.paths)
+        self.assertNotIn(trials, hb.paths)
+        self.assertNotIn(job, hb.paths)
+        jobs_bundle = next((b for b in bundles if jobs in b.paths), None)
+        trials_bundle = next((b for b in bundles if trials in b.paths), None)
+        if jobs_bundle is not None and trials_bundle is not None:
+            if jobs_bundle is trials_bundle:
+                self.fail(f"jobs.py and trials.py shared a bundle: {jobs_bundle.paths}")
 
 
 if __name__ == "__main__":

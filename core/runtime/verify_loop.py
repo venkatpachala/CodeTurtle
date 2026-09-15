@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any, Callable, List, Optional, Sequence, Tuple
 
-from core.agent.contract import proof_complete
+from core.agent.contract import is_hedge, proof_complete
 from core.graphctx.symbols import is_valid_symbol
 from core.pr_facts import normalize_path
 from core.runtime.models import Bundle, Candidate
@@ -150,9 +150,22 @@ def verify_candidates(
     graph_budget = [0]
     verified_n = 0
     for cand in candidates:
+        if str(getattr(cand, "kind", "defect") or "defect").lower() != "defect":
+            dropped.append({**cand.to_dict(), "drop_reason": "note"})
+            continue
+        if not proof_complete(cand.to_dict()):
+            dropped.append({**cand.to_dict(), "drop_reason": "incomplete_proof"})
+            print(f"[Verify] DROP reason=incomplete_proof file={cand.file}")
+            continue
         if verified_n >= MAX_VERIFY:
             cand.verify_status = "uncertain"
             kept.append(cand)
+            continue
+        if is_hedge(cand.title, cand.claim, getattr(cand, "confidence", None)):
+            cand.severity = "nit"
+            cand.verify_status = "uncertain"
+            kept.append(cand)
+            verified_n += 1
             continue
         hunk = _hunk_text(index, cand.file)
         if not _snippet_in_hunk(cand.existing_code, hunk):

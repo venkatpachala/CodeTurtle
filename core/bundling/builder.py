@@ -73,17 +73,31 @@ def _dir_key(path: str) -> str:
     return "/".join(parts[:-1])
 
 
+def _last_parent(path: str) -> str:
+    parents = [p.lower() for p in normalize_path(path).split("/")[:-1] if p]
+    return parents[-1] if parents else ""
+
+
+def _stem_head(path: str) -> str:
+    stem = _stem(path).lower()
+    parts = [p for p in stem.split("_") if p]
+    return parts[0] if parts and len(parts[0]) >= 4 else ""
+
+
 def _feature_key(path: str) -> str:
-    """Group by feature stem, not only parent dir (hosted_jobs + hosted/)."""
+    """hosted_jobs + hosted/ join; jobs.py / trials.py stay separate."""
     n = normalize_path(path)
+    last_parent = _last_parent(n)
+    stem = _stem(n).lower()
+    stem_head = _stem_head(n)
+    if last_parent and last_parent not in _GENERIC_DIRS:
+        return last_parent
+    if stem_head:
+        return stem_head
     parents = [p.lower() for p in n.split("/")[:-1] if p]
     for parent in reversed(parents):
         if parent not in _GENERIC_DIRS:
             return parent
-    stem = _stem(n).lower()
-    parts = [p for p in stem.split("_") if p]
-    if parts and len(parts[0]) >= 4:
-        return parts[0]
     return stem or n
 
 

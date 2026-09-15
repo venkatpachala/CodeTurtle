@@ -112,7 +112,7 @@ def result_to_review_state(result: ReviewResult, context: Any = None) -> Dict[st
     repo_cfg = getattr(ctx, "repo_cfg", None)
     summary_bits = [f"**{result.decision}** ({result.policy_reason})"]
     if findings:
-        summary_bits.append(f"{len(findings)} supported comment(s).")
+        summary_bits.append(f"{len(findings)} kept comment(s).")
     else:
         summary_bits.append("No validated findings.")
     summary = " ".join(summary_bits)
@@ -374,11 +374,16 @@ class ReviewRuntime:
                 )
                 continue
             line = position_candidate(cand, index)
+            own_paths = next(
+                (list(b.paths or []) for b in bundles if b.id == cand.bundle_id),
+                None,
+            )
             keep, reason = reflect_candidate(
                 cand,
                 files_changed=files,
                 index=index,
                 line=line,
+                bundle_paths=own_paths,
             )
             if not keep or not line:
                 dropped.append({**cand.to_dict(), "drop_reason": reason if not keep else "no_line"})

@@ -102,6 +102,7 @@ def reflect_candidate(
     files_changed: Iterable[str],
     index: Optional[DiffIndex] = None,
     line: Optional[int] = None,
+    bundle_paths: Optional[Iterable[str]] = None,
 ) -> Tuple[bool, str]:
     """Return (keep, reason). DROP rules are numbered in the v4 spec."""
     allowed = _files_set(files_changed)
@@ -137,6 +138,11 @@ def reflect_candidate(
 
     if not _in_pr(path, allowed, index):
         return _drop("file_not_in_pr")
+
+    if bundle_paths is not None:
+        bset = {normalize_path(p) for p in bundle_paths if p}
+        if bset and not _in_pr(path, bset, None):
+            return _drop("off_bundle")
 
     if _TEST_FOR_RE.search(title) and not _is_test_path(path):
         return _drop("test_for_on_nontest")

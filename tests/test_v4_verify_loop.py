@@ -86,12 +86,77 @@ class TestVerifyLoop(unittest.TestCase):
         self.assertEqual(kept, [])
         self.assertTrue(any(d.get("drop_reason") == "disproved" for d in dropped))
 
+    def test_hedge_not_promoted_to_verified(self):
+        kept, _dropped = verify_candidates(
+            [
+                _cand(
+                    title="Potential UUID collision",
+                    claim="ids may not belong to source_job",
+                    confidence=0.0,
+                )
+            ],
+            index=self.idx,
+            bundles=[self.bundle],
+            llm=lambda _p: "VERIFIED",
+        )
+        self.assertEqual(len(kept), 1)
+        self.assertEqual(kept[0].verify_status, "uncertain")
+        rec, reason = decide(
+            [
+                {
+                    "file": LOADER,
+                    "title": kept[0].title,
+                    "claim": kept[0].claim,
+                    "severity": kept[0].severity,
+                    "kind": "defect",
+                    "verify_status": kept[0].verify_status,
+                    "confidence": 0.0,
+                }
+            ],
+            classification="source",
+            files_changed=[LOADER],
+        )
+        self.assertEqual(rec, "COMMENT")
+        self.assertNotEqual(reason, "verified_medium")
+        self.assertNotEqual(reason, "supported_medium")
+
     def test_parse_fail_uncertain(self):
         kept, _dropped = verify_candidates(
             [_cand()],
             index=self.idx,
             bundles=[self.bundle],
             llm=lambda _p: "not sure really",
+        )
+        self.assertEqual(len(kept), 1)
+        self.assertEqual(kept[0].verify_status, "uncertain")
+
+    def test_incomplete_proof_drops(self):
+        kept, dropped = verify_candidates(
+            [_cand(existing_code="", invariant="", violating_condition="")],
+            index=self.idx,
+            bundles=[self.bundle],
+            llm=lambda _p: "VERIFIED",
+        )
+        self.assertEqual(kept, [])
+        self.assertTrue(any(d.get("drop_reason") == "incomplete_proof" for d in dropped))
+
+    def test_same_bundle_test_covers_invariant(self):
+        bundle = Bundle(
+            id="B-001",
+            paths=[LOADER, "tests/test_loader.py"],
+            units=[
+                {
+                    "path": "tests/test_loader.py",
+                    "excerpt": "def test_source_selector():\n    assert source_job_id\n",
+                }
+            ],
+            kind="source",
+        )
+        kept, _dropped = verify_candidates(
+            [_cand()],
+            index=self.idx,
+            bundles=[bundle],
+            llm=lambda _p: "VERIFIED",
         )
         self.assertEqual(len(kept), 1)
         self.assertEqual(kept[0].verify_status, "uncertain")

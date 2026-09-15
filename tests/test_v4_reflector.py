@@ -79,6 +79,27 @@ class TestReflector(unittest.TestCase):
     def setUp(self):
         self.idx = build_diff_index(DIFF)
 
+    def test_drop_off_bundle(self):
+        keep, reason = reflect_candidate(
+            _cand(file=LOADER),
+            files_changed=[LOADER, "pkg/cli/jobs.py"],
+            index=self.idx,
+            line=2,
+            bundle_paths=["pkg/cli/jobs.py"],
+        )
+        self.assertFalse(keep)
+        self.assertEqual(reason, "off_bundle")
+
+    def test_drop_incomplete_proof(self):
+        keep, reason = reflect_candidate(
+            _cand(existing_code="", invariant="", violating_condition=""),
+            files_changed=FILES,
+            index=self.idx,
+            line=2,
+        )
+        self.assertFalse(keep)
+        self.assertEqual(reason, "incomplete_proof")
+
     def test_drop_file_not_in_pr(self):
         keep, reason = reflect_candidate(
             _cand(file=README, evidence_paths=[README]),
