@@ -10,11 +10,8 @@ from rich.panel import Panel
 
 from config import settings
 from core.graph import review_graph
-from core.graphify_retriever import GraphifyRetriever
-from core.knowledge_base import KnowledgeBase
 from core.memory.manager import MemoryManager
 from core.observability import get_langfuse_client, get_logger
-from core.query_engine import RepositoryQueryEngine
 from core.utils import handle_error
 
 logger = get_logger()
@@ -304,6 +301,8 @@ class ReviewPipeline:
             self.context.change_units_payload = None
 
     def _retrieve_context(self):
+        from core.graphify_retriever import GraphifyRetriever
+
         retriever = GraphifyRetriever(self.context.repo)
 
         query = f"""Title:

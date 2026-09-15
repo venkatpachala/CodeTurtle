@@ -1,15 +1,22 @@
 """Repository Intelligence package."""
-from core.repository_intelligence.pipeline import RepositoryIntelligence
+
 from core.repository_intelligence.service import (
-    RepositoryIntelligenceService,
     IndexResult,
     RepoStats,
+    RepositoryIntelligenceService,
 )
-__all__ = ["RepositoryIntelligence"]
 
-# from core.repository_intelligence.service import RepositoryIntelligenceService
+__all__ = [
+    "IndexResult",
+    "RepoStats",
+    "RepositoryIntelligence",
+    "RepositoryIntelligenceService",
+]
 
-# def add_repo(repo: str, force: bool = False, ...):
-#     svc = RepositoryIntelligenceService(repo)
-#     result = svc.ensure_indexed(force=force)  # or svc.index(force=True)
-#     # print IndexResult with rich Panel
+
+def __getattr__(name: str):
+    if name == "RepositoryIntelligence":
+        from core.repository_intelligence.pipeline import RepositoryIntelligence
+
+        return RepositoryIntelligence
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

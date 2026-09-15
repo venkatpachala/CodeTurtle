@@ -1,7 +1,6 @@
 from __future__ import annotations
 import os
-from typing import Optional
-from neo4j import GraphDatabase, Driver
+from typing import Any, Optional
 
 
 class GraphStore:
@@ -18,10 +17,17 @@ class GraphStore:
         self.uri = uri or os.getenv("NEO4J_URI", "bolt://127.0.0.1:7687")
         self.user = user or os.getenv("NEO4J_USER", "neo4j")
         self.password = password or os.getenv("NEO4J_PASSWORD", "codeturtle123")
-        self._driver: Optional[Driver] = None
+        self._driver: Optional[Any] = None
 
-    def connect(self) -> Driver:
+    def connect(self):
         if self._driver is None:
+            try:
+                from neo4j import GraphDatabase
+            except ImportError as exc:
+                raise RuntimeError(
+                    "Neo4j extra is not installed. "
+                    "Install with: pip install 'codeturtle-review[neo4j]'"
+                ) from exc
             self._driver = GraphDatabase.driver(
                 self.uri,
                 auth=(self.user, self.password),

@@ -54,6 +54,21 @@ class TestScorer571(unittest.TestCase):
         self.assertIn("investigate", names)
 
 
+class TestScorerDeepEval3288(unittest.TestCase):
+    def test_3288_live_snapshot_all_pass(self):
+        g = _load_golden("deepeval-3288")
+        snap = _load_fixture("deepeval-3288")
+        card = score(g, snap)
+        self.assertTrue(card.ok, [c.detail for c in card.failed])
+
+    def test_3288_qdrant_used_fails(self):
+        g = _load_golden("deepeval-3288")
+        snap = _load_fixture("deepeval-3288").model_copy(update={"qdrant_used": True})
+        card = score(g, snap)
+        self.assertFalse(card.ok)
+        self.assertIn("qdrant", [c.name for c in card.failed])
+
+
 class TestScorer538(unittest.TestCase):
     def test_538_fixture_all_pass(self):
         g = _load_golden("qw-538")

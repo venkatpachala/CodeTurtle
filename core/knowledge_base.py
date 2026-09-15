@@ -1,13 +1,29 @@
-from langchain_qdrant import QdrantVectorStore
-from langchain_ollama import OllamaEmbeddings
-from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, Filter, FieldCondition, MatchValue
-from langchain_core.documents import Document
 from typing import List, Optional, Dict, Any
+
+from langchain_core.documents import Document
+
+try:
+    from langchain_ollama import OllamaEmbeddings
+    from langchain_qdrant import QdrantVectorStore
+    from qdrant_client import QdrantClient
+    from qdrant_client.models import Distance, FieldCondition, Filter, MatchValue, VectorParams
+except ImportError as exc:  # optional extra: codeturtle-review[qdrant]
+    OllamaEmbeddings = None  # type: ignore
+    QdrantVectorStore = None  # type: ignore
+    QdrantClient = None  # type: ignore
+    Distance = FieldCondition = Filter = MatchValue = VectorParams = None  # type: ignore
+    _QDRANT_IMPORT_ERROR = exc
+else:
+    _QDRANT_IMPORT_ERROR = None
 
 
 class KnowledgeBase:
     def __init__(self, collection_name: str):
+        if _QDRANT_IMPORT_ERROR is not None:
+            raise RuntimeError(
+                "Qdrant extra is not installed. "
+                "Install with: pip install 'codeturtle-review[qdrant]'"
+            ) from _QDRANT_IMPORT_ERROR
         self.collection_name = collection_name
         self.embeddings = OllamaEmbeddings(model="nomic-embed-text")
         self.client = QdrantClient(
