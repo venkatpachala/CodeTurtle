@@ -5,7 +5,6 @@ from typing import List, Optional, Set, TYPE_CHECKING, Any
 
 from langchain_core.documents import Document
 
-from core.knowledge_base import KnowledgeBase
 from core.reranker import Reranker
 from core.repository_persistence import RepositoryPersistence
 from core.context_builder import ContextBuilder
@@ -22,6 +21,7 @@ except ImportError:
     GraphQueries = None  # type: ignore
 
 if TYPE_CHECKING:
+    from core.knowledge_base import KnowledgeBase
     from core.repository_intelligence.graph.queries import GraphQueries as GraphQueriesType
 else:
     GraphQueriesType = Any
@@ -92,7 +92,7 @@ class HybridRetriever:
     def __init__(
         self,
         repo_name: str,
-        kb: Optional[KnowledgeBase] = None,
+        kb: Optional["KnowledgeBase"] = None,
         graph_queries: Optional[Any] = None,
         *,
         require_kb: bool = True,
@@ -106,6 +106,8 @@ class HybridRetriever:
                 raise RuntimeError(
                     "HybridRetriever requires a shared KnowledgeBase instance."
                 )
+            from core.knowledge_base import KnowledgeBase
+
             kb = KnowledgeBase(repo_name.replace("/", "_"))
         self.repo_name = repo_name
         self.kb = kb

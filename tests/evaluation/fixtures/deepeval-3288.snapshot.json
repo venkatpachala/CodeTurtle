@@ -1,0 +1,51 @@
+{
+  "repo": "confident-ai/deepeval",
+  "number": 3288,
+  "classification": "source",
+  "files_changed": [
+    "deepeval/models/llms/kimi_model.py",
+    "tests/test_core/test_models/test_kimi_model.py"
+  ],
+  "lock_files": [],
+  "source_files": [
+    "deepeval/models/llms/kimi_model.py",
+    "tests/test_core/test_models/test_kimi_model.py"
+  ],
+  "investigate_skipped": false,
+  "skip_reason": null,
+  "hops": 6,
+  "calls": 6,
+  "hyp_files": [
+    "deepeval/models/llms/kimi_model.py",
+    "tests/test_core/test_models/test_kimi_model.py",
+    "deepeval/models/llms/kimi_model.py"
+  ],
+  "grounding_raw": 6,
+  "grounding_kept": 2,
+  "grounding_dropped": 4,
+  "keep_files": [
+    "deepeval/models/llms/kimi_model.py",
+    "tests/test_core/test_models/test_kimi_model.py"
+  ],
+  "keep_verification_status": [
+    "supported",
+    "supported"
+  ],
+  "keep_severity": [
+    "medium",
+    "medium"
+  ],
+  "drop_reasons": [],
+  "verify_supported": 4,
+  "verify_uncertain": 2,
+  "verify_unsupported": 0,
+  "tests_touched_count": 5,
+  "execute_skipped": true,
+  "execute_skip_reason": "disabled",
+  "final_decision": "REQUEST_CHANGES",
+  "suggested_policy": "REQUEST_CHANGES",
+  "qdrant_used": false,
+  "coverage_low": false,
+  "policy_reason": "supported_medium",
+  "coverage_ratio": 1.0
+}

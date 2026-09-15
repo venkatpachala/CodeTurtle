@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     github_token: str = ""
 
     # Paths
-    memory_path: str = "~/.codeturrle/memory"
-    traces_path: str = "~/.codeturrle/traces"
+    memory_path: str = "~/.codeturtle/memory"
+    traces_path: str = "~/.codeturtle/traces"
 
     model_config = ConfigDict(
         env_file = ".env",
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     # config
     repos_root: str = "repos"
     graphify_graph_filename: str = "graphify-out/graph.json"
-    graphify_transport: str = "http"   # preferred
+    graphify_transport: str = "stdio"
     graphify_only_retrieval: bool = True
     neo4j_enabled: bool = False
 

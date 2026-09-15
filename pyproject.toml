@@ -1,8 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
-name = "codeturrle"
-version = "0.1.0"
-description = "Autonomous GitHub Review Agent Swarm"
-requires-python = ">=3.10"
+name = "codeturtle-review"
+version = "0.2.0"
+description = "Local-first agentic GitHub PR reviewer"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "Venkat Pachala" },
+]
 dependencies = [
     "typer>=0.12.0",
     "rich>=13.0.0",
@@ -11,22 +20,43 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "pygithub>=2.0.0",
     "langgraph>=0.2.0",
-    "langchain-ollama>=1.1.0",
-    "qdrant-client>=1.18.0",
-    "langchain-qdrant>=1.1.0",
+    "langchain-core>=0.3.0",
+    "pyyaml>=6.0",
     "gitpython>=3.1.50",
-    "langchain-community>=0.4.2",
-    "langchain>=1.3.13",
-    "langchain-text-splitters>=1.1.2",
-    "tqdm>=4.68.4",
-    "langfuse>=4.14.0",
-    "structlog>=26.1.0",
-    "litellm==1.91.0",
-    "optional>=0.0.1",
+]
+
+[project.optional-dependencies]
+ollama = [
+    "langchain-ollama>=1.1.0",
+]
+openai = [
     "langchain-openai>=1.3.5",
-    "neo4j>=6.2.0",
+]
+langfuse = [
+    "langfuse>=4.14.0",
+]
+graphify = [
     "mcp>=1,<3",
     "graphifyy[mcp]>=0.9.50",
-    "panel>=1.9.4",
-    "pyyaml>=6.0",
 ]
+qdrant = [
+    "qdrant-client>=1.18.0",
+    "langchain-qdrant>=1.1.0",
+    "langchain-ollama>=1.1.0",
+]
+neo4j = [
+    "neo4j>=6.2.0",
+]
+
+[project.scripts]
+codeturtle = "cli.main:app"
+
+[project.urls]
+Homepage = "https://github.com/venkatpachala/CodeTurtle"
+Repository = "https://github.com/venkatpachala/CodeTurtle"
+
+[tool.hatch.build.targets.wheel]
+packages = ["cli", "core"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"config.py" = "config.py"

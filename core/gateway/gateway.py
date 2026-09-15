@@ -5,9 +5,25 @@ import random
 from datetime import datetime
 from rich.console import Console
 
-from core.gateway.providers import ollama_provider, openai_provider
-
 console = Console()
+
+
+def _load_provider(name: str):
+    try:
+        if name == "ollama":
+            from core.gateway.providers import ollama_provider as mod
+
+            return mod
+        if name == "openai":
+            from core.gateway.providers import openai_provider as mod
+
+            return mod
+    except ImportError as exc:
+        raise RuntimeError(
+            f"LLM backend '{name}' is not installed. "
+            f"Install with: pip install 'codeturtle-review[{name}]'"
+        ) from exc
+    raise KeyError(name)
 
 
 class GatewayTelemetry(BaseModel):
@@ -42,10 +58,6 @@ class AIGateway:
     """
 
     def __init__(self):
-        self.providers = {
-            "ollama": ollama_provider,
-            "openai": openai_provider,
-        }
         self.default_provider = "ollama"
         default_model = "qwen2.5-coder:7b"
         try:
@@ -73,7 +85,7 @@ class AIGateway:
 
     def _get_provider(self, capability: str):
         config = self.model_registry.get(capability, {"provider": self.default_provider})
-        return self.providers[config["provider"]], config["model"]
+        return _load_provider(config["provider"]), config["model"]
 
     def generate(
         self,
