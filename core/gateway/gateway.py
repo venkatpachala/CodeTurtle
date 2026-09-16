@@ -63,7 +63,7 @@ class AIGateway:
         try:
             from config import settings
             if getattr(settings, "ollama_model", None):
-                default_model = settings.ollama_model
+                default_model = str(settings.ollama_model).strip()
         except Exception:
             pass
 

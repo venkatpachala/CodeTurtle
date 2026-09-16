@@ -630,35 +630,68 @@ class TestCriticAndFinalSurvivorsOnly(unittest.TestCase):
         self.assertIn("VALIDATED findings", prompt)
         self.assertIn("(none)", prompt)
         self.assertEqual(out["recommendation"], "MERGE")
+        self.assertEqual(out["policy_reason"], "no_findings")
         self.assertIn("no validated", (out["merge_decision"]["summary"] or "").lower())
 
     def test_decision_enum_not_hardcoded(self):
         from core.agents import final_recommender
         from core.models import ReviewOutput
 
-        for rec in ("MERGE", "COMMENT", "REQUEST_CHANGES"):
-            def fake_gen(rec=rec, **kwargs):
-                return ReviewOutput(summary="x", recommendation=rec, confidence=0.5)
+        def fake_merge(**kwargs):
+            return ReviewOutput(summary="x", recommendation="MERGE", confidence=0.5)
 
-            vstat = "supported" if rec == "REQUEST_CHANGES" else "uncertain"
-            state = {
-                "validated_findings": [
+        cases = [
+            (
+                "MERGE",
+                [],
+                {
+                    "pr_understanding": {"summary": "fix", "risk_level": "low"},
+                    "review_coverage": {
+                        "units_total": 2,
+                        "units_packed": 2,
+                        "source_units": 2,
+                    },
+                },
+            ),
+            (
+                "MERGE",
+                [
+                    {
+                        "title": "load_schema swallows errors",
+                        "file": LOADER,
+                        "evidence": [LOADER],
+                        "severity": "nit",
+                        "verification_status": "uncertain",
+                    }
+                ],
+                {"pr_understanding": {"summary": "fix", "risk_level": "medium"}},
+            ),
+            (
+                "REQUEST_CHANGES",
+                [
                     {
                         "title": "load_schema swallows errors",
                         "file": LOADER,
                         "evidence": [LOADER],
                         "severity": "concern",
-                        "verification_status": vstat,
+                        "verification_status": "supported",
                     }
                 ],
-                "pr_understanding": {"summary": "fix", "risk_level": "medium"},
-                "pr_facts": {"classification": "source"},
+                {"pr_understanding": {"summary": "fix", "risk_level": "medium"}},
+            ),
+        ]
+        for rec, findings, extra in cases:
+            state = {
+                "validated_findings": findings,
+                "pr_facts": {"classification": "source", "files_changed": [LOADER]},
+                "files_changed": [LOADER],
                 "verification_report": {"ran": True},
             }
+            state.update(extra)
             with patch("core.agents.gateway") as gw:
-                gw.generate_structured.side_effect = fake_gen
+                gw.generate_structured.side_effect = fake_merge
                 out = final_recommender(state)
-            self.assertEqual(out["recommendation"], rec)
+            self.assertEqual(out["recommendation"], rec, rec)
 
 
 class TestGraphHasValidatorNode(unittest.TestCase):

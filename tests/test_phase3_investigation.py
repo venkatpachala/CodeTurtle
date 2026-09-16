@@ -332,7 +332,7 @@ class TestGraphAndFinalPolicy(unittest.TestCase):
         with patch("core.agents.gateway") as gw:
             gw.generate_structured.side_effect = fake_gen
             out = final_recommender(state)
-        self.assertEqual(out["recommendation"], "COMMENT")
+        self.assertEqual(out["recommendation"], "MERGE")
         self.assertIn("COMMENT", captured.get("prompt") or "")
         self.assertIn("could not confirm", captured.get("prompt") or "")
 

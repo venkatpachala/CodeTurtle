@@ -65,18 +65,17 @@ def github_event(decision: str, classification: str = "") -> str:
 
 
 def clamped_decision(state: dict) -> str:
+    """Printed Decision and GitHub event come from Policy, not leftover Final text."""
     facts = state.get("pr_facts") or {}
     classification = str(facts.get("classification") or "")
     findings = list(state.get("validated_findings") or state.get("findings") or [])
-    vrep = state.get("verification_report") if isinstance(state.get("verification_report"), dict) else {}
     exrep = state.get("execution_report") if isinstance(state.get("execution_report"), dict) else {}
     from core.verification.policy import policy_from_state
 
     baseline, reason, _ratio, _low = policy_from_state(
         state, findings, execution=exrep or None
     )
-    rec = str(state.get("recommendation") or vrep.get("suggested_recommendation") or baseline)
-    return clamp_recommendation(rec, baseline, classification, policy_reason=reason)
+    return clamp_recommendation(baseline, baseline, classification, policy_reason=reason)
 
 
 def is_postable_finding(finding: Dict[str, Any] | None) -> bool:

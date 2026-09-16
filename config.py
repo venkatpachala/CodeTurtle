@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from pydantic import ConfigDict
+from pydantic import ConfigDict, field_validator
 from dotenv import load_dotenv
 import os
 import sys
@@ -16,6 +16,11 @@ class Settings(BaseSettings):
     llm_backend: str = "ollama"
     ollama_model: str = "qwen2.5:7b"
     ollama_base_url: str = "http://localhost:11434"
+
+    @field_validator("ollama_model", "ollama_base_url", "llm_backend", mode="before")
+    @classmethod
+    def _strip_llm(cls, v):
+        return str(v).strip() if v is not None and str(v).strip() else v
 
     # GitHub
     github_token: str = ""
@@ -55,6 +60,10 @@ class Settings(BaseSettings):
     inline_lockfile: bool = False
 
     coverage_merge_min: float = 0.5
+    # v4 ReviewRuntime is default. "legacy" still calls review_graph.invoke.
+    runtime: str = "v4"
+    bundle_max: int = 4
+    agent_max_steps: int = 4
 
 
 settings = Settings()

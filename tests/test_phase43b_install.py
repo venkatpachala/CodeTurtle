@@ -14,9 +14,17 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from core.verification.execute import (
+    SKIP_DEPS_MISSING,
+    SKIP_FLAG_OFF,
+    SKIP_INSTALL_FAILED,
+    SKIP_LOCKFILE,
+    SKIP_NO_INSTALLER,
+    SKIP_TIMEOUT,
+    choose_install_root,
     detect_python_manifest,
     execute_tests_node,
     jail_relpath,
+    plan_execution,
 )
 
 SANITIZER = "api/sql_utils/sql_sanitizer.py"
@@ -62,7 +70,7 @@ class TestInstallGates(unittest.TestCase):
                     },
                     runner=runner,
                 )
-        self.assertEqual(out["execution_report"]["skip_reason"], "disabled")
+        self.assertEqual(out["execution_report"]["skip_reason"], SKIP_FLAG_OFF)
         self.assertEqual(calls, [])
 
     def test_execute_tests_no_install_import_fail(self):
@@ -104,7 +112,7 @@ class TestInstallGates(unittest.TestCase):
             checkout=fake_checkout,
             which=_which_map(pytest="pytest", uv="uv"),
         )
-        self.assertEqual(out["execution_report"]["skip_reason"], "deps_missing")
+        self.assertEqual(out["execution_report"]["skip_reason"], SKIP_DEPS_MISSING)
         uv_cmds = [c for c in calls if c and str(c[0]) == "uv"]
         self.assertEqual(uv_cmds, [])
 
@@ -129,7 +137,7 @@ class TestInstallGates(unittest.TestCase):
             },
             runner=runner,
         )
-        self.assertEqual(out["execution_report"]["skip_reason"], "lockfile-only")
+        self.assertEqual(out["execution_report"]["skip_reason"], SKIP_LOCKFILE)
         self.assertEqual(calls, [])
 
 
@@ -238,7 +246,7 @@ class TestUvSync(unittest.TestCase):
             checkout=lambda repo_dir, sha, dest_path, runner=None: self._checkout_uv(dest_path),
             which=_which_map(uv="uv", pytest="pytest"),
         )
-        self.assertEqual(out["execution_report"]["skip_reason"], "install_failed")
+        self.assertEqual(out["execution_report"]["skip_reason"], SKIP_INSTALL_FAILED)
         self.assertTrue(out["execution_report"]["skipped"])
         self.assertFalse(any("pytest" in c for c in calls))
 
@@ -267,8 +275,61 @@ class TestUvSync(unittest.TestCase):
             checkout=lambda repo_dir, sha, dest_path, runner=None: self._checkout_uv(dest_path),
             which=_which_map(uv="uv", pytest="pytest"),
         )
-        self.assertEqual(out["execution_report"]["skip_reason"], "install_timeout")
+        self.assertEqual(out["execution_report"]["skip_reason"], SKIP_TIMEOUT)
         self.assertTrue(out["execution_report"]["skipped"])
+
+    def test_install_on_never_deps_missing(self):
+        calls = []
+
+        def runner(cmd, **kwargs):
+            calls.append(list(cmd))
+            joined = " ".join(str(c) for c in cmd)
+            if "sync" in joined:
+                return FakeProc(0, "synced\n")
+            if "pytest" in joined:
+                return FakeProc(0, "1 passed\n")
+            return FakeProc(0, "")
+
+        out = execute_tests_node(
+            {
+                "execute_tests": True,
+                "execute_install": True,
+                "repo": "x/y",
+                "number": 1,
+                "pr_head_sha": "sha",
+                "pr_facts": {
+                    "classification": "source",
+                    "files_changed": [SANITIZER, TEST_SAN],
+                    "source_files": [SANITIZER],
+                },
+                "validated_findings": [{"file": SANITIZER, "related_tests": [TEST_SAN]}],
+            },
+            runner=runner,
+            checkout=lambda repo_dir, sha, dest_path, runner=None: self._checkout_uv(dest_path),
+            which=_which_map(uv="uv"),
+        )
+        self.assertNotEqual(out["execution_report"]["skip_reason"], SKIP_DEPS_MISSING)
+        self.assertTrue(any("uv" in str(c[0]) or "pip" in " ".join(str(x) for x in c) for c in calls if c))
+
+    def test_monorepo_install_root(self):
+        with tempfile.TemporaryDirectory() as td:
+            wt = Path(td)
+            pkg = wt / "libs" / "deepagents"
+            tests = pkg / "tests"
+            tests.mkdir(parents=True)
+            (pkg / "pyproject.toml").write_text("[project]\nname='deepagents'\n", encoding="utf-8")
+            (pkg / "uv.lock").write_text("lock", encoding="utf-8")
+            (tests / "test_x.py").write_text("def test_ok():\n    assert True\n", encoding="utf-8")
+            root = choose_install_root(wt, ["libs/deepagents/tests/test_x.py"])
+            self.assertEqual(root, pkg)
+
+    def test_plan_flag_off(self):
+        plan = plan_execution(
+            flags={"execute_tests": False},
+            pr_facts={"classification": "source", "files_changed": [SANITIZER]},
+            files_changed=[SANITIZER],
+        )
+        self.assertEqual(plan.skip_reason, SKIP_FLAG_OFF)
 
     def test_dotdot_rejected(self):
         with tempfile.TemporaryDirectory() as td:
@@ -283,7 +344,7 @@ class TestUvSync(unittest.TestCase):
             (root / "poetry.lock").write_text("p", encoding="utf-8")
             kind, skip = detect_python_manifest(root, which=lambda n: None)
             self.assertEqual(kind, "poetry")
-            self.assertEqual(skip, "unsupported_installer=poetry")
+            self.assertEqual(skip, SKIP_NO_INSTALLER)
 
 
 if __name__ == "__main__":

@@ -128,6 +128,58 @@ class TestEnsureIndex(unittest.TestCase):
             self.assertTrue(graph.is_file())
 
 
+class TestCheckoutSha(unittest.TestCase):
+    def test_fetch_checkout_when_head_differs(self):
+        from core.workspace import checkout_sha, ensure_workspace
+
+        with tempfile.TemporaryDirectory() as td:
+            home = Path(td)
+            dest = home / "repos" / "owner_repo"
+            dest.mkdir(parents=True)
+            (dest / ".git").mkdir()
+            gdir = dest / "graphify-out"
+            gdir.mkdir()
+            (gdir / "graph.json").write_text("{}", encoding="utf-8")
+            (gdir / ".codeturtle-rev").write_text("oldsha\n", encoding="utf-8")
+            calls = []
+            head = {"sha": "oldsha"}
+
+            def run(argv, **kwargs):
+                calls.append(list(argv))
+                if argv[:1] == ["git"] and "rev-parse" in argv:
+                    return _Proc(stdout=head["sha"] + "\n")
+                if argv[:1] == ["git"] and "fetch" in argv:
+                    return _Proc()
+                if argv[:1] == ["git"] and "checkout" in argv:
+                    head["sha"] = "newsha123456"
+                    return _Proc()
+                if argv[:1] == ["git"] and "clone" in argv:
+                    return _Proc()
+                graph = dest / "graphify-out" / "graph.json"
+                graph.parent.mkdir(parents=True, exist_ok=True)
+                graph.write_text("{}", encoding="utf-8")
+                return _Proc()
+
+            with patch.dict(os.environ, {"CODETURTLE_HOME": str(home)}, clear=False):
+                os.environ.pop("CODETURTLE_REPOS_ROOT", None)
+                checkout_sha(dest, "newsha123456", run=run)
+            joined = [" ".join(c) for c in calls]
+            self.assertTrue(any("fetch" in j and "newsha123456" in j for j in joined))
+            self.assertTrue(any("checkout" in j and "newsha123456" in j for j in joined))
+
+            calls.clear()
+            head["sha"] = "oldsha"
+            with patch.dict(os.environ, {"CODETURTLE_HOME": str(home)}, clear=False):
+                ensure_workspace(
+                    "owner/repo",
+                    7,
+                    run=run,
+                    head_sha="newsha123456",
+                )
+            joined = [" ".join(c) for c in calls]
+            self.assertTrue(any("graphify" in j or "extract" in j for j in joined))
+
+
 class TestUserConfig(unittest.TestCase):
     def test_save_and_load_roundtrip(self):
         from core.user_config import load_user_config, save_user_config

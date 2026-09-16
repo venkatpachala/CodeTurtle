@@ -186,7 +186,7 @@ def score(
         detail = f"skipped={snap.execute_skipped} reason={snap.execute_skip_reason}"
     elif expect_ex == "skip_disabled":
         ex_ok = bool(snap.execute_skipped) and (
-            "disabled" in reason or not reason
+            "disabled" in reason or "flag_off" in reason or not reason
         )
         detail = f"expected skip_disabled got skipped={snap.execute_skipped} reason={snap.execute_skip_reason}"
     elif expect_ex == "skip_lockfile-only":
@@ -202,6 +202,16 @@ def score(
     checks.append(
         _chk("final", dec in allowed, f"expected {allowed} got {dec}")
     )
+
+    if golden.decision_equals_policy:
+        pol_dec = str(snap.suggested_policy or "").upper()
+        checks.append(
+            _chk(
+                "decision_equals_policy",
+                bool(dec) and pol_dec == dec,
+                f"Decision={dec} Policy={pol_dec}",
+            )
+        )
 
     if golden.forbid_request_changes_unless_supported_medium and dec == "REQUEST_CHANGES":
         has_supported_medium = False

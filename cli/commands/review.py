@@ -9,7 +9,6 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 
 from config import settings
-from core.graph import review_graph
 from core.memory.manager import MemoryManager
 from core.observability import get_langfuse_client, get_logger
 from core.utils import handle_error
@@ -17,6 +16,33 @@ from core.utils import handle_error
 logger = get_logger()
 console = Console()
 memory = MemoryManager()
+
+
+def _ollama_model_and_source() -> tuple[str, str]:
+    """Process env beats .env. Leftover $env:OLLAMA_MODEL is a common trap."""
+    env = str(os.environ.get("OLLAMA_MODEL") or "").strip()
+    model = str(getattr(settings, "ollama_model", "") or "").strip()
+    if env:
+        return env, "env OLLAMA_MODEL"
+    return model, ".env or default"
+
+
+def _warn_if_ollama_model_missing(name: str) -> None:
+    from cli.commands.wizard import list_ollama_models
+
+    installed = list_ollama_models()
+    if not installed or not name:
+        return
+    if name in installed or f"{name}:latest" in installed:
+        return
+    if any(m == name or m.startswith(name + ":") for m in installed):
+        return
+    shown = ", ".join(installed[:10])
+    console.print(
+        f"[red]Ollama has no model {name!r}. Installed: {shown}[/red]\n"
+        "[dim]Process env OLLAMA_MODEL overrides .env. "
+        "In PowerShell: Remove-Item Env:OLLAMA_MODEL[/dim]"
+    )
 
 
 class _SkipReview(Exception):
@@ -45,6 +71,8 @@ class PipelineContext:
     config_path: str = ""
     repo_cfg: Optional[object] = None
     change_units_payload: Optional[dict] = None
+    repo_dir: str = ""
+    show_uncertain: bool = False
 
 
 def get_current_session() -> str:
@@ -101,6 +129,7 @@ class ReviewPipeline:
         execute_install: bool = False,
         comment: bool = False,
         config_path: str = "",
+        show_uncertain: bool = False,
     ):
         try:
             from core.repo_config import (
@@ -131,10 +160,14 @@ class ReviewPipeline:
             self.context.repo_cfg = cfg
             self.context.execute_tests = bool(cfg.execute_tests)
             self.context.execute_install = bool(cfg.execute_install)
+            self.context.show_uncertain = bool(show_uncertain)
             if cfg.model:
                 settings.ollama_model = cfg.model
             if cfg.llm_backend:
                 settings.llm_backend = cfg.llm_backend
+            # runtime / bundle_max / agent_max_steps stay on repo_cfg.
+            # Do not assign them onto Settings — extra="ignore" rejects unknown fields
+            # and YAML defaults (bundle_max=4) would always trigger a write.
             if cfg_path:
                 print(f"[Review] config={cfg_path}")
 
@@ -160,34 +193,63 @@ class ReviewPipeline:
 
             self.context.conversation_id = get_current_session()
 
+            model_name, model_source = _ollama_model_and_source()
+            if model_name:
+                settings.ollama_model = model_name
+            _warn_if_ollama_model_missing(model_name)
             console.print(
                 Panel.fit(
                     f"[bold cyan]CodeTurtle[/bold cyan]\n"
                     f"Session: {self.context.conversation_id}\n"
                     f"Repository: {repo}#{number}\n"
-                    f"Model: {settings.ollama_model} (Ollama)"
+                    f"Model: {model_name} (Ollama, {model_source})"
                 )
             )
+            print(f"[Review] llm={model_name} source={model_source}")
 
             from core.ci import resolve_github_token
+            from core.repository_knowledge.paths import resolve_repo_dir
             from core.workspace import WorkspaceError, ensure_workspace
 
             token = resolve_github_token(fallback=str(settings.github_token or ""))
+            self._fetch_pr()
             try:
-                graph = ensure_workspace(repo, number, token=token)
+                graph = ensure_workspace(
+                    repo,
+                    number,
+                    token=token,
+                    head_sha=self.context.pr_head_sha or "",
+                )
                 print(f"[Workspace] graph={graph}")
             except WorkspaceError as exc:
                 console.print(f"[red]{exc}[/red]")
                 raise SystemExit(1) from exc
+            try:
+                self.context.repo_dir = str(resolve_repo_dir(repo))
+            except Exception:
+                self.context.repo_dir = ""
 
             self._load_knowledge_base()
-            self._fetch_pr()
             self._build_full_diff()
-            self._retrieve_context()
-            self._create_review_state()
 
-            console.print("[yellow]Running agent swarm...[/yellow]")
-            self.context.final_state = review_graph.invoke(self.context.state)
+            runtime = str(
+                getattr(cfg, "runtime", None)
+                or getattr(settings, "runtime", "v4")
+                or "v4"
+            ).strip().lower()
+            if runtime == "legacy":
+                self._retrieve_context()
+                self._create_review_state()
+                console.print("[yellow]Running agent swarm...[/yellow]")
+                from core.graph import review_graph
+
+                self.context.final_state = review_graph.invoke(self.context.state)
+            else:
+                from core.runtime.review_runtime import ReviewRuntime, result_to_review_state
+
+                console.print("[yellow]Running v4 review runtime...[/yellow]")
+                result = ReviewRuntime().run(self.context)
+                self.context.final_state = result_to_review_state(result, self.context)
             self._write_eval_snapshot()
 
             self._add_langfuse_metadata()
@@ -407,8 +469,104 @@ Description:
         except Exception:
             pass
 
+    def _display_v4(self, final: dict) -> None:
+        console.print("\n[bold cyan]=== BUNDLES ===[/bold cyan]")
+        bundles = final.get("v4_bundles") or []
+        if not bundles:
+            console.print("[dim](none)[/dim]")
+        for b in bundles:
+            if not isinstance(b, dict):
+                continue
+            paths = ",".join(str(p) for p in (b.get("paths") or []))
+            console.print(f"  {b.get('id')} kind={b.get('kind')} files={paths}")
+
+        console.print("\n[bold green]=== COMMENTS (VERIFIED_BUG) ===[/bold green]")
+        kept_all = final.get("validated_findings") or final.get("findings") or []
+        kept = [
+            d
+            for d in kept_all
+            if isinstance(d, dict) and str(d.get("verify_status") or "").lower() == "verified"
+        ]
+        if not kept:
+            console.print("no kept defects")
+        for d in kept:
+            console.print(
+                f"status=verified file={d.get('file')} line={d.get('start_line') or d.get('line')}"
+            )
+            if d.get("invariant"):
+                console.print(f"invariant={d.get('invariant')}")
+            snippet = d.get("existing_code") or ""
+            if snippet:
+                console.print(f"snippet={snippet[:200]}")
+            self._print_findings([d])
+        if getattr(self.context, "show_uncertain", False):
+            plausible = [
+                d
+                for d in (final.get("v4_dropped") or [])
+                if isinstance(d, dict) and d.get("drop_reason") == "unproven"
+            ]
+            console.print("\n[bold yellow]=== PLAUSIBLE (not Decision) ===[/bold yellow]")
+            if not plausible:
+                console.print("[dim](none)[/dim]")
+            for d in plausible[:20]:
+                console.print(f"  - {d.get('title') or d.get('file')}")
+
+        console.print("\n[bold yellow]=== DROPPED ===[/bold yellow]")
+        dropped = final.get("v4_dropped") or []
+        if not dropped:
+            console.print("[dim](none)[/dim]")
+        for d in dropped[:20]:
+            if isinstance(d, dict):
+                why = d.get("drop_reason") or ""
+                prefix = ""
+                if why in ("disproved", "not_a_defect"):
+                    prefix = "disproved: "
+                elif why == "unproven":
+                    prefix = "unproven: "
+                console.print(
+                    f"  - {prefix}{d.get('title') or d.get('file')} reason={why}"
+                )
+            else:
+                console.print(f"  - {d}")
+
+        console.print("\n[bold cyan]=== SANDBOX ===[/bold cyan]")
+        ex = final.get("execution_report") if isinstance(final.get("execution_report"), dict) else {}
+        if ex.get("skipped") or not ex:
+            console.print(f"[dim]skip reason={ex.get('skip_reason') or 'flag_off'}[/dim]")
+        else:
+            console.print(
+                f"[dim]cmd={ex.get('cmd')} exit={ex.get('exit_code')} "
+                f"passed={ex.get('passed')} failed={ex.get('failed')}[/dim]"
+            )
+
+        cov = final.get("review_coverage") if isinstance(final.get("review_coverage"), dict) else {}
+        packed = int(cov.get("units_packed") or 0)
+        total = int(cov.get("units_total") or 0)
+        ratio = final.get("coverage_ratio")
+        if ratio is None and total:
+            ratio = packed / total
+        low = final.get("coverage_low")
+        rec = str(final.get("recommendation") or "COMMENT")
+        reason = str(final.get("policy_reason") or "")
+        console.print("\n[bold cyan]=== DECISION ===[/bold cyan]")
+        if total:
+            ratio_s = f"{float(ratio):.2f}" if ratio is not None else "?"
+            console.print(
+                f"[dim]coverage packed={packed} total={total} ratio={ratio_s} "
+                f"low={str(bool(low)).lower()}[/dim]"
+            )
+        console.print(f"[bold]Decision: {rec}[/bold]")
+        if reason:
+            console.print(f"[dim]reason={reason}[/dim]")
+        final_comment = final.get("final_comment", "")
+        if final_comment:
+            console.print(Markdown(str(final_comment)))
+
     def _display_results(self):
         final = self.context.final_state or {}
+        if str(final.get("runtime") or "") == "v4":
+            self._display_v4(final)
+            return
 
         # ── PR Understanding ─────────────────────────────────────────────
         understanding = _as_dict(final.get("pr_understanding"))
@@ -605,10 +763,14 @@ Description:
             if reason:
                 console.print(f"policy_reason={reason}")
 
-        # ── Final decision ───────────────────────────────────────────────
-        rec = final.get("recommendation") or _as_dict(final.get("merge_decision")).get(
-            "recommendation", "N/A"
-        )
+        # ── Final decision (Policy owns MERGE/COMMENT/REQUEST_CHANGES) ──
+        rec = "N/A"
+        if final:
+            from core.verification.policy import policy_from_state
+
+            rec, pol_reason, _ratio, _low = policy_from_state(final)
+            if pol_reason:
+                reason = pol_reason
         console.print("\n[bold cyan]=== FINAL RECOMMENDATION ===[/bold cyan]")
         console.print(f"[bold]Decision: {rec}[/bold]")
         if reason:
@@ -700,8 +862,13 @@ Description:
 
 
 def review(
-    repo: str = typer.Argument(..., help="Repository in format owner/repo"),
-    number: int = typer.Argument(..., help="PR number"),
+    target: str = typer.Argument(
+        ...,
+        help="owner/repo, owner/repo#N, or https://github.com/owner/repo/pull/N",
+    ),
+    number: Optional[int] = typer.Argument(
+        None, help="PR number if not included in TARGET"
+    ),
     dry_run: bool = typer.Option(
         True,
         "--dry-run/--no-dry-run",
@@ -733,7 +900,24 @@ def review(
         "--config",
         help="Path to .codeturtle.yaml (else CODETURTLE_CONFIG or ./.codeturtle.yaml)",
     ),
+    show_uncertain: bool = typer.Option(
+        False,
+        "--show-uncertain",
+        help="Print PLAUSIBLE_BUT_UNPROVEN drops. They never set Decision.",
+    ),
 ):
+    from core.cli_parse import parse_review_target
+
+    raw = (target or "").strip()
+    if number is not None and not (
+        "#" in raw.split("/")[-1] or "/pull/" in raw.lower()
+    ):
+        raw = f"{raw} {int(number)}"
+    try:
+        repo, number = parse_review_target(raw)
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise SystemExit(2) from exc
     logger.info("Starting review", repo=repo, pr_number=number)
     ReviewPipeline().run(
         repo,
@@ -744,5 +928,6 @@ def review(
         execute_install=execute_install,
         comment=comment,
         config_path=config_path or "",
+        show_uncertain=show_uncertain,
     )
       

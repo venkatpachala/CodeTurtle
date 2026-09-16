@@ -139,10 +139,29 @@ def _is_docs_or_trivia(path: str) -> bool:
     if base in {".gitignore", "license", "makefile", ".dockerignore", "wordlist.txt"}:
         return True
     return (
-        p.endswith((".md", ".rst", ".txt"))
+        p.endswith((".md", ".mdx", ".rst", ".txt"))
         or "docs/" in p
         or base.startswith(".")
     )
+
+
+def source_first_paths(paths: Optional[List[str]] = None) -> List[str]:
+    """If any source files exist, .md/.mdx/lockfiles are never first."""
+    files = [normalize_path(p) for p in (paths or []) if p]
+    if not files:
+        return []
+    if not any(is_source_file(p) for p in files):
+        return files
+
+    def _rank(p: str) -> int:
+        n = p.lower()
+        if is_lockfile(n) or n.endswith((".md", ".mdx", ".rst")) or _is_docs_or_trivia(n):
+            return 2
+        if is_source_file(n):
+            return 0
+        return 1
+
+    return [p for _, p in sorted(enumerate(files), key=lambda t: (_rank(t[1]), t[0]))]
 
 
 def classify_change_set(files_changed: Optional[List[str]] = None) -> Dict[str, Any]:

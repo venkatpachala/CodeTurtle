@@ -97,6 +97,9 @@ def build_structural_context(
 
 
 def _change_inventory(files: List[str], full_diff: str) -> str:
+    from core.pr_facts import source_first_paths
+
+    files = source_first_paths(list(files or []))
     lines = []
     if files:
         lines.append("Changed files:")

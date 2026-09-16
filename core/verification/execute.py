@@ -15,7 +15,8 @@ import shutil
 import subprocess
 import time
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from config import settings
 from core.pr_facts import is_lockfile, is_source_file, normalize_path
@@ -34,6 +35,36 @@ _FAILED_NAME_RE = re.compile(r"^FAILED\s+(\S+)", re.M)
 _PYPROJECT_NAME_RE = re.compile(r'(?m)^name\s*=\s*["\']([A-Za-z0-9._-]+)["\']')
 
 Runner = Callable[..., Any]
+
+SKIP_FLAG_OFF = "flag_off"
+SKIP_LOCKFILE = "lockfile-only"
+SKIP_NO_TEST_TARGETS = "no_test_targets"
+SKIP_CHECKOUT = "checkout_failed"
+SKIP_NO_INSTALLER = "no_installer"
+SKIP_INSTALL_FAILED = "install_failed"
+SKIP_DEPS_MISSING = "deps_missing"
+SKIP_TIMEOUT = "timeout"
+SKIP_PATH_JAIL = "path_jail"
+
+
+@dataclass
+class ExecutePlan:
+    skip_reason: Optional[str] = None
+    execute_tests: bool = False
+    execute_install: bool = False
+    test_paths: List[str] = field(default_factory=list)
+    install_root: Optional[str] = None
+    frozen: bool = False
+
+
+@dataclass
+class ExecuteResult:
+    skipped: bool = True
+    skip_reason: Optional[str] = None
+    cmd: str = ""
+    exit_code: Optional[int] = None
+    passed: Optional[int] = None
+    failed: Optional[int] = None
 
 
 def _env_enabled(state: dict) -> bool:
@@ -69,14 +100,130 @@ def _install_requested(state: dict) -> bool:
 def execution_skip_reason(state: dict) -> Optional[str]:
     """Pure skip gate. No subprocess."""
     if not _env_enabled(state):
-        return "disabled"
+        return SKIP_FLAG_OFF
     facts = state.get("pr_facts") or {}
     if str(facts.get("classification") or "") == "lockfile-only":
-        return "lockfile-only"
+        return SKIP_LOCKFILE
     files = list(facts.get("files_changed") or state.get("files_changed") or [])
     if not any(is_source_file(f) for f in files):
-        return "no_source_files"
+        return SKIP_NO_TEST_TARGETS
     return None
+
+
+def choose_install_root(worktree: Path, test_paths: Sequence[str]) -> Path:
+    """Nearest pyproject/uv.lock/requirements per test; prefer most tests."""
+    root = worktree.resolve()
+    counts: Dict[str, int] = {}
+    for rel in test_paths or []:
+        raw = str(rel).replace("\\", "/").strip()
+        if not raw:
+            continue
+        cur = (worktree / raw).resolve()
+        if cur.is_file():
+            cur = cur.parent
+        found = None
+        while True:
+            if (
+                (cur / "uv.lock").is_file()
+                or (cur / "pyproject.toml").is_file()
+                or (cur / "requirements.txt").is_file()
+            ):
+                found = cur
+                break
+            if cur == root or cur.parent == cur:
+                break
+            cur = cur.parent
+        if found is not None:
+            key = str(found)
+            counts[key] = counts.get(key, 0) + 1
+    if not counts:
+        return worktree
+    best = max(counts.items(), key=lambda kv: kv[1])
+    return Path(best[0])
+
+
+def plan_execution(
+    flags: Optional[dict] = None,
+    pr_facts: Optional[dict] = None,
+    files_changed: Optional[List[str]] = None,
+    worktree: Optional[Path] = None,
+    findings: Optional[List[dict]] = None,
+) -> ExecutePlan:
+    """Decide skip/install without running subprocesses."""
+    flags = dict(flags or {})
+    state = {
+        **flags,
+        "pr_facts": pr_facts or {},
+        "files_changed": list(files_changed or []),
+        "validated_findings": list(findings or []),
+    }
+    skip = execution_skip_reason(state)
+    install = _install_enabled(state)
+    tests_on = _env_enabled(state)
+    if skip:
+        return ExecutePlan(
+            skip_reason=skip,
+            execute_tests=tests_on,
+            execute_install=install,
+        )
+    tests = collect_test_paths(
+        list(findings or []),
+        list(files_changed or []),
+        max_files=int(flags.get("execute_max_files") or 8),
+    )
+    extra = [normalize_path(p) for p in (flags.get("sandbox_test_paths") or []) if p]
+    tests = list(dict.fromkeys(extra + tests))
+    if not tests:
+        return ExecutePlan(
+            skip_reason=SKIP_NO_TEST_TARGETS,
+            execute_tests=True,
+            execute_install=install,
+        )
+    root = choose_install_root(worktree, tests) if worktree is not None else None
+    frozen = bool(root and (Path(root) / "uv.lock").is_file())
+    rel_root = None
+    if root is not None and worktree is not None:
+        try:
+            rel_root = Path(root).resolve().relative_to(Path(worktree).resolve()).as_posix()
+        except ValueError:
+            rel_root = "."
+        if not rel_root:
+            rel_root = "."
+    return ExecutePlan(
+        skip_reason=None,
+        execute_tests=True,
+        execute_install=install,
+        test_paths=tests,
+        install_root=rel_root,
+        frozen=frozen,
+    )
+
+
+def _pytest_paths_for_cwd(worktree: Path, cwd: Path, jailed: Sequence[str]) -> List[str]:
+    wt = worktree.resolve()
+    cd = cwd.resolve()
+    out: List[str] = []
+    skipped = []
+    for rel in jailed:
+        abs_p = (wt / rel).resolve()
+        try:
+            out.append(abs_p.relative_to(cd).as_posix())
+        except ValueError:
+            skipped.append(normalize_path(rel))
+    if skipped:
+        print(
+            f"[Execute] skip extra tests outside root={_rel_root(worktree, cwd)}: "
+            + ",".join(skipped)
+        )
+    return out
+
+
+def _rel_root(worktree: Path, root: Path) -> str:
+    try:
+        rel = root.resolve().relative_to(worktree.resolve()).as_posix()
+    except ValueError:
+        return "."
+    return rel or "."
 
 
 def is_pytest_file(path: str) -> bool:
@@ -340,10 +487,10 @@ def detect_python_manifest(
     if (worktree / "pyproject.toml").is_file() and which("uv"):
         return "uv_pyproject", None
     if (worktree / "poetry.lock").is_file():
-        return "poetry", "unsupported_installer=poetry"
+        return "poetry", SKIP_NO_INSTALLER
     if (worktree / "requirements.txt").is_file():
         return "requirements", None
-    return None, "deps_missing"
+    return None, None
 
 
 def _lock_hash(worktree: Path) -> str:
@@ -384,6 +531,7 @@ def prepare_python_env(
     *,
     runner: Runner,
     which: Callable,
+    repo_root: Optional[Path] = None,
 ) -> Dict[str, Any]:
     """Resolve a pytest-capable env. May uv sync / venv when install is on.
 
@@ -447,14 +595,18 @@ def prepare_python_env(
 
     if install_on:
         installed = _install_python(
-            worktree,
+            repo_root or worktree,
             repo=repo,
             runner=runner,
             which=which,
             timeout_s=install_timeout,
+            install_root=worktree,
         )
         if installed.get("ok"):
             return installed
+        reason = str(installed.get("skip_reason") or SKIP_INSTALL_FAILED)
+        if reason == SKIP_DEPS_MISSING:
+            installed["skip_reason"] = SKIP_NO_INSTALLER
         return installed
 
     path_pt = which("pytest")
@@ -470,8 +622,8 @@ def prepare_python_env(
         }
 
     if detect_pytest(worktree):
-        return {"ok": False, "skip_reason": "deps_missing"}
-    return {"ok": False, "skip_reason": "no_runner"}
+        return {"ok": False, "skip_reason": SKIP_DEPS_MISSING}
+    return {"ok": False, "skip_reason": SKIP_NO_INSTALLER}
 
 
 def _install_python(
@@ -481,27 +633,32 @@ def _install_python(
     runner: Runner,
     which: Callable,
     timeout_s: int,
+    install_root: Optional[Path] = None,
 ) -> Dict[str, Any]:
-    kind, skip = detect_python_manifest(worktree, which=which)
+    root = (install_root or worktree).resolve()
+    kind, skip = detect_python_manifest(root, which=which)
     if skip:
-        return {"ok": False, "skip_reason": skip}
+        return {"ok": False, "skip_reason": skip, "install_root": str(root)}
     if kind is None:
-        return {"ok": False, "skip_reason": "deps_missing"}
+        return {"ok": False, "skip_reason": SKIP_NO_INSTALLER, "install_root": str(root)}
 
     if kind == "poetry":
-        return {"ok": False, "skip_reason": "unsupported_installer=poetry"}
+        return {"ok": False, "skip_reason": SKIP_NO_INSTALLER, "install_root": str(root)}
 
     cache = _venv_cache_dir(repo, worktree)
 
+    rel = _rel_root(worktree, root)
     if kind in ("uv_lock", "uv_pyproject"):
         uv = which("uv")
         if not uv:
-            return {"ok": False, "skip_reason": "install_failed"}
+            print(f"[Execute] install_failed exit=1 root={rel}")
+            return {"ok": False, "skip_reason": SKIP_NO_INSTALLER, "install_root": str(root)}
         frozen = kind == "uv_lock"
         extra = _uv_env(cache)
         cached_py = _venv_python(cache)
-        if cached_py and _probe_import(cached_py, ["pytest"], runner, worktree):
-            print("[Execute] python_env=uv_sync frozen=%s cached=true" % str(frozen).lower())
+        if cached_py and _probe_import(cached_py, ["pytest"], runner, root):
+            print(f"[Execute] install start root={rel} frozen={str(frozen).lower()}")
+            print("[Execute] install ok elapsed=0")
             return {
                 "ok": True,
                 "cmd": [str(uv), "run"] + (["--frozen"] if frozen else []) + ["pytest"],
@@ -511,39 +668,45 @@ def _install_python(
                 "extra_env": extra,
                 "install_cmd": "",
                 "install_elapsed_s": 0.0,
+                "cwd": str(root),
+                "install_root": str(root),
             }
         sync_cmd = [str(uv), "sync"] + (["--frozen"] if frozen else [])
-        print("[Execute] python_env=uv_sync frozen=%s" % str(frozen).lower())
+        print(f"[Execute] install start root={rel} frozen={str(frozen).lower()}")
         t0 = time.monotonic()
         try:
-            proc = _run_cmd(sync_cmd, worktree, timeout_s, runner, extra_env=extra)
+            proc = _run_cmd(sync_cmd, root, timeout_s, runner, extra_env=extra)
         except subprocess.TimeoutExpired as exc:
             elapsed = time.monotonic() - t0
-            print("[Execute] skip reason=install_timeout")
+            print(f"[Execute] install_failed exit=timeout root={rel}")
             tail = str(getattr(exc, "stdout", "") or "") + str(getattr(exc, "stderr", "") or "")
             return {
                 "ok": False,
-                "skip_reason": "install_timeout",
+                "skip_reason": SKIP_TIMEOUT,
                 "install_cmd": " ".join(sync_cmd),
                 "install_elapsed_s": round(elapsed, 2),
                 "raw_tail": tail[-2000:],
                 "env_name": "uv_sync",
                 "frozen": frozen,
+                "cwd": str(root),
+                "install_root": str(root),
             }
         elapsed = time.monotonic() - t0
-        print(f"[Execute] install elapsed={elapsed:.0f}s")
         if int(getattr(proc, "returncode", 1) or 0) != 0:
             out = (getattr(proc, "stdout", "") or "") + (getattr(proc, "stderr", "") or "")
-            print("[Execute] skip reason=install_failed")
+            print(f"[Execute] install_failed exit={int(getattr(proc, 'returncode', 1) or 0)} root={rel}")
             return {
                 "ok": False,
-                "skip_reason": "install_failed",
+                "skip_reason": SKIP_INSTALL_FAILED,
                 "install_cmd": " ".join(sync_cmd),
                 "install_elapsed_s": round(elapsed, 2),
                 "raw_tail": out[-2000:],
                 "env_name": "uv_sync",
                 "frozen": frozen,
+                "cwd": str(root),
+                "install_root": str(root),
             }
+        print(f"[Execute] install ok elapsed={elapsed:.0f}s")
         return {
             "ok": True,
             "cmd": [str(uv), "run"] + (["--frozen"] if frozen else []) + ["pytest"],
@@ -553,23 +716,25 @@ def _install_python(
             "extra_env": extra,
             "install_cmd": " ".join(sync_cmd),
             "install_elapsed_s": round(elapsed, 2),
+            "cwd": str(root),
+            "install_root": str(root),
         }
 
     # requirements.txt → venv + pip (no extra packages from the PR)
     py = which("python") or which("python3") or os.environ.get("PYTHON", "") or "python"
     venv_cmd = [str(py), "-m", "venv", str(cache)]
-    req = str((worktree / "requirements.txt").as_posix())
-    print("[Execute] python_env=venv")
+    req = str((root / "requirements.txt").as_posix())
+    print(f"[Execute] install start root={rel} frozen=false")
     t0 = time.monotonic()
     try:
         if not _venv_python(cache):
             proc = _run_cmd(venv_cmd, worktree, timeout_s, runner)
             if int(getattr(proc, "returncode", 1) or 0) != 0:
                 out = (getattr(proc, "stdout", "") or "") + (getattr(proc, "stderr", "") or "")
-                print("[Execute] skip reason=install_failed")
+                print(f"[Execute] install_failed exit=1 root={rel}")
                 return {
                     "ok": False,
-                    "skip_reason": "install_failed",
+                    "skip_reason": SKIP_INSTALL_FAILED,
                     "install_cmd": " ".join(venv_cmd),
                     "install_elapsed_s": round(time.monotonic() - t0, 2),
                     "raw_tail": out[-2000:],
@@ -577,35 +742,36 @@ def _install_python(
                 }
         pip_py = _venv_python(cache)
         if not pip_py:
-            print("[Execute] skip reason=install_failed")
-            return {"ok": False, "skip_reason": "install_failed", "env_name": "venv"}
+            print(f"[Execute] install_failed exit=1 root={rel}")
+            return {"ok": False, "skip_reason": SKIP_INSTALL_FAILED, "env_name": "venv"}
         pip_cmd = [pip_py, "-m", "pip", "install", "-r", "requirements.txt"]
-        proc = _run_cmd(pip_cmd, worktree, timeout_s, runner)
+        proc = _run_cmd(pip_cmd, root, timeout_s, runner)
     except subprocess.TimeoutExpired as exc:
         elapsed = time.monotonic() - t0
-        print("[Execute] skip reason=install_timeout")
+        print(f"[Execute] install_failed exit=timeout root={rel}")
         tail = str(getattr(exc, "stdout", "") or "") + str(getattr(exc, "stderr", "") or "")
         return {
             "ok": False,
-            "skip_reason": "install_timeout",
+            "skip_reason": SKIP_TIMEOUT,
             "install_cmd": "pip install -r requirements.txt",
             "install_elapsed_s": round(elapsed, 2),
             "raw_tail": tail[-2000:],
             "env_name": "venv",
         }
     elapsed = time.monotonic() - t0
-    print(f"[Execute] install elapsed={elapsed:.0f}s")
     if int(getattr(proc, "returncode", 1) or 0) != 0:
         out = (getattr(proc, "stdout", "") or "") + (getattr(proc, "stderr", "") or "")
-        print("[Execute] skip reason=install_failed")
+        print(f"[Execute] install_failed exit={int(getattr(proc, 'returncode', 1) or 0)} root={rel}")
         return {
             "ok": False,
-            "skip_reason": "install_failed",
+            "skip_reason": SKIP_INSTALL_FAILED,
             "install_cmd": "pip install -r requirements.txt",
             "install_elapsed_s": round(elapsed, 2),
             "raw_tail": out[-2000:],
             "env_name": "venv",
+            "cwd": str(root),
         }
+    print(f"[Execute] install ok elapsed={elapsed:.0f}s")
     pip_py = _venv_python(cache)
     _ = req
     return {
@@ -617,6 +783,7 @@ def _install_python(
         "extra_env": None,
         "install_cmd": "python -m venv && pip install -r requirements.txt",
         "install_elapsed_s": round(elapsed, 2),
+        "cwd": str(root),
     }
 
 
@@ -957,24 +1124,35 @@ def _run_python_slice(
     which: Callable,
     timeout_s: int,
 ) -> ExecutionSlice:
+    install_root = choose_install_root(worktree, wanted)
     prepared = prepare_python_env(
-        worktree, repo_dir, state, runner=runner, which=which
+        install_root,
+        repo_dir,
+        state,
+        runner=runner,
+        which=which,
+        repo_root=worktree,
     )
     jailed: List[str] = []
+    jailed_bad = False
     for rel in wanted:
+        raw = str(rel).replace("\\", "/").strip()
+        if ".." in Path(raw).parts:
+            jailed_bad = True
+            continue
         safe = jail_relpath(worktree, rel)
         if safe:
             jailed.append(safe)
     if not prepared.get("ok"):
-        reason = str(prepared.get("skip_reason") or "no_runner")
-        if reason == "deps_missing":
-            print("[Execute] skip reason=deps_missing (pass --execute-install to sync)")
-        elif reason not in ("install_failed", "install_timeout"):
+        reason = str(prepared.get("skip_reason") or SKIP_NO_INSTALLER)
+        if reason == SKIP_DEPS_MISSING and _install_enabled(state):
+            reason = SKIP_NO_INSTALLER
+        if reason not in (SKIP_INSTALL_FAILED, SKIP_TIMEOUT):
             print(f"[Execute] skip reason={reason}")
         return ExecutionSlice(
             skipped=True,
             skip_reason=reason,
-            cwd=str(worktree),
+            cwd=str(prepared.get("cwd") or install_root or worktree),
             env=str(prepared.get("env_name") or ""),
             frozen=bool(prepared.get("frozen")),
             install_cmd=str(prepared.get("install_cmd") or ""),
@@ -983,24 +1161,22 @@ def _run_python_slice(
             ran_paths=jailed,
         )
     if not jailed:
-        print("[Execute] skip reason=missing_test_file")
+        reason = SKIP_PATH_JAIL if jailed_bad else SKIP_NO_TEST_TARGETS
+        print(f"[Execute] skip reason={reason}")
         return ExecutionSlice(
-            skipped=True, skip_reason="missing_test_file", cwd=str(worktree)
+            skipped=True, skip_reason=reason, cwd=str(worktree)
         )
 
     prefix = list(prepared.get("cmd") or ["pytest"])
     extra_env = prepared.get("extra_env")
     env_name = str(prepared.get("env_name") or "")
-    if env_name and env_name != "path":
-        extra = f" frozen={str(bool(prepared.get('frozen'))).lower()}" if env_name == "uv_sync" else ""
-        cached = " cached=true" if prepared.get("cached") else ""
-        if not prepared.get("install_cmd"):
-            print(f"[Execute] python_env={env_name}{extra}{cached}".rstrip())
+    cwd = Path(str(prepared.get("cwd") or install_root or worktree))
+    pytest_paths = _pytest_paths_for_cwd(worktree, cwd, jailed)
 
     proc, err, elapsed, out = run_pytest(
-        prefix, jailed, worktree, timeout_s, runner, extra_env=extra_env
+        prefix, pytest_paths, cwd, timeout_s, runner, extra_env=extra_env
     )
-    cmd_s = " ".join([*prefix, *jailed, "-q", "--tb=line"])
+    cmd_s = " ".join([*prefix, *pytest_paths, "-q", "--tb=line"])
     if err == "timeout":
         print("[Execute] skip reason=timeout")
         return ExecutionSlice(
@@ -1017,10 +1193,11 @@ def _run_python_slice(
     if bool(prepared.get("probe_on_run")) and (
         "ModuleNotFoundError" in out or "No module named" in out
     ):
-        print("[Execute] skip reason=deps_missing (pass --execute-install to sync)")
+        reason = SKIP_NO_INSTALLER if _install_enabled(state) else SKIP_DEPS_MISSING
+        print(f"[Execute] skip reason={reason}")
         return ExecutionSlice(
             skipped=True,
-            skip_reason="deps_missing",
+            skip_reason=reason,
             cmd=cmd_s,
             cwd=str(worktree),
             exit_code=exit_code,
@@ -1113,11 +1290,18 @@ def execute_tests_node(
     sha = str(state.get("pr_head_sha") or "")
     number = state.get("number") or 0
 
-    wanted_py = collect_test_paths(findings, files_changed, max_files=max_files)
+    extra = [
+        normalize_path(p)
+        for p in (state.get("sandbox_test_paths") or [])
+        if p
+    ]
+    wanted_py = list(
+        dict.fromkeys(extra + collect_test_paths(findings, files_changed, max_files=max_files))
+    )[:max_files]
     wanted_js = collect_js_test_paths(findings, files_changed, max_files=max_files)
     if not wanted_py and not wanted_js:
-        print("[Execute] skip reason=missing_test_file")
-        rec = ExecutionRecord(enabled=True, skipped=True, skip_reason="missing_test_file")
+        print(f"[Execute] skip reason={SKIP_NO_TEST_TARGETS}")
+        rec = ExecutionRecord(enabled=True, skipped=True, skip_reason=SKIP_NO_TEST_TARGETS)
         return _stamp_skip(state, rec, findings)
 
     repo_dir = resolve_repo_dir(repo)
@@ -1126,7 +1310,7 @@ def execute_tests_node(
     ok, why = checkout_fn(repo_dir, sha, dest, runner=runner)
     if not ok:
         print(f"[Execute] skip reason={why or 'checkout_failed'}")
-        rec = ExecutionRecord(enabled=True, skipped=True, skip_reason=why or "checkout_failed")
+        rec = ExecutionRecord(enabled=True, skipped=True, skip_reason=why or SKIP_CHECKOUT)
         return _stamp_skip(state, rec, findings)
 
     worktree = dest
@@ -1142,7 +1326,7 @@ def execute_tests_node(
                 timeout_s=timeout_s,
             )
         else:
-            py_slice = ExecutionSlice(skipped=True, skip_reason="missing_test_file")
+            py_slice = ExecutionSlice(skipped=True, skip_reason=SKIP_NO_TEST_TARGETS)
         js_slice = run_js_slice(
             worktree,
             findings,

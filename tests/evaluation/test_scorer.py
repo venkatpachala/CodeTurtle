@@ -28,6 +28,17 @@ def _load_fixture(name: str) -> ReviewSnapshot:
     return ReviewSnapshot.model_validate(json.loads(p.read_text(encoding="utf-8")))
 
 
+class TestScorerV4Synthetic(unittest.TestCase):
+    def test_v4_synthetic_fixture_all_pass(self):
+        g = _load_golden("v4-synthetic")
+        snap = _load_fixture("v4-synthetic")
+        card = score(g, snap)
+        self.assertTrue(card.ok, [c.detail for c in card.failed])
+        self.assertEqual(snap.final_decision, snap.suggested_policy)
+        extra = [p for p in snap.keep_files if p not in snap.files_changed]
+        self.assertEqual(extra, [])
+
+
 class TestScorer571(unittest.TestCase):
     def test_571_fixture_all_pass(self):
         g = _load_golden("qw-571")

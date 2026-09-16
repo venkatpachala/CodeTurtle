@@ -1,0 +1,16 @@
+{
+  "id": "v4-synthetic",
+  "repo": "acme/widgets",
+  "number": 1,
+  "classification": "source",
+  "must_include_files": ["pkg/api/loader.py"],
+  "lockfile_only": false,
+  "investigate": "skip",
+  "skip_reason_contains": "v4",
+  "keep_files_allowed": ["pkg/api/loader.py", "tests/test_loader.py"],
+  "execute_default": "skip_disabled",
+  "final_allowed": ["MERGE"],
+  "decision_equals_policy": true,
+  "qdrant": false,
+  "notes": "synthetic: no KEEP outside files_changed; changelog titles must not KEEP as medium blockers; Decision === Policy"
+}

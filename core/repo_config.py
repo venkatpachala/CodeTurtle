@@ -29,6 +29,9 @@ class RepoConfig(BaseModel):
     model: Optional[str] = None
     llm_backend: Optional[str] = None
     coverage_merge_min: Optional[float] = None
+    runtime: Optional[str] = None
+    bundle_max: Optional[int] = None
+    agent_max_steps: Optional[int] = None
 
 
 @dataclass
@@ -44,6 +47,9 @@ class EffectiveReviewConfig:
     llm_backend: str = ""
     post_on_github: bool = False
     coverage_merge_min: float = 0.5
+    runtime: str = "v4"
+    bundle_max: int = 4
+    agent_max_steps: int = 4
     config_path: Optional[Path] = None
 
 
@@ -97,6 +103,31 @@ def load_repo_config(path: Optional[Path]) -> Optional[RepoConfig]:
         raise RepoConfigError(f"invalid .codeturtle.yaml in {path}:\n{exc}") from exc
 
 
+def _as_int(val: Any, default: int) -> int:
+    try:
+        if val is None or isinstance(val, bool):
+            return default
+        return int(val)
+    except (TypeError, ValueError):
+        return default
+
+
+def _as_float(val: Any, default: float) -> float:
+    try:
+        if val is None or isinstance(val, bool):
+            return default
+        return float(val)
+    except (TypeError, ValueError):
+        return default
+
+
+def _as_runtime(val: Any) -> str:
+    s = str(val or "v4").strip().lower()
+    if s in ("v4", "legacy"):
+        return s
+    return "v4"
+
+
 def merge_review_config(
     *,
     repo: Optional[RepoConfig] = None,
@@ -117,7 +148,10 @@ def merge_review_config(
         execute_install=bool(getattr(settings, "execute_install", False)),
         model=str(getattr(settings, "ollama_model", "") or ""),
         llm_backend=str(getattr(settings, "llm_backend", "") or ""),
-        coverage_merge_min=float(getattr(settings, "coverage_merge_min", 0.5) or 0.5),
+        coverage_merge_min=_as_float(getattr(settings, "coverage_merge_min", 0.5), 0.5),
+        runtime=_as_runtime(getattr(settings, "runtime", "v4")),
+        bundle_max=_as_int(getattr(settings, "bundle_max", 4), 4),
+        agent_max_steps=_as_int(getattr(settings, "agent_max_steps", 4), 4),
         config_path=config_path,
     )
     if repo is not None:
@@ -140,6 +174,14 @@ def merge_review_config(
         out.post_on_github = bool(repo.post_on_github)
         if repo.coverage_merge_min is not None:
             out.coverage_merge_min = float(repo.coverage_merge_min)
+        if repo.runtime:
+            rt = str(repo.runtime).strip().lower()
+            if rt in ("v4", "legacy"):
+                out.runtime = rt
+        if repo.bundle_max is not None:
+            out.bundle_max = int(repo.bundle_max)
+        if repo.agent_max_steps is not None:
+            out.agent_max_steps = int(repo.agent_max_steps)
     if cli_execute_tests:
         out.execute_tests = True
     if cli_execute_install:

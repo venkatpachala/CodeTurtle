@@ -146,7 +146,9 @@ def from_state(state: dict) -> ReviewSnapshot:
         execute_skipped=bool(ex.get("skipped", True)) if ex else True,
         execute_skip_reason=(str(ex.get("skip_reason") or "") or None) if ex else None,
         final_decision=rec,
-        suggested_policy=(str(vrep.get("suggested_recommendation") or "") or None),
+        suggested_policy=(
+            str(vrep.get("suggested_recommendation") or rec or "").upper() or None
+        ),
         qdrant_used=bool(qdrant),
         coverage_low=(
             bool(state.get("coverage_low")) if state.get("coverage_low") is not None else None
@@ -172,6 +174,9 @@ _VERIFY_RE = re.compile(
 )
 _EXEC_SKIP_RE = re.compile(r"\[Execute\] skip reason=(\S+)")
 _DECISION_RE = re.compile(r"Decision:\s*(MERGE|COMMENT|REQUEST_CHANGES)")
+_REVIEW_DEC_RE = re.compile(
+    r"\[Review\] Decision=(MERGE|COMMENT|REQUEST_CHANGES) reason=(\S+)"
+)
 _COVERAGE_RE = re.compile(
     r"\[Coverage\] packed=(\d+) total=(\d+) ratio=([0-9.]+) low=(\S+) → (\S+) \((\S+)\)"
 )
@@ -219,6 +224,7 @@ def from_logs(text: str, *, repo: str = "", number: int = 0) -> ReviewSnapshot:
     v = _VERIFY_RE.search(blob)
     ex = _EXEC_SKIP_RE.search(blob)
     dec = _DECISION_RE.search(blob)
+    rev = _REVIEW_DEC_RE.search(blob)
     sug = _SUGGESTED_RE.search(blob)
     covm = _COVERAGE_RE.search(blob)
 
@@ -253,11 +259,11 @@ def from_logs(text: str, *, repo: str = "", number: int = 0) -> ReviewSnapshot:
         tests_touched_count=int(v.group(4) or 0) if v else 0,
         execute_skipped=bool(ex) or "[Execute]" not in blob,
         execute_skip_reason=ex.group(1).strip() if ex else ("disabled" if "[Execute]" not in blob else None),
-        final_decision=(dec.group(1) if dec else ""),
-        suggested_policy=(sug.group(1) if sug else None),
+        final_decision=(dec.group(1) if dec else (rev.group(1) if rev else "")),
+        suggested_policy=(sug.group(1) if sug else (rev.group(1) if rev else None)),
         qdrant_used=qdrant,
         coverage_low=(covm.group(4).lower() == "true") if covm else None,
-        policy_reason=(covm.group(6) if covm else None),
+        policy_reason=(covm.group(6) if covm else (rev.group(2) if rev else None)),
         coverage_ratio=(float(covm.group(3)) if covm else None),
     )
 

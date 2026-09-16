@@ -83,6 +83,33 @@ class DiffIndex:
     def has_file(self, path: str) -> bool:
         return self._resolve(path) is not None
 
+    def line_for_snippet(self, path: str, snippet: str) -> Optional[int]:
+        """RIGHT-side line of the snippet in a hunk, or None."""
+        needles: List[str] = []
+        for ln in (snippet or "").splitlines():
+            s = ln.strip().lstrip("+-").strip()
+            if len(s) >= 8:
+                needles.append(s)
+        if not needles:
+            return None
+        needles.sort(key=len, reverse=True)
+        for h in self.hunks_for(path):
+            n = int(h.new_start or 0)
+            if n < 1:
+                continue
+            for raw in (h.body or "").splitlines():
+                if raw.startswith("---") or raw.startswith("+++"):
+                    continue
+                if raw.startswith("-"):
+                    continue
+                content = raw[1:] if raw.startswith(("+", " ")) else raw
+                compact = " ".join(content.split())
+                for needle in needles:
+                    if needle in content or " ".join(needle.split()) in compact:
+                        return n
+                n += 1
+        return None
+
     def first_added_line(self, hunk: Hunk) -> Optional[int]:
         """RIGHT-side line of the first '+' row in a hunk."""
         n = int(hunk.new_start or 0)

@@ -104,7 +104,9 @@ def _diff_for_review(state: dict, max_chars: int = 14000) -> str:
 
 
 def _files_block(state: dict) -> str:
-    files = state.get("files_changed") or []
+    from core.pr_facts import source_first_paths
+
+    files = source_first_paths(list(state.get("files_changed") or []))
     return "\n".join(files) if files else "(none)"
 
 
@@ -1564,7 +1566,7 @@ If the list is empty, say there are no validated findings.
 Do not restate dropped or ungrounded claims.
 
 Rules:
-- recommendation MUST be MERGE | REQUEST_CHANGES | COMMENT
+- recommendation MUST be MERGE | REQUEST_CHANGES | COMMENT (Policy will overwrite this; summary only)
 - summary MUST only use: PR understanding summary + VALIDATED findings
 - If VALIDATED findings is empty, MERGE is allowed only as "no validated issues found" — not as a recap of rejected nits.
 - If the list is empty AND coverage is low (insufficient_coverage), you MUST COMMENT, never MERGE.

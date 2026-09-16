@@ -40,6 +40,7 @@ class GoldenCase(BaseModel):
     tests_touched_max: Optional[int] = None
     final_allowed: List[str]
     forbid_request_changes_unless_supported_medium: bool = True
+    decision_equals_policy: bool = False
     notes: str = ""
 
 

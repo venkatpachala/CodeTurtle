@@ -1,15 +1,28 @@
 # CodeTurtle
 
-Local-first GitHub PR reviewer. Graphify structure, clamped **MERGE** / **COMMENT** / **REQUEST_CHANGES**. Runs on your machine.
+Local-first GitHub PR review CLI. **Decision is Policy**. Comments are verified defects only.
 
-```bash
-uv tool install "git+https://github.com/venkatpachala/CodeTurtle.git@v0.3.0"
-codeturtle
+```text
+Install
+  uv tool install "git+https://github.com/venkatpachala/CodeTurtle.git@v0.4.0"
+
+Needs
+  GITHUB_TOKEN
+  Ollama (OLLAMA_MODEL) or OPENAI_API_KEY
+  First PR on a repo builds Graphify once (minutes)
+
+Review
+  codeturtle review https://github.com/org/repo/pull/123 --dry-run -v
+
+Post (your repo only)
+  codeturtle review YOU/REPO 12 --comment
 ```
 
-Requires: **Ollama** (or `OPENAI_API_KEY`), **git**, and a **GitHub token** (`gh auth login` or paste once).
+`codeturtle` with no arguments opens a wizard (token → model → paste URL → always dry-run first). Default is **dry-run**. Nothing is posted unless you pass `--comment`.
 
-`codeturtle` with no arguments opens a menu: save token → pick an Ollama model → type `owner/repo` and a PR number. The CLI clones into `~/.codeturtle/repos/`, builds a Graphify code-only graph if needed, and dry-runs the review.
+Optional sandbox: `--execute-tests` / `--execute-install`. A skip is never a green test run. Coverage is observational and never sets Decision.
+
+`codeturtle` with no arguments opens a menu: save token → pick an Ollama model → paste `owner/repo N`, `owner/repo#N`, or a GitHub pull URL. The CLI clones into `~/.codeturtle/repos/`, checks out the PR SHA, builds a Graphify code-only graph if the SHA changed, and dry-runs the review.
 
 ```text
 CodeTurtle
@@ -22,11 +35,14 @@ CodeTurtle
 Scripts still work:
 
 ```bash
-codeturtle review confident-ai/deepeval 3292
 codeturtle review owner/repo 123 --dry-run
+codeturtle review owner/repo#123 --dry-run
+codeturtle review https://github.com/owner/repo/pull/123 --dry-run
 ```
 
-Default is **dry-run**. Nothing is posted unless you pass `--comment`. Qdrant and Neo4j are not required.
+Default is **dry-run** and **v4** (`ReviewRuntime`: bundles → Graphify-by-identifier → reflector → Policy). Nothing is posted unless you pass `--comment`. Qdrant is off on the default path. Set `runtime: legacy` in `.codeturtle.yaml` for the 17-node LangGraph.
+
+Optional sandbox (default **off**): `--execute-tests` runs jailed pytest on this PR’s related tests in a detached worktree at `pr.head.sha`. `--execute-install` may sync uv/npm in that worktree only. A green run is evidence and never auto-MERGEs. A red run can set Decision to `REQUEST_CHANGES` (`tests_failed`). Decision is still Policy.
 
 ---
 
@@ -34,7 +50,7 @@ Default is **dry-run**. Nothing is posted unless you pass `--comment`. Qdrant an
 
 CodeTurtle is a CLI. It fetches a GitHub PR with your token, builds a
 code-only Graphify graph of the repository, reviews **change units** (hunks)
-instead of a truncated diff, and emits **MERGE**, **COMMENT**, or
+in impl+test bundles, and prints **Decision** from Policy: **MERGE**, **COMMENT**, or
 **REQUEST_CHANGES**.
 
 Config lives in `%USERPROFILE%\.codeturtle\config.toml` (or `~/.codeturtle/config.toml`), not a random project `.env`.
@@ -84,7 +100,7 @@ You cannot ship a 7B model inside `uv tool install`. Ollama (or an API key) is t
 ### Install
 
 ```bash
-uv tool install "git+https://github.com/venkatpachala/CodeTurtle.git@v0.3.0"
+uv tool install "git+https://github.com/venkatpachala/CodeTurtle.git@v0.4.0"
 codeturtle
 ```
 
@@ -104,6 +120,9 @@ Graphify is included in the default install.
 ```bash
 codeturtle
 codeturtle review owner/repo 123 --dry-run
+codeturtle review owner/repo#123 --dry-run
+codeturtle review https://github.com/owner/repo/pull/123 --dry-run
+codeturtle review owner/repo 123 --dry-run --execute-tests
 codeturtle review owner/repo 123 --comment
 codeturtle graphify-test owner/repo --stats
 ```
