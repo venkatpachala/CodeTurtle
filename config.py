@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from pydantic import ConfigDict
+from pydantic import ConfigDict, field_validator
 from dotenv import load_dotenv
 import os
 import sys
@@ -16,6 +16,11 @@ class Settings(BaseSettings):
     llm_backend: str = "ollama"
     ollama_model: str = "qwen2.5:7b"
     ollama_base_url: str = "http://localhost:11434"
+
+    @field_validator("ollama_model", "ollama_base_url", "llm_backend", mode="before")
+    @classmethod
+    def _strip_llm(cls, v):
+        return str(v).strip() if v is not None and str(v).strip() else v
 
     # GitHub
     github_token: str = ""
