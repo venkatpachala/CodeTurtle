@@ -186,7 +186,7 @@ def score(
         detail = f"skipped={snap.execute_skipped} reason={snap.execute_skip_reason}"
     elif expect_ex == "skip_disabled":
         ex_ok = bool(snap.execute_skipped) and (
-            "disabled" in reason or not reason
+            "disabled" in reason or "flag_off" in reason or not reason
         )
         detail = f"expected skip_disabled got skipped={snap.execute_skipped} reason={snap.execute_skip_reason}"
     elif expect_ex == "skip_lockfile-only":

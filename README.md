@@ -1,13 +1,26 @@
 # CodeTurtle
 
-Local-first GitHub PR reviewer. Graphify structure. **Decision is Policy** (`MERGE` / `COMMENT` / **REQUEST_CHANGES**), not leftover LLM Final text. Default **v4** runtime. Runs on your machine.
+Local-first GitHub PR review CLI. **Decision is Policy**. Comments are verified defects only.
 
-```bash
-uv tool install "git+https://github.com/venkatpachala/CodeTurtle.git@v0.3.0"
-codeturtle
+```text
+Install
+  uv tool install "git+https://github.com/venkatpachala/CodeTurtle.git@v0.4.0"
+
+Needs
+  GITHUB_TOKEN
+  Ollama (OLLAMA_MODEL) or OPENAI_API_KEY
+  First PR on a repo builds Graphify once (minutes)
+
+Review
+  codeturtle review https://github.com/org/repo/pull/123 --dry-run -v
+
+Post (your repo only)
+  codeturtle review YOU/REPO 12 --comment
 ```
 
-Requires: **Ollama** (or `OPENAI_API_KEY`), **git**, and a **GitHub token** (`gh auth login` or paste once).
+`codeturtle` with no arguments opens a wizard (token → model → paste URL → always dry-run first). Default is **dry-run**. Nothing is posted unless you pass `--comment`.
+
+Optional sandbox: `--execute-tests` / `--execute-install`. A skip is never a green test run. Coverage is observational and never sets Decision.
 
 `codeturtle` with no arguments opens a menu: save token → pick an Ollama model → paste `owner/repo N`, `owner/repo#N`, or a GitHub pull URL. The CLI clones into `~/.codeturtle/repos/`, checks out the PR SHA, builds a Graphify code-only graph if the SHA changed, and dry-runs the review.
 

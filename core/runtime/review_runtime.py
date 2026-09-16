@@ -83,7 +83,7 @@ def _bundle_test_paths(bundles: List[Bundle]) -> List[str]:
 def _log_sandbox(execution: Dict[str, Any]) -> None:
     rec = execution or {}
     if rec.get("skipped"):
-        print(f"[Sandbox] skip reason={rec.get('skip_reason') or 'disabled'}")
+        print(f"[Sandbox] skip reason={rec.get('skip_reason') or 'flag_off'}")
         return
     print(
         f"[Sandbox] cmd={rec.get('cmd')} exit={rec.get('exit_code')} "

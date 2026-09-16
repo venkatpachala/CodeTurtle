@@ -9,6 +9,11 @@ from core.agent.contract import is_hedge, proof_complete
 from core.graphctx.symbols import is_valid_symbol
 from core.pr_facts import normalize_path
 from core.runtime.models import Bundle, Candidate
+from core.runtime.qualify import (
+    NOT_A_DEFECT,
+    PLAUSIBLE_BUT_UNPROVEN,
+    qualify_finding,
+)
 from core.verification.diff_index import DiffIndex
 
 MAX_VERIFY = 3
@@ -240,6 +245,13 @@ def verify_candidates(
         if not _snippet_in_hunk(cand.existing_code, hunk):
             _drop(cand, "snippet_not_in_hunk", dropped)
             continue
+        q = qualify_finding(cand, hunk)
+        if q.status == NOT_A_DEFECT:
+            _drop(cand, "not_a_defect", dropped)
+            continue
+        if q.status == PLAUSIBLE_BUT_UNPROVEN and q.reason != "plausible":
+            _drop(cand, q.reason or "unproven", dropped)
+            continue
         if snippet_enforces_invariant(cand, hunk):
             _drop(cand, "not_a_defect", dropped)
             continue
@@ -279,6 +291,12 @@ def verify_candidates(
             continue
         if snippet_enforces_invariant(cand, hunk):
             _drop(cand, "not_a_defect", dropped)
+            continue
+        q2 = qualify_finding(cand, hunk)
+        if q2.status == NOT_A_DEFECT or (
+            q2.status == PLAUSIBLE_BUT_UNPROVEN and q2.reason != "plausible"
+        ):
+            _drop(cand, q2.reason or "unproven", dropped)
             continue
         cand.verify_status = "verified"
         kept.append(cand)

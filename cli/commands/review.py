@@ -72,6 +72,7 @@ class PipelineContext:
     repo_cfg: Optional[object] = None
     change_units_payload: Optional[dict] = None
     repo_dir: str = ""
+    show_uncertain: bool = False
 
 
 def get_current_session() -> str:
@@ -128,6 +129,7 @@ class ReviewPipeline:
         execute_install: bool = False,
         comment: bool = False,
         config_path: str = "",
+        show_uncertain: bool = False,
     ):
         try:
             from core.repo_config import (
@@ -158,6 +160,7 @@ class ReviewPipeline:
             self.context.repo_cfg = cfg
             self.context.execute_tests = bool(cfg.execute_tests)
             self.context.execute_install = bool(cfg.execute_install)
+            self.context.show_uncertain = bool(show_uncertain)
             if cfg.model:
                 settings.ollama_model = cfg.model
             if cfg.llm_backend:
@@ -477,17 +480,18 @@ Description:
             paths = ",".join(str(p) for p in (b.get("paths") or []))
             console.print(f"  {b.get('id')} kind={b.get('kind')} files={paths}")
 
-        console.print("\n[bold green]=== COMMENTS (kept defects) ===[/bold green]")
-        kept = final.get("validated_findings") or final.get("findings") or []
+        console.print("\n[bold green]=== COMMENTS (VERIFIED_BUG) ===[/bold green]")
+        kept_all = final.get("validated_findings") or final.get("findings") or []
+        kept = [
+            d
+            for d in kept_all
+            if isinstance(d, dict) and str(d.get("verify_status") or "").lower() == "verified"
+        ]
         if not kept:
             console.print("no kept defects")
         for d in kept:
-            if not isinstance(d, dict):
-                continue
-            vs = str(d.get("verify_status") or "").strip().lower()
-            status = "verified" if vs == "verified" else "uncertain"
             console.print(
-                f"status={status} file={d.get('file')} line={d.get('start_line') or d.get('line')}"
+                f"status=verified file={d.get('file')} line={d.get('start_line') or d.get('line')}"
             )
             if d.get("invariant"):
                 console.print(f"invariant={d.get('invariant')}")
@@ -495,6 +499,17 @@ Description:
             if snippet:
                 console.print(f"snippet={snippet[:200]}")
             self._print_findings([d])
+        if getattr(self.context, "show_uncertain", False):
+            plausible = [
+                d
+                for d in (final.get("v4_dropped") or [])
+                if isinstance(d, dict) and d.get("drop_reason") == "unproven"
+            ]
+            console.print("\n[bold yellow]=== PLAUSIBLE (not Decision) ===[/bold yellow]")
+            if not plausible:
+                console.print("[dim](none)[/dim]")
+            for d in plausible[:20]:
+                console.print(f"  - {d.get('title') or d.get('file')}")
 
         console.print("\n[bold yellow]=== DROPPED ===[/bold yellow]")
         dropped = final.get("v4_dropped") or []
@@ -517,7 +532,7 @@ Description:
         console.print("\n[bold cyan]=== SANDBOX ===[/bold cyan]")
         ex = final.get("execution_report") if isinstance(final.get("execution_report"), dict) else {}
         if ex.get("skipped") or not ex:
-            console.print(f"[dim]skip reason={ex.get('skip_reason') or 'disabled'}[/dim]")
+            console.print(f"[dim]skip reason={ex.get('skip_reason') or 'flag_off'}[/dim]")
         else:
             console.print(
                 f"[dim]cmd={ex.get('cmd')} exit={ex.get('exit_code')} "
@@ -885,6 +900,11 @@ def review(
         "--config",
         help="Path to .codeturtle.yaml (else CODETURTLE_CONFIG or ./.codeturtle.yaml)",
     ),
+    show_uncertain: bool = typer.Option(
+        False,
+        "--show-uncertain",
+        help="Print PLAUSIBLE_BUT_UNPROVEN drops. They never set Decision.",
+    ),
 ):
     from core.cli_parse import parse_review_target
 
@@ -908,5 +928,6 @@ def review(
         execute_install=execute_install,
         comment=comment,
         config_path=config_path or "",
+        show_uncertain=show_uncertain,
     )
       

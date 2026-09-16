@@ -18,7 +18,7 @@ class TestPyproject(unittest.TestCase):
     def test_project_name_and_version(self):
         project = self.data["project"]
         self.assertEqual(project["name"], "codeturtle-review")
-        self.assertEqual(project["version"], "0.3.0")
+        self.assertEqual(project["version"], "0.4.0")
         self.assertGreaterEqual(project["requires-python"], ">=3.11")
 
     def test_console_script(self):

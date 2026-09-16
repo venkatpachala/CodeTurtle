@@ -79,7 +79,7 @@ class TestSandboxSkip(unittest.TestCase):
     def test_flag_off_skip_decision_unchanged(self):
         result = _run([LOADER, TEST_LOADER], DIFF, execute_tests=False)
         self.assertTrue(result.execution.get("skipped"))
-        self.assertEqual(result.execution.get("skip_reason"), "disabled")
+        self.assertEqual(result.execution.get("skip_reason"), "flag_off")
         self.assertNotEqual(result.decision, "REQUEST_CHANGES")
 
     def test_lockfile_only_skip(self):

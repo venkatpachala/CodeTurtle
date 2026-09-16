@@ -60,7 +60,7 @@ class TestSkipGates(unittest.TestCase):
                     },
                     runner=runner,
                 )
-        self.assertEqual(out["execution_report"]["skip_reason"], "disabled")
+        self.assertEqual(out["execution_report"]["skip_reason"], "flag_off")
         self.assertTrue(out["execution_report"]["skipped"])
         self.assertEqual(calls, [])
 
@@ -90,7 +90,7 @@ class TestSkipGates(unittest.TestCase):
         self.assertEqual(calls, [])
 
     def test_skip_reason_helper(self):
-        self.assertEqual(execution_skip_reason({"execute_tests": False}), "disabled")
+        self.assertEqual(execution_skip_reason({"execute_tests": False}), "flag_off")
         self.assertEqual(
             execution_skip_reason(
                 {
@@ -268,7 +268,7 @@ class TestExecuteHappyAndFail(unittest.TestCase):
             checkout=fake_checkout,
             which=lambda n: None,
         )
-        self.assertEqual(out["execution_report"]["skip_reason"], "no_runner")
+        self.assertEqual(out["execution_report"]["skip_reason"], "no_installer")
 
     def test_timeout_fail_closed(self):
         def runner(cmd, **kwargs):

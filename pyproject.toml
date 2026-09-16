@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "codeturtle-review"
-version = "0.3.0"
-description = "Local-first agentic GitHub PR reviewer"
+version = "0.4.0"
+description = "Local-first GitHub PR review CLI. Verified comments. Honest sandbox."
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
