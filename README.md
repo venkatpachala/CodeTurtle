@@ -100,7 +100,7 @@ You cannot ship a 7B model inside `uv tool install`. Ollama (or an API key) is t
 ### Install
 
 ```bash
-uv tool install "git+https://github.com/venkatpachala/CodeTurtle.git@v0.3.0"
+uv tool install "git+https://github.com/venkatpachala/CodeTurtle.git@v0.4.0"
 codeturtle
 ```
 
