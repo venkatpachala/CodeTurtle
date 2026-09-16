@@ -18,6 +18,33 @@ console = Console()
 memory = MemoryManager()
 
 
+def _ollama_model_and_source() -> tuple[str, str]:
+    """Process env beats .env. Leftover $env:OLLAMA_MODEL is a common trap."""
+    env = str(os.environ.get("OLLAMA_MODEL") or "").strip()
+    model = str(getattr(settings, "ollama_model", "") or "").strip()
+    if env:
+        return env, "env OLLAMA_MODEL"
+    return model, ".env or default"
+
+
+def _warn_if_ollama_model_missing(name: str) -> None:
+    from cli.commands.wizard import list_ollama_models
+
+    installed = list_ollama_models()
+    if not installed or not name:
+        return
+    if name in installed or f"{name}:latest" in installed:
+        return
+    if any(m == name or m.startswith(name + ":") for m in installed):
+        return
+    shown = ", ".join(installed[:10])
+    console.print(
+        f"[red]Ollama has no model {name!r}. Installed: {shown}[/red]\n"
+        "[dim]Process env OLLAMA_MODEL overrides .env. "
+        "In PowerShell: Remove-Item Env:OLLAMA_MODEL[/dim]"
+    )
+
+
 class _SkipReview(Exception):
     def __init__(self, reason: str):
         super().__init__(reason)
@@ -163,14 +190,19 @@ class ReviewPipeline:
 
             self.context.conversation_id = get_current_session()
 
+            model_name, model_source = _ollama_model_and_source()
+            if model_name:
+                settings.ollama_model = model_name
+            _warn_if_ollama_model_missing(model_name)
             console.print(
                 Panel.fit(
                     f"[bold cyan]CodeTurtle[/bold cyan]\n"
                     f"Session: {self.context.conversation_id}\n"
                     f"Repository: {repo}#{number}\n"
-                    f"Model: {settings.ollama_model} (Ollama)"
+                    f"Model: {model_name} (Ollama, {model_source})"
                 )
             )
+            print(f"[Review] llm={model_name} source={model_source}")
 
             from core.ci import resolve_github_token
             from core.repository_knowledge.paths import resolve_repo_dir

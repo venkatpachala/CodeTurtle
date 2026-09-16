@@ -86,5 +86,22 @@ class TestHelpImportIsolation(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
 
+class TestOllamaModelSource(unittest.TestCase):
+    def test_process_env_beats_settings(self):
+        from cli.commands.review import _ollama_model_and_source
+
+        old = os.environ.get("OLLAMA_MODEL")
+        os.environ["OLLAMA_MODEL"] = "openbmb/minicpm5-2b"
+        try:
+            model, source = _ollama_model_and_source()
+        finally:
+            if old is None:
+                os.environ.pop("OLLAMA_MODEL", None)
+            else:
+                os.environ["OLLAMA_MODEL"] = old
+        self.assertEqual(model, "openbmb/minicpm5-2b")
+        self.assertEqual(source, "env OLLAMA_MODEL")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
