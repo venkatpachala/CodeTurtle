@@ -1,0 +1,119 @@
+[green]SQLite database initialized successfully.[/green]
+[green]SQLite database initialized successfully.[/green]
+2026-09-16T16:05:44.563825Z Starting review                pr_number=41249 repo=keycloak/keycloak
+┌──────────────────────────────────────────────┐
+│ CodeTurtle                                   │
+│ Session: auto-sess                           │
+│ Repository: keycloak/keycloak#41249          │
+│ Model: qwen2.5:7b (Ollama, env OLLAMA_MODEL) │
+└──────────────────────────────────────────────┘
+[Review] llm=qwen2.5:7b source=env OLLAMA_MODEL
+[Workspace] checkout sha=25bf964a844e
+[Workspace] graphify extract C:\Users\venkat\.codeturtle\repos\keycloak_keycloak --code-only --no-cluster
+[graphify extract] incremental scan of C:\Users\venkat\.codeturtle\repos\keycloak_keycloak
+[graphify extract] re-queuing 126 manifest-stamped code file(s) with no nodes in graph.json (prior failed extraction, #2543)
+[graphify extract] --code-only: skipping 615 non-code file(s) (185 docs, 0 papers, 430 images) — no LLM extraction
+[graphify extract] 553 code, 0 docs, 0 papers, 0 images changed; 7585 unchanged; 18 deleted
+[graphify extract] 1794 file(s) not classified (no supported extension or shebang), skipped: .asciidoctorconfig, .dont-delete, .editorconfig, .gitattributes, .gitignore, .gitleaks.toml (+1788 more)
+[graphify extract] 108 file(s) skipped as potentially sensitive (rename or move if wrongly flagged): 1000.pem, 1001.pem, 2009.pem, 200A.pem, 200B.pem, ANS-cert.pem (+102 more)
+[graphify extract] AST extraction on 553 code files...
+  AST extraction: 100/553 uncached files (18%) [16 workers]
+  AST extraction: 200/553 uncached files (36%) [16 workers]
+  AST extraction: 300/553 uncached files (54%) [16 workers]
+  AST extraction: 400/553 uncached files (72%) [16 workers]
+  AST extraction: 500/553 uncached files (90%) [16 workers]
+  AST extraction: 553/553 uncached files (100%) [16 workers]
+[graphify extract] wrote C:\Users\venkat\.codeturtle\repos\keycloak_keycloak\graphify-out\graph.json — 86766 nodes, 335039 edges (no clustering)
+[Workspace] graph=C:\Users\venkat\.codeturtle\repos\keycloak_keycloak\graphify-out\graph.json
+[Review] Retrieval backend: Graphify only (Qdrant disabled)
+[PRFacts] files=10 classification=source lock=0 source=8 diff_bytes=40454 stat={'additions': 479, 'deletions': 23, 'hunks': 31, 'files_in_diff': 10} paths=['services/src/main/java/org/keycloak/authentication/authenticators/browser/AbstractUsernameFormAuthenticator.java', 'services/src/main/java/org/keycloak/authentication/authenticators/browser/PasswordForm.java', 'services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java', 'services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnConditionalUIAuthenticator.java', 'services/src/main/java/org/keycloak/authentication/authenticators/util/AuthenticatorUtils.java', 'testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysOrganizationAuthenticationTest.java', 'testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernameFormTest.java', 'testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java', 'themes/src/main/resources/theme/base/login/passkeys.ftl', 'themes/src/main/resources/theme/keycloak.v2/login/login-password.ftl']
+[ChangeUnits] n=31 source=28 test=0 lockfile=0 docs=0
+[ChangeUnits] CU-001 services/src/main/java/org/keycloak/authentication/authenticators/browser/AbstractUsernameFormAuthenticator.java L55-61 symbols=[] risk=none
+[ChangeUnits] CU-002 services/src/main/java/org/keycloak/authentication/authenticators/browser/AbstractUsernameFormAuthenticator.java L219-225 symbols=['AuthenticatorUtils.setupReauthenticationInUsernamePasswordFormError', 'setupReauthenticationInUsernamePasswordFormError', 'badPasswordHandler'] risk=none
+[ChangeUnits] CU-003 services/src/main/java/org/keycloak/authentication/authenticators/browser/PasswordForm.java L47-66 symbols=['context.getUser', 'webauthnAuth.fillContextForm', 'isConditionalPasskeysEnabled', 'getUser', 'fillContextForm', 'authenticate'] risk=none
+[ChangeUnits] CU-004 services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java L110-119 symbols=['context.getUser', 'webauthnAuth.fillContextForm', 'isConditionalPasskeysEnabled', 'getUser', 'fillContextForm', 'authenticate'] risk=none
+[ChangeUnits] CU-005 services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java L134-141 symbols=['context.getUser', 'isConditionalPasskeysEnabled', 'getUser', 'challenge'] risk=none
+[ChangeUnits] CU-006 services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java L157-165 symbols=['webauthnAuth.isPasskeysEnabled', 'currentUser.credentialManager', 'webauthnAuth.getCredentialType', 'isConditionalPasskeysEnabled', 'isPasskeysEnabled', 'credentialManager', 'isConfiguredFor', 'getCredentialType', 'close'] risk=none
+[ChangeUnits] CU-007 services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnConditionalUIAuthenticator.java L20-26 symbols=['org.keycloak.authentication.authenticators.util.AuthenticatorUtils'] risk=none
+[ChangeUnits] CU-008 services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnConditionalUIAuthenticator.java L49-57 symbols=['AuthenticatorUtils.setupReauthenticationInUsernamePasswordFormError', 'setupReauthenticationInUsernamePasswordFormError', 'createErrorResponse'] risk=none
+[ChangeUnits] CU-009 services/src/main/java/org/keycloak/authentication/authenticators/util/AuthenticatorUtils.java L23-29 symbols=['org.keycloak.forms.login.LoginFormsProvider'] risk=none
+[ChangeUnits] CU-010 services/src/main/java/org/keycloak/authentication/authenticators/util/AuthenticatorUtils.java L32-39 symbols=['org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator.USER_SET_BEFORE_USERNAME_PASSWORD_AUTH'] risk=none
+[ChangeUnits] CU-011 services/src/main/java/org/keycloak/authentication/authenticators/util/AuthenticatorUtils.java L119-135 symbols=['context.getAuthenticationSession', 'Boolean.parseBoolean', 'context.form', 'form.setAttribute', 'LoginFormsProvider.USERNAME_HIDDEN', 'LoginFormsProvider.REGISTRATION_DISABLED', 'setupReauthenticationInUsernamePasswordFormError', 'getAuthenticationSession', 'getAuthNote', 'parseBoolean', 'form', 'setAttribute'] risk=none
+[ChangeUnits] CU-012 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysOrganizationAuthenticationTest.java L32-38 symbols=['org.keycloak.protocol.oidc.OIDCLoginProtocol'] risk=none
+[ChangeUnits] CU-013 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysOrganizationAuthenticationTest.java L194-203 symbols=['MatcherAssert.assertThat', 'driver.findElement', 'By.xpath', 'Matchers.notNullValue', 'assertThat', 'findElement', 'xpath', 'notNullValue', 'passwordLoginWithNonDiscoverableKey'] risk=none
+[ChangeUnits] CU-014 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysOrganizationAuthenticationTest.java L208-214 symbols=['MatcherAssert.assertThat', 'driver.findElement', 'By.xpath', 'Matchers.notNullValue', 'assertThat', 'findElement', 'xpath', 'notNullValue', 'passwordLoginWithNonDiscoverableKey'] risk=none
+[ChangeUnits] CU-015 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysOrganizationAuthenticationTest.java L264-326 symbols=['DefaultVirtualAuthOptions.PASSKEYS.getOptions', 'Constants.WEBAUTHN_POLICY_OPTION_YES', 'Constants.WEBAUTHN_POLICY_OPTION_REQUIRED', 'Boolean.TRUE', 'MatcherAssert.assertThat', 'Matchers.notNullValue', 'events.clear', 'oauth.openLoginForm', 'WaitUtils.waitForPageToLoad', 'appPage.assertCurrent', 'events.expectLogin', 'user.getId'] risk=none
+[ChangeUnits] CU-016 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernameFormTest.java L34-48 symbols=['org.keycloak.protocol.oidc.OIDCLoginProtocol', 'org.keycloak.testsuite.admin.ApiUtil'] risk=none
+[ChangeUnits] CU-017 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernameFormTest.java L52-60 symbols=['org.hamcrest.Matchers.nullValue', 'org.junit.Assert.assertEquals'] risk=none
+[ChangeUnits] CU-018 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernameFormTest.java L70-76 symbols=['configureTestRealm', 'addTestRealms'] risk=none
+[ChangeUnits] CU-019 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernameFormTest.java L203-212 symbols=['MatcherAssert.assertThat', 'loginPage.isPasswordInputPresent', 'Matchers.is', 'driver.findElement', 'By.xpath', 'Matchers.notNullValue', 'assertThat', 'isPasswordInputPresent', 'findElement', 'xpath', 'notNullValue', 'passwordLoginWithNonDiscoverableKey'] risk=none
+[ChangeUnits] CU-020 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernameFormTest.java L262-397 symbols=['DefaultVirtualAuthOptions.PASSKEYS.getOptions', 'Constants.WEBAUTHN_POLICY_OPTION_YES', 'Constants.WEBAUTHN_POLICY_OPTION_REQUIRED', 'Boolean.TRUE', 'MatcherAssert.assertThat', 'Matchers.notNullValue', 'PasswordCredentialModel.TYPE.equals', 'cred.getType', 'Assert.assertNotNull', 'passwordCredRep.getId', 'events.clear', 'oauth.openLoginForm'] risk=none
+[ChangeUnits] CU-021 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java L23-29 symbols=['org.junit.Assert'] risk=none
+[ChangeUnits] CU-022 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java L32-58 symbols=['org.keycloak.models.credential.PasswordCredentialModel', 'org.keycloak.protocol.oidc.OIDCLoginProtocol', 'org.keycloak.testsuite.admin.ApiUtil', 'org.openqa.selenium.NoSuchElementException', 'org.hamcrest.Matchers.nullValue', 'org.junit.Assert.assertEquals', 'org.junit.Assert.fail'] risk=none
+[ChangeUnits] CU-023 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java L71-77 symbols=['configureTestRealm', 'addTestRealms'] risk=none
+[ChangeUnits] CU-024 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java L150-156 symbols=['MatcherAssert.assertThat', 'loginPage.getPasswordInputError', 'assertThat', 'getPasswordInputError', 'nullValue', 'passwordLoginWithNonDiscoverableKey'] risk=none
+[ChangeUnits] CU-025 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java L163-172 symbols=['Details.CREDENTIAL_TYPE', 'detail', 'nullValue', 'logout', 'passwordLoginWithNonDiscoverableKey'] risk=none
+[ChangeUnits] CU-026 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java L175-338 symbols=['Constants.WEBAUTHN_POLICY_OPTION_YES', 'Constants.WEBAUTHN_POLICY_OPTION_REQUIRED', 'MatcherAssert.assertThat', 'Matchers.notNullValue', 'events.clear', 'oauth.openLoginForm', 'WaitUtils.waitForPageToLoad', 'loginPage.assertCurrent', 'loginPage.getUsernameAutocomplete', 'Matchers.is', 'driver.findElement', 'By.xpath'] risk=none
+[ChangeUnits] CU-027 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java L341-346 symbols=['passwordLoginWithExternalKey'] risk=none
+[ChangeUnits] CU-028 testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java L354-424 symbols=['oauth.loginForm', 'OIDCLoginProtocol.PROMPT_VALUE_LOGIN', 'WaitUtils.waitForPageToLoad', 'loginPage.assertCurrent', 'loginPage.getInfoMessage', 'MatcherAssert.assertThat', 'driver.findElement', 'By.xpath', 'Matchers.notNullValue', 'loginPage.login', 'Assert.assertEquals', 'loginPage.getInputError'] risk=none
+[ChangeUnits] CU-029 themes/src/main/resources/theme/base/login/passkeys.ftl L8-20 symbols=['properties.kcFormClass', 'authenticators.authenticators', 'authenticator.credentialId'] risk=none
+[ChangeUnits] CU-030 themes/src/main/resources/theme/keycloak.v2/login/login-password.ftl L1-7 symbols=['passkeys.ftl'] risk=none
+[ChangeUnits] CU-031 themes/src/main/resources/theme/keycloak.v2/login/login-password.ftl L15-21 symbols=['passkeys.conditionalUIData'] risk=none
+[ChangeUnits] packed=13 omitted=18 source=28
+[ChangeUnits] units_packed=13 omitted=18
+[ChangeUnits] coverage total=31 packed=13 omitted=18 source=28
+Running v4 review runtime...
+[Bundle] B-001 kind=source files=services/src/main/java/org/keycloak/authentication/authenticators/browser/AbstractUsernameFormAuthenticator.java,services/src/main/java/org/keycloak/authentication/authenticators/browser/PasswordForm.java,services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java,services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnConditionalUIAuthenticator.java,testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysOrganizationAuthenticationTest.java,testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernameFormTest.java
+[Bundle] B-002 kind=source files=testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java
+[Bundle] B-003 kind=source files=services/src/main/java/org/keycloak/authentication/authenticators/util/AuthenticatorUtils.java
+[Bundle] B-004 kind=other files=themes/src/main/resources/theme/base/login/passkeys.ftl,themes/src/main/resources/theme/keycloak.v2/login/login-password.ftl
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 10.91s | Tokens: 
+0
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 1.21s | Tokens: 0
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 0.68s | Tokens: 0
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 0.55s | Tokens: 0
+[Execute] skip reason=flag_off
+[Sandbox] skip reason=flag_off
+[Coverage] packed=31 total=31 ratio=1.00 low=false (observational)
+[Review] Decision=MERGE reason=no_findings
+
+=== BUNDLES ===
+  B-001 kind=source 
+files=services/src/main/java/org/keycloak/authentication/authenticators/browser
+/AbstractUsernameFormAuthenticator.java,services/src/main/java/org/keycloak/aut
+hentication/authenticators/browser/PasswordForm.java,services/src/main/java/org
+/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java,servi
+ces/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnCo
+nditionalUIAuthenticator.java,testsuite/integration-arquillian/tests/base/src/t
+est/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysOrganizationAuthe
+nticationTest.java,testsuite/integration-arquillian/tests/base/src/test/java/or
+g/keycloak/testsuite/webauthn/passwordless/PasskeysUsernameFormTest.java
+  B-002 kind=source 
+files=testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/te
+stsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java
+  B-003 kind=source 
+files=services/src/main/java/org/keycloak/authentication/authenticators/util/Au
+thenticatorUtils.java
+  B-004 kind=other 
+files=themes/src/main/resources/theme/base/login/passkeys.ftl,themes/src/main/r
+esources/theme/keycloak.v2/login/login-password.ftl
+
+=== COMMENTS (VERIFIED_BUG) ===
+no kept defects
+
+=== DROPPED ===
+(none)
+
+=== SANDBOX ===
+skip reason=flag_off
+
+=== DECISION ===
+coverage packed=31 total=31 ratio=1.00 low=false
+Decision: MERGE
+reason=no_findings
+MERGE (no_findings) No validated findings.                                     
+[green]Review saved for keycloak/keycloak #41249[/green]
+[Benchmark] Wrote D:\CodeTurtle\benchmark\results\keycloak_keycloak_41249.json
+--dry-run mode (not posted)
+
+  warning: 5 .sql file(s) contributed nothing to the graph because a dependency is missing: tree_sitter_sql not installed. Install it with: pip install "graphifyy[sql]" (#1745)

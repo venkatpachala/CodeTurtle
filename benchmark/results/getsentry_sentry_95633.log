@@ -1,0 +1,114 @@
+[green]SQLite database initialized successfully.[/green]
+[green]SQLite database initialized successfully.[/green]
+2026-09-17T09:38:58.092884Z Starting review                pr_number=95633 repo=getsentry/sentry
+┌──────────────────────────────────────────────┐
+│ CodeTurtle                                   │
+│ Session: auto-sess                           │
+│ Repository: getsentry/sentry#95633           │
+│ Model: qwen2.5:7b (Ollama, env OLLAMA_MODEL) │
+└──────────────────────────────────────────────┘
+[Review] llm=qwen2.5:7b source=env OLLAMA_MODEL
+[Workspace] checkout sha=9966ec5a13e3
+[Workspace] graphify extract C:\Users\venkat\.codeturtle\repos\getsentry_sentry --code-only --no-cluster
+[graphify extract] incremental scan of C:\Users\venkat\.codeturtle\repos\getsentry_sentry
+[graphify extract] re-queuing 551 manifest-stamped code file(s) with no nodes in graph.json (prior failed extraction, #2543)
+[graphify extract] --code-only: skipping 672 non-code file(s) (405 docs, 0 papers, 267 images) — no LLM extraction
+[graphify extract] 11277 code, 0 docs, 0 papers, 0 images changed; 4046 unchanged; 1876 deleted; 1 excluded
+[graphify extract] 1986 file(s) not classified (no supported extension or shebang), skipped: .dockerignore, .git-blame-ignore-revs, .gitattributes, .gitignore, .gitkeep, .node-version (+1980 more)
+[graphify extract] 11 file(s) skipped as potentially sensitive (rename or move if wrongly flagged): .envrc, .npmrc, credentials.json, password-changed.html, password-changed.txt, password_changed.txt (+5 more)
+[graphify extract] AST extraction on 11277 code files...
+  AST extraction: 100/8381 uncached files (1%) [16 workers]
+  AST extraction: 200/8381 uncached files (2%) [16 workers]
+  AST extraction: 300/8381 uncached files (3%) [16 workers]
+  AST extraction: 400/8381 uncached files (4%) [16 workers]
+  AST extraction: 500/8381 uncached files (5%) [16 workers]
+  AST extraction: 600/8381 uncached files (7%) [16 workers]
+  AST extraction: 700/8381 uncached files (8%) [16 workers]
+  AST extraction: 800/8381 uncached files (9%) [16 workers]
+  AST extraction: 900/8381 uncached files (10%) [16 workers]
+  AST extraction: 1000/8381 uncached files (11%) [16 workers]
+  AST extraction: 1100/8381 uncached files (13%) [16 workers]
+  AST extraction: 1200/8381 uncached files (14%) [16 workers]
+  AST extraction: 1300/8381 uncached files (15%) [16 workers]
+  AST extraction: 1400/8381 uncached files (16%) [16 workers]
+  AST extraction: 1500/8381 uncached files (17%) [16 workers]
+  AST extraction: 1600/8381 uncached files (19%) [16 workers]
+  AST extraction: 1700/8381 uncached files (20%) [16 workers]
+  AST extraction: 1800/8381 uncached files (21%) [16 workers]
+  AST extraction: 1900/8381 uncached files (22%) [16 workers]
+  AST extraction: 2000/8381 uncached files (23%) [16 workers]
+  AST extraction: 2100/8381 uncached files (25%) [16 workers]
+  AST extraction: 2200/8381 uncached files (26%) [16 workers]
+  AST extraction: 2300/8381 uncached files (27%) [16 workers]
+  AST extraction: 2400/8381 uncached files (28%) [16 workers]
+  AST extraction: 2500/8381 uncached files (29%) [16 workers]
+  AST extraction: 2600/8381 uncached files (31%) [16 workers]
+  AST extraction: 2700/8381 uncached files (32%) [16 workers]
+  AST extraction: 2800/8381 uncached files (33%) [16 workers]
+  AST extraction: 2900/8381 uncached files (34%) [16 workers]
+  AST extraction: 3000/8381 uncached files (35%) [16 workers]
+  AST extraction: 3100/8381 uncached files (36%) [16 workers]
+  AST extraction: 3200/8381 uncached files (38%) [16 workers]
+  AST extraction: 3300/8381 uncached files (39%) [16 workers]
+  AST extraction: 3400/8381 uncached files (40%) [16 workers]
+  AST extraction: 3500/8381 uncached files (41%) [16 workers]
+  AST extraction: 3600/8381 uncached files (42%) [16 workers]
+  AST extraction: 3700/8381 uncached files (44%) [16 workers]
+  AST extraction: 3800/8381 uncached files (45%) [16 workers]
+  AST extraction: 3900/8381 uncached files (46%) [16 workers]
+  AST extraction: 4000/8381 uncached files (47%) [16 workers]
+  AST extraction: 4100/8381 uncached files (48%) [16 workers]
+  AST extraction: 4200/8381 uncached files (50%) [16 workers]
+  AST extraction: 4300/8381 uncached files (51%) [16 workers]
+  AST extraction: 4400/8381 uncached files (52%) [16 workers]
+  AST extraction: 4500/8381 uncached files (53%) [16 workers]
+  AST extraction: 4600/8381 uncached files (54%) [16 workers]
+  AST extraction: 4700/8381 uncached files (56%) [16 workers]
+  AST extraction: 4800/8381 uncached files (57%) [16 workers]
+  AST extraction: 4900/8381 uncached files (58%) [16 workers]
+  AST extraction: 5000/8381 uncached files (59%) [16 workers]
+  AST extraction: 5100/8381 uncached files (60%) [16 workers]
+  AST extraction: 5200/8381 uncached files (62%) [16 workers]
+  AST extraction: 5300/8381 uncached files (63%) [16 workers]
+  AST extraction: 5400/8381 uncached files (64%) [16 workers]
+  AST extraction: 5500/8381 uncached files (65%) [16 workers]
+  AST extraction: 5600/8381 uncached files (66%) [16 workers]
+  AST extraction: 5700/8381 uncached files (68%) [16 workers]
+  AST extraction: 5800/8381 uncached files (69%) [16 workers]
+  AST extraction: 5900/8381 uncached files (70%) [16 workers]
+  AST extraction: 6000/8381 uncached files (71%) [16 workers]
+  AST extraction: 6100/8381 uncached files (72%) [16 workers]
+  AST extraction: 6200/8381 uncached files (73%) [16 workers]
+  AST extraction: 6300/8381 uncached files (75%) [16 workers]
+  AST extraction: 6400/8381 uncached files (76%) [16 workers]
+  AST extraction: 6500/8381 uncached files (77%) [16 workers]
+  AST extraction: 6600/8381 uncached files (78%) [16 workers]
+  AST extraction: 6700/8381 uncached files (79%) [16 workers]
+  AST extraction: 6800/8381 uncached files (81%) [16 workers]
+  AST extraction: 6900/8381 uncached files (82%) [16 workers]
+  AST extraction: 7000/8381 uncached files (83%) [16 workers]
+  AST extraction: 7100/8381 uncached files (84%) [16 workers]
+  AST extraction: 7200/8381 uncached files (85%) [16 workers]
+  AST extraction: 7300/8381 uncached files (87%) [16 workers]
+  AST extraction: 7400/8381 uncached files (88%) [16 workers]
+  AST extraction: 7500/8381 uncached files (89%) [16 workers]
+  AST extraction: 7600/8381 uncached files (90%) [16 workers]
+  AST extraction: 7700/8381 uncached files (91%) [16 workers]
+  AST extraction: 7800/8381 uncached files (93%) [16 workers]
+  AST extraction: 7900/8381 uncached files (94%) [16 workers]
+  AST extraction: 8000/8381 uncached files (95%) [16 workers]
+  AST extraction: 8100/8381 uncached files (96%) [16 workers]
+  AST extraction: 8200/8381 uncached files (97%) [16 workers]
+  AST extraction: 8300/8381 uncached files (99%) [16 workers]
+  AST extraction: 8381/8381 uncached files (100%) [16 workers]
+┌─────────────────────────────────── Error ───────────────────────────────────┐
+│ Something went wrong.                                                       │
+│                                                                             │
+│ Command '['D:\\CodeTurtle\\.venv\\Scripts\\graphify.EXE', 'extract',        │
+│ 'C:\\Users\\venkat\\.codeturtle\\repos\\getsentry_sentry', '--code-only',   │
+│ '--no-cluster']' timed out after 1800.0 seconds                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+[graphify] fail-closed: kept node(s) from 1 source file(s) that left the scan corpus but still exist on disk (ignore rules or filters changed?). Run a full re-extraction to purge them if the exclusion is intentional.
+  warning: 1 source file(s) produced zero nodes and are absent from the graph: pyproject.toml. A re-run will retry them (empties are no longer cached); if it persists, please report the file(s) (#1666).
+  warning: 5 file(s) had syntax errors and may be partially extracted: static/app/components/clippedBox.stories.tsx (first error at line 75, no symbols extracted), static/app/components/collapsible.stories.tsx (first error at line 84, no symbols extracted), static/app/components/copyToClipboardButton.stories.tsx (first error at line 17, no symbols extracted), static/app/components/replays/player/replayPlayPauseButton.stories.tsx (first error at line 43, 1 symbol(s) extracted), static/app/components/replays/player/replayPlayerMeasurer.stories.tsx (first error at line 15, 1 symbol(s) extracted)

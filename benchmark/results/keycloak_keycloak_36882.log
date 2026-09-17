@@ -1,0 +1,109 @@
+[green]SQLite database initialized successfully.[/green]
+[green]SQLite database initialized successfully.[/green]
+2026-09-16T15:17:42.970172Z Starting review                pr_number=36882 repo=keycloak/keycloak
+┌──────────────────────────────────────────────┐
+│ CodeTurtle                                   │
+│ Session: auto-sess                           │
+│ Repository: keycloak/keycloak#36882          │
+│ Model: qwen2.5:7b (Ollama, env OLLAMA_MODEL) │
+└──────────────────────────────────────────────┘
+[Review] llm=qwen2.5:7b source=env OLLAMA_MODEL
+[Workspace] checkout sha=62bf98939eda
+[Workspace] graphify extract C:\Users\venkat\.codeturtle\repos\keycloak_keycloak --code-only --no-cluster
+[graphify extract] incremental scan of C:\Users\venkat\.codeturtle\repos\keycloak_keycloak
+[graphify extract] re-queuing 120 manifest-stamped code file(s) with no nodes in graph.json (prior failed extraction, #2543)
+[graphify extract] --code-only: skipping 578 non-code file(s) (187 docs, 0 papers, 391 images) — no LLM extraction
+[graphify extract] 1416 code, 0 docs, 0 papers, 0 images changed; 6472 unchanged; 398 deleted
+[graphify extract] 1701 file(s) not classified (no supported extension or shebang), skipped: .asciidoctorconfig, .dont-delete, .editorconfig, .gitattributes, .gitignore, .gitleaks.toml (+1695 more)
+[graphify extract] 107 file(s) skipped as potentially sensitive (rename or move if wrongly flagged): 1000.pem, 1001.pem, 2009.pem, 200A.pem, 200B.pem, ANS-cert.pem (+101 more)
+[graphify extract] AST extraction on 1416 code files...
+  AST extraction: 100/927 uncached files (10%) [16 workers]
+  AST extraction: 200/927 uncached files (21%) [16 workers]
+  AST extraction: 300/927 uncached files (32%) [16 workers]
+  AST extraction: 400/927 uncached files (43%) [16 workers]
+  AST extraction: 500/927 uncached files (53%) [16 workers]
+  AST extraction: 600/927 uncached files (64%) [16 workers]
+  AST extraction: 700/927 uncached files (75%) [16 workers]
+  AST extraction: 800/927 uncached files (86%) [16 workers]
+  AST extraction: 900/927 uncached files (97%) [16 workers]
+  AST extraction: 927/927 uncached files (100%) [16 workers]
+[graphify extract] wrote C:\Users\venkat\.codeturtle\repos\keycloak_keycloak\graphify-out\graph.json — 83101 nodes, 320993 edges (no clustering)
+[Workspace] graph=C:\Users\venkat\.codeturtle\repos\keycloak_keycloak\graphify-out\graph.json
+[Review] Retrieval backend: Graphify only (Qdrant disabled)
+[PRFacts] files=11 classification=source lock=0 source=7 diff_bytes=14688 stat={'additions': 70, 'deletions': 18, 'hunks': 19, 'files_in_diff': 11} paths=['common/src/main/java/org/keycloak/common/Profile.java', 'docs/guides/operator/advanced-configuration.adoc', 'docs/guides/server/update-compatibility.adoc', 'docs/guides/templates/kc.adoc', 'operator/scripts/Dockerfile-custom-image', 'operator/src/test/java/org/keycloak/operator/testsuite/integration/UpgradeTest.java', 'quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/AbstractUpdatesCommand.java', 'quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/UpdateCompatibilityCheck.java', 'quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/UpdateCompatibilityMetadata.java', 'quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/compatibility/CompatibilityResult.java']
+[ChangeUnits] n=19 source=13 test=0 lockfile=0 docs=5
+[ChangeUnits] CU-001 common/src/main/java/org/keycloak/common/Profile.java L131-139 symbols=['Type.EXPERIMENTAL', 'Type.PREVIEW', 'IPA_TUURA_FEDERATION', 'ROLLING_UPDATES'] risk=none
+[ChangeUnits] CU-002 docs/guides/operator/advanced-configuration.adoc L443-454 symbols=['kubernetes.io'] risk=none
+[ChangeUnits] CU-003 docs/guides/operator/advanced-configuration.adoc L472-485 symbols=['here'] risk=none
+[ChangeUnits] CU-004 docs/guides/server/update-compatibility.adoc L9-19 symbols=[] risk=none
+[ChangeUnits] CU-005 docs/guides/server/update-compatibility.adoc L128-137 symbols=[] risk=none
+[ChangeUnits] CU-006 docs/guides/templates/kc.adoc L50-55 symbols=[] risk=none
+[ChangeUnits] CU-007 operator/scripts/Dockerfile-custom-image L2-5 symbols=['kc.sh'] risk=none
+[ChangeUnits] CU-008 operator/src/test/java/org/keycloak/operator/testsuite/integration/UpgradeTest.java L17-23 symbols=['java.util.List'] risk=none
+[ChangeUnits] CU-009 operator/src/test/java/org/keycloak/operator/testsuite/integration/UpgradeTest.java L28-38 symbols=['org.keycloak.common.Profile', 'org.keycloak.operator.crds.v2alpha1.deployment.spec.FeatureSpec'] risk=none
+[ChangeUnits] CU-010 operator/src/test/java/org/keycloak/operator/testsuite/integration/UpgradeTest.java L107-118 symbols=['kc.getSpec', 'List.of', 'Profile.Feature.ROLLING_UPDATES.getKey', 'getSpec', 'setUpdateSpec', 'getFeatureSpec', 'setFeatureSpec', 'FeatureSpec', 'setEnabledFeatures', 'getKey', 'createInitialDeployment'] risk=none
+[ChangeUnits] CU-011 quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/AbstractUpdatesCommand.java L80-87 symbols=['printFeatureDisabled', 'printError', 'printPreviewWarning'] risk=none
+[ChangeUnits] CU-012 quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/UpdateCompatibilityCheck.java L20-28 symbols=['org.keycloak.common.Profile', 'org.keycloak.quarkus.runtime.compatibility.CompatibilityResult'] risk=none
+[ChangeUnits] CU-013 quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/UpdateCompatibilityCheck.java L43-53 symbols=['Profile.isFeatureEnabled', 'Profile.Feature.ROLLING_UPDATES', 'picocli.exit', 'CompatibilityResult.FEATURE_DISABLED', 'isFeatureEnabled', 'printFeatureDisabled', 'exit'] risk=none
+[ChangeUnits] CU-014 quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/UpdateCompatibilityMetadata.java L21-29 symbols=['org.keycloak.common.Profile', 'org.keycloak.quarkus.runtime.compatibility.CompatibilityResult'] risk=none
+[ChangeUnits] CU-015 quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/UpdateCompatibilityMetadata.java L43-53 symbols=['Profile.isFeatureEnabled', 'Profile.Feature.ROLLING_UPDATES', 'picocli.exit', 'CompatibilityResult.FEATURE_DISABLED', 'isFeatureEnabled', 'printFeatureDisabled', 'exit'] risk=none
+[ChangeUnits] CU-016 quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/compatibility/CompatibilityResult.java L28-38 symbols=['picocli.CommandLine.ExitCode'] risk=none
+[ChangeUnits] CU-017 quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/UpdateCommandDistTest.java L41-84 symbols=['UpdateCompatibility.NAME', 'UpdateCompatibilityMetadata.NAME', 'cliResult.assertError', 'UpdateCompatibilityCheck.NAME', 'distribution.run', 'UpdateCompatibilityMetadata.OUTPUT_OPTION_NAME', 'jsonFile.getAbsolutePath', 'UpdateCompatibilityCheck.INPUT_OPTION_NAME', 'Launch', 'testFeatureNotEnabled', 'assertError', 'run'] risk=none
+[ChangeUnits] CU-018 quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/UpdateCommandDistTest.java L93-99 symbols=['distribution.run', 'UpdateCompatibility.NAME', 'UpdateCompatibilityCheck.NAME', 'UpdateCompatibilityCheck.INPUT_OPTION_NAME', 'jsonFile.getAbsolutePath', 'run', 'getAbsolutePath', 'testWrongVersions'] risk=none
+[ChangeUnits] CU-019 quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/UpdateCommandDistTest.java L102-108 symbols=['distribution.run', 'UpdateCompatibility.NAME', 'UpdateCompatibilityCheck.NAME', 'UpdateCompatibilityCheck.INPUT_OPTION_NAME', 'jsonFile.getAbsolutePath', 'run', 'getAbsolutePath', 'testWrongVersions'] risk=none
+[ChangeUnits] packed=13 omitted=6 source=13
+[ChangeUnits] units_packed=13 omitted=6
+[ChangeUnits] coverage total=19 packed=13 omitted=6 source=13
+Running v4 review runtime...
+[Bundle] B-001 kind=source files=quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/AbstractUpdatesCommand.java,quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/UpdateCompatibilityCheck.java,quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/UpdateCompatibilityMetadata.java
+[Bundle] B-002 kind=source files=common/src/main/java/org/keycloak/common/Profile.java,quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/UpdateCommandDistTest.java
+[Bundle] B-003 kind=source files=operator/src/test/java/org/keycloak/operator/testsuite/integration/UpgradeTest.java
+[Bundle] B-004 kind=source files=quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/compatibility/CompatibilityResult.java
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 13.68s | Tokens: 
+0
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 0.80s | Tokens: 0
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 0.53s | Tokens: 0
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 0.37s | Tokens: 0
+[Positioner] file=AbstractUpdatesCommand.java line=83
+[Verify] DROP reason=unproven file=AbstractUpdatesCommand.java title="Feature 'rolling-updates' is disabled but no action is taken"
+[Execute] skip reason=flag_off
+[Sandbox] skip reason=flag_off
+[Coverage] packed=13 total=19 ratio=0.68 low=false (observational)
+[Review] Decision=MERGE reason=no_findings
+
+=== BUNDLES ===
+  B-001 kind=source 
+files=quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/Ab
+stractUpdatesCommand.java,quarkus/runtime/src/main/java/org/keycloak/quarkus/ru
+ntime/cli/command/UpdateCompatibilityCheck.java,quarkus/runtime/src/main/java/o
+rg/keycloak/quarkus/runtime/cli/command/UpdateCompatibilityMetadata.java
+  B-002 kind=source 
+files=common/src/main/java/org/keycloak/common/Profile.java,quarkus/tests/integ
+ration/src/test/java/org/keycloak/it/cli/dist/UpdateCommandDistTest.java
+  B-003 kind=source 
+files=operator/src/test/java/org/keycloak/operator/testsuite/integration/Upgrad
+eTest.java
+  B-004 kind=source 
+files=quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/compatibility/
+CompatibilityResult.java
+
+=== COMMENTS (VERIFIED_BUG) ===
+no kept defects
+
+=== DROPPED ===
+  - unproven: Feature 'rolling-updates' is disabled but no action is taken 
+reason=unproven
+
+=== SANDBOX ===
+skip reason=flag_off
+
+=== DECISION ===
+coverage packed=13 total=19 ratio=0.68 low=false
+Decision: MERGE
+reason=no_findings
+MERGE (no_findings) No validated findings.                                     
+[green]Review saved for keycloak/keycloak #36882[/green]
+[Benchmark] Wrote D:\CodeTurtle\benchmark\results\keycloak_keycloak_36882.json
+--dry-run mode (not posted)
+
+  warning: 3 .sql file(s) contributed nothing to the graph because a dependency is missing: tree_sitter_sql not installed. Install it with: pip install "graphifyy[sql]" (#1745)

@@ -1,0 +1,364 @@
+[green]SQLite database initialized successfully.[/green]
+[green]SQLite database initialized successfully.[/green]
+2026-09-16T16:16:03.141616Z Starting review                pr_number=93824 repo=getsentry/sentry
+┌──────────────────────────────────────────────┐
+│ CodeTurtle                                   │
+│ Session: auto-sess                           │
+│ Repository: getsentry/sentry#93824           │
+│ Model: qwen2.5:7b (Ollama, env OLLAMA_MODEL) │
+└──────────────────────────────────────────────┘
+[Review] llm=qwen2.5:7b source=env OLLAMA_MODEL
+[Workspace] clone getsentry/sentry → C:\Users\venkat\.codeturtle\repos\getsentry_sentry
+[Workspace] checkout sha=3162ad68a5c8
+[Workspace] graphify extract C:\Users\venkat\.codeturtle\repos\getsentry_sentry --code-only --no-cluster
+[graphify extract] scanning C:\Users\venkat\.codeturtle\repos\getsentry_sentry
+[graphify extract] --code-only: skipping 660 non-code file(s) (397 docs, 0 papers, 263 images) — no LLM extraction
+[graphify extract] found 14496 code, 0 docs, 0 papers, 0 images
+[graphify extract] 1969 file(s) not classified (no supported extension or shebang), skipped: .dockerignore, .git-blame-ignore-revs, .gitattributes, .gitignore, .gitkeep, .node-version (+1963 more)
+[graphify extract] 11 file(s) skipped as potentially sensitive (rename or move if wrongly flagged): .envrc, .npmrc, credentials.json, password-changed.html, password-changed.txt, password_changed.txt (+5 more)
+[graphify extract] AST extraction on 14496 code files...
+  AST extraction: 100/14495 uncached files (0%) [16 workers]
+  AST extraction: 200/14495 uncached files (1%) [16 workers]
+  AST extraction: 300/14495 uncached files (2%) [16 workers]
+  AST extraction: 400/14495 uncached files (2%) [16 workers]
+  AST extraction: 500/14495 uncached files (3%) [16 workers]
+  AST extraction: 600/14495 uncached files (4%) [16 workers]
+  AST extraction: 700/14495 uncached files (4%) [16 workers]
+  AST extraction: 800/14495 uncached files (5%) [16 workers]
+  AST extraction: 900/14495 uncached files (6%) [16 workers]
+  AST extraction: 1000/14495 uncached files (6%) [16 workers]
+  AST extraction: 1100/14495 uncached files (7%) [16 workers]
+  AST extraction: 1200/14495 uncached files (8%) [16 workers]
+  AST extraction: 1300/14495 uncached files (8%) [16 workers]
+  AST extraction: 1400/14495 uncached files (9%) [16 workers]
+  AST extraction: 1500/14495 uncached files (10%) [16 workers]
+  AST extraction: 1600/14495 uncached files (11%) [16 workers]
+  AST extraction: 1700/14495 uncached files (11%) [16 workers]
+  AST extraction: 1800/14495 uncached files (12%) [16 workers]
+  AST extraction: 1900/14495 uncached files (13%) [16 workers]
+  AST extraction: 2000/14495 uncached files (13%) [16 workers]
+  AST extraction: 2100/14495 uncached files (14%) [16 workers]
+  AST extraction: 2200/14495 uncached files (15%) [16 workers]
+  AST extraction: 2300/14495 uncached files (15%) [16 workers]
+  AST extraction: 2400/14495 uncached files (16%) [16 workers]
+  AST extraction: 2500/14495 uncached files (17%) [16 workers]
+  AST extraction: 2600/14495 uncached files (17%) [16 workers]
+  AST extraction: 2700/14495 uncached files (18%) [16 workers]
+  AST extraction: 2800/14495 uncached files (19%) [16 workers]
+  AST extraction: 2900/14495 uncached files (20%) [16 workers]
+  AST extraction: 3000/14495 uncached files (20%) [16 workers]
+  AST extraction: 3100/14495 uncached files (21%) [16 workers]
+  AST extraction: 3200/14495 uncached files (22%) [16 workers]
+  AST extraction: 3300/14495 uncached files (22%) [16 workers]
+  AST extraction: 3400/14495 uncached files (23%) [16 workers]
+  AST extraction: 3500/14495 uncached files (24%) [16 workers]
+  AST extraction: 3600/14495 uncached files (24%) [16 workers]
+  AST extraction: 3700/14495 uncached files (25%) [16 workers]
+  AST extraction: 3800/14495 uncached files (26%) [16 workers]
+  AST extraction: 3900/14495 uncached files (26%) [16 workers]
+  AST extraction: 4000/14495 uncached files (27%) [16 workers]
+  AST extraction: 4100/14495 uncached files (28%) [16 workers]
+  AST extraction: 4200/14495 uncached files (28%) [16 workers]
+  AST extraction: 4300/14495 uncached files (29%) [16 workers]
+  AST extraction: 4400/14495 uncached files (30%) [16 workers]
+  AST extraction: 4500/14495 uncached files (31%) [16 workers]
+  AST extraction: 4600/14495 uncached files (31%) [16 workers]
+  AST extraction: 4700/14495 uncached files (32%) [16 workers]
+  AST extraction: 4800/14495 uncached files (33%) [16 workers]
+  AST extraction: 4900/14495 uncached files (33%) [16 workers]
+  AST extraction: 5000/14495 uncached files (34%) [16 workers]
+  AST extraction: 5100/14495 uncached files (35%) [16 workers]
+  AST extraction: 5200/14495 uncached files (35%) [16 workers]
+  AST extraction: 5300/14495 uncached files (36%) [16 workers]
+  AST extraction: 5400/14495 uncached files (37%) [16 workers]
+  AST extraction: 5500/14495 uncached files (37%) [16 workers]
+  AST extraction: 5600/14495 uncached files (38%) [16 workers]
+  AST extraction: 5700/14495 uncached files (39%) [16 workers]
+  AST extraction: 5800/14495 uncached files (40%) [16 workers]
+  AST extraction: 5900/14495 uncached files (40%) [16 workers]
+  AST extraction: 6000/14495 uncached files (41%) [16 workers]
+  AST extraction: 6100/14495 uncached files (42%) [16 workers]
+  AST extraction: 6200/14495 uncached files (42%) [16 workers]
+  AST extraction: 6300/14495 uncached files (43%) [16 workers]
+  AST extraction: 6400/14495 uncached files (44%) [16 workers]
+  AST extraction: 6500/14495 uncached files (44%) [16 workers]
+  AST extraction: 6600/14495 uncached files (45%) [16 workers]
+  AST extraction: 6700/14495 uncached files (46%) [16 workers]
+  AST extraction: 6800/14495 uncached files (46%) [16 workers]
+  AST extraction: 6900/14495 uncached files (47%) [16 workers]
+  AST extraction: 7000/14495 uncached files (48%) [16 workers]
+  AST extraction: 7100/14495 uncached files (48%) [16 workers]
+  AST extraction: 7200/14495 uncached files (49%) [16 workers]
+  AST extraction: 7300/14495 uncached files (50%) [16 workers]
+  AST extraction: 7400/14495 uncached files (51%) [16 workers]
+  AST extraction: 7500/14495 uncached files (51%) [16 workers]
+  AST extraction: 7600/14495 uncached files (52%) [16 workers]
+  AST extraction: 7700/14495 uncached files (53%) [16 workers]
+  AST extraction: 7800/14495 uncached files (53%) [16 workers]
+  AST extraction: 7900/14495 uncached files (54%) [16 workers]
+  AST extraction: 8000/14495 uncached files (55%) [16 workers]
+  AST extraction: 8100/14495 uncached files (55%) [16 workers]
+  AST extraction: 8200/14495 uncached files (56%) [16 workers]
+  AST extraction: 8300/14495 uncached files (57%) [16 workers]
+  AST extraction: 8400/14495 uncached files (57%) [16 workers]
+  AST extraction: 8500/14495 uncached files (58%) [16 workers]
+  AST extraction: 8600/14495 uncached files (59%) [16 workers]
+  AST extraction: 8700/14495 uncached files (60%) [16 workers]
+  AST extraction: 8800/14495 uncached files (60%) [16 workers]
+  AST extraction: 8900/14495 uncached files (61%) [16 workers]
+  AST extraction: 9000/14495 uncached files (62%) [16 workers]
+  AST extraction: 9100/14495 uncached files (62%) [16 workers]
+  AST extraction: 9200/14495 uncached files (63%) [16 workers]
+  AST extraction: 9300/14495 uncached files (64%) [16 workers]
+  AST extraction: 9400/14495 uncached files (64%) [16 workers]
+  AST extraction: 9500/14495 uncached files (65%) [16 workers]
+  AST extraction: 9600/14495 uncached files (66%) [16 workers]
+  AST extraction: 9700/14495 uncached files (66%) [16 workers]
+  AST extraction: 9800/14495 uncached files (67%) [16 workers]
+  AST extraction: 9900/14495 uncached files (68%) [16 workers]
+  AST extraction: 10000/14495 uncached files (68%) [16 workers]
+  AST extraction: 10100/14495 uncached files (69%) [16 workers]
+  AST extraction: 10200/14495 uncached files (70%) [16 workers]
+  AST extraction: 10300/14495 uncached files (71%) [16 workers]
+  AST extraction: 10400/14495 uncached files (71%) [16 workers]
+  AST extraction: 10500/14495 uncached files (72%) [16 workers]
+  AST extraction: 10600/14495 uncached files (73%) [16 workers]
+  AST extraction: 10700/14495 uncached files (73%) [16 workers]
+  AST extraction: 10800/14495 uncached files (74%) [16 workers]
+  AST extraction: 10900/14495 uncached files (75%) [16 workers]
+  AST extraction: 11000/14495 uncached files (75%) [16 workers]
+  AST extraction: 11100/14495 uncached files (76%) [16 workers]
+  AST extraction: 11200/14495 uncached files (77%) [16 workers]
+  AST extraction: 11300/14495 uncached files (77%) [16 workers]
+  AST extraction: 11400/14495 uncached files (78%) [16 workers]
+  AST extraction: 11500/14495 uncached files (79%) [16 workers]
+  AST extraction: 11600/14495 uncached files (80%) [16 workers]
+  AST extraction: 11700/14495 uncached files (80%) [16 workers]
+  AST extraction: 11800/14495 uncached files (81%) [16 workers]
+  AST extraction: 11900/14495 uncached files (82%) [16 workers]
+  AST extraction: 12000/14495 uncached files (82%) [16 workers]
+  AST extraction: 12100/14495 uncached files (83%) [16 workers]
+  AST extraction: 12200/14495 uncached files (84%) [16 workers]
+  AST extraction: 12300/14495 uncached files (84%) [16 workers]
+  AST extraction: 12400/14495 uncached files (85%) [16 workers]
+  AST extraction: 12500/14495 uncached files (86%) [16 workers]
+  AST extraction: 12600/14495 uncached files (86%) [16 workers]
+  AST extraction: 12700/14495 uncached files (87%) [16 workers]
+  AST extraction: 12800/14495 uncached files (88%) [16 workers]
+  AST extraction: 12900/14495 uncached files (88%) [16 workers]
+  AST extraction: 13000/14495 uncached files (89%) [16 workers]
+  AST extraction: 13100/14495 uncached files (90%) [16 workers]
+  AST extraction: 13200/14495 uncached files (91%) [16 workers]
+  AST extraction: 13300/14495 uncached files (91%) [16 workers]
+  AST extraction: 13400/14495 uncached files (92%) [16 workers]
+  AST extraction: 13500/14495 uncached files (93%) [16 workers]
+  AST extraction: 13600/14495 uncached files (93%) [16 workers]
+  AST extraction: 13700/14495 uncached files (94%) [16 workers]
+  AST extraction: 13800/14495 uncached files (95%) [16 workers]
+  AST extraction: 13900/14495 uncached files (95%) [16 workers]
+  AST extraction: 14000/14495 uncached files (96%) [16 workers]
+  AST extraction: 14100/14495 uncached files (97%) [16 workers]
+  AST extraction: 14200/14495 uncached files (97%) [16 workers]
+  AST extraction: 14300/14495 uncached files (98%) [16 workers]
+  AST extraction: 14400/14495 uncached files (99%) [16 workers]
+  AST extraction: 14495/14495 uncached files (100%) [16 workers]
+[graphify extract] wrote C:\Users\venkat\.codeturtle\repos\getsentry_sentry\graphify-out\graph.json — 127220 nodes, 450454 edges (no clustering)
+[Workspace] graph=C:\Users\venkat\.codeturtle\repos\getsentry_sentry\graphify-out\graph.json
+[Review] Retrieval backend: Graphify only (Qdrant disabled)
+[PRFacts] files=6 classification=source lock=0 source=5 diff_bytes=18977 stat={'additions': 199, 'deletions': 50, 'hunks': 18, 'files_in_diff': 6} paths=['CLAUDE.md', 'src/sentry/consumers/__init__.py', 'src/sentry/spans/consumers/process/factory.py', 'src/sentry/spans/consumers/process/flusher.py', 'tests/sentry/spans/consumers/process/test_consumer.py', 'tests/sentry/spans/consumers/process/test_flusher.py']
+[ChangeUnits] n=18 source=12 test=5 lockfile=0 docs=1
+[ChangeUnits] CU-001 CLAUDE.md L445-461 symbols=['x.replace', 'hasattr', 'replace', 'isinstance'] risk=none
+[ChangeUnits] CU-002 src/sentry/consumers/__init__.py L427-441 symbols=['ingest_transactions_options', 'click.Option', 'multiprocessing_options', 'Option'] risk=none
+[ChangeUnits] CU-003 src/sentry/spans/consumers/process/factory.py L38-44 symbols=['__init__'] risk=none
+[ChangeUnits] CU-004 src/sentry/spans/consumers/process/factory.py L49-55 symbols=['__init__', 'self.flusher_processes'] risk=none
+[ChangeUnits] CU-005 src/sentry/spans/consumers/process/factory.py L71-77 symbols=['create_with_partitions', 'self.flusher_processes'] risk=none
+[ChangeUnits] CU-006 src/sentry/spans/consumers/process/flusher.py L15-21 symbols=['sentry.processing.backpressure.memory'] risk=none
+[ChangeUnits] CU-007 src/sentry/spans/consumers/process/flusher.py L28-35 symbols=[] risk=none
+[ChangeUnits] CU-008 src/sentry/spans/consumers/process/flusher.py L44-96 symbols=['_create_processes', '_create_process_for_shards', '__init__', 'self.max_processes', 'buffer.assigned_shards', 'self.num_processes', 'self.process_to_shards_map', 'self.processes', 'multiprocessing.context.SpawnProcess', 'threading.Thread', 'self.process_healthy_since', 'mp_context.Value'] risk=none
+[ChangeUnits] CU-009 src/sentry/spans/consumers/process/flusher.py L100-149 symbols=['_create_process_for_shard', '_create_process', 'SpanFlusher.main', 'self.process_backpressure_since', 'self.process_healthy_since', 'process.start', 'self.processes', 'self.buffers', 'self.process_to_shards_map.items', 'self._create_process_for_shards', 'sentry_sdk.set_tag', 'partial'] risk=none
+[ChangeUnits] CU-010 src/sentry/spans/consumers/process/flusher.py L175-202 symbols=['produce', 'metrics.timer', 'spans.buffer.flusher.produce', 'flushed_segments.values', 'metrics.timing', 'spans.buffer.segment_size_bytes', 'kafka_payload.value', 'spans.buffer.flusher.wait_produce', 'timer', 'values', 'timing'] risk=none
+[ChangeUnits] CU-011 src/sentry/spans/consumers/process/flusher.py L215-285 symbols=['_ensure_processes_alive', 'produce', 'self.processes.items', 'self.process_to_shards_map', 'process.is_alive', 'time.time', 'self.process_healthy_since', 'metrics.incr', 'spans.buffer.flusher_unhealthy', 'self.process_restarts', 'multiprocessing.Process', 'process.kill'] risk=none
+[ChangeUnits] CU-012 src/sentry/spans/consumers/process/flusher.py L296-304 symbols=['submit', 'self.buffers.values', 'memory_infos.extend', 'buffer.get_memory_info', 'values', 'extend', 'get_memory_info'] risk=none
+[ChangeUnits] CU-013 src/sentry/spans/consumers/process/flusher.py L326-347 symbols=['close', 'self.processes.items', 'time.time', 'process.is_alive', 'time.sleep', 'multiprocessing.Process', 'process.terminate', 'items', 'time', 'is_alive', 'sleep', 'isinstance'] risk=none
+[ChangeUnits] CU-014 tests/sentry/spans/consumers/process/test_consumer.py L1-4 symbols=[] risk=test
+[ChangeUnits] CU-015 tests/sentry/spans/consumers/process/test_consumer.py L9-15 symbols=['pytest.mark.django_db', 'django_db'] risk=test
+[ChangeUnits] CU-016 tests/sentry/spans/consumers/process/test_consumer.py L57-66 symbols=['add_commit', 'step.poll', 'time.sleep', 'poll', 'sleep'] risk=test
+[ChangeUnits] CU-017 tests/sentry/spans/consumers/process/test_consumer.py L79-123 symbols=['test_flusher_processes_limit', 'add_commit', 'pytest.mark.django_db', 'monkeypatch.setattr', 'time.sleep', 'messages.append', 'commits.append', 'fac.create_with_partitions', 'fac._flusher', 'flusher.processes', 'flusher.max_processes', 'flusher.num_processes'] risk=test
+[ChangeUnits] CU-018 tests/sentry/spans/consumers/process/test_flusher.py L80-83 symbols=['append', 'x.value', 'flusher.process_backpressure_since.values', 'any', 'values'] risk=test
+[ChangeUnits] packed=9 omitted=9 source=12
+[ChangeUnits] units_packed=9 omitted=9
+[ChangeUnits] coverage total=18 packed=9 omitted=9 source=12
+Running v4 review runtime...
+[Bundle] B-001 kind=source files=src/sentry/spans/consumers/process/factory.py,src/sentry/spans/consumers/process/flusher.py,tests/sentry/spans/consumers/process/test_flusher.py,tests/sentry/spans/consumers/process/test_consumer.py
+[Bundle] B-002 kind=source files=src/sentry/consumers/__init__.py
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 11.18s | Tokens: 
+0
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 0.40s | Tokens: 0
+[Execute] skip reason=flag_off
+[Sandbox] skip reason=flag_off
+[Coverage] packed=17 total=18 ratio=0.94 low=false (observational)
+[Review] Decision=MERGE reason=no_findings
+
+=== BUNDLES ===
+  B-001 kind=source 
+files=src/sentry/spans/consumers/process/factory.py,src/sentry/spans/consumers/
+process/flusher.py,tests/sentry/spans/consumers/process/test_flusher.py,tests/s
+entry/spans/consumers/process/test_consumer.py
+  B-002 kind=source files=src/sentry/consumers/__init__.py
+
+=== COMMENTS (VERIFIED_BUG) ===
+no kept defects
+
+=== DROPPED ===
+(none)
+
+=== SANDBOX ===
+skip reason=flag_off
+
+=== DECISION ===
+coverage packed=17 total=18 ratio=0.94 low=false
+Decision: MERGE
+reason=no_findings
+MERGE (no_findings) No validated findings.                                     
+[green]Review saved for getsentry/sentry #93824[/green]
+[Benchmark] Wrote D:\CodeTurtle\benchmark\results\getsentry_sentry_93824.json
+--dry-run mode (not posted)
+
+Cloning into 'C:\Users\venkat\.codeturtle\repos\getsentry_sentry'...
+Updating files:   2% (549/21023)
+Updating files:   3% (631/21023)
+Updating files:   4% (841/21023)
+Updating files:   5% (1052/21023)
+Updating files:   5% (1200/21023)
+Updating files:   6% (1262/21023)
+Updating files:   7% (1472/21023)
+Updating files:   8% (1682/21023)
+Updating files:   8% (1838/21023)
+Updating files:   9% (1893/21023)
+Updating files:  10% (2103/21023)
+Updating files:  11% (2313/21023)
+Updating files:  11% (2451/21023)
+Updating files:  12% (2523/21023)
+Updating files:  13% (2733/21023)
+Updating files:  14% (2944/21023)
+Updating files:  14% (3101/21023)
+Updating files:  15% (3154/21023)
+Updating files:  16% (3364/21023)
+Updating files:  16% (3394/21023)
+Updating files:  17% (3574/21023)
+Updating files:  18% (3785/21023)
+Updating files:  19% (3995/21023)
+Updating files:  19% (4082/21023)
+Updating files:  20% (4205/21023)
+Updating files:  21% (4415/21023)
+Updating files:  22% (4626/21023)
+Updating files:  22% (4704/21023)
+Updating files:  23% (4836/21023)
+Updating files:  24% (5046/21023)
+Updating files:  25% (5256/21023)
+Updating files:  25% (5306/21023)
+Updating files:  26% (5466/21023)
+Updating files:  27% (5677/21023)
+Updating files:  28% (5887/21023)
+Updating files:  28% (6004/21023)
+Updating files:  29% (6097/21023)
+Updating files:  30% (6307/21023)
+Updating files:  31% (6518/21023)
+Updating files:  31% (6702/21023)
+Updating files:  32% (6728/21023)
+Updating files:  33% (6938/21023)
+Updating files:  34% (7148/21023)
+Updating files:  34% (7328/21023)
+Updating files:  35% (7359/21023)
+Updating files:  36% (7569/21023)
+Updating files:  37% (7779/21023)
+Updating files:  37% (7911/21023)
+Updating files:  38% (7989/21023)
+Updating files:  39% (8199/21023)
+Updating files:  39% (8367/21023)
+Updating files:  40% (8410/21023)
+Updating files:  41% (8620/21023)
+Updating files:  42% (8830/21023)
+Updating files:  42% (9000/21023)
+Updating files:  43% (9040/21023)
+Updating files:  44% (9251/21023)
+Updating files:  45% (9461/21023)
+Updating files:  45% (9566/21023)
+Updating files:  46% (9671/21023)
+Updating files:  47% (9881/21023)
+Updating files:  48% (10092/21023)
+Updating files:  48% (10109/21023)
+Updating files:  49% (10302/21023)
+Updating files:  50% (10512/21023)
+Updating files:  50% (10658/21023)
+Updating files:  51% (10722/21023)
+Updating files:  52% (10932/21023)
+Updating files:  53% (11143/21023)
+Updating files:  53% (11318/21023)
+Updating files:  54% (11353/21023)
+Updating files:  55% (11563/21023)
+Updating files:  56% (11773/21023)
+Updating files:  56% (11955/21023)
+Updating files:  57% (11984/21023)
+Updating files:  58% (12194/21023)
+Updating files:  59% (12404/21023)
+Updating files:  59% (12572/21023)
+Updating files:  60% (12614/21023)
+Updating files:  61% (12825/21023)
+Updating files:  62% (13035/21023)
+Updating files:  62% (13198/21023)
+Updating files:  63% (13245/21023)
+Updating files:  64% (13455/21023)
+Updating files:  65% (13665/21023)
+Updating files:  65% (13803/21023)
+Updating files:  66% (13876/21023)
+Updating files:  67% (14086/21023)
+Updating files:  68% (14296/21023)
+Updating files:  68% (14422/21023)
+Updating files:  69% (14506/21023)
+Updating files:  70% (14717/21023)
+Updating files:  71% (14927/21023)
+Updating files:  71% (15008/21023)
+Updating files:  72% (15137/21023)
+Updating files:  73% (15347/21023)
+Updating files:  74% (15558/21023)
+Updating files:  74% (15592/21023)
+Updating files:  75% (15768/21023)
+Updating files:  76% (15978/21023)
+Updating files:  77% (16188/21023)
+Updating files:  77% (16254/21023)
+Updating files:  78% (16398/21023)
+Updating files:  79% (16609/21023)
+Updating files:  80% (16819/21023)
+Updating files:  80% (16929/21023)
+Updating files:  81% (17029/21023)
+Updating files:  82% (17239/21023)
+Updating files:  83% (17450/21023)
+Updating files:  83% (17558/21023)
+Updating files:  84% (17660/21023)
+Updating files:  85% (17870/21023)
+Updating files:  86% (18080/21023)
+Updating files:  86% (18086/21023)
+Updating files:  87% (18291/21023)
+Updating files:  88% (18501/21023)
+Updating files:  88% (18679/21023)
+Updating files:  89% (18711/21023)
+Updating files:  90% (18921/21023)
+Updating files:  91% (19131/21023)
+Updating files:  91% (19169/21023)
+Updating files:  92% (19342/21023)
+Updating files:  93% (19552/21023)
+Updating files:  94% (19762/21023)
+Updating files:  94% (19787/21023)
+Updating files:  95% (19972/21023)
+Updating files:  96% (20183/21023)
+Updating files:  96% (20342/21023)
+Updating files:  97% (20393/21023)
+Updating files:  98% (20603/21023)
+Updating files:  99% (20813/21023)
+Updating files:  99% (20961/21023)
+Updating files: 100% (21023/21023)
+Updating files: 100% (21023/21023), done.
+  warning: 1 source file(s) produced zero nodes and are absent from the graph: pyproject.toml. A re-run will retry them (empties are no longer cached); if it persists, please report the file(s) (#1666).
+  warning: 1 file(s) are classified as code but graphify has no AST extractor for their language, so they contributed nothing to the graph: .ejs (1). Please open an issue to request support for these (#1689).
+  warning: 6 file(s) had syntax errors and may be partially extracted: static/app/components/clippedBox.stories.tsx (first error at line 75, no symbols extracted), static/app/components/collapsible.stories.tsx (first error at line 84, no symbols extracted), static/app/components/copyToClipboardButton.stories.tsx (first error at line 17, no symbols extracted), static/app/components/replays/player/replayPlayPauseButton.stories.tsx (first error at line 43, 1 symbol(s) extracted), static/app/components/replays/player/replayPlayerMeasurer.stories.tsx (first error at line 15, 1 symbol(s) extracted) (+1 more)

@@ -1,0 +1,305 @@
+[green]SQLite database initialized successfully.[/green]
+[green]SQLite database initialized successfully.[/green]
+2026-09-16T16:38:29.101095Z Starting review                pr_number=5 repo=ai-code-review-evaluation/sentry-greptile
+┌─────────────────────────────────────────────────────────┐
+│ CodeTurtle                                              │
+│ Session: auto-sess                                      │
+│ Repository: ai-code-review-evaluation/sentry-greptile#5 │
+│ Model: qwen2.5:7b (Ollama, env OLLAMA_MODEL)            │
+└─────────────────────────────────────────────────────────┘
+[Review] llm=qwen2.5:7b source=env OLLAMA_MODEL
+[Workspace] clone ai-code-review-evaluation/sentry-greptile → C:\Users\venkat\.codeturtle\repos\ai-code-review-evaluation_sentry-greptile
+[Workspace] checkout sha=ea188e2d736f
+[Workspace] graphify extract C:\Users\venkat\.codeturtle\repos\ai-code-review-evaluation_sentry-greptile --code-only --no-cluster
+[graphify extract] scanning C:\Users\venkat\.codeturtle\repos\ai-code-review-evaluation_sentry-greptile
+[graphify extract] --code-only: skipping 660 non-code file(s) (397 docs, 0 papers, 263 images) — no LLM extraction
+[graphify extract] found 14487 code, 0 docs, 0 papers, 0 images
+[graphify extract] 1945 file(s) not classified (no supported extension or shebang), skipped: .dockerignore, .git-blame-ignore-revs, .gitattributes, .gitignore, .gitkeep, .node-version (+1939 more)
+[graphify extract] 11 file(s) skipped as potentially sensitive (rename or move if wrongly flagged): .envrc, .npmrc, credentials.json, password-changed.html, password-changed.txt, password_changed.txt (+5 more)
+[graphify extract] AST extraction on 14487 code files...
+  AST extraction: 100/14486 uncached files (0%) [16 workers]
+  AST extraction: 200/14486 uncached files (1%) [16 workers]
+  AST extraction: 300/14486 uncached files (2%) [16 workers]
+  AST extraction: 400/14486 uncached files (2%) [16 workers]
+  AST extraction: 500/14486 uncached files (3%) [16 workers]
+  AST extraction: 600/14486 uncached files (4%) [16 workers]
+  AST extraction: 700/14486 uncached files (4%) [16 workers]
+  AST extraction: 800/14486 uncached files (5%) [16 workers]
+  AST extraction: 900/14486 uncached files (6%) [16 workers]
+  AST extraction: 1000/14486 uncached files (6%) [16 workers]
+  AST extraction: 1100/14486 uncached files (7%) [16 workers]
+  AST extraction: 1200/14486 uncached files (8%) [16 workers]
+  AST extraction: 1300/14486 uncached files (8%) [16 workers]
+  AST extraction: 1400/14486 uncached files (9%) [16 workers]
+  AST extraction: 1500/14486 uncached files (10%) [16 workers]
+  AST extraction: 1600/14486 uncached files (11%) [16 workers]
+  AST extraction: 1700/14486 uncached files (11%) [16 workers]
+  AST extraction: 1800/14486 uncached files (12%) [16 workers]
+  AST extraction: 1900/14486 uncached files (13%) [16 workers]
+  AST extraction: 2000/14486 uncached files (13%) [16 workers]
+  AST extraction: 2100/14486 uncached files (14%) [16 workers]
+  AST extraction: 2200/14486 uncached files (15%) [16 workers]
+  AST extraction: 2300/14486 uncached files (15%) [16 workers]
+  AST extraction: 2400/14486 uncached files (16%) [16 workers]
+  AST extraction: 2500/14486 uncached files (17%) [16 workers]
+  AST extraction: 2600/14486 uncached files (17%) [16 workers]
+  AST extraction: 2700/14486 uncached files (18%) [16 workers]
+  AST extraction: 2800/14486 uncached files (19%) [16 workers]
+  AST extraction: 2900/14486 uncached files (20%) [16 workers]
+  AST extraction: 3000/14486 uncached files (20%) [16 workers]
+  AST extraction: 3100/14486 uncached files (21%) [16 workers]
+  AST extraction: 3200/14486 uncached files (22%) [16 workers]
+  AST extraction: 3300/14486 uncached files (22%) [16 workers]
+  AST extraction: 3400/14486 uncached files (23%) [16 workers]
+  AST extraction: 3500/14486 uncached files (24%) [16 workers]
+  AST extraction: 3600/14486 uncached files (24%) [16 workers]
+  AST extraction: 3700/14486 uncached files (25%) [16 workers]
+  AST extraction: 3800/14486 uncached files (26%) [16 workers]
+  AST extraction: 3900/14486 uncached files (26%) [16 workers]
+  AST extraction: 4000/14486 uncached files (27%) [16 workers]
+  AST extraction: 4100/14486 uncached files (28%) [16 workers]
+  AST extraction: 4200/14486 uncached files (28%) [16 workers]
+  AST extraction: 4300/14486 uncached files (29%) [16 workers]
+  AST extraction: 4400/14486 uncached files (30%) [16 workers]
+  AST extraction: 4500/14486 uncached files (31%) [16 workers]
+  AST extraction: 4600/14486 uncached files (31%) [16 workers]
+  AST extraction: 4700/14486 uncached files (32%) [16 workers]
+  AST extraction: 4800/14486 uncached files (33%) [16 workers]
+  AST extraction: 4900/14486 uncached files (33%) [16 workers]
+  AST extraction: 5000/14486 uncached files (34%) [16 workers]
+  AST extraction: 5100/14486 uncached files (35%) [16 workers]
+  AST extraction: 5200/14486 uncached files (35%) [16 workers]
+  AST extraction: 5300/14486 uncached files (36%) [16 workers]
+  AST extraction: 5400/14486 uncached files (37%) [16 workers]
+  AST extraction: 5500/14486 uncached files (37%) [16 workers]
+  AST extraction: 5600/14486 uncached files (38%) [16 workers]
+  AST extraction: 5700/14486 uncached files (39%) [16 workers]
+  AST extraction: 5800/14486 uncached files (40%) [16 workers]
+  AST extraction: 5900/14486 uncached files (40%) [16 workers]
+  AST extraction: 6000/14486 uncached files (41%) [16 workers]
+  AST extraction: 6100/14486 uncached files (42%) [16 workers]
+  AST extraction: 6200/14486 uncached files (42%) [16 workers]
+  AST extraction: 6300/14486 uncached files (43%) [16 workers]
+  AST extraction: 6400/14486 uncached files (44%) [16 workers]
+  AST extraction: 6500/14486 uncached files (44%) [16 workers]
+  AST extraction: 6600/14486 uncached files (45%) [16 workers]
+  AST extraction: 6700/14486 uncached files (46%) [16 workers]
+  AST extraction: 6800/14486 uncached files (46%) [16 workers]
+  AST extraction: 6900/14486 uncached files (47%) [16 workers]
+  AST extraction: 7000/14486 uncached files (48%) [16 workers]
+  AST extraction: 7100/14486 uncached files (49%) [16 workers]
+  AST extraction: 7200/14486 uncached files (49%) [16 workers]
+  AST extraction: 7300/14486 uncached files (50%) [16 workers]
+  AST extraction: 7400/14486 uncached files (51%) [16 workers]
+  AST extraction: 7500/14486 uncached files (51%) [16 workers]
+  AST extraction: 7600/14486 uncached files (52%) [16 workers]
+  AST extraction: 7700/14486 uncached files (53%) [16 workers]
+  AST extraction: 7800/14486 uncached files (53%) [16 workers]
+  AST extraction: 7900/14486 uncached files (54%) [16 workers]
+  AST extraction: 8000/14486 uncached files (55%) [16 workers]
+  AST extraction: 8100/14486 uncached files (55%) [16 workers]
+  AST extraction: 8200/14486 uncached files (56%) [16 workers]
+  AST extraction: 8300/14486 uncached files (57%) [16 workers]
+  AST extraction: 8400/14486 uncached files (57%) [16 workers]
+  AST extraction: 8500/14486 uncached files (58%) [16 workers]
+  AST extraction: 8600/14486 uncached files (59%) [16 workers]
+  AST extraction: 8700/14486 uncached files (60%) [16 workers]
+  AST extraction: 8800/14486 uncached files (60%) [16 workers]
+  AST extraction: 8900/14486 uncached files (61%) [16 workers]
+  AST extraction: 9000/14486 uncached files (62%) [16 workers]
+  AST extraction: 9100/14486 uncached files (62%) [16 workers]
+  AST extraction: 9200/14486 uncached files (63%) [16 workers]
+  AST extraction: 9300/14486 uncached files (64%) [16 workers]
+  AST extraction: 9400/14486 uncached files (64%) [16 workers]
+  AST extraction: 9500/14486 uncached files (65%) [16 workers]
+  AST extraction: 9600/14486 uncached files (66%) [16 workers]
+  AST extraction: 9700/14486 uncached files (66%) [16 workers]
+  AST extraction: 9800/14486 uncached files (67%) [16 workers]
+  AST extraction: 9900/14486 uncached files (68%) [16 workers]
+  AST extraction: 10000/14486 uncached files (69%) [16 workers]
+  AST extraction: 10100/14486 uncached files (69%) [16 workers]
+  AST extraction: 10200/14486 uncached files (70%) [16 workers]
+  AST extraction: 10300/14486 uncached files (71%) [16 workers]
+  AST extraction: 10400/14486 uncached files (71%) [16 workers]
+  AST extraction: 10500/14486 uncached files (72%) [16 workers]
+  AST extraction: 10600/14486 uncached files (73%) [16 workers]
+  AST extraction: 10700/14486 uncached files (73%) [16 workers]
+  AST extraction: 10800/14486 uncached files (74%) [16 workers]
+  AST extraction: 10900/14486 uncached files (75%) [16 workers]
+  AST extraction: 11000/14486 uncached files (75%) [16 workers]
+  AST extraction: 11100/14486 uncached files (76%) [16 workers]
+  AST extraction: 11200/14486 uncached files (77%) [16 workers]
+  AST extraction: 11300/14486 uncached files (78%) [16 workers]
+  AST extraction: 11400/14486 uncached files (78%) [16 workers]
+  AST extraction: 11500/14486 uncached files (79%) [16 workers]
+  AST extraction: 11600/14486 uncached files (80%) [16 workers]
+  AST extraction: 11700/14486 uncached files (80%) [16 workers]
+  AST extraction: 11800/14486 uncached files (81%) [16 workers]
+  AST extraction: 11900/14486 uncached files (82%) [16 workers]
+  AST extraction: 12000/14486 uncached files (82%) [16 workers]
+  AST extraction: 12100/14486 uncached files (83%) [16 workers]
+  AST extraction: 12200/14486 uncached files (84%) [16 workers]
+  AST extraction: 12300/14486 uncached files (84%) [16 workers]
+  AST extraction: 12400/14486 uncached files (85%) [16 workers]
+  AST extraction: 12500/14486 uncached files (86%) [16 workers]
+  AST extraction: 12600/14486 uncached files (86%) [16 workers]
+  AST extraction: 12700/14486 uncached files (87%) [16 workers]
+  AST extraction: 12800/14486 uncached files (88%) [16 workers]
+  AST extraction: 12900/14486 uncached files (89%) [16 workers]
+  AST extraction: 13000/14486 uncached files (89%) [16 workers]
+  AST extraction: 13100/14486 uncached files (90%) [16 workers]
+  AST extraction: 13200/14486 uncached files (91%) [16 workers]
+  AST extraction: 13300/14486 uncached files (91%) [16 workers]
+  AST extraction: 13400/14486 uncached files (92%) [16 workers]
+  AST extraction: 13500/14486 uncached files (93%) [16 workers]
+  AST extraction: 13600/14486 uncached files (93%) [16 workers]
+  AST extraction: 13700/14486 uncached files (94%) [16 workers]
+  AST extraction: 13800/14486 uncached files (95%) [16 workers]
+  AST extraction: 13900/14486 uncached files (95%) [16 workers]
+  AST extraction: 14000/14486 uncached files (96%) [16 workers]
+  AST extraction: 14100/14486 uncached files (97%) [16 workers]
+  AST extraction: 14200/14486 uncached files (98%) [16 workers]
+  AST extraction: 14300/14486 uncached files (98%) [16 workers]
+  AST extraction: 14400/14486 uncached files (99%) [16 workers]
+  AST extraction: 14486/14486 uncached files (100%) [16 workers]
+┌─────────────────────────────────── Error ───────────────────────────────────┐
+│ Something went wrong.                                                       │
+│                                                                             │
+│ Command '['D:\\CodeTurtle\\.venv\\Scripts\\graphify.EXE', 'extract',        │
+│ 'C:\\Users\\venkat\\.codeturtle\\repos\\ai-code-review-evaluation_sentry-gr │
+│ eptile', '--code-only', '--no-cluster']' timed out after 1800.0 seconds     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Cloning into 'C:\Users\venkat\.codeturtle\repos\ai-code-review-evaluation_sentry-greptile'...
+Updating files:   2% (441/16949)
+Updating files:   3% (509/16949)
+Updating files:   4% (678/16949)
+Updating files:   5% (848/16949)
+Updating files:   5% (940/16949)
+Updating files:   6% (1017/16949)
+Updating files:   7% (1187/16949)
+Updating files:   8% (1356/16949)
+Updating files:   8% (1482/16949)
+Updating files:   9% (1526/16949)
+Updating files:  10% (1695/16949)
+Updating files:  11% (1865/16949)
+Updating files:  11% (1982/16949)
+Updating files:  12% (2034/16949)
+Updating files:  13% (2204/16949)
+Updating files:  14% (2373/16949)
+Updating files:  14% (2479/16949)
+Updating files:  15% (2543/16949)
+Updating files:  16% (2712/16949)
+Updating files:  16% (2764/16949)
+Updating files:  17% (2882/16949)
+Updating files:  18% (3051/16949)
+Updating files:  19% (3221/16949)
+Updating files:  19% (3304/16949)
+Updating files:  20% (3390/16949)
+Updating files:  21% (3560/16949)
+Updating files:  22% (3729/16949)
+Updating files:  22% (3881/16949)
+Updating files:  23% (3899/16949)
+Updating files:  24% (4068/16949)
+Updating files:  25% (4238/16949)
+Updating files:  26% (4407/16949)
+Updating files:  26% (4416/16949)
+Updating files:  27% (4577/16949)
+Updating files:  28% (4746/16949)
+Updating files:  29% (4916/16949)
+Updating files:  29% (5048/16949)
+Updating files:  30% (5085/16949)
+Updating files:  31% (5255/16949)
+Updating files:  32% (5424/16949)
+Updating files:  33% (5594/16949)
+Updating files:  33% (5656/16949)
+Updating files:  34% (5763/16949)
+Updating files:  35% (5933/16949)
+Updating files:  36% (6102/16949)
+Updating files:  36% (6240/16949)
+Updating files:  37% (6272/16949)
+Updating files:  38% (6441/16949)
+Updating files:  39% (6611/16949)
+Updating files:  40% (6780/16949)
+Updating files:  41% (6950/16949)
+Updating files:  41% (6961/16949)
+Updating files:  42% (7119/16949)
+Updating files:  43% (7289/16949)
+Updating files:  44% (7458/16949)
+Updating files:  44% (7590/16949)
+Updating files:  45% (7628/16949)
+Updating files:  46% (7797/16949)
+Updating files:  47% (7967/16949)
+Updating files:  48% (8136/16949)
+Updating files:  48% (8206/16949)
+Updating files:  49% (8306/16949)
+Updating files:  50% (8475/16949)
+Updating files:  51% (8644/16949)
+Updating files:  51% (8804/16949)
+Updating files:  52% (8814/16949)
+Updating files:  53% (8983/16949)
+Updating files:  54% (9153/16949)
+Updating files:  55% (9322/16949)
+Updating files:  55% (9395/16949)
+Updating files:  56% (9492/16949)
+Updating files:  57% (9661/16949)
+Updating files:  58% (9831/16949)
+Updating files:  58% (9879/16949)
+Updating files:  59% (10000/16949)
+Updating files:  60% (10170/16949)
+Updating files:  61% (10339/16949)
+Updating files:  61% (10428/16949)
+Updating files:  62% (10509/16949)
+Updating files:  63% (10678/16949)
+Updating files:  64% (10848/16949)
+Updating files:  64% (10995/16949)
+Updating files:  65% (11017/16949)
+Updating files:  66% (11187/16949)
+Updating files:  67% (11356/16949)
+Updating files:  68% (11526/16949)
+Updating files:  68% (11624/16949)
+Updating files:  69% (11695/16949)
+Updating files:  70% (11865/16949)
+Updating files:  71% (12034/16949)
+Updating files:  71% (12189/16949)
+Updating files:  72% (12204/16949)
+Updating files:  73% (12373/16949)
+Updating files:  74% (12543/16949)
+Updating files:  74% (12691/16949)
+Updating files:  75% (12712/16949)
+Updating files:  76% (12882/16949)
+Updating files:  77% (13051/16949)
+Updating files:  78% (13221/16949)
+Updating files:  78% (13260/16949)
+Updating files:  79% (13390/16949)
+Updating files:  80% (13560/16949)
+Updating files:  81% (13729/16949)
+Updating files:  81% (13885/16949)
+Updating files:  82% (13899/16949)
+Updating files:  83% (14068/16949)
+Updating files:  84% (14238/16949)
+Updating files:  85% (14407/16949)
+Updating files:  85% (14538/16949)
+Updating files:  86% (14577/16949)
+Updating files:  87% (14746/16949)
+Updating files:  88% (14916/16949)
+Updating files:  89% (15085/16949)
+Updating files:  89% (15108/16949)
+Updating files:  90% (15255/16949)
+Updating files:  91% (15424/16949)
+Updating files:  92% (15594/16949)
+Updating files:  92% (15683/16949)
+Updating files:  93% (15763/16949)
+Updating files:  94% (15933/16949)
+Updating files:  95% (16102/16949)
+Updating files:  95% (16196/16949)
+Updating files:  96% (16272/16949)
+Updating files:  97% (16441/16949)
+Updating files:  98% (16611/16949)
+Updating files:  98% (16774/16949)
+Updating files:  99% (16780/16949)
+Updating files: 100% (16949/16949)
+Updating files: 100% (16949/16949), done.
+  warning: 1 source file(s) produced zero nodes and are absent from the graph: pyproject.toml. A re-run will retry them (empties are no longer cached); if it persists, please report the file(s) (#1666).
+  warning: 1 file(s) are classified as code but graphify has no AST extractor for their language, so they contributed nothing to the graph: .ejs (1). Please open an issue to request support for these (#1689).
+  warning: 6 file(s) had syntax errors and may be partially extracted: static/app/components/clippedBox.stories.tsx (first error at line 75, no symbols extracted), static/app/components/collapsible.stories.tsx (first error at line 84, no symbols extracted), static/app/components/copyToClipboardButton.stories.tsx (first error at line 17, no symbols extracted), static/app/components/replays/player/replayPlayPauseButton.stories.tsx (first error at line 43, 1 symbol(s) extracted), static/app/components/replays/player/replayPlayerMeasurer.stories.tsx (first error at line 15, 1 symbol(s) extracted) (+1 more)

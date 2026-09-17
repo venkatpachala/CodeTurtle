@@ -1,0 +1,133 @@
+[green]SQLite database initialized successfully.[/green]
+[green]SQLite database initialized successfully.[/green]
+2026-09-16T15:26:38.762706Z Starting review                pr_number=37038 repo=keycloak/keycloak
+┌──────────────────────────────────────────────┐
+│ CodeTurtle                                   │
+│ Session: auto-sess                           │
+│ Repository: keycloak/keycloak#37038          │
+│ Model: qwen2.5:7b (Ollama, env OLLAMA_MODEL) │
+└──────────────────────────────────────────────┘
+[Review] llm=qwen2.5:7b source=env OLLAMA_MODEL
+[Workspace] checkout sha=7355f05e6aaf
+[Workspace] graphify extract C:\Users\venkat\.codeturtle\repos\keycloak_keycloak --code-only --no-cluster
+[graphify extract] incremental scan of C:\Users\venkat\.codeturtle\repos\keycloak_keycloak
+[graphify extract] re-queuing 135 manifest-stamped code file(s) with no nodes in graph.json (prior failed extraction, #2543)
+[graphify extract] --code-only: skipping 580 non-code file(s) (188 docs, 0 papers, 392 images) — no LLM extraction
+[graphify extract] 229 code, 0 docs, 0 papers, 0 images changed; 7729 unchanged; 4 deleted
+[graphify extract] 1703 file(s) not classified (no supported extension or shebang), skipped: .asciidoctorconfig, .dont-delete, .editorconfig, .gitattributes, .gitignore, .gitleaks.toml (+1697 more)
+[graphify extract] 107 file(s) skipped as potentially sensitive (rename or move if wrongly flagged): 1000.pem, 1001.pem, 2009.pem, 200A.pem, 200B.pem, ANS-cert.pem (+101 more)
+[graphify extract] AST extraction on 229 code files...
+  AST extraction: 100/180 uncached files (55%) [16 workers]
+  AST extraction: 180/180 uncached files (100%) [16 workers]
+[graphify extract] wrote C:\Users\venkat\.codeturtle\repos\keycloak_keycloak\graphify-out\graph.json — 83808 nodes, 322879 edges (no clustering)
+[Workspace] graph=C:\Users\venkat\.codeturtle\repos\keycloak_keycloak\graphify-out\graph.json
+[Review] Retrieval backend: Graphify only (Qdrant disabled)
+[PRFacts] files=19 classification=source lock=0 source=19 diff_bytes=64975 stat={'additions': 831, 'deletions': 126, 'hunks': 44, 'files_in_diff': 19} paths=['rest/admin-ui-ext/src/main/java/org/keycloak/admin/ui/rest/BruteForceUsersResource.java', 'server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java', 'server-spi-private/src/main/java/org/keycloak/models/utils/ModelToRepresentation.java', 'services/src/main/java/org/keycloak/services/resources/admin/GroupResource.java', 'services/src/main/java/org/keycloak/services/resources/admin/GroupsResource.java', 'services/src/main/java/org/keycloak/services/resources/admin/UsersResource.java', 'services/src/main/java/org/keycloak/services/resources/admin/permissions/AdminPermissions.java', 'services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java', 'services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissions.java', 'services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java']
+[ChangeUnits] n=43 source=43 test=0 lockfile=0 docs=0
+[ChangeUnits] CU-001 rest/admin-ui-ext/src/main/java/org/keycloak/admin/ui/rest/BruteForceUsersResource.java L144-155 symbols=['auth.groups', 'groupIds.isEmpty', 'session.setAttribute', 'UserModel.GROUPS', 'session.users', 'groups', 'getGroupIdsWithViewPermission', 'isEmpty', 'setAttribute', 'toRepresentation', 'users', 'searchForUserStream'] risk=none
+[ChangeUnits] CU-002 server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java L33-39 symbols=['org.keycloak.models.GroupModel'] risk=none
+[ChangeUnits] CU-003 server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java L51-92 symbols=['Set.of', 'Map.of', 'ResourceType'] risk=none
+[ChangeUnits] CU-004 server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java L102-114 symbols=['resolveClient', 'resolveGroup', 'resolveUser', 'IllegalStateException', 'getOrCreateResource'] risk=none
+[ChangeUnits] CU-005 server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java L178-190 symbols=['session.getContext', 'session.groups', 'group.getId', 'resolveGroup', 'getContext', 'getRealm', 'groups', 'getGroupById', 'getId', 'throwExceptionIfAdminPermissionClient'] risk=none
+[ChangeUnits] CU-006 server-spi-private/src/main/java/org/keycloak/models/utils/ModelToRepresentation.java L173-178 symbols=['toRepresentation'] risk=none
+[ChangeUnits] CU-007 services/src/main/java/org/keycloak/services/resources/admin/GroupResource.java L174-182 symbols=['auth.groups', 'filter', 'groups', 'getSubGroups'] risk=none
+[ChangeUnits] CU-008 services/src/main/java/org/keycloak/services/resources/admin/GroupResource.java L203-209 symbols=['addChild'] risk=none
+[ChangeUnits] CU-009 services/src/main/java/org/keycloak/services/resources/admin/GroupsResource.java L47-52 symbols=[] risk=none
+[ChangeUnits] CU-010 services/src/main/java/org/keycloak/services/resources/admin/GroupsResource.java L99-105 symbols=['session.groups', 'groups', 'searchGroupsByAttributes', 'getGroups', 'QueryParam'] risk=none
+[ChangeUnits] CU-011 services/src/main/java/org/keycloak/services/resources/admin/GroupsResource.java L109-116 symbols=['stream.filter', 'filter', 'getGroups', 'QueryParam'] risk=none
+[ChangeUnits] CU-012 services/src/main/java/org/keycloak/services/resources/admin/UsersResource.java L71-76 symbols=[] risk=none
+[ChangeUnits] CU-013 services/src/main/java/org/keycloak/services/resources/admin/UsersResource.java L395-401 symbols=['session.users', 'search.trim', 'auth.groups', 'users', 'getUsersCount', 'trim', 'groups', 'getGroupIdsWithViewPermission'] risk=none
+[ChangeUnits] CU-014 services/src/main/java/org/keycloak/services/resources/admin/UsersResource.java L422-433 symbols=['session.users', 'auth.groups', 'users', 'getUsersCount', 'groups', 'getGroupIdsWithViewPermission'] risk=none
+[ChangeUnits] CU-015 services/src/main/java/org/keycloak/services/resources/admin/UsersResource.java L445-456 symbols=['auth.groups', 'groupIds.isEmpty', 'session.setAttribute', 'UserModel.GROUPS', 'session.users', 'groups', 'getGroupIdsWithViewPermission', 'isEmpty', 'setAttribute', 'toRepresentation', 'users', 'searchForUserStream'] risk=none
+[ChangeUnits] CU-016 services/src/main/java/org/keycloak/services/resources/admin/permissions/AdminPermissions.java L71-80 symbols=['Profile.isFeatureEnabled', 'Profile.Feature.ADMIN_FINE_GRAINED_AUTHZ', 'manager.register', 'isFeatureEnabled', 'register', 'ProviderEventListener', 'onEvent', 'management'] risk=none
+[ChangeUnits] CU-017 services/src/main/java/org/keycloak/services/resources/admin/permissions/AdminPermissions.java L94-101 symbols=['onEvent'] risk=none
+[ChangeUnits] CU-018 services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java L16-23 symbols=['org.keycloak.authorization.AdminPermissionsSchema', 'org.keycloak.models.AdminRoles'] risk=none
+[ChangeUnits] CU-019 services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java L28-148 symbols=['canList', 'canManage', 'canView', 'canViewMembers', 'canManageMembership', 'getGroupIdsWithViewPermission'] risk=none
+[ChangeUnits] CU-020 services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissions.java L53-61 symbols=['GroupPermissions'] risk=none
+[ChangeUnits] CU-021 services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissions.java L146-152 symbols=['root.hasOneAdminRole', 'AdminRoles.QUERY_GROUPS', 'hasOneAdminRole', 'canView', 'initialize'] risk=none
+[ChangeUnits] CU-022 services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissions.java L272-278 symbols=['root.hasOneAdminRole', 'AdminRoles.MANAGE_USERS', 'hasOneAdminRole', 'requireView'] risk=none
+[ChangeUnits] CU-023 services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissions.java L281-290 symbols=['root.hasOneAdminRole', 'AdminRoles.MANAGE_USERS', 'AdminRoles.VIEW_USERS', 'hasOneAdminRole', 'requireManage'] risk=none
+[ChangeUnits] CU-024 services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissions.java L295-302 symbols=['root.users', 'Collections.emptySet', 'getGroupIdsWithViewPermission', 'users', 'canView', 'emptySet', 'requireView'] risk=none
+[ChangeUnits] CU-025 services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissions.java L321-327 symbols=['canViewMembers', 'getGroupsWithViewPermission'] risk=none
+[ChangeUnits] CU-026 services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissions.java L337-343 symbols=['hasPermission', 'canViewMembers'] risk=none
+[ChangeUnits] CU-027 services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java L1-211 symbols=['GroupPermissionsV2', 'www.apache.org', 'org.keycloak.services.resources.admin.permissions', 'java.util.Arrays', 'java.util.Collection', 'java.util.Collections', 'java.util.HashSet', 'java.util.List', 'java.util.Map', 'java.util.Set', 'org.keycloak.authorization.AdminPermissionsSchema', 'org.keycloak.authorization.AuthorizationProvider'] risk=none
+[ChangeUnits] CU-028 services/src/main/java/org/keycloak/services/resources/admin/permissions/MgmtPermissionsV2.java L24-30 symbols=[] risk=none
+[ChangeUnits] CU-029 services/src/main/java/org/keycloak/services/resources/admin/permissions/MgmtPermissionsV2.java L54-66 symbols=['groups', 'GroupPermissionsV2', 'getRealmPermissionsClient'] risk=none
+[ChangeUnits] CU-030 services/src/main/java/org/keycloak/services/resources/admin/permissions/RolePermissions.java L299-305 symbols=['root.hasOneAdminRole', 'AdminRoles.MANAGE_USERS', 'hasOneAdminRole', 'checkAdminRoles', 'adminConflictMessage'] risk=none
+[ChangeUnits] CU-031 services/src/main/java/org/keycloak/services/resources/admin/permissions/UserPermissionEvaluator.java L16-25 symbols=['org.keycloak.authorization.AdminPermissionsSchema', 'org.keycloak.models.AdminRoles', 'org.keycloak.models.ImpersonationConstants'] risk=none
+[ChangeUnits] CU-032 services/src/main/java/org/keycloak/services/resources/admin/permissions/UserPermissionEvaluator.java L29-166 symbols=['canManage', 'canQuery', 'canView', 'canImpersonate', 'canMapRoles', 'canManageGroupMembership', 'isImpersonatable'] risk=none
+[ChangeUnits] CU-033 services/src/main/java/org/keycloak/services/resources/admin/permissions/UserPermissions.java L177-182 symbols=['setPermissionsEnabled'] risk=none
+[ChangeUnits] CU-034 services/src/main/java/org/keycloak/services/resources/admin/permissions/UserPermissions.java L231-237 symbols=['root.hasOneAdminRole', 'AdminRoles.MANAGE_USERS', 'hasOneAdminRole', 'userImpersonatedPermission'] risk=none
+[ChangeUnits] CU-035 services/src/main/java/org/keycloak/services/resources/admin/permissions/UserPermissions.java L270-276 symbols=['root.hasOneAdminRole', 'AdminRoles.QUERY_USERS', 'hasOneAdminRole', 'canView', 'requireManage'] risk=none
+[ChangeUnits] CU-036 services/src/main/java/org/keycloak/services/resources/admin/permissions/UserPermissions.java L295-301 symbols=['root.hasOneAdminRole', 'AdminRoles.MANAGE_USERS', 'AdminRoles.VIEW_USERS', 'hasOneAdminRole', 'requireQuery'] risk=none
+[ChangeUnits] CU-037 services/src/main/java/org/keycloak/services/resources/admin/permissions/UserPermissions.java L581-591 symbols=['root.groups', 'evaluateHierarchy', 'groups'] risk=none
+[ChangeUnits] CU-038 services/src/main/java/org/keycloak/services/resources/admin/permissions/UserPermissionsV2.java L45-64 symbols=['UserPermissionsV2', 'root.hasOneAdminRole', 'AdminRoles.MANAGE_USERS', 'AdminRoles.VIEW_USERS', 'AdminPermissionsSchema.VIEW', 'AdminPermissionsSchema.MANAGE', 'hasOneAdminRole', 'hasPermission', 'canViewByGroup', 'canManageByGroup'] risk=none
+[ChangeUnits] CU-039 services/src/main/java/org/keycloak/services/resources/admin/permissions/UserPermissionsV2.java L75-94 symbols=['root.hasOneAdminRole', 'AdminRoles.MANAGE_USERS', 'AdminPermissionsSchema.MANAGE', 'AdminPermissionsSchema.MAP_ROLES', 'AdminPermissionsSchema.MANAGE_GROUP_MEMBERSHIP', 'hasOneAdminRole', 'hasPermission', 'canManageByGroup', 'canImpersonate'] risk=none
+[ChangeUnits] CU-040 test-framework/core/src/main/java/org/keycloak/testframework/util/ApiUtil.java L6-16 symbols=['Assertions.assertEquals', 'response.getStatus', 'response.getLocation', 'path.substring', 'path.lastIndexOf', 'assertEquals', 'getStatus', 'getLocation', 'getPath', 'substring', 'lastIndexOf'] risk=none
+[ChangeUnits] CU-041 tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java L1-320 symbols=['www.apache.org', 'org.keycloak.tests.admin.authz.fgap', 'org.hamcrest.MatcherAssert.assertThat', 'org.hamcrest.Matchers.equalTo', 'org.hamcrest.Matchers.hasSize', 'org.hamcrest.Matchers.instanceOf', 'org.junit.jupiter.api.Assertions.assertEquals', 'org.junit.jupiter.api.Assertions.assertTrue', 'org.junit.jupiter.api.Assertions.fail', 'org.keycloak.authorization.AdminPermissionsSchema.MANAGE', 'org.keycloak.authorization.AdminPermissionsSchema.MANAGE_GROUP_MEMBERSHIP', 'org.keycloak.authorization.AdminPermissionsSchema.MANAGE_MEMBERS'] risk=none
+[ChangeUnits] CU-042 tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/RealmAdminPermissionsConfig.java L31-39 symbols=['Constants.REALM_MANAGEMENT_CLIENT_ID', 'AdminRoles.QUERY_USERS', 'AdminRoles.QUERY_GROUPS', 'clientRoles', 'configure'] risk=none
+[ChangeUnits] CU-043 tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/UserResourceTypeEvaluationTest.java L32-37 symbols=[] risk=none
+[ChangeUnits] packed=12 omitted=31 source=43
+[ChangeUnits] units_packed=12 omitted=31
+[ChangeUnits] coverage total=43 packed=12 omitted=31 source=43
+Running v4 review runtime...
+[Bundle] B-001 kind=source files=services/src/main/java/org/keycloak/services/resources/admin/permissions/AdminPermissions.java,services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java,services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissions.java,services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java,services/src/main/java/org/keycloak/services/resources/admin/permissions/MgmtPermissionsV2.java,services/src/main/java/org/keycloak/services/resources/admin/permissions/RolePermissions.java
+[Bundle] B-002 kind=source files=services/src/main/java/org/keycloak/services/resources/admin/permissions/UserPermissionEvaluator.java,services/src/main/java/org/keycloak/services/resources/admin/permissions/UserPermissions.java,services/src/main/java/org/keycloak/services/resources/admin/permissions/UserPermissionsV2.java
+[Bundle] B-003 kind=source files=rest/admin-ui-ext/src/main/java/org/keycloak/admin/ui/rest/BruteForceUsersResource.java,tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java,tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/RealmAdminPermissionsConfig.java,tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/UserResourceTypeEvaluationTest.java
+[Bundle] B-004 kind=source files=services/src/main/java/org/keycloak/services/resources/admin/GroupResource.java,services/src/main/java/org/keycloak/services/resources/admin/GroupsResource.java,services/src/main/java/org/keycloak/services/resources/admin/UsersResource.java
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 11.28s | Tokens: 
+0
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 1.29s | Tokens: 0
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 0.98s | Tokens: 0
+[OK] LLM Call BundleAgent | correctness_review | qwen2.5:7b | 1.16s | Tokens: 0
+[Execute] skip reason=flag_off
+[Sandbox] skip reason=flag_off
+[Coverage] packed=37 total=43 ratio=0.86 low=false (observational)
+[Review] Decision=MERGE reason=no_findings
+
+=== BUNDLES ===
+  B-001 kind=source 
+files=services/src/main/java/org/keycloak/services/resources/admin/permissions/
+AdminPermissions.java,services/src/main/java/org/keycloak/services/resources/ad
+min/permissions/GroupPermissionEvaluator.java,services/src/main/java/org/keyclo
+ak/services/resources/admin/permissions/GroupPermissions.java,services/src/main
+/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java
+,services/src/main/java/org/keycloak/services/resources/admin/permissions/MgmtP
+ermissionsV2.java,services/src/main/java/org/keycloak/services/resources/admin/
+permissions/RolePermissions.java
+  B-002 kind=source 
+files=services/src/main/java/org/keycloak/services/resources/admin/permissions/
+UserPermissionEvaluator.java,services/src/main/java/org/keycloak/services/resou
+rces/admin/permissions/UserPermissions.java,services/src/main/java/org/keycloak
+/services/resources/admin/permissions/UserPermissionsV2.java
+  B-003 kind=source 
+files=rest/admin-ui-ext/src/main/java/org/keycloak/admin/ui/rest/BruteForceUser
+sResource.java,tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/Gro
+upResourceTypeEvaluationTest.java,tests/base/src/test/java/org/keycloak/tests/a
+dmin/authz/fgap/RealmAdminPermissionsConfig.java,tests/base/src/test/java/org/k
+eycloak/tests/admin/authz/fgap/UserResourceTypeEvaluationTest.java
+  B-004 kind=source 
+files=services/src/main/java/org/keycloak/services/resources/admin/GroupResourc
+e.java,services/src/main/java/org/keycloak/services/resources/admin/GroupsResou
+rce.java,services/src/main/java/org/keycloak/services/resources/admin/UsersReso
+urce.java
+
+=== COMMENTS (VERIFIED_BUG) ===
+no kept defects
+
+=== DROPPED ===
+(none)
+
+=== SANDBOX ===
+skip reason=flag_off
+
+=== DECISION ===
+coverage packed=37 total=43 ratio=0.86 low=false
+Decision: MERGE
+reason=no_findings
+MERGE (no_findings) No validated findings.                                     
+[green]Review saved for keycloak/keycloak #37038[/green]
+[Benchmark] Wrote D:\CodeTurtle\benchmark\results\keycloak_keycloak_37038.json
+--dry-run mode (not posted)
+
+  warning: 3 .sql file(s) contributed nothing to the graph because a dependency is missing: tree_sitter_sql not installed. Install it with: pip install "graphifyy[sql]" (#1745)

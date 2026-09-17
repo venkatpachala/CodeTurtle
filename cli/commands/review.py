@@ -1,4 +1,5 @@
 import os
+import time
 from dataclasses import dataclass, field
 from typing import Any, List, Optional
 
@@ -130,7 +131,9 @@ class ReviewPipeline:
         comment: bool = False,
         config_path: str = "",
         show_uncertain: bool = False,
+        json_output: Optional[str] = None,
     ):
+        t0 = time.monotonic()
         try:
             from core.repo_config import (
                 RepoConfigError,
@@ -256,9 +259,13 @@ class ReviewPipeline:
             self._display_results()
             self._save_to_memory()
 
+            if json_output:
+                self._write_benchmark_json(json_output, elapsed=time.monotonic() - t0)
+
             posted = self._maybe_post(dry_run=dry_run, comment=comment)
             if posted is False:
                 raise SystemExit(1)
+            return self.context.final_state
 
         except _SkipReview as skip:
             console.print(f"[dim][Review] skip reason={skip.reason}[/dim]")
@@ -860,6 +867,66 @@ Description:
             summary=str(final.get("final_comment", ""))[:600],
         )
 
+    def _write_benchmark_json(self, json_path: str, elapsed: float = 0.0) -> None:
+        import json
+        from pathlib import Path
+        from benchmark.models import BenchmarkFinding, BenchmarkReview
+
+        final = self.context.final_state or {}
+        cov = final.get("review_coverage") or {}
+        kept = [
+            f for f in (final.get("validated_findings") or final.get("findings") or [])
+            if isinstance(f, dict) and str(f.get("verify_status") or "").lower() == "verified"
+        ]
+
+        review_comments = []
+        for f in kept:
+            title = str(f.get("title") or "")
+            claim = str(f.get("claim") or "")
+            body = f"{title}\n\n{claim}".strip() if claim else title
+            line_raw = f.get("line") or f.get("start_line")
+            try:
+                line = int(line_raw) if line_raw and int(line_raw) > 0 else None
+            except (ValueError, TypeError):
+                line = None
+            review_comments.append(
+                BenchmarkFinding(
+                    path=str(f.get("file") or ""),
+                    line=line,
+                    body=body,
+                )
+            )
+
+        repo = self.context.repo or ""
+        pr_number = self.context.number or 0
+        pr_url = f"https://github.com/{repo}/pull/{pr_number}" if repo and pr_number else ""
+
+        ratio = final.get("coverage_ratio")
+        try:
+            ratio_f = float(ratio) if ratio is not None else None
+        except (ValueError, TypeError):
+            ratio_f = None
+
+        review_data = BenchmarkReview(
+            tool="codeturtle",
+            pr_url=pr_url,
+            repo_name=repo,
+            model=getattr(settings, "ollama_model", "") or "qwen2.5:7b",
+            decision=str(final.get("recommendation") or "COMMENT"),
+            policy_reason=str(final.get("policy_reason") or ""),
+            latency_seconds=round(elapsed, 2),
+            coverage_total=int(cov.get("units_total") or 0),
+            coverage_packed=int(cov.get("units_packed") or 0),
+            coverage_ratio=ratio_f,
+            review_comments=review_comments,
+        )
+
+        out_path = Path(json_path).resolve()
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(review_data.to_dict(), indent=2), encoding="utf-8")
+        console.print(f"[dim][Benchmark] Wrote {out_path}[/dim]")
+
+
 
 def review(
     target: str = typer.Argument(
@@ -905,6 +972,11 @@ def review(
         "--show-uncertain",
         help="Print PLAUSIBLE_BUT_UNPROVEN drops. They never set Decision.",
     ),
+    json_output: Optional[str] = typer.Option(
+        None,
+        "--json-output",
+        help="Write structured review output to a JSON file.",
+    ),
 ):
     from core.cli_parse import parse_review_target
 
@@ -929,5 +1001,6 @@ def review(
         comment=comment,
         config_path=config_path or "",
         show_uncertain=show_uncertain,
+        json_output=json_output,
     )
       

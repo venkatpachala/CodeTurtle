@@ -1,0 +1,14 @@
+{
+  "tool": "codeturtle",
+  "pr_url": "https://github.com/getsentry/sentry/pull/93824",
+  "repo_name": "getsentry/sentry",
+  "model": "qwen2.5:7b",
+  "review_comments": [],
+  "latency_seconds": 1344.0,
+  "decision": "MERGE",
+  "policy_reason": "no_findings",
+  "coverage_total": 18,
+  "coverage_packed": 17,
+  "coverage_ratio": 0.9444444444444444,
+  "created_at": null
+}

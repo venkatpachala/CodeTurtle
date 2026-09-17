@@ -1,0 +1,14 @@
+{
+  "tool": "codeturtle",
+  "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/5",
+  "repo_name": "ai-code-review-evaluation/sentry-greptile",
+  "model": "qwen2.5-coder:3b-instruct",
+  "review_comments": [],
+  "latency_seconds": 11.0,
+  "decision": "MERGE",
+  "policy_reason": "no_findings",
+  "coverage_total": 326,
+  "coverage_packed": 49,
+  "coverage_ratio": 0.15030674846625766,
+  "created_at": null
+}
