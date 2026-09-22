@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+if TYPE_CHECKING:
+    from core.review.finding import ReviewFinding
 
 
 @dataclass
@@ -13,6 +16,7 @@ class Bundle:
     units: List[Any] = field(default_factory=list)
     symbols: List[str] = field(default_factory=list)
     kind: str = "source"
+    risk_signals: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         units = []
@@ -29,8 +33,8 @@ class Bundle:
             "units": units,
             "symbols": list(self.symbols),
             "kind": self.kind,
+            "risk_signals": [dict(signal) for signal in self.risk_signals],
         }
-
 
 @dataclass
 class Candidate:
@@ -54,6 +58,7 @@ class Candidate:
     source: str = "agent"  # agent | rule
     evidence_paths: List[str] = field(default_factory=list)
     kind: str = "defect"  # defect | note
+    risk_signals: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -133,7 +138,17 @@ class ReviewResult:
     coverage: Dict[str, Any] = field(default_factory=dict)
     execution: Dict[str, Any] = field(default_factory=dict)
 
+    # ── New canonical fields (Sprint 1) ──────────────────────────────────────
+    # findings is the authoritative list; comments is kept for backward compat.
+    findings: List["ReviewFinding"] = field(default_factory=list)
+    pipeline_trace: Optional[Any] = None
+    timing: Optional[Any] = None
+    agent_runs: List[Dict[str, Any]] = field(default_factory=list)
+    pipeline_health: Dict[str, Any] = field(default_factory=dict)
+
     def to_dict(self) -> Dict[str, Any]:
+        trace = self.pipeline_trace
+        timing = self.timing
         return {
             "decision": self.decision,
             "policy_reason": self.policy_reason,
@@ -142,4 +157,9 @@ class ReviewResult:
             "bundles": [b.to_dict() for b in self.bundles],
             "coverage": dict(self.coverage or {}),
             "execution": dict(self.execution or {}),
+            "findings": [f.to_dict() for f in self.findings] if self.findings else [],
+            "pipeline_trace": trace.to_list() if trace is not None and hasattr(trace, "to_list") else [],
+            "timing": timing.to_dict() if timing is not None and hasattr(timing, "to_dict") else {},
+            "agent_runs": list(self.agent_runs),
+            "pipeline_health": dict(self.pipeline_health),
         }

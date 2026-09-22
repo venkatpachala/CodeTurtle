@@ -47,6 +47,8 @@ def parse_agent_output(text: str) -> Tuple[str, Any]:
             return "tool", data
         if "candidates" in data and isinstance(data.get("candidates"), list):
             return "candidates", data.get("candidates") or []
+        if "hypotheses" in data and isinstance(data.get("hypotheses"), list):
+            return "candidates", data.get("hypotheses") or []
     return "invalid", None
 
 
@@ -63,19 +65,35 @@ def candidate_dict(raw: Any, *, bundle_id: str) -> Dict[str, Any] | None:
         start_line = int(raw.get("start_line") or 0)
     except (TypeError, ValueError):
         start_line = 0
-    evidence = raw.get("evidence_paths") or raw.get("evidence") or []
-    if isinstance(evidence, str):
-        evidence = [evidence]
-    paths = [str(p).replace("\\", "/") for p in evidence if p]
+    explicit_paths = raw.get("evidence_paths") or []
+    if isinstance(explicit_paths, str):
+        explicit_paths = [explicit_paths]
+    raw_evidence = raw.get("evidence") or []
+    if isinstance(raw_evidence, str):
+        raw_evidence = [raw_evidence]
+
+    def _path_like(value: Any) -> bool:
+        text = str(value or "").strip().replace("\\", "/")
+        if not text or len(text) > 260 or any(c in text for c in ("\n", "\r", "\t")):
+            return False
+        if " " in text:
+            return False
+        return text == file or "/" in text or bool(re.search(r"\.[A-Za-z0-9]{1,8}$", text))
+
+    paths = [
+        str(p).replace("\\", "/")
+        for p in [*explicit_paths, *raw_evidence]
+        if _path_like(p)
+    ]
+    if file not in paths:
+        paths.insert(0, file)
     title = str(raw.get("title") or raw.get("claim") or "").strip()
     claim = str(raw.get("claim") or raw.get("title") or "").strip()
     kind = classify_kind(title, claim, str(raw.get("kind") or "") or None)
     path_syms = raw.get("execution_path") or []
     if isinstance(path_syms, str):
         path_syms = [s.strip() for s in path_syms.split(",") if s.strip()]
-    evidence = raw.get("evidence") or paths
-    if isinstance(evidence, str):
-        evidence = [evidence]
+    evidence = list(paths)
     try:
         confidence = float(raw.get("confidence") if raw.get("confidence") is not None else 0.5)
     except (TypeError, ValueError):
@@ -92,13 +110,19 @@ def candidate_dict(raw: Any, *, bundle_id: str) -> Dict[str, Any] | None:
         "violating_condition": str(raw.get("violating_condition") or "").strip(),
         "expected": str(raw.get("expected") or "").strip(),
         "actual": str(raw.get("actual") or "").strip(),
-        "execution_path": [str(s).strip() for s in path_syms if s],
-        "evidence": [str(p).replace("\\", "/") for p in evidence if p],
+        "execution_path": [_normalize_symbol(s) for s in path_syms if _normalize_symbol(s)],
+        "evidence": evidence,
         "counter_evidence": [],
         "verify_status": str(raw.get("verify_status") or "candidate"),
         "severity": str(raw.get("severity") or "medium"),
         "confidence": confidence,
         "source": source,
-        "evidence_paths": paths or [str(p).replace("\\", "/") for p in evidence if p],
+        "evidence_paths": paths,
         "kind": kind,
     }
+
+
+def _normalize_symbol(value: Any) -> str:
+    text = str(value or "").strip().strip("`")
+    match = re.search(r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*", text)
+    return match.group(0) if match else ""

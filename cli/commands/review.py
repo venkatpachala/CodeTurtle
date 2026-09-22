@@ -45,7 +45,6 @@ def _warn_if_ollama_model_missing(name: str) -> None:
         "In PowerShell: Remove-Item Env:OLLAMA_MODEL[/dim]"
     )
 
-
 class _SkipReview(Exception):
     def __init__(self, reason: str):
         super().__init__(reason)
@@ -212,18 +211,29 @@ class ReviewPipeline:
 
             from core.ci import resolve_github_token
             from core.repository_knowledge.paths import resolve_repo_dir
-            from core.workspace import WorkspaceError, ensure_workspace
+            from core.workspace import WorkspaceError, ensure_checkout, ensure_index
 
             token = resolve_github_token(fallback=str(settings.github_token or ""))
             self._fetch_pr()
             try:
-                graph = ensure_workspace(
+                checkout = ensure_checkout(
                     repo,
                     number,
                     token=token,
                     head_sha=self.context.pr_head_sha or "",
                 )
-                print(f"[Workspace] graph={graph}")
+                print(f"[Workspace] checkout={checkout}")
+                if bool(getattr(settings, "graphify_enabled", False)):
+                    try:
+                        graph = ensure_index(repo)
+                        print(f"[Workspace] graph={graph}")
+                    except WorkspaceError as graph_exc:
+                        console.print(
+                            "[yellow][Workspace] Graphify unavailable; continuing "
+                            f"with diff evidence: {graph_exc}[/yellow]"
+                        )
+                else:
+                    print("[Workspace] graphify=disabled")
             except WorkspaceError as exc:
                 console.print(f"[red]{exc}[/red]")
                 raise SystemExit(1) from exc
@@ -249,14 +259,34 @@ class ReviewPipeline:
                 self.context.final_state = review_graph.invoke(self.context.state)
             else:
                 from core.runtime.review_runtime import ReviewRuntime, result_to_review_state
+                from core.gateway.gateway import AIGateway
+
+                verification_gateway = AIGateway()
+
+                def _verification_llm(prompt: str) -> str:
+                    response = verification_gateway.generate(
+                        prompt=prompt,
+                        capability="correctness_review",
+                        agent_name="FindingVerifier",
+                        temperature=0.0,
+                        max_tokens=96,
+                        retries=1,
+                    )
+                    return str(getattr(response, "content", None) or "")
 
                 console.print("[yellow]Running v4 review runtime...[/yellow]")
-                result = ReviewRuntime().run(self.context)
+                result = ReviewRuntime(verification_llm=_verification_llm).run(self.context)
                 self.context.final_state = result_to_review_state(result, self.context)
+                # Inject raw ReviewResult so _write_benchmark_json can use ReviewFinding directly
+                if self.context.final_state is not None:
+                    self.context.final_state["_review_result"] = result
             self._write_eval_snapshot()
 
             self._add_langfuse_metadata()
             self._display_results()
+            if runtime != "legacy":
+                from core.output.terminal import render_findings_terminal
+                render_findings_terminal(result.findings, console=console)
             self._save_to_memory()
 
             if json_output:
@@ -833,6 +863,19 @@ Description:
             console.print("[dim]--dry-run mode (not posted)[/dim]")
             return None
 
+        # v4 has a single canonical output model.  Do not reconstruct inline
+        # comments from legacy dicts when the ReviewResult is available.
+        raw_result = (self.context.final_state or {}).get("_review_result")
+        if raw_result is not None and hasattr(raw_result, "findings"):
+            from core.output.github_review import publish_review
+            comments = publish_review(
+                self.context.pr, raw_result.findings, dry_run=False,
+                decision=raw_result.decision,
+                summary=str((self.context.final_state or {}).get("final_comment") or ""),
+            )
+            console.print(f"[green][GitHub] posted inlines={len(comments)}[/green]")
+            return True
+
         state = dict(self.context.final_state or {})
         if self.context.pr_facts and not state.get("pr_facts"):
             state["pr_facts"] = self.context.pr_facts
@@ -870,62 +913,54 @@ Description:
     def _write_benchmark_json(self, json_path: str, elapsed: float = 0.0) -> None:
         import json
         from pathlib import Path
-        from benchmark.models import BenchmarkFinding, BenchmarkReview
+        from benchmark.adapter import review_result_to_benchmark_review, review_state_to_benchmark_review
 
         final = self.context.final_state or {}
-        cov = final.get("review_coverage") or {}
-        kept = [
-            f for f in (final.get("validated_findings") or final.get("findings") or [])
-            if isinstance(f, dict) and str(f.get("verify_status") or "").lower() == "verified"
-        ]
-
-        review_comments = []
-        for f in kept:
-            title = str(f.get("title") or "")
-            claim = str(f.get("claim") or "")
-            body = f"{title}\n\n{claim}".strip() if claim else title
-            line_raw = f.get("line") or f.get("start_line")
-            try:
-                line = int(line_raw) if line_raw and int(line_raw) > 0 else None
-            except (ValueError, TypeError):
-                line = None
-            review_comments.append(
-                BenchmarkFinding(
-                    path=str(f.get("file") or ""),
-                    line=line,
-                    body=body,
-                )
-            )
-
         repo = self.context.repo or ""
-        pr_number = self.context.number or 0
-        pr_url = f"https://github.com/{repo}/pull/{pr_number}" if repo and pr_number else ""
+        number = self.context.number or 0
+        model, _ = _ollama_model_and_source()
 
-        ratio = final.get("coverage_ratio")
-        try:
-            ratio_f = float(ratio) if ratio is not None else None
-        except (ValueError, TypeError):
-            ratio_f = None
-
-        review_data = BenchmarkReview(
-            tool="codeturtle",
-            pr_url=pr_url,
-            repo_name=repo,
-            model=getattr(settings, "ollama_model", "") or "qwen2.5:7b",
-            decision=str(final.get("recommendation") or "COMMENT"),
-            policy_reason=str(final.get("policy_reason") or ""),
-            latency_seconds=round(elapsed, 2),
-            coverage_total=int(cov.get("units_total") or 0),
-            coverage_packed=int(cov.get("units_packed") or 0),
-            coverage_ratio=ratio_f,
-            review_comments=review_comments,
-        )
+        # Canonical path: use ReviewResult.findings (List[ReviewFinding]) if available
+        review_result = final.get("_review_result")
+        if review_result is not None and hasattr(review_result, "findings"):
+            review_data = review_result_to_benchmark_review(
+                review_result,
+                repo=repo,
+                number=number,
+                elapsed=elapsed,
+                model=model or "qwen2.5:7b",
+            )
+        else:
+            # Legacy path: build from final_state dict (updated adapter no longer filters to verified-only)
+            review_data = review_state_to_benchmark_review(
+                final,
+                elapsed=elapsed,
+                model=model or "qwen2.5:7b",
+            )
 
         out_path = Path(json_path).resolve()
         out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(json.dumps(review_data.to_dict(), indent=2), encoding="utf-8")
+        payload = review_data.to_dict()
+        # Retain the established top-level review_comments schema while also
+        # exposing canonical v4 findings and diagnostics for benchmark runs.
+        if review_result is not None:
+            payload["findings"] = [f.to_dict() for f in (review_result.findings or [])]
+            trace = getattr(review_result, "pipeline_trace", None)
+            timing = getattr(review_result, "timing", None)
+            payload["pipeline_trace"] = trace.to_list() if hasattr(trace, "to_list") else []
+            payload["agent_runs"] = list(getattr(review_result, "agent_runs", []) or [])
+            payload["pipeline_health"] = dict(getattr(review_result, "pipeline_health", {}) or {})
+            trace_summary = trace.summary() if hasattr(trace, "summary") else {}
+            payload["telemetry"] = {
+                "timing": timing.to_dict() if hasattr(timing, "to_dict") else {},
+                "agent_runs": list(getattr(review_result, "agent_runs", []) or []),
+                "pipeline_health": dict(getattr(review_result, "pipeline_health", {}) or {}),
+                "candidate_count": int(trace_summary.get("total_candidates") or 0),
+                "verified_count": int(trace_summary.get("final_findings") or 0),
+                "drop_reasons": dict(trace_summary.get("drop_reasons") or {}),
+            }
+        out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         console.print(f"[dim][Benchmark] Wrote {out_path}[/dim]")
-
 
 
 def review(
@@ -1003,4 +1038,3 @@ def review(
         show_uncertain=show_uncertain,
         json_output=json_output,
     )
-      

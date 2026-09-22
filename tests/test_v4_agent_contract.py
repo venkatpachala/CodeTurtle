@@ -50,6 +50,13 @@ def _cand(**kwargs) -> Candidate:
 
 
 class TestClassifyKind(unittest.TestCase):
+    def test_high_confidence_conditional_language_is_not_auto_rejected(self):
+        from core.agent.contract import is_hedge
+
+        self.assertFalse(is_hedge("Upload may fail above configured limit", confidence=0.9))
+        self.assertTrue(is_hedge("Upload may fail above configured limit", confidence=0.5))
+        self.assertTrue(is_hedge("Potential upload failure", confidence=0.99))
+
     def test_changelog_add_parameter_is_note(self):
         self.assertEqual(
             classify_kind("Add regrade parameter to foo", "added a flag"),

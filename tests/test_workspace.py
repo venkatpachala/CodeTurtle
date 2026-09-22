@@ -129,6 +129,29 @@ class TestEnsureIndex(unittest.TestCase):
 
 
 class TestCheckoutSha(unittest.TestCase):
+    def test_checkout_only_does_not_run_graphify(self):
+        from core.workspace import ensure_checkout
+
+        with tempfile.TemporaryDirectory() as td:
+            home = Path(td)
+            dest = home / "repos" / "owner_repo"
+            calls = []
+
+            def run(argv, **kwargs):
+                calls.append(list(argv))
+                if argv[:1] == ["git"] and "clone" in argv:
+                    dest.mkdir(parents=True, exist_ok=True)
+                    (dest / ".git").mkdir(exist_ok=True)
+                if argv[:1] == ["git"] and "rev-parse" in argv:
+                    return _Proc(stdout="abc123\n")
+                return _Proc()
+
+            with patch.dict(os.environ, {"CODETURTLE_HOME": str(home)}, clear=False):
+                os.environ.pop("CODETURTLE_REPOS_ROOT", None)
+                checked_out = ensure_checkout("owner/repo", run=run)
+            self.assertEqual(checked_out, dest)
+            self.assertFalse(any("graphify" in " ".join(call) or "extract" in call for call in calls))
+
     def test_fetch_checkout_when_head_differs(self):
         from core.workspace import checkout_sha, ensure_workspace
 

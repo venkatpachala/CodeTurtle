@@ -236,7 +236,7 @@ def ensure_index(
     argv = _graphify_argv(dest)
     print(f"[Workspace] graphify {' '.join(argv[1:])}")
     try:
-        run(argv, check=True, capture_output=False, timeout=1800, cwd=str(dest))
+        run(argv, check=True, capture_output=False, timeout=3600, cwd=str(dest))
     except FileNotFoundError as exc:
         raise WorkspaceError(
             "Graphify is not on PATH. Reinstall with: "
@@ -270,3 +270,22 @@ def ensure_workspace(
     dest = ensure_clone(repo, run=run, token=token)
     checkout_sha(dest, head_sha, number=number, run=run)
     return ensure_index(repo, run=run, force=force_index)
+
+
+def ensure_checkout(
+    repo: str,
+    number: int = 0,
+    *,
+    run: Optional[RunFn] = None,
+    token: str = "",
+    head_sha: str = "",
+) -> Path:
+    """Clone/update and checkout a PR without requiring Graphify.
+
+    Structural indexing is an optional evidence enhancement. A missing or
+    failed graph must not make the diff/source reviewer unavailable.
+    """
+    run = run or _run_default
+    dest = ensure_clone(repo, run=run, token=token)
+    checkout_sha(dest, head_sha, number=number, run=run)
+    return dest

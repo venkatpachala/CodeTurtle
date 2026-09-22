@@ -35,6 +35,7 @@ STOPWORDS = {
 
 _TEST_FOR_RE = re.compile(r"(?i)test for")
 _TOKEN_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+_GROUND_TOKEN_RE = re.compile(r"[A-Za-z0-9_]+")
 
 
 def _is_test_path(path: str) -> bool:
@@ -93,6 +94,20 @@ def _distinctive_tokens(text: str) -> List[str]:
             continue
         seen.add(low)
         out.append(tok)
+    return out
+
+
+def _grounding_tokens(text: str) -> Set[str]:
+    """Tokens suitable for tying an exact code quote to the stated defect."""
+    out: Set[str] = set()
+    for token in _GROUND_TOKEN_RE.findall(text or ""):
+        low = token.lower()
+        if low in STOPWORDS:
+            continue
+        # Preserve compact literals such as 10MB; otherwise require enough
+        # characters to avoid accepting punctuation and language keywords.
+        if any(ch.isdigit() for ch in low) or len(low) >= 4:
+            out.add(low)
     return out
 
 
@@ -166,5 +181,21 @@ def reflect_candidate(
     hits = [t for t in tokens if t.lower() in blob_l]
     if len(hits) >= 2:
         return True, "token_overlap"
+
+    # The proof stage must quote ``existing_code`` from an added line.  Accept
+    # that strong anchor when at least one substantive identifier or literal
+    # also occurs in the defect statement.  This handles code/prose forms such
+    # as ``maxSizeKB`` and "10MB" without allowing unrelated boilerplate.
+    existing = " ".join((candidate.existing_code or "").split()).lstrip("+-").strip()
+    normalized_blob = " ".join(blob.split())
+    # Require the user-facing defect statement itself to connect to the code;
+    # invariant/actual fields are easier for a model to fill generically.
+    statement = f"{candidate.title or ''} {candidate.claim or ''}"
+    if (
+        existing
+        and existing in normalized_blob
+        and (_grounding_tokens(existing) & _grounding_tokens(statement))
+    ):
+        return True, "snippet_in_hunk"
 
     return _drop("stopword_only")

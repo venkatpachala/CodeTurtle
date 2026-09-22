@@ -76,6 +76,115 @@ class TestVerifyLoop(unittest.TestCase):
         self.assertEqual(len(kept), 1)
         self.assertEqual(kept[0].verify_status, "verified")
 
+    def test_falsifier_receives_removed_lines_as_regression_evidence(self):
+        diff = (
+            f"diff --git a/{LOADER} b/{LOADER}\n"
+            f"--- a/{LOADER}\n+++ b/{LOADER}\n"
+            "@@ -1,2 +1,2 @@\n"
+            "-max_size = resolve_upload_limit()\n"
+            "+max_size = calculate_upload_limit()\n"
+        )
+        prompts = []
+        candidate = _cand(
+            existing_code="max_size = calculate_upload_limit()",
+            title="Replacement loses the upload guard",
+            claim="The old upload guard no longer runs",
+            invariant="the upload guard must run",
+            violating_condition="the replacement returns an unchecked value",
+            expected="call resolve_upload_limit",
+            actual="call calculate_upload_limit",
+        )
+        kept, _ = verify_candidates(
+            [candidate],
+            index=build_diff_index(diff),
+            bundles=[self.bundle],
+            llm=lambda prompt: prompts.append(prompt) or "VERIFIED",
+        )
+        self.assertEqual(len(kept), 1)
+        self.assertIn("resolve_upload_limit", prompts[0])
+
+    def test_settings_lookup_replaced_by_literal_is_source_verified(self):
+        diff = (
+            f"diff --git a/{LOADER} b/{LOADER}\n"
+            f"--- a/{LOADER}\n+++ b/{LOADER}\n"
+            "@@ -1,2 +1,2 @@\n"
+            "-max_size = Discourse.SiteSettings.max_upload_size\n"
+            "+max_size = 10 * 1024\n"
+        )
+        candidate = _cand(
+            existing_code="max_size = 10 * 1024",
+            title="Hardcoded upload limit ignores settings",
+            claim="The client no longer uses the configured upload limit",
+            invariant="client and server settings must agree",
+            violating_condition="configured limit differs from 10MB",
+            expected="use settings.max_upload_size",
+            actual="always use 10MB",
+        )
+        kept, dropped = verify_candidates(
+            [candidate],
+            index=build_diff_index(diff),
+            bundles=[self.bundle],
+            llm=lambda _prompt: "DISPROVED",
+        )
+        self.assertEqual(len(kept), 1)
+        self.assertEqual(dropped, [])
+        self.assertEqual(kept[0].severity, "low")
+
+    def test_duplicate_definition_signal_is_source_verified(self):
+        candidate = _cand(
+            symbol="self.downsize",
+            title="Later downsize definition changes arity",
+            claim="The second Ruby definition overrides the prior signature",
+            existing_code="def self.downsize(from, to, dimensions, opts={})",
+            invariant="callers must retain the accepted arity",
+            violating_condition="a later definition replaces a four-argument overload",
+            execution_path=["caller", "self.downsize"],
+            risk_signals=[{
+                "kind": "duplicate_definition", "symbol": "self.downsize",
+                "evidence": [
+                    "app/models/x.rb:10: def self.downsize(from, to, width, height, opts={})",
+                    "app/models/x.rb:20: def self.downsize(from, to, dimensions, opts={})",
+                ],
+            }],
+        )
+        diff = (
+            f"diff --git a/{LOADER} b/{LOADER}\n--- a/{LOADER}\n+++ b/{LOADER}\n"
+            "@@ -1,1 +1,2 @@\n+def self.downsize(from, to, dimensions, opts={})\n+end\n"
+        )
+        kept, dropped = verify_candidates(
+            [candidate], index=build_diff_index(diff), bundles=[self.bundle], llm=lambda _: "DISPROVED"
+        )
+        self.assertEqual(len(kept), 1)
+        self.assertEqual(dropped, [])
+        self.assertEqual(kept[0].severity, "medium")
+
+    def test_versioned_external_cli_contract_is_verified(self):
+        candidate = _cand(
+            symbol="OptimizedImage.downsize",
+            title="Animated resize passes invalid geometry",
+            claim="The changed call sends 80% to gifsicle --resize-fit",
+            existing_code='OptimizedImage.downsize(tempfile.path, tempfile.path, "80%", allow_animation: true)',
+            invariant="gifsicle receives WxH geometry",
+            violating_condition="animated input reaches --resize-fit with a percentage",
+            execution_path=["create_upload", "OptimizedImage.downsize"],
+            risk_signals=[{
+                "kind": "cross_file_argument_contract", "symbol": "OptimizedImage.downsize",
+                "evidence": [
+                    "changed call passes 80%", "animated path invokes gifsicle --resize-fit",
+                    "known_cli_contract: gifsicle --resize-fit expects widthxheight",
+                ],
+            }],
+        )
+        diff = (
+            f"diff --git a/{LOADER} b/{LOADER}\n--- a/{LOADER}\n+++ b/{LOADER}\n"
+            '@@ -1,1 +1,2 @@\n+OptimizedImage.downsize(tempfile.path, tempfile.path, "80%", allow_animation: true)\n'
+        )
+        kept, dropped = verify_candidates(
+            [candidate], index=build_diff_index(diff), bundles=[self.bundle], llm=lambda _: "DISPROVED"
+        )
+        self.assertEqual(len(kept), 1)
+        self.assertEqual(dropped, [])
+
     def test_falsify_disproved_drops(self):
         kept, dropped = verify_candidates(
             [_cand()],

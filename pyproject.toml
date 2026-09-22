@@ -57,6 +57,15 @@ codeturtle = "cli.main:app"
 Homepage = "https://github.com/venkatpachala/CodeTurtle"
 Repository = "https://github.com/venkatpachala/CodeTurtle"
 
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = ["repos", ".git", ".venv", "benchmark/runs"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["cli", "core"]
 

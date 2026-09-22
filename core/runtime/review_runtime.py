@@ -11,6 +11,17 @@ from core.graphctx.symbols import is_valid_symbol, symbols_from_units
 from core.positioner import position_candidate
 from core.pr_facts import build_pr_facts, normalize_path
 from core.reflector import reflect_candidate
+from core.review.finding import ReviewFinding
+from core.review.trace import (
+    PipelineTrace,
+    STAGE_CLASSIFY,
+    STAGE_PROOF,
+    STAGE_REFLECTOR,
+    STAGE_POSITIONER,
+    STAGE_VERIFIER,
+    STAGE_FINAL,
+)
+from core.review.timing import TimingRecord, timed
 from core.runtime.models import Bundle, Candidate, Comment, ReviewResult, comment_from_candidate
 from core.verification.diff_index import DiffIndex, build_diff_index
 from core.verification.execute import is_pytest_file
@@ -96,7 +107,11 @@ def result_to_review_state(result: ReviewResult, context: Any = None) -> Dict[st
     ctx = context
     facts = dict(getattr(ctx, "pr_facts", None) or {})
     files = list(getattr(ctx, "files_changed", None) or facts.get("files_changed") or [])
-    findings = [_finding_from_comment(c) for c in (result.comments or [])]
+    # Findings are canonical; the legacy dictionaries remain only for callers
+    # that have not yet migrated off ``validated_findings``.
+    findings = [f.to_dict() for f in (getattr(result, "findings", None) or [])]
+    if not findings:
+        findings = [_finding_from_comment(c) for c in (result.comments or [])]
     pr = getattr(ctx, "pr", None)
     title = ""
     body = ""
@@ -162,6 +177,18 @@ def result_to_review_state(result: ReviewResult, context: Any = None) -> Dict[st
         "ignore_paths": list(getattr(repo_cfg, "ignore_paths", None) or []) if repo_cfg else [],
         "runtime": "v4",
         "execution_report": dict(result.execution or {}),
+        "pipeline_trace": (
+            result.pipeline_trace.to_list()
+            if getattr(result, "pipeline_trace", None) is not None
+            and hasattr(result.pipeline_trace, "to_list") else []
+        ),
+        "timing": (
+            result.timing.to_dict()
+            if getattr(result, "timing", None) is not None
+            and hasattr(result.timing, "to_dict") else {}
+        ),
+        "agent_runs": list(getattr(result, "agent_runs", None) or []),
+        "pipeline_health": dict(getattr(result, "pipeline_health", None) or {}),
         "execute_tests": bool(getattr(ctx, "execute_tests", False)),
         "execute_install": bool(getattr(ctx, "execute_install", False)),
     }
@@ -183,11 +210,15 @@ class ReviewRuntime:
         self,
         *,
         llm: Optional[Callable[[str], str]] = None,
+        verification_llm: Optional[Callable[[str], str]] = None,
         graphify_client: Any = None,
         rule_engine: Optional[Callable[..., List[Candidate]]] = None,
         agent: Any = None,
     ):
         self.llm = llm
+        # Kept separate because verification uses a tiny classification call,
+        # while BundleAgent requires a much larger completion budget.
+        self.verification_llm = verification_llm
         self.graphify_client = graphify_client
         self.rule_engine = rule_engine
         self.agent = agent
@@ -241,16 +272,23 @@ class ReviewRuntime:
         except Exception:
             return []
 
-    def _agent_candidates(self, bundle: Bundle, tools: Any) -> List[Candidate]:
+    def _agent_candidates(self, bundle: Bundle, tools: Any) -> tuple[List[Candidate], Dict[str, Any]]:
         agent = self.agent
         if agent is None:
             from core.agent.bundle_agent import BundleAgent
 
             agent = BundleAgent(llm=self.llm)
         try:
-            return list(agent.run(bundle, tools) or [])
-        except Exception:
-            return []
+            if hasattr(agent, "run_result"):
+                result = agent.run_result(bundle, tools)
+                record = result.to_dict() if hasattr(result, "to_dict") else dict(result)
+                record["bundle_id"] = bundle.id
+                return list(getattr(result, "candidates", []) or []), record
+            candidates = list(agent.run(bundle, tools) or [])
+            return candidates, {"bundle_id": bundle.id, "status": "LEGACY", "candidate_count": len(candidates)}
+        except Exception as exc:
+            return [], {"bundle_id": bundle.id, "status": "EXCEPTION", "candidate_count": 0,
+                        "exception": f"{type(exc).__name__}: {exc}"}
 
     def run(
         self,
@@ -336,13 +374,29 @@ class ReviewRuntime:
             except Exception:
                 repo_dir = ""
 
+        from core.analysis.risk_signals import (
+            analyze_risk_signals, attach_signals_to_bundles, attach_signals_to_candidates,
+        )
+        risk_signals = analyze_risk_signals(
+            repo_dir=repo_dir,
+            files_changed=files,
+            index=index,
+        )
+        attach_signals_to_bundles(bundles, risk_signals)
+        if risk_signals:
+            print(f"[RiskSignals] n={len(risk_signals)} kinds={[signal.kind for signal in risk_signals]}")
+
         from core.agent.tools import BundleTools
         from core.agent.bundle_agent import BundleAgent
 
         if self.agent is None:
             self.agent = BundleAgent(llm=self.llm, max_steps=agent_steps)
 
+        trace = PipelineTrace()
+        timing = TimingRecord()
+
         candidates: List[Candidate] = []
+        agent_runs: List[Dict[str, Any]] = []
         candidates.extend(
             self._rules(bundles, files, full_diff=diff, repo_dir=repo_dir)
         )
@@ -352,75 +406,134 @@ class ReviewRuntime:
                 for s in (symbols_from_units(bundle.units, bundle.paths) or list(bundle.symbols))
                 if is_valid_symbol(s)
             ]
-            tools = BundleTools(bundle, index=index, client=client)
-            candidates.extend(self._agent_candidates(bundle, tools))
+            tools = BundleTools(bundle, index=index, client=client, repo_dir=repo_dir or None)
+            with timed(timing, "bundle_agent"):
+                bundle_candidates, agent_record = self._agent_candidates(bundle, tools)
+                candidates.extend(bundle_candidates)
+                agent_runs.append(agent_record)
+
+        attach_signals_to_candidates(candidates, risk_signals, index)
 
         comments: List[Comment] = []
         dropped: List[Dict[str, Any]] = []
         survivors: List[tuple] = []
         for cand in candidates:
+            cid = trace.next_candidate_id()
+            # Store candidate_id on the candidate for later correlation
+            try:
+                object.__setattr__(cand, "_candidate_id", cid)
+            except Exception:
+                pass
+
             kind = classify_kind(cand.title, cand.claim, getattr(cand, "kind", None))
             cand.kind = kind
             if kind != "defect":
                 dropped.append({**cand.to_dict(), "drop_reason": "note"})
+                trace.drop(cid, STAGE_CLASSIFY, "note", cand)
                 print(
                     f"[Reflector] DROP reason=note file={cand.file} title={cand.title!r}"
                 )
                 continue
-            if not proof_complete(cand.to_dict()):
-                dropped.append({**cand.to_dict(), "drop_reason": "incomplete_proof"})
-                print(
-                    f"[Reflector] DROP reason=incomplete_proof file={cand.file} title={cand.title!r}"
+            with timed(timing, "reflect"):
+                if not proof_complete(cand.to_dict()):
+                    dropped.append({**cand.to_dict(), "drop_reason": "incomplete_proof"})
+                    trace.drop(cid, STAGE_PROOF, "incomplete_proof", cand)
+                    print(
+                        f"[Reflector] DROP reason=incomplete_proof file={cand.file} title={cand.title!r}"
+                    )
+                    continue
+                line = position_candidate(cand, index)
+                own_paths = next(
+                    (list(b.paths or []) for b in bundles if b.id == cand.bundle_id),
+                    None,
                 )
-                continue
-            line = position_candidate(cand, index)
-            own_paths = next(
-                (list(b.paths or []) for b in bundles if b.id == cand.bundle_id),
-                None,
-            )
-            keep, reason = reflect_candidate(
-                cand,
-                files_changed=files,
-                index=index,
-                line=line,
-                bundle_paths=own_paths,
-            )
-            if not keep or not line:
-                dropped.append({**cand.to_dict(), "drop_reason": reason if not keep else "no_line"})
-                continue
+                keep, reason = reflect_candidate(
+                    cand,
+                    files_changed=files,
+                    index=index,
+                    line=line,
+                    bundle_paths=own_paths,
+                )
+                if not keep or not line:
+                    drop_r = reason if not keep else "no_line"
+                    dropped.append({**cand.to_dict(), "drop_reason": drop_r})
+                    stage = STAGE_POSITIONER if (not line) else STAGE_REFLECTOR
+                    trace.drop(cid, stage, drop_r, cand)
+                    continue
+            trace.keep(cid, STAGE_REFLECTOR, cand, line)
             survivors.append((cand, line))
 
         from core.runtime.verify_loop import verify_candidates
 
-        verified_cands, vdrop = verify_candidates(
-            [c for c, _ in survivors],
-            index=index,
-            bundles=bundles,
-            client=client,
-            llm=self.llm,
-        )
+        with timed(timing, "verify"):
+            verified_cands, vdrop = verify_candidates(
+                [c for c, _ in survivors],
+                index=index,
+                bundles=bundles,
+                client=client,
+                llm=self.verification_llm or self.llm,
+            )
+        # Record verifier drops with trace
+        for vd in vdrop:
+            dr = vd.get("drop_reason", "verifier_drop") if isinstance(vd, dict) else "verifier_drop"
+            file_ = vd.get("file", "") if isinstance(vd, dict) else ""
+            title_ = vd.get("title", "") if isinstance(vd, dict) else ""
+            # Best-effort: match by file+title to candidate_id
+            matching_cid = next(
+                (
+                    getattr(c, "_candidate_id", "?")
+                    for c, _ in survivors
+                    if getattr(c, "file", "") == file_ and getattr(c, "title", "") == title_
+                ),
+                "?",
+            )
+            trace.record(matching_cid, STAGE_VERIFIER, "dropped", file=file_, title=title_, drop_reason=dr)
         dropped.extend(vdrop)
+
         line_by_id = {id(c): ln for c, ln in survivors}
         comments = []
+        review_findings: List[ReviewFinding] = []
+        finding_counter = 0
         for cand in verified_cands:
             ln = position_candidate(cand, index)
             if ln is None:
                 ln = line_by_id.get(id(cand))
             if not ln:
+                cid = getattr(cand, "_candidate_id", "?")
                 dropped.append({**cand.to_dict(), "drop_reason": "no_line"})
+                trace.drop(cid, STAGE_POSITIONER, "no_line", cand)
                 continue
+            # Build canonical Comment (backward compat)
             comments.append(comment_from_candidate(cand, int(ln)))
+            # Build canonical ReviewFinding (new path)
+            finding_counter += 1
+            fid = f"F-{finding_counter:03d}"
+            cid = getattr(cand, "_candidate_id", "?")
+            rf = ReviewFinding.from_candidate_and_comment(cand, int(ln), finding_id=fid, candidate_id=cid)
+            trace.keep(cid, STAGE_FINAL, cand, int(ln))
+            review_findings.append(rf)
 
         coverage = _coverage_from_units(units, bundles)
         findings = [_finding_from_comment(c) for c in comments]
         bundle_tests = _bundle_test_paths(bundles)
+
+        # Attach related tests to both legacy dict and ReviewFinding
         for f in findings:
-            f["related_tests"] = [
+            related = [
                 p
                 for b in bundles
                 if normalize_path(str(f.get("file") or "")) in [
                     normalize_path(x) for x in b.paths
                 ]
+                for p in b.paths
+                if is_pytest_file(p)
+            ]
+            f["related_tests"] = related
+        for rf in review_findings:
+            rf.related_tests = [
+                p
+                for b in bundles
+                if normalize_path(rf.file) in [normalize_path(x) for x in b.paths]
                 for p in b.paths
                 if is_pytest_file(p)
             ]
@@ -439,59 +552,58 @@ class ReviewRuntime:
         }
         from core.verification.execute import execute_tests_node
 
-        try:
-            ex_out = execute_tests_node(exec_state)
-        except Exception:
-            ex_out = {
-                "execution_report": {
-                    "skipped": True,
-                    "skip_reason": "checkout_failed",
+        with timed(timing, "sandbox"):
+            try:
+                ex_out = execute_tests_node(exec_state)
+            except Exception:
+                ex_out = {
+                    "execution_report": {
+                        "skipped": True,
+                        "skip_reason": "checkout_failed",
+                    }
                 }
-            }
         execution = dict(ex_out.get("execution_report") or {})
         if ex_out.get("validated_findings"):
             findings = list(ex_out.get("validated_findings") or findings)
-        tests_ran = (
-            not execution.get("skipped")
-            and int(execution.get("failed") or 0) == 0
-            and execution.get("exit_code") in (0, None)
-        )
-        tests_failed = (not execution.get("skipped")) and (
-            int(execution.get("failed") or 0) > 0
-            or execution.get("exit_code") not in (None, 0)
-        )
-        for f in findings:
-            if tests_ran:
-                f["tests_run"] = True
-                f["tests_passed"] = True
-            if tests_failed:
-                f["tests_run"] = True
-        if tests_ran:
-            kept_findings = []
-            for f in findings:
-                blob = f"{f.get('title') or ''} {f.get('claim') or ''}".lower()
-                if "test" in blob and (
-                    "missing" in blob or "no test" in blob or "add test" in blob
-                ):
-                    dropped.append({**f, "drop_reason": "tests_passed"})
-                    continue
-                kept_findings.append(f)
-            findings = kept_findings
-            titles = {(f.get("file"), f.get("title")) for f in findings}
-            comments = [c for c in comments if (c.file, c.title) in titles]
-            for c in comments:
-                c.tests_run = True
+        # Execution is evidence, never a finding filter.  In particular, a
+        # green suite does not disprove a missing-test or behavioural finding.
+        from core.review.finding import ExecutionEvidence
+        evidence = _execution_evidence(execution)
+        for rf in review_findings:
+            rf.execution = evidence
+            trace.keep(rf.candidate_id or "?", "sandbox", None, rf.line)
+        for comment in comments:
+            comment.tests_run = evidence.status not in ("NOT_RUN", "SKIPPED")
         _log_sandbox(execution)
 
-        decision, policy_reason = decide(
-            findings,
-            classification=classif,
-            coverage=coverage,
-            files_changed=files,
-            execution=execution,
-        )
+        with timed(timing, "policy"):
+            decision, policy_reason = decide(
+                findings,
+                classification=classif,
+                coverage=coverage,
+                files_changed=files,
+                execution=execution,
+            )
+        healthy_statuses = {"VALID_CANDIDATES", "VALID_EMPTY", "LEGACY"}
+        unhealthy = [r for r in agent_runs if r.get("status") not in healthy_statuses]
         ratio, low = coverage_score(
             coverage, classification=classif, files_changed=files
+        )
+        pipeline_health = {
+            "healthy": not unhealthy,
+            "agent_runs": len(agent_runs),
+            "unhealthy_runs": len(unhealthy),
+            "unhealthy_statuses": [str(r.get("status")) for r in unhealthy],
+            "coverage_ratio": ratio,
+            "coverage_adequate": not low,
+        }
+        # A clean result is meaningful only when every scheduled reviewer
+        # completed and the changed executable context was represented.
+        if decision == "MERGE" and (unhealthy or low):
+            decision = "COMMENT"
+            policy_reason = "review_inconclusive"
+        timing.total_s = sum(
+            timing.to_dict()[k] for k in timing.to_dict() if k != "total_s"
         )
         packed = int(coverage.get("units_packed") or 0)
         total = int(coverage.get("units_total") or 0)
@@ -500,6 +612,15 @@ class ReviewRuntime:
             f"low={str(low).lower()} (observational)"
         )
         print(f"[Review] Decision={decision} reason={policy_reason}")
+
+        # Print pipeline trace summary
+        ts = trace.summary()
+        print(
+            f"[Trace] candidates={ts.get('total_candidates', 0)} "
+            f"final={ts.get('final_findings', 0)} "
+            f"drop_reasons={ts.get('drop_reasons', {})}"
+        )
+
         return ReviewResult(
             decision=decision,
             policy_reason=policy_reason,
@@ -508,4 +629,36 @@ class ReviewRuntime:
             bundles=bundles,
             coverage=coverage,
             execution=execution,
+            findings=review_findings,
+            pipeline_trace=trace,
+            timing=timing,
+            agent_runs=agent_runs,
+            pipeline_health=pipeline_health,
         )
+
+
+def _execution_evidence(execution: Dict[str, Any]):
+    """Translate legacy execution reports into per-finding evidence."""
+    from core.review.finding import ExecutionEvidence
+
+    skipped = bool(execution.get("skipped", True))
+    reason = str(execution.get("skip_reason") or "")
+    if skipped:
+        status = "TIMEOUT" if reason == "timeout" else (
+            "INSTALL_FAILED" if "install" in reason else "SKIPPED"
+        )
+    elif execution.get("exit_code") == 0 and not execution.get("failed"):
+        status = "PASSED"
+    else:
+        status = "FAILED"
+    return ExecutionEvidence(
+        status=status,
+        sandbox=not skipped,
+        environment=str(execution.get("python_env") or execution.get("env") or ""),
+        command=str(execution.get("cmd") or ""),
+        exit_code=execution.get("exit_code"),
+        passed=execution.get("passed"),
+        failed=execution.get("failed"),
+        duration_seconds=execution.get("elapsed_s"),
+        failed_tests=list(execution.get("failed_names") or []),
+    )

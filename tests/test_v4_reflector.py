@@ -217,6 +217,22 @@ class TestReflector(unittest.TestCase):
         self.assertTrue(keep)
         self.assertEqual(reason, "token_overlap")
 
+    def test_keep_exact_existing_code_when_prose_uses_synonyms(self):
+        keep, reason = reflect_candidate(
+            _cand(
+                symbol="",
+                title="Hardcoded resource allocation",
+                claim="The connection lifecycle configuration is ignored",
+                existing_code="cursor = connection.cursor()",
+                evidence_paths=[LOADER],
+            ),
+            files_changed=FILES,
+            index=self.idx,
+            line=2,
+        )
+        self.assertTrue(keep)
+        self.assertEqual(reason, "snippet_in_hunk")
+
     def test_synthetic_drop_test_for_empty_input_other_test_not_in_pr(self):
         keep, reason = reflect_candidate(
             _cand(

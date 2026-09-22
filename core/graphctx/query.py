@@ -85,5 +85,9 @@ def graph_callers(client: Any, symbol: str) -> Dict[str, Any]:
     return _run(client, GraphOp.FIND_CALLERS, symbol)
 
 
+def graph_callees(client: Any, symbol: str) -> Dict[str, Any]:
+    return _run(client, GraphOp.FIND_CALLEES, symbol)
+
+
 def graph_tests(client: Any, symbol: str) -> Dict[str, Any]:
     return _run(client, GraphOp.FIND_TESTS, symbol)

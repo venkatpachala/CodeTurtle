@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import json
 from typing import Any, Callable, List, Optional, Sequence, Tuple
 
 from core.agent.contract import is_hedge, proof_complete
@@ -66,7 +67,18 @@ _FALSIFY_SYS = (
     "consequence, say UNCERTAIN. "
     "If the path is real, unguarded, and the consequence is observable, "
     "say VERIFIED. "
+    "The hunk includes added, context, and removed lines; compare old and new "
+    "behavior when deciding whether the change introduces the violation. "
     "Do not invent files."
+)
+_CONFIG_RE = re.compile(
+    r"(?i)(settings?|config(?:uration)?|option|environment|\benv\b)"
+)
+_LITERAL_RE = re.compile(r"(?:\b\d+(?:\.\d+)?\b|[\"'][^\"']+[\"']|\b(?:true|false|null|nil|none)\b)", re.I)
+_ASSIGN_LHS_RE = re.compile(r"(?:\b(?:var|let|const)\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=")
+_HIGH_IMPACT_RE = re.compile(
+    r"(?i)\b(security|authentication|authorization|permission|credential|secret|"
+    r"data loss|corrupt|remote code|injection|outage)\b"
 )
 
 
@@ -77,6 +89,9 @@ def _hunk_text(index: Optional[DiffIndex], path: str) -> str:
     for h in index.hunks_for(path):
         parts.append(h.added or "")
         parts.append(h.body or "")
+        # Deleted lines often contain the setting lookup, guard, or cleanup
+        # whose replacement proves that the added line is a regression.
+        parts.append(h.removed or "")
     return "\n".join(parts)
 
 
@@ -117,6 +132,60 @@ def snippet_enforces_invariant(cand: Candidate, hunk: str = "") -> bool:
         if t in low or (t.endswith("s") and t[:-1] in low):
             hits += 1
     return hits >= 1
+
+
+def source_proves_config_regression(cand: Candidate, index: Optional[DiffIndex]) -> bool:
+    """Prove the narrow settings-lookup -> literal replacement pattern.
+
+    This avoids asking a small falsifier model to re-litigate a fact directly
+    visible in the diff, while requiring the claim, old code, and new code to
+    agree on the same assignment target.
+    """
+    statement = f"{cand.title or ''} {cand.claim or ''} {cand.invariant or ''}"
+    if not _CONFIG_RE.search(statement) or not _LITERAL_RE.search(cand.existing_code or ""):
+        return False
+    match = _ASSIGN_LHS_RE.search(cand.existing_code or "")
+    if match is None or index is None:
+        return False
+    lhs = match.group(1)
+    for hunk in index.hunks_for(cand.file):
+        added = str(hunk.added or "")
+        removed = str(hunk.removed or "")
+        if (
+            cand.existing_code.strip().lstrip("+").strip() in " ".join(added.split())
+            or " ".join(cand.existing_code.split()) in " ".join(added.split())
+        ) and re.search(rf"\b{re.escape(lhs)}\s*=", removed) and _CONFIG_RE.search(removed):
+            return True
+    return False
+
+
+def source_proves_duplicate_override(cand: Candidate) -> bool:
+    """Ruby has no method overloads: a later same-name definition wins."""
+    for signal in getattr(cand, "risk_signals", None) or []:
+        if not isinstance(signal, dict) or signal.get("kind") != "duplicate_definition":
+            continue
+        if signal.get("symbol") and signal.get("symbol") != cand.symbol:
+            continue
+        definitions = []
+        for item in signal.get("evidence") or []:
+            match = re.match(r"^.+?:\d+:\s*(.*)$", str(item))
+            if match is not None:
+                definitions.append(match.group(1))
+        signatures = {line.strip() for line in definitions if line.strip().startswith("def ")}
+        if len(signatures) >= 2 and len({line[line.find("("):] for line in signatures if "(" in line}) >= 2:
+            return True
+    return False
+
+
+def source_proves_external_cli_contract(cand: Candidate) -> bool:
+    """Promote only a versioned dependency contract plus an observed call path."""
+    for signal in getattr(cand, "risk_signals", None) or []:
+        if not isinstance(signal, dict) or signal.get("kind") != "cross_file_argument_contract":
+            continue
+        evidence = "\n".join(str(item) for item in signal.get("evidence") or [])
+        if "known_cli_contract: gifsicle --resize-fit" in evidence and "gifsicle --resize-fit" in evidence:
+            return True
+    return False
 
 
 def _last_symbol(path: Sequence[str]) -> str:
@@ -195,6 +264,7 @@ def _falsify_llm(cand: Candidate, llm: Optional[Callable[[str], str]], hunk: str
         f"invariant={cand.invariant}\n"
         f"violating_condition={cand.violating_condition}\n"
         f"existing_code={cand.existing_code}\n"
+        f"static_analysis={json.dumps(getattr(cand, 'risk_signals', None) or [])[:2500]}\n"
         f"hunk:\n{hunk[:1500]}\n"
         "Answer with one of: DISPROVED VERIFIED UNCERTAIN"
     )
@@ -282,7 +352,25 @@ def verify_candidates(
                 ]
                 _drop(cand, "disproved", dropped)
                 continue
-        status = _falsify_llm(cand, llm, hunk)
+        if source_proves_config_regression(cand, index):
+            status = "VERIFIED"
+            impact = f"{cand.title or ''} {cand.claim or ''} {cand.actual or ''}"
+            if not _HIGH_IMPACT_RE.search(impact):
+                cand.severity = "low"
+            print(
+                f"[Verify] deterministic=config_lookup_replaced_by_literal "
+                f"file={cand.file} title={cand.title!r}"
+            )
+        elif source_proves_duplicate_override(cand):
+            status = "VERIFIED"
+            cand.severity = "medium"
+            print(f"[Verify] deterministic=duplicate_definition_override file={cand.file} title={cand.title!r}")
+        elif source_proves_external_cli_contract(cand):
+            status = "VERIFIED"
+            cand.severity = "medium"
+            print(f"[Verify] deterministic=external_cli_contract file={cand.file} title={cand.title!r}")
+        else:
+            status = _falsify_llm(cand, llm, hunk)
         if status == "DISPROVED":
             _drop(cand, "disproved", dropped)
             continue

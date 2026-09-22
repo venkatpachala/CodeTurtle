@@ -13,7 +13,8 @@ TEST_FUNC_RE = re.compile(r"^test_[A-Za-z0-9_]+$")
 FAILURE_TOKEN_RE = re.compile(
     r"(?i)\b(fail|fails|failed|miss|missing|not|wrong|leak|crash|break|broken|empty)\b"
 )
-HEDGE_RE = re.compile(r"(?i)\b(potential|possible|may|might|could)\b")
+HARD_HEDGE_RE = re.compile(r"(?i)\b(potential|possible)\b")
+SOFT_HEDGE_RE = re.compile(r"(?i)\b(may|might|could)\b")
 PROOF_FIELDS = ("claim", "existing_code", "invariant", "violating_condition")
 
 
@@ -62,14 +63,22 @@ def classify_kind(
 
 
 def is_hedge(title: str, claim: str = "", confidence: Optional[float] = None) -> bool:
-    if HEDGE_RE.search(f"{title or ''} {claim or ''}"):
+    blob = f"{title or ''} {claim or ''}"
+    if HARD_HEDGE_RE.search(blob):
+        return True
+    try:
+        numeric_confidence = float(confidence) if confidence is not None else None
+    except (TypeError, ValueError):
+        numeric_confidence = None
+    # Conditional language is common in legitimate bug reports. Treat it as
+    # uncertainty only when the proof stage itself also reports weak confidence.
+    if SOFT_HEDGE_RE.search(blob) and (
+        numeric_confidence is None or numeric_confidence < 0.75
+    ):
         return True
     if confidence is not None:
-        try:
-            if float(confidence) < 0.4:
-                return True
-        except (TypeError, ValueError):
-            pass
+        if numeric_confidence is not None and numeric_confidence < 0.4:
+            return True
     return False
 
 

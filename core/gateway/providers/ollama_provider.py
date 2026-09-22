@@ -2,6 +2,14 @@ from langchain_ollama import ChatOllama
 from pydantic import BaseModel
 
 
+def _usage(response) -> dict:
+    usage = dict(getattr(response, "usage_metadata", None) or {})
+    meta = dict(getattr(response, "response_metadata", None) or {})
+    prompt = int(usage.get("input_tokens") or meta.get("prompt_eval_count") or 0)
+    completion = int(usage.get("output_tokens") or meta.get("eval_count") or 0)
+    return {"prompt_tokens": prompt, "completion_tokens": completion}
+
+
 class OllamaResponse:
     def __init__(self, content: str, model: str, usage: dict):
         self.content = content
@@ -27,7 +35,7 @@ def structured_generate(
     return OllamaResponse(
         content=response,
         model=model,
-        usage={}
+        usage=_usage(response)
     )
 
 
@@ -48,5 +56,5 @@ def generate(
     return OllamaResponse(
         content=response.content,
         model=model,
-        usage={}
+        usage=_usage(response)
     )

@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from typing import Any, List, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -56,3 +57,39 @@ class BenchmarkReview:
                 for f in (self.review_comments or [])
             ],
         }
+
+
+@dataclass
+class Prediction:
+    """Immutable per-PR benchmark prediction artifact."""
+    pr_url: str
+    review_comments: List[BenchmarkFinding] = field(default_factory=list)
+    findings: List[Dict[str, Any]] = field(default_factory=list)
+    pipeline_trace: List[Dict[str, Any]] = field(default_factory=list)
+    telemetry: Dict[str, Any] = field(default_factory=dict)
+    model: str = ""
+    run_id: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "pr_url": self.pr_url, "model": self.model, "run_id": self.run_id,
+            "review_comments": [x.to_dict() for x in self.review_comments],
+            "findings": self.findings, "pipeline_trace": self.pipeline_trace,
+            "telemetry": self.telemetry,
+        }
+
+
+@dataclass
+class RunManifest:
+    run_id: str
+    config: Dict[str, Any]
+    dataset_path: str
+    started_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    completed_at: Optional[str] = None
+    prs_total: int = 0
+    prs_completed: int = 0
+    failures: List[Dict[str, Any]] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)

@@ -25,7 +25,8 @@ _ERROR_PRINT = re.compile(r"(?i)(console\.print\(\s*[\"']Error|[\"']Error:|raise
 _MISSING_GUARD = re.compile(r"(?i)missing guard|potential missing guard|guard (was )?removed")
 _IF_NOT = re.compile(r"(?i)if\s+not\s+\w+")
 _VIOLATION = re.compile(
-    r"(?i)\b(would|will fail|when empty|if none|crash|leak|wrong|accepted|unguarded)\b"
+    r"(?i)\b(would|will fail|when empty|if none|crash|leak|wrong|accepted|unguarded|"
+    r"mismatch|hardcoded|ignores?)\b|does not match"
 )
 _INVARIANT_TONE = re.compile(r"(?i)\b(should|must|exactly one|is required)\b")
 _CONSUMER = re.compile(r"(?i)\b(submit|persist|write|save|store|dispatch|enqueue)\b")
@@ -65,6 +66,14 @@ def _has_consumer(cand: Candidate) -> bool:
     if _CONSUMER.search(text):
         return True
     if _VIOLATION.search(text):
+        return True
+    # A concrete trigger plus different expected/actual observable outcomes is
+    # already an execution claim worth falsifying. Requiring vocabulary such
+    # as "persist" or "crash" incorrectly excludes validation and UI-contract
+    # regressions (for example a client limit diverging from server settings).
+    expected = " ".join(str(cand.expected or "").lower().split())
+    actual = " ".join(str(cand.actual or "").lower().split())
+    if cand.violating_condition and expected and actual and expected != actual:
         return True
     return False
 
@@ -120,7 +129,12 @@ def qualify_finding(cand: Candidate, hunk: str = "") -> QualifiedFinding:
         base.status = PLAUSIBLE_BUT_UNPROVEN
         base.reason = "unproven"
         return base
-    if _DISPLAY.search(claim) and not _CONSUMER.search(claim):
+    expected = " ".join(str(cand.expected or "").lower().split())
+    actual = " ".join(str(cand.actual or "").lower().split())
+    has_observable_delta = bool(
+        cand.violating_condition and expected and actual and expected != actual
+    )
+    if _DISPLAY.search(claim) and not _CONSUMER.search(claim) and not has_observable_delta:
         base.status = PLAUSIBLE_BUT_UNPROVEN
         base.reason = "unproven"
         return base

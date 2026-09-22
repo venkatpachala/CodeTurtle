@@ -122,6 +122,21 @@ class TestQualifyFinding(unittest.TestCase):
         self.assertEqual(q.status, PLAUSIBLE_BUT_UNPROVEN)
         self.assertNotEqual(q.reason, "plausible")
 
+    def test_display_contract_with_concrete_expected_actual_reaches_falsifier(self):
+        cand = _cand(
+            title="Client upload limit ignores configured maximum",
+            claim="The displayed validation limit diverges from site settings",
+            existing_code="var maxSizeKB = 10 * 1024",
+            invariant="client and server limits must agree",
+            violating_condition="configured maximum is below 10MB",
+            expected="reject the upload at the configured maximum",
+            actual="accept the upload until the hardcoded 10MB limit",
+            execution_path=["validateFile"],
+        )
+        q = qualify_finding(cand)
+        self.assertEqual(q.status, PLAUSIBLE_BUT_UNPROVEN)
+        self.assertEqual(q.reason, "plausible")
+
 
 class TestSnippetLine(unittest.TestCase):
     def test_snippet_at_148_not_cu_start_5(self):
