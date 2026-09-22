@@ -15,7 +15,37 @@ D:\CodeTurtle\
     └── README.md
 ```
 
-## Workflow
+## Reproducible benchmark workflow
+
+The current benchmark path is `benchmark.run`. It stores the exact config,
+dataset SHA-256, git revision/dirty flag, per-PR predictions, evaluations,
+latency, agent-stage diagnostics, aggregate metrics, and a release gate.
+
+```powershell
+uv run python -m benchmark.run --config benchmark/configs/coder7b.yaml --limit 10
+```
+
+If matching or metric code changes, recompute a saved run without paying for
+the model again:
+
+```powershell
+uv run python -m benchmark.recompute benchmark/runs/<run-id>
+```
+
+Do not claim a release from a smoke run. The default gate requires at least 10
+PRs plus precision, blocking recall, false-positive, reliability, latency, and
+decision-quality thresholds.
+
+## Deterministic analysis leads
+
+The V4 reviewer adds bounded `RiskSignal`s before hypothesis discovery. These
+are investigation leads, not comments: duplicate Ruby definitions, cross-file
+argument contracts, and stale loop-state patterns must still survive proof and
+verification. External CLI contracts are versioned with source URLs in
+`core/analysis/cli_contracts.py`, making dependency knowledge auditable rather
+than an undocumented prompt assumption.
+
+## Legacy integration workflow
 
 ### 1. Run Benchmark Runner on PRs
 

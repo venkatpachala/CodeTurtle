@@ -22,6 +22,7 @@ graphify-out/
 tmp/
 data/
 outputs/
+benchmark/runs/
 
 # Snapshots / artifacts
 artifacts/last_review_snapshot.json

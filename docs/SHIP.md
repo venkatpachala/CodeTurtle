@@ -1,6 +1,8 @@
 # CodeTurtle v0.4 ship notes
 
-CLI reviewer. Default dry-run. Decision is Policy. Coverage is observational.
+CLI reviewer. Default dry-run. Decision is Policy. A zero-finding MERGE also
+requires healthy bundle-agent runs and adequate changed-source coverage;
+otherwise the internal result is `COMMENT / review_inconclusive`.
 
 ## Install
 
@@ -14,7 +16,8 @@ Default install includes `langchain-ollama` and `graphifyy[mcp]`. Optional extra
 
 - `GITHUB_TOKEN` (or `gh auth login`)
 - Ollama (`OLLAMA_MODEL`, default from `~/.codeturtle/config.toml`) or `OPENAI_API_KEY`
-- First PR on a repo builds Graphify `--code-only` once (minutes). Qdrant is not required.
+- Graphify is optional. When disabled or unavailable, review continues with
+  diff evidence and bounded repository search; Qdrant is not required.
 
 ## Flags
 
@@ -35,6 +38,18 @@ Default install includes `langchain-ollama` and `graphifyy[mcp]`. Optional extra
 ## Comments
 
 Posted/printed COMMENTS are **VERIFIED_BUG** only. Line is the snippet’s RIGHT-side line, never the change-unit start.
+
+## Benchmark diagnostics
+
+Each benchmark JSON includes `agent_runs` and `pipeline_health`. Per bundle it
+persists raw model outputs, tool calls, parse/schema/exception status and
+latency. Treat `INVALID_JSON`, `INVALID_SCHEMA`, `EXCEPTION`, and `MAX_STEPS`
+as pipeline failures—not evidence that the model safely found no defect.
+
+Use `uv run python -m benchmark.run --config benchmark/configs/coder7b.yaml`
+for reproducible runs. `benchmark.recompute <run-dir>` re-scores saved
+predictions after evaluator changes. Shipping requires the recorded release
+gate to pass; a one-PR smoke result is never sufficient.
 
 ## Limits
 
