@@ -35,3 +35,6 @@ debug_*.txt
 
 # GitHub
 .github/copilot-instructions.md
+
+#benchmark
+benchmark/
