@@ -412,10 +412,14 @@ def _run_cmd(
         "text": True,
         "timeout": timeout_s,
     }
-    if extra_env:
-        env = os.environ.copy()
-        env.update(extra_env)
-        kwargs["env"] = env
+    # Local execution is not an OS security sandbox. Do not inherit API keys
+    # or Git authentication into analyzed code even on explicit opt-in.
+    allowed = {"PATH", "PATHEXT", "SYSTEMROOT", "WINDIR", "COMSPEC", "TEMP", "TMP",
+               "HOME", "USERPROFILE", "LOCALAPPDATA", "APPDATA", "LANG", "LC_ALL"}
+    env = {k: v for k, v in os.environ.items() if k.upper() in allowed}
+    env.update(extra_env or {})
+    env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
+    kwargs["env"] = env
     if os.name == "nt":
         kwargs["creationflags"] = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
     else:

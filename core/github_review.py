@@ -60,7 +60,7 @@ def github_event(decision: str, classification: str = "") -> str:
     if rec == "REQUEST_CHANGES":
         return "REQUEST_CHANGES"
     if rec == "MERGE":
-        return "APPROVE"
+        return "COMMENT"
     return "COMMENT"
 
 

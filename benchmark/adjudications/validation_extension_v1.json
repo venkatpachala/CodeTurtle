@@ -1,0 +1,23 @@
+{
+  "prs": {
+    "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/3": [
+      {
+        "gold_id": "G-001",
+        "status": "rejected",
+        "reason": "The statistics update inside should_block? is intentional behavior, explicitly asserted by the new tests. The gold comment offers only a possible concurrency concern and a naming preference, not a demonstrated defect.",
+        "evidence": "app/models/blocked_email.rb: should_block? updates match_count/last_match_at; spec/models/blocked_email_spec.rb shared_examples 'when a BlockedEmail record matches' asserts statistics update"
+      },
+      {
+        "gold_id": "G-002",
+        "status": "confirmed",
+        "reason": "The whitelist/blacklist regex is not anchored after the configured domain. The gold example evil.example.com is inaccurate, but user@example.com.attacker.tld would match an example.com whitelist entry.",
+        "evidence": "lib/validators/email_validator.rb: Regexp.new(\"@(#{domains})\", true) and value =~ regexp; no terminal domain boundary"
+      },
+      {
+        "gold_id": "G-003",
+        "status": "ambiguous",
+        "reason": "The lookup is case-sensitive for the local part, but Email.downcase deliberately preserves local-part case. Whether the block policy must treat differently cased local parts as the same address is not established by source or tests."
+      }
+    ]
+  }
+}

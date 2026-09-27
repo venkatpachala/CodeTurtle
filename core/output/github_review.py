@@ -46,49 +46,6 @@ def publish_review(
     if dry_run:
         return comments
 
-    # Live posting path
-    if pr is None:
-        return comments
-
-    try:
-        _post_github_review(pr, comments, decision=decision, summary=summary)
-    except Exception as exc:
-        print(f"[GitHub] WARNING: failed to post review: {exc}")
-
-    return comments
-
-
-def _post_github_review(
-    pr: Any,
-    comments: List[Dict[str, Any]],
-    *,
-    decision: str,
-    summary: str,
-) -> None:
-    """Post inline comments to a GitHub PR via PyGithub."""
-    event_map = {
-        "REQUEST_CHANGES": "REQUEST_CHANGES",
-        "APPROVE": "APPROVE",
-        "MERGE": "APPROVE",
-        "COMMENT": "COMMENT",
-    }
-    event = event_map.get(decision.upper(), "COMMENT")
-
-    # Build review comment objects
-    review_comments = []
-    for c in comments:
-        path = c.get("path") or ""
-        line = c.get("line")
-        body = c.get("body") or ""
-        if path and line and body:
-            review_comments.append(
-                pr.create_review_comment(
-                    body=body,
-                    commit=pr.get_commits().reversed[0],
-                    path=path,
-                    line=int(line),
-                )
-            )
-    # Post the overall review
-    if not review_comments:
-        pr.create_review(body=summary or "CodeTurtle review complete.", event=event)
+    # Compatibility API is preview-only. The product publisher requires exact
+    # revision identity, an explicit plan, and a structured delivery outcome.
+    raise ValueError("live publication requires core.output.publication.deliver_review")

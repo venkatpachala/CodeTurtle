@@ -36,12 +36,9 @@ class BundleTools:
         if n in self.allowed:
             return n
         base = n.split("/")[-1]
-        for a in self.allowed:
-            if a == n or a.endswith("/" + n) or n.endswith("/" + a):
-                return a
-            if base and a.split("/")[-1] == base:
-                return a
-        return None
+        matches = [a for a in self.allowed if a.endswith("/" + n) or n.endswith("/" + a)
+                   or (base and a.split("/")[-1] == base)]
+        return matches[0] if len(matches) == 1 else None
 
     def read_hunk(self, path: str) -> Dict[str, Any]:
         resolved = self._in_bundle(path)

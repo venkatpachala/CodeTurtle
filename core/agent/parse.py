@@ -15,6 +15,14 @@ def _load_json(blob: str) -> Any:
     return json.loads(blob)
 
 
+def parse_agent_document(text: str) -> Any:
+    """Same fenced JSON extraction for candidates and diagnostic records."""
+    blob = _extract_json_blob(text)
+    if blob is None:
+        raise ValueError("no JSON document")
+    return _load_json(blob)
+
+
 def _extract_json_blob(text: str) -> str | None:
     raw = (text or "").strip()
     if not raw:
@@ -119,6 +127,7 @@ def candidate_dict(raw: Any, *, bundle_id: str) -> Dict[str, Any] | None:
         "source": source,
         "evidence_paths": paths,
         "kind": kind,
+        "hypothesis_id": str(raw.get("hypothesis_id") or "") or None,
     }
 
 

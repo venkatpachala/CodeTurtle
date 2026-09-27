@@ -1,0 +1,11 @@
+{
+  "name": "validation_v1",
+  "split": "validation",
+  "used_for_system_design": false,
+  "eligible_for_headline_metrics": true,
+  "prs": [
+    "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/2",
+    "https://github.com/ai-code-review-evaluation/keycloak-greptile/pull/1",
+    "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/2"
+  ]
+}

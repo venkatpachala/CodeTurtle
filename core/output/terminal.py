@@ -102,3 +102,17 @@ def _fallback_print(findings: "List[ReviewFinding]", *, show_uncertain: bool = F
         print(f"\n[{f.severity.upper()}] {f.title}")
         print(f"  File: {f.file}:{f.line}")
         print(f"  {f.claim}")
+
+
+def render_result_terminal(result, *, console=None, show_uncertain: bool = False) -> None:
+    from rich.console import Console
+    con = console or Console()
+    ratio = result.inspection.inspection_ratio
+    con.print(f"Analysis: {result.health.status}; recommendation: {result.decision or 'NO VERDICT'}")
+    con.print(f"Inspection: {result.inspection.inspected}/{result.inspection.eligible} "
+              f"({f'{ratio:.0%}' if ratio is not None else 'N/A'})")
+    con.print(f"Reasons: {', '.join(result.policy_reasons or [result.policy_reason])}")
+    if result.unresolved:
+        con.print(f"Unresolved investigations: {len(result.unresolved)}; human review required")
+    render_findings_terminal(result.findings if show_uncertain else result.product_findings,
+                             console=con, show_uncertain=show_uncertain)

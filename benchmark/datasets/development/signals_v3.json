@@ -1,0 +1,9 @@
+{
+  "name": "signals_v3_dev",
+  "split": "development",
+  "used_for_system_design": true,
+  "eligible_for_headline_metrics": false,
+  "prs": [
+    "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/1"
+  ]
+}

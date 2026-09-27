@@ -29,7 +29,7 @@ def position_candidate(
         return None
     snippet = str(getattr(candidate, "existing_code", "") or "")
     snip_line = index.line_for_snippet(path, snippet)
-    if snip_line and int(snip_line) > 1:
+    if snip_line and int(snip_line) >= 1:
         print(f"[Positioner] file={path} line={int(snip_line)}")
         return int(snip_line)
     if snippet.strip():
@@ -55,7 +55,7 @@ def position_candidate(
         n = int(line)
     except (TypeError, ValueError):
         return None
-    if n <= 1:
+    if n < 1:
         print(f"[Positioner] no_line reason=snippet_not_in_hunk file={path}")
         return None
     print(f"[Positioner] file={path} line={n}")

@@ -68,6 +68,10 @@ class PipelineContext:
     execute_tests: bool = False
     execute_install: bool = False
     pr_head_sha: str = ""
+    pr_base_sha: str = ""
+    intake_omissions: List[dict] = field(default_factory=list)
+    publication: Optional[dict] = None
+    publication_preview: Optional[dict] = None
     config_path: str = ""
     repo_cfg: Optional[object] = None
     change_units_payload: Optional[dict] = None
@@ -131,8 +135,11 @@ class ReviewPipeline:
         config_path: str = "",
         show_uncertain: bool = False,
         json_output: Optional[str] = None,
+        approve: bool = False,
     ):
         t0 = time.monotonic()
+        from contextlib import ExitStack
+        resources = ExitStack()
         try:
             from core.repo_config import (
                 RepoConfigError,
@@ -162,6 +169,8 @@ class ReviewPipeline:
             self.context.repo_cfg = cfg
             self.context.execute_tests = bool(cfg.execute_tests)
             self.context.execute_install = bool(cfg.execute_install)
+            if os.environ.get("GITHUB_ACTIONS") and (cfg.execute_tests or cfg.execute_install):
+                raise ValueError("PR code execution is disabled in GitHub Actions; use a separate credential-free runner")
             self.context.show_uncertain = bool(show_uncertain)
             if cfg.model:
                 settings.ollama_model = cfg.model
@@ -215,6 +224,9 @@ class ReviewPipeline:
 
             token = resolve_github_token(fallback=str(settings.github_token or ""))
             self._fetch_pr()
+            from core.review.lease import repository_lease
+            from core.user_config import home_dir
+            resources.enter_context(repository_lease(repo, home_dir()))
             try:
                 checkout = ensure_checkout(
                     repo,
@@ -275,7 +287,7 @@ class ReviewPipeline:
                     return str(getattr(response, "content", None) or "")
 
                 console.print("[yellow]Running v4 review runtime...[/yellow]")
-                result = ReviewRuntime(verification_llm=_verification_llm).run(self.context)
+                result = ReviewRuntime().run(self.context)
                 self.context.final_state = result_to_review_state(result, self.context)
                 # Inject raw ReviewResult so _write_benchmark_json can use ReviewFinding directly
                 if self.context.final_state is not None:
@@ -283,27 +295,51 @@ class ReviewPipeline:
             self._write_eval_snapshot()
 
             self._add_langfuse_metadata()
-            self._display_results()
             if runtime != "legacy":
-                from core.output.terminal import render_findings_terminal
-                render_findings_terminal(result.findings, console=console)
+                from core.output.terminal import render_result_terminal
+                render_result_terminal(result, console=console, show_uncertain=show_uncertain)
+            else:
+                self._display_results()
             self._save_to_memory()
 
+            if runtime != "legacy" and result.health.status == "failed":
+                if json_output:
+                    self._write_benchmark_json(json_output, elapsed=time.monotonic() - t0)
+                raise SystemExit(1)
+            posted = self._maybe_post(dry_run=dry_run, comment=comment, approve=approve)
             if json_output:
                 self._write_benchmark_json(json_output, elapsed=time.monotonic() - t0)
-
-            posted = self._maybe_post(dry_run=dry_run, comment=comment)
             if posted is False:
                 raise SystemExit(1)
             return self.context.final_state
 
         except _SkipReview as skip:
             console.print(f"[dim][Review] skip reason={skip.reason}[/dim]")
+            if json_output:
+                self._write_failure_json(json_output, skip.reason, skipped=True)
             return
         except SystemExit:
             raise
         except Exception as e:
-            handle_error(e, verbose=verbose)
+            if json_output:
+                self._write_failure_json(json_output, type(e).__name__)
+            console.print(f"[red]Review failed: {type(e).__name__}[/red]")
+            if verbose:
+                console.print_exception(show_locals=False)
+            raise SystemExit(1) from e
+        finally:
+            resources.close()
+
+    def _write_failure_json(self, path: str, code: str, *, skipped: bool = False) -> None:
+        from core.runtime.models import ReviewResult
+        from core.review.contract import ReviewHealth, ReviewTarget, StageOutcome
+        from core.review.artifacts import write_json_atomic
+        result = ReviewResult(decision=None, policy_reason=code, policy_reasons=[code],
+            health=ReviewHealth(status="skipped" if skipped else "failed",
+                stages=[StageOutcome(stage="intake", status="skipped" if skipped else "failed", code=code)]),
+            target=ReviewTarget(repo=self.context.repo, number=self.context.number,
+                head_sha=self.context.pr_head_sha, base_sha=self.context.pr_base_sha))
+        write_json_atomic(path, {**result.to_dict(), "review_comments": [], "decision": None})
 
     def _load_knowledge_base(self):
         # Graphify-only retrieval path
@@ -315,11 +351,12 @@ class ReviewPipeline:
         from core.ci import resolve_github_token
 
         token = resolve_github_token(fallback=str(settings.github_token or ""))
-        g = Github(token)
+        g = Github(token or None, timeout=30, retry=2)
         repo_obj = g.get_repo(self.context.repo)
         self.context.pr = repo_obj.get_pull(self.context.number)
         head = getattr(self.context.pr, "head", None)
         self.context.pr_head_sha = str(getattr(head, "sha", "") or "")
+        self.context.pr_base_sha = str(getattr(self.context.pr.base, "sha", "") or "")
         from core.repo_config import review_skip_reason
 
         cfg = self.context.repo_cfg
@@ -374,6 +411,8 @@ class ReviewPipeline:
                 parts.append(f"+++ b/{name}")
             if f.patch:
                 parts.append(f.patch)
+            else:
+                self.context.intake_omissions.append({"file": name, "reason": "missing_patch"})
             parts.append("")
         self.context.full_diff = "\n".join(parts)
 
@@ -855,27 +894,32 @@ Description:
         else:
             console.print(f"[dim]{label}: no validated findings[/dim]")
 
-    def _maybe_post(self, *, dry_run: bool, comment: bool) -> Optional[bool]:
+    def _maybe_post(self, *, dry_run: bool, comment: bool, approve: bool = False) -> Optional[bool]:
         """Return True if posted/skipped, False on hard failure, None if dry-run."""
         from core.github_review import post_pull_request_review, should_post
 
+        raw_result = (self.context.final_state or {}).get("_review_result")
+        if raw_result is not None:
+            from core.output.publication import build_publication_plan, deliver_review
+            from core.ci import resolve_github_token
+            plan = build_publication_plan(raw_result, full_diff=self.context.full_diff, approve=approve,
+                inline_max=int(getattr(self.context.repo_cfg, "inline_max", 8)))
+            self.context.publication_preview = plan.to_dict()
+            live = should_post(dry_run=dry_run, comment=comment)
+            login = ""
+            if live:
+                token = resolve_github_token(fallback=str(settings.github_token or ""))
+                login = "github-actions[bot]" if os.environ.get("GITHUB_ACTIONS") and not os.environ.get("CODETURTLE_GITHUB_TOKEN") else Github(token).get_user().login
+            delivery = deliver_review(self.context.pr, plan, dry_run=not live, publisher_login=login)
+            self.context.publication = delivery.to_dict()
+            console.print(f"[GitHub] {delivery.status} event={plan.event} inlines={len(plan.comments)} {delivery.error_code}")
+            return delivery.ok
         if not should_post(dry_run=dry_run, comment=comment):
             console.print("[dim]--dry-run mode (not posted)[/dim]")
             return None
 
         # v4 has a single canonical output model.  Do not reconstruct inline
         # comments from legacy dicts when the ReviewResult is available.
-        raw_result = (self.context.final_state or {}).get("_review_result")
-        if raw_result is not None and hasattr(raw_result, "findings"):
-            from core.output.github_review import publish_review
-            comments = publish_review(
-                self.context.pr, raw_result.findings, dry_run=False,
-                decision=raw_result.decision,
-                summary=str((self.context.final_state or {}).get("final_comment") or ""),
-            )
-            console.print(f"[green][GitHub] posted inlines={len(comments)}[/green]")
-            return True
-
         state = dict(self.context.final_state or {})
         if self.context.pr_facts and not state.get("pr_facts"):
             state["pr_facts"] = self.context.pr_facts
@@ -944,7 +988,15 @@ Description:
         # Retain the established top-level review_comments schema while also
         # exposing canonical v4 findings and diagnostics for benchmark runs.
         if review_result is not None:
-            payload["findings"] = [f.to_dict() for f in (review_result.findings or [])]
+            payload["diagnostic_findings"] = [f.to_dict() for f in review_result.findings]
+            payload["findings"] = [f.to_dict() for f in review_result.product_findings]
+            payload["result"] = review_result.to_dict()
+            payload["schema_version"] = review_result.schema_version
+            payload["target"] = review_result.target.model_dump()
+            payload["health"] = review_result.health.model_dump()
+            payload["decision"] = review_result.decision
+            payload["publication_preview"] = self.context.publication_preview
+            payload["publication"] = self.context.publication
             trace = getattr(review_result, "pipeline_trace", None)
             timing = getattr(review_result, "timing", None)
             payload["pipeline_trace"] = trace.to_list() if hasattr(trace, "to_list") else []
@@ -959,7 +1011,8 @@ Description:
                 "verified_count": int(trace_summary.get("final_findings") or 0),
                 "drop_reasons": dict(trace_summary.get("drop_reasons") or {}),
             }
-        out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        from core.review.artifacts import write_json_atomic
+        write_json_atomic(out_path, payload)
         console.print(f"[dim][Benchmark] Wrote {out_path}[/dim]")
 
 
@@ -981,6 +1034,7 @@ def review(
         "--comment",
         help="Post one GitHub PR review (summary only). Overrides default dry-run.",
     ),
+    approve: bool = typer.Option(False, "--approve", help="Explicitly approve an eligible complete MERGE recommendation when publishing"),
     verbose: bool = typer.Option(
         False, "--verbose", "-v", help="Show detailed error information"
     ),
@@ -1037,4 +1091,5 @@ def review(
         config_path=config_path or "",
         show_uncertain=show_uncertain,
         json_output=json_output,
+        approve=approve,
     )

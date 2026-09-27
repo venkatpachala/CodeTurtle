@@ -1,0 +1,40 @@
+{
+  "prs": {
+    "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/2": [
+      {
+        "gold_id": "G-001",
+        "failure_stage": "HYPOTHESIS_MISS",
+        "rationale": "The changed unsubscribe action was investigated, but the only related hypothesis was a generic edge-case concern and did not identify that TopicUser.find_by can return nil before notification_level is read.",
+        "evidence": "prediction pr_000.json: B-003 H-001 and VALID_EMPTY; app/controllers/topics_controller.rb unsubscribe body"
+      }
+    ],
+    "https://github.com/ai-code-review-evaluation/keycloak-greptile/pull/1": [
+      {
+        "gold_id": "G-001",
+        "failure_stage": "HYPOTHESIS_MISS",
+        "rationale": "The agent considered generic conditional-passkey behavior but did not state or investigate the zero-argument call versus one-argument declaration mismatch.",
+        "evidence": "retry prediction pr_001.json: B-001 hypotheses; UsernameForm.java:47 and UsernamePasswordForm.java:160"
+      }
+    ],
+    "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/2": [
+      {
+        "gold_id": "G-001",
+        "failure_stage": "PROOF_MISS",
+        "rationale": "A negative-offset risk hypothesis existed and the paginator hunk was retrieved, but that healthy bundle produced no candidate about the direct negative QuerySet slice.",
+        "evidence": "prediction pr_002.json: B-004 H-001, read_hunk paginator.py, evidence_count=2, candidate_count=0"
+      },
+      {
+        "gold_id": "G-002",
+        "failure_stage": "PROOF_MISS",
+        "rationale": "The same retrieved paginator hunk exposes the previous-page branch that bypasses the clamp, but no candidate was constructed from the negative-offset hypothesis.",
+        "evidence": "prediction pr_002.json: B-004 H-001, read_hunk paginator.py, evidence_count=2, candidate_count=0; BasePaginator.get_result"
+      },
+      {
+        "gold_id": "G-003",
+        "failure_stage": "HYPOTHESIS_MISS",
+        "rationale": "No recorded hypothesis mentions the datetime key being passed into math.floor or math.ceil in OptimizedCursorPaginator.get_item_key.",
+        "evidence": "prediction pr_002.json: B-003/B-004 hypotheses; paginator.py get_item_key; organization_auditlogs.py order_by='-datetime'"
+      }
+    ]
+  }
+}

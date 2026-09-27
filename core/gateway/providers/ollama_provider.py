@@ -1,5 +1,6 @@
 from langchain_ollama import ChatOllama
 from pydantic import BaseModel
+from config import settings
 
 
 def _usage(response) -> dict:
@@ -27,7 +28,9 @@ def structured_generate(
     llm = ChatOllama(
         model=model,
         temperature=temperature,
-        max_tokens=max_tokens,
+        num_predict=max_tokens,
+        base_url=settings.ollama_base_url,
+        client_kwargs={"timeout": 120.0},
     )
     structured_llm = llm.with_structured_output(schema)
     response = structured_llm.invoke(prompt)
@@ -49,7 +52,9 @@ def generate(
     llm = ChatOllama(
         model=model,
         temperature=temperature,
-        max_tokens=max_tokens,
+        num_predict=max_tokens,
+        base_url=settings.ollama_base_url,
+        client_kwargs={"timeout": 120.0},
     )
     response = llm.invoke(prompt)
 

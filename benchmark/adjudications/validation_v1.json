@@ -1,0 +1,56 @@
+{
+  "prs": {
+    "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/2": [
+      {
+        "gold_id": "G-001",
+        "status": "confirmed",
+        "reason": "The added unsubscribe action dereferences TopicUser.find_by(...) without handling a missing record.",
+        "evidence": "app/controllers/topics_controller.rb: unsubscribe assigns tu from find_by, then reads tu.notification_level and calls tu.save!"
+      },
+      {
+        "gold_id": "G-002",
+        "status": "rejected",
+        "reason": "The spelling is undesirable but the controller and template use the same property name; no behavioral defect is demonstrated. This style-only label is not a code-review bug target.",
+        "evidence": "app/assets/javascripts/discourse/controllers/topic-unsubscribe.js.es6 and templates/topic/unsubscribe.hbs both use stopNotificiationsText"
+      }
+    ],
+    "https://github.com/ai-code-review-evaluation/keycloak-greptile/pull/1": [
+      {
+        "gold_id": "G-001",
+        "status": "confirmed",
+        "reason": "UsernameForm calls a zero-argument method, but the only definition in services Java sources requires UserModel; this is a compile-time signature mismatch.",
+        "evidence": "UsernameForm.java:47 calls isConditionalPasskeysEnabled(); UsernamePasswordForm.java:160 defines isConditionalPasskeysEnabled(UserModel user)"
+      },
+      {
+        "gold_id": "G-002",
+        "status": "ambiguous",
+        "reason": "The method deliberately returns false for a null user, but whether initial username-page conditional passkeys must work without a selected user is a product requirement not established by the source alone."
+      }
+    ],
+    "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/2": [
+      {
+        "gold_id": "G-001",
+        "status": "confirmed",
+        "reason": "The optimized paginator directly slices a Django QuerySet with a negative start_offset when the advanced path is enabled.",
+        "evidence": "src/sentry/api/paginator.py: OptimizedCursorPaginator.get_result assigns start_offset=cursor.offset for negative offsets, then queryset[start_offset:stop]; Django documents that QuerySet negative indexing is unsupported: https://docs.djangoproject.com/en/3.2/topics/db/queries/#limiting-querysets"
+      },
+      {
+        "gold_id": "G-002",
+        "status": "confirmed",
+        "reason": "Cursor parsing accepts negative integer offsets, while the previous-page BasePaginator branch bypasses the clamp before QuerySet slicing.",
+        "evidence": "src/sentry/utils/cursors.py: Cursor.from_string accepts int(bits[1]); src/sentry/api/paginator.py: BasePaginator.get_result uses offset when cursor.is_prev; Django QuerySet negative indexing is unsupported: https://docs.djangoproject.com/en/3.2/topics/db/queries/#limiting-querysets"
+      },
+      {
+        "gold_id": "G-003",
+        "status": "confirmed",
+        "reason": "The optimized paginator applies math.floor/ceil to an item key; the audit-log endpoint constructs it with order_by='-datetime', making the key a datetime rather than a numeric value.",
+        "evidence": "src/sentry/api/paginator.py: OptimizedCursorPaginator.get_item_key; src/sentry/api/endpoints/organization_auditlogs.py: order_by='-datetime'"
+      },
+      {
+        "gold_id": "G-004",
+        "status": "ambiguous",
+        "reason": "RpcUserOrganizationContext.member is optional and the endpoint dereferences it, but an authorized non-superuser request with member=None has not been established through the permission path."
+      }
+    ]
+  }
+}

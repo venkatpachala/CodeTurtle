@@ -1,82 +1,62 @@
-# Self-review workflow for the CodeTurtle repo.
-# For other repos, copy examples/github-action.yml instead.
-# See docs/github-action.md
+# Uses base-repository tooling, never installs the analyzed PR checkout.
 name: CodeTurtle review
-
 on:
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
-      dry_run:
-        description: "Do not post to GitHub"
-        type: boolean
-        default: false
-      execute_tests:
-        description: "Opt-in pytest in the PR worktree"
-        type: boolean
-        default: false
-      python_version:
+      pr_number:
+        description: PR number to review
+        required: true
         type: string
-        default: "3.12"
-
+      publish:
+        description: Publish after analysis
+        type: boolean
+        default: false
 permissions:
   contents: read
   pull-requests: write
-
+concurrency:
+  group: codeturtle-${{ github.repository }}-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
 jobs:
   review:
-    if: >
-      github.event_name != 'pull_request'
-      || (
-        github.event.pull_request.draft != true
-        && github.actor != 'dependabot[bot]'
-      )
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.draft != true)
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      CODETURTLE_GITHUB_TOKEN: ${{ secrets.CODETURTLE_GITHUB_TOKEN }}
-      CODETURTLE_PR_DRAFT: ${{ github.event.pull_request.draft }}
-      GRAPHIFY_GRAPH_PATH: ${{ github.workspace }}/graphify-out/graph.json
-      CODETURTLE_CONFIG: ${{ github.workspace }}/.codeturtle.yaml
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ inputs.python_version || '3.12' }}
-
-      - uses: astral-sh/setup-uv@v4
-
-      - name: Install
-        run: uv sync --frozen || uv sync
-
-      - name: Graphify (code-only)
-        continue-on-error: true
-        run: uv run graphify . --code-only || true
-
-      - name: Review PR
+          python-version: '3.12'
+      - name: Install trusted reviewer
         env:
-          GITHUB_ACTOR: ${{ github.actor }}
+          TOOL_REV: ${{ github.event.pull_request.base.sha || github.sha }}
         run: |
-          REPO="${{ github.repository }}"
-          PR="${{ github.event.pull_request.number }}"
-          if [ -z "$PR" ]; then
-            echo "No pull_request.number" >&2
-            exit 1
-          fi
-          DRY="${{ inputs.dry_run || false }}"
-          EX="${{ inputs.execute_tests || false }}"
-          ARGS=(uv run python -m cli.main review "$REPO" "$PR")
-          if [ "$DRY" = "true" ]; then
-            ARGS+=(--dry-run)
-          else
-            ARGS+=(--comment)
-          fi
-          if [ "$EX" = "true" ]; then
-            ARGS+=(--execute-tests)
-          fi
+          [[ "$TOOL_REV" =~ ^[0-9a-fA-F]{40}$ ]] || exit 1
+          python -m pip install "codeturtle-review[openai] @ git+https://github.com/venkatpachala/CodeTurtle.git@$TOOL_REV"
+      - name: Review
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4o-mini' }}
+          LLM_BACKEND: openai
+          GRAPHIFY_ENABLED: 'false'
+          CODETURTLE_HOME: ${{ runner.temp }}/codeturtle
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number || inputs.pr_number }}
+          PUBLISH: ${{ inputs.publish || false }}
+        run: |
+          [[ "$PR" =~ ^[1-9][0-9]*$ ]] || exit 1
+          ARGS=(codeturtle review "$REPO" "$PR" --json-output review.json)
+          if [ "$PUBLISH" = 'true' ]; then ARGS+=(--comment); else ARGS+=(--dry-run); fi
           "${ARGS[@]}"
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: codeturtle-review-${{ github.run_id }}
+          path: review.json
+          if-no-files-found: warn
+          retention-days: 7

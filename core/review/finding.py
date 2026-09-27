@@ -12,6 +12,8 @@ Never create parallel finding representations elsewhere.
 from __future__ import annotations
 
 import uuid
+import hashlib
+import json
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
@@ -111,6 +113,18 @@ class ReviewFinding:
 
     # ── Related tests discovered during bundling ─────────────────────────────
     related_tests: List[str] = field(default_factory=list)
+    kind: str = "defect"
+    blocking: bool = False
+    hypothesis_id: Optional[str] = None
+    evidence_level: str = "structured"
+
+    @property
+    def fingerprint(self) -> str:
+        """Stable across run-local IDs; changes to the proof change identity."""
+        signature = [self.file.replace("\\", "/"), self.line, self.category,
+                     " ".join(self.existing_code.split()), " ".join(self.violating_condition.split()),
+                     " ".join(self.actual.split())]
+        return hashlib.sha256(json.dumps(signature, ensure_ascii=False).encode()).hexdigest()
 
     # ────────────────────────────────────────────────────────────────────────
     # Output adapters
@@ -151,6 +165,7 @@ class ReviewFinding:
         return {
             "path": self.file,
             "line": self.line,
+            "side": "RIGHT",
             "body": self.render_comment(),
         }
 
@@ -166,6 +181,11 @@ class ReviewFinding:
         """Full serialisation for JSON output / prediction schema."""
         return {
             "id": self.id,
+            "fingerprint": self.fingerprint,
+            "kind": self.kind,
+            "blocking": self.blocking,
+            "hypothesis_id": self.hypothesis_id,
+            "evidence_level": self.evidence_level,
             "title": self.title,
             "claim": self.claim,
             "file": self.file,
@@ -234,6 +254,10 @@ class ReviewFinding:
             bundle_id=str(getattr(cand, "bundle_id", "") or "") or None,
             candidate_id=candidate_id or None,
             source=str(getattr(cand, "source", "llm") or "llm"),
+            kind=str(getattr(cand, "kind", "defect")),
+            blocking=str(getattr(cand, "severity", "medium")).lower() in {"medium", "high", "critical", "blocking"},
+            hypothesis_id=getattr(cand, "hypothesis_id", None),
+            evidence_level="statically_substantiated" if verification_status == "verified" else "structured",
         )
 
 

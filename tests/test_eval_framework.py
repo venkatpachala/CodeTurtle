@@ -415,7 +415,7 @@ def test_release_gate_requires_quality_and_sample_size():
     }
     good = {
         "prs": 12, "fp_per_pr": 0.1, "agent_run_success_rate": 1.0,
-        "actionable": {"precision": 0.9, "blocking_recall": 0.75},
+        "actionable": {"precision": 0.9, "blocking_recall": 0.75, "clean_pr_count": 2},
         "decision": {"accuracy": 0.9, "over_blocking_rate": 0.05},
         "latency_seconds": {"p95": 120},
     }

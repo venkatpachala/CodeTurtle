@@ -67,7 +67,7 @@ testpaths = ["tests"]
 norecursedirs = ["repos", ".git", ".venv", "benchmark/runs"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["cli", "core"]
+packages = ["cli", "core", "benchmark"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "config.py" = "config.py"

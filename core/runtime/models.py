@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+import uuid
+from core.review.contract import ReviewTarget, ReviewHealth, ReviewCoverage
 
 if TYPE_CHECKING:
     from core.review.finding import ReviewFinding
@@ -59,6 +61,7 @@ class Candidate:
     evidence_paths: List[str] = field(default_factory=list)
     kind: str = "defect"  # defect | note
     risk_signals: List[Dict[str, Any]] = field(default_factory=list)
+    hypothesis_id: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -130,7 +133,7 @@ def comment_from_candidate(cand: Candidate, line: int) -> Comment:
 
 @dataclass
 class ReviewResult:
-    decision: str = "COMMENT"
+    decision: Optional[str] = "COMMENT"
     policy_reason: str = ""
     comments: List[Comment] = field(default_factory=list)
     dropped: List[Dict[str, Any]] = field(default_factory=list)
@@ -145,11 +148,34 @@ class ReviewResult:
     timing: Optional[Any] = None
     agent_runs: List[Dict[str, Any]] = field(default_factory=list)
     pipeline_health: Dict[str, Any] = field(default_factory=dict)
+    schema_version: str = "2.0"
+    run_id: str = field(default_factory=lambda: uuid.uuid4().hex)
+    target: ReviewTarget = field(default_factory=ReviewTarget)
+    health: ReviewHealth = field(default_factory=ReviewHealth)
+    inspection: ReviewCoverage = field(default_factory=ReviewCoverage)
+    policy_reasons: List[str] = field(default_factory=list)
+    unresolved: List[Dict[str, Any]] = field(default_factory=list)
+    approval_eligible: bool = False
+    provenance: Dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def product_findings(self) -> List["ReviewFinding"]:
+        return [f for f in self.findings if f.kind == "defect" and f.verification_status == "verified"]
 
     def to_dict(self) -> Dict[str, Any]:
         trace = self.pipeline_trace
         timing = self.timing
         return {
+            "schema_version": self.schema_version,
+            "run_id": self.run_id,
+            "target": self.target.model_dump(),
+            "health": self.health.model_dump(),
+            "inspection": {**self.inspection.model_dump(), "ratio": self.inspection.inspection_ratio},
+            "policy_reasons": list(self.policy_reasons),
+            "unresolved": list(self.unresolved),
+            "approval_eligible": self.approval_eligible,
+            "provenance": dict(self.provenance),
+            "product_findings": [f.to_dict() for f in self.product_findings],
             "decision": self.decision,
             "policy_reason": self.policy_reason,
             "comments": [c.to_dict() for c in self.comments],
