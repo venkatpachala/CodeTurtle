@@ -430,9 +430,11 @@ class ReviewRuntime:
 
         candidates: List[Candidate] = []
         agent_runs: List[Dict[str, Any]] = []
-        candidates.extend(
-            self._rules(bundles, files, full_diff=diff, repo_dir=repo_dir)
-        )
+        from config import settings
+        if settings.rules_enabled:
+            candidates.extend(self._rules(bundles, files, full_diff=diff, repo_dir=repo_dir))
+        else:
+            self.stage_errors.append(StageOutcome(stage="rules", status="skipped", code="ablation_disabled"))
         for bundle in bundles:
             bundle.symbols = [
                 s
@@ -452,6 +454,7 @@ class ReviewRuntime:
         survivors: List[tuple] = []
         for cand in candidates:
             cid = trace.next_candidate_id()
+            cand.candidate_id = cid
             # Store candidate_id on the candidate for later correlation
             try:
                 object.__setattr__(cand, "_candidate_id", cid)
@@ -500,13 +503,13 @@ class ReviewRuntime:
         from core.runtime.verify_loop import verify_candidates
 
         with timed(timing, "verify"):
-            verified_cands, vdrop = verify_candidates(
-                [c for c, _ in survivors],
-                index=index,
-                bundles=bundles,
-                client=client,
-                llm=self.verification_llm or self.llm or self._verify_completion,
-            )
+            if settings.verification_enabled:
+                verified_cands, vdrop = verify_candidates(
+                    [c for c, _ in survivors], index=index, bundles=bundles, client=client,
+                    llm=self.verification_llm or self.llm or self._verify_completion)
+            else:
+                verified_cands, vdrop = [], [{**c.to_dict(), "drop_reason": "verification_disabled"} for c, _ in survivors]
+                self.stage_errors.append(StageOutcome(stage="verification", status="skipped", code="ablation_disabled"))
         # Record verifier drops with trace
         for vd in vdrop:
             dr = vd.get("drop_reason", "verifier_drop") if isinstance(vd, dict) else "verifier_drop"
@@ -692,10 +695,13 @@ def _provenance(agent: Any) -> dict:
         dirty = bool(subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True, timeout=10).stdout.strip())
     except (OSError, subprocess.SubprocessError):
         commit, dirty = "", None
+    import os
+    records = list(getattr(agent, "usage_records", []) or [])
+    model = records[-1]["model"] if records else (os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+        if settings.llm_backend == "openai" else settings.ollama_model)
     return {"reviewer_commit": commit, "dirty": dirty, "prompt_version": PROMPT_VERSION,
             "provider": getattr(settings, "llm_backend", "ollama"),
-            "model": getattr(settings, "ollama_model", ""),
-            "model_calls": list(getattr(agent, "usage_records", []) or [])}
+            "model": model, "model_calls": records}
 
 
 def _execution_evidence(execution: Dict[str, Any]):

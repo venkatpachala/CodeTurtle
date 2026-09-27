@@ -1,15 +1,26 @@
 # CodeTurtle
 
+**0.5.0a1 preview:** production contracts, fail/partial semantics, explicit
+approval, atomic artifacts, and grouped GitHub delivery. Quality remains under
+evaluation; this is not a high-recall or automatic-merge claim.
+
+Current references: [architecture](docs/CURRENT_ARCHITECTURE.md),
+[limitations](docs/LIMITATIONS.md), [release checklist](docs/RELEASE_CHECKLIST.md),
+and [implementation validation](docs/IMPLEMENTATION_VALIDATION.md).
+
+The preview is installed from this checkout or a locally built wheel. The
+historical v0.4.0 tag does not contain these changes.
+
 Local-first GitHub PR review CLI. **Decision is Policy**. Comments are verified defects only.
 
 ```text
 Install
-  uv tool install "git+https://github.com/venkatpachala/CodeTurtle.git@v0.4.0"
+  uv tool install .  # from this checked-out preview
 
 Needs
   GITHUB_TOKEN
   Ollama (OLLAMA_MODEL) or OPENAI_API_KEY
-  First PR on a repo builds Graphify once (minutes)
+  Graphify indexing is optional (GRAPHIFY_ENABLED=true)
 
 Review
   codeturtle review https://github.com/org/repo/pull/123 --dry-run -v
@@ -98,7 +109,10 @@ Each candidate raised by the agent or rule engine passes through these gates in 
 
 ### Graphify MCP integration
 
-Graphify is included in the default install. On first review of a repo, CodeTurtle clones into `~/.codeturtle/repos/` and runs `graphify extract . --code-only` to build `graphify-out/graph.json`. The `GraphifyMCPProvider` connects via stdio and exposes `get_node`, `get_neighbors`, `query`, `shortest_path`, and `get_pr_impact` to agents and the verify loop.
+Graphify is included in the default install, but indexing is disabled by default.
+With `GRAPHIFY_ENABLED=true`, CodeTurtle builds a revision-bound graph. Missing
+or stale graph context is reported as degraded context. The current pipeline
+and delivery semantics are documented in CURRENT_ARCHITECTURE.md.
 
 ---
 
@@ -114,7 +128,7 @@ Graphify is included in the default install. On first review of a repo, CodeTurt
 ### Install
 
 ```bash
-uv tool install "git+https://github.com/venkatpachala/CodeTurtle.git@v0.4.0"
+uv tool install .  # from the CodeTurtle checkout
 codeturtle
 ```
 
@@ -142,6 +156,12 @@ codeturtle review https://github.com/owner/repo/pull/123 --dry-run -v
 
 # Post a review to GitHub (requires write access or PR ownership)
 codeturtle review owner/repo 123 --comment
+
+# Explicit GitHub CLI keyring authentication
+codeturtle review owner/repo 123 --github-auth gh --dry-run --json-output review.json
+
+# Approval is a separate, eligible opt-in; MERGE normally posts COMMENT
+codeturtle review owner/repo 123 --github-auth gh --comment --approve
 
 # Optional sandbox: run related tests inside a jailed worktree
 codeturtle review owner/repo 123 --dry-run --execute-tests

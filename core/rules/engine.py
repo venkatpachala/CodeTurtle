@@ -177,10 +177,13 @@ def run_rule_engine(
     repo_dir: Optional[str] = None,
 ) -> List[Candidate]:
     """Regex always. Ruff only if the binary is on PATH and files exist on disk."""
-    _ = full_diff
     files = [normalize_path(p) for p in (files_changed or []) if p]
     out: List[Candidate] = []
     out.extend(_regex_candidates(bundles))
+    from core.rules.python_contracts import removed_zero_guard_candidates
+    from core.verification.diff_index import build_diff_index
+    out.extend(removed_zero_guard_candidates(build_diff_index(full_diff),
+        {normalize_path(p): b.id for b in bundles for p in b.paths}))
     out.extend(
         _ruff_candidates(files, bundles=bundles, repo_dir=repo_dir)
     )

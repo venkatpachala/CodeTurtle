@@ -228,3 +228,121 @@ def test_product_metrics_and_regressions():
     assert metrics["completion"]["value"] is None
     assert not compare_regressions({"p1": {"confirmed_issue_ids": ["g1"]}},
         {"p1": {"confirmed_issue_ids": [], "known_buggy": True, "decision": "MERGE"}})["passed"]
+
+
+def test_fenced_document_preserves_assessments():
+    from core.agent.parse import parse_agent_document
+    document = {"assessments": [{"unit_id": "CU-001"}], "hypotheses": []}
+    assert parse_agent_document("```json\n" + json.dumps(document) + "\n```") == document
+
+
+def test_line_one_is_a_valid_anchor():
+    from core.positioner import position_candidate
+    from core.verification.diff_index import build_diff_index
+    assert position_candidate(Candidate(bundle_id="B1", file="app.py", existing_code="limit = 10"), build_diff_index(DIFF)) == 1
+
+
+def test_budget_has_hard_call_and_prompt_limits():
+    from core.review.budget import ReviewBudget, BudgetExceeded
+    budget = ReviewBudget(max_model_calls=1, max_prompt_chars=10)
+    budget.reserve("abc")
+    with pytest.raises(BudgetExceeded): budget.reserve("def")
+    with pytest.raises(BudgetExceeded): ReviewBudget(max_prompt_chars=1).reserve("abc")
+    with pytest.raises(BudgetExceeded): ReviewBudget(max_wall_seconds=0).reserve("abc")
+
+
+def test_repository_lease_real_process(tmp_path):
+    from core.review.lease import repository_lease
+    command = [sys.executable, "-c",
+        "from pathlib import Path; from core.review.lease import repository_lease; "
+        f"lease=repository_lease('a/b',Path({str(tmp_path)!r}),timeout=0); lease.__enter__(); lease.__exit__(None,None,None)"]
+    with repository_lease("a/b", tmp_path):
+        blocked = subprocess.run(command, capture_output=True, text=True, timeout=15)
+        assert blocked.returncode != 0 and "TimeoutError" in blocked.stderr
+    released = subprocess.run(command, capture_output=True, text=True, timeout=15)
+    assert released.returncode == 0
+
+
+def test_source_retrieval_real_checkout(tmp_path):
+    from core.agent.tools import BundleTools
+    (tmp_path / "app.py").write_text("def divide(total, count):\n    return total / count\n")
+    tools = BundleTools(Bundle(id="b1", paths=["app.py"]), repo_dir=str(tmp_path))
+    assert "return total / count" in tools.read_source("app.py")["text"]
+    assert tools.read_source("../outside.py").get("error")
+    ambiguous = BundleTools(Bundle(id="b1", paths=["a/app.py", "b/app.py"]))
+    assert ambiguous._in_bundle("app.py") is None
+
+
+def test_missing_metric_denominators_are_unmeasured():
+    from benchmark.metrics import aggregate_metrics
+    from benchmark.reports import render_ascii
+    from benchmark.gates import evaluate_release_gate
+    metrics = aggregate_metrics([])
+    assert metrics["agent_run_success_rate"] is None
+    assert "N/A" in render_ascii(metrics)
+    assert evaluate_release_gate(metrics, {})["checks"]["latency"] is None
+
+
+def test_unfrozen_release_cannot_pass():
+    from benchmark.release import evaluate_paired_release
+    assert not evaluate_paired_release({}, {})["passed"]
+
+
+def test_workflows_parse_and_pin_real_actions():
+    import re
+    import yaml
+    root = Path(__file__).resolve().parents[1]
+    for relative in ("examples/github-action.yml", ".github/workflows/codeturtle-review.yml", ".github/workflows/production-validation.yml"):
+        workflow = yaml.load((root / relative).read_text(), Loader=yaml.BaseLoader)
+        assert "on" in workflow and "jobs" in workflow
+        for job in workflow["jobs"].values():
+            for step in job["steps"]:
+                if "uses" in step:
+                    assert re.fullmatch(r"actions/[a-z-]+@[0-9a-f]{40}", step["uses"])
+    assert "codeturrle" not in (root / "examples/github-action.yml").read_text()
+
+
+def test_anonymous_auth_context_restores_real_environment():
+    import os
+    from core.ci import github_authentication, resolve_github_token
+    before = os.environ.get("CODETURTLE_ANONYMOUS")
+    with github_authentication("anonymous"):
+        assert resolve_github_token(fallback="not-used") == ""
+    assert os.environ.get("CODETURTLE_ANONYMOUS") == before
+
+
+@pytest.mark.parametrize("operator", ["/", "//", "%"])
+def test_removed_numeric_guard_is_statically_substantiated(operator):
+    import difflib
+    from core.rules.python_contracts import removed_zero_guard_candidates
+    from core.runtime.verify_loop import verify_candidates
+    from core.verification.diff_index import build_diff_index
+    before = f"def arithmetic(numerator, denominator):\n    if denominator == 0:\n        return 0\n    return numerator {operator} denominator\n"
+    after = f"def arithmetic(numerator, denominator):\n    return numerator {operator} denominator\n"
+    diff = "diff --git a/app.py b/app.py\n" + "".join(difflib.unified_diff(before.splitlines(True), after.splitlines(True), fromfile="a/app.py", tofile="b/app.py"))
+    index = build_diff_index(diff)
+    candidates = removed_zero_guard_candidates(index, {"app.py": "b1"})
+    assert len(candidates) == 1
+    kept, dropped = verify_candidates(candidates, index=index)
+    assert len(kept) == 1 and not dropped and kept[0].verify_status == "verified"
+    # Independently execute the controlled code fixture: actual BASE/HEAD behavior.
+    namespace = {}
+    exec(before, namespace)
+    assert namespace["arithmetic"](1, 0) == 0
+    exec(after, namespace)
+    with pytest.raises(ZeroDivisionError): namespace["arithmetic"](1, 0)
+
+
+@pytest.mark.parametrize("after", [
+    "def arithmetic(n, d):\n    if d == 0:\n        return 0\n    return n / d\n",
+    "def arithmetic(n, d):\n    return n + d\n",
+    "def arithmetic(n, d):\n    return external(n) / d\n",
+    "@wrapped\ndef arithmetic(n, d):\n    return n / d\n",
+])
+def test_numeric_contract_rule_abstains_outside_exact_pattern(after):
+    import difflib
+    from core.rules.python_contracts import removed_zero_guard_candidates
+    from core.verification.diff_index import build_diff_index
+    before = "def arithmetic(n, d):\n    if d == 0:\n        return 0\n    return n / d\n"
+    diff = "diff --git a/app.py b/app.py\n" + "".join(difflib.unified_diff(before.splitlines(True), after.splitlines(True), fromfile="a/app.py", tofile="b/app.py"))
+    assert removed_zero_guard_candidates(build_diff_index(diff), {"app.py": "b1"}) == []

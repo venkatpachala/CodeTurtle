@@ -1,5 +1,9 @@
 # CodeTurtle System Design Document
 
+> Historical architecture reference. The default runtime is documented in
+> [CURRENT_ARCHITECTURE.md](CURRENT_ARCHITECTURE.md). The LangGraph/vector design
+> below is not the default v4 execution path.
+
 CodeTurtle is an **autonomous, local-first multi-agent swarm for repository-aware GitHub code reviews**. Unlike traditional LLM-based code review tools that operate on isolated diff snippets without project context, CodeTurtle indexes and traverses whole-codebase structures (AST symbols, call graphs, import dependencies, and semantic embeddings) using a hybrid vector-graph retrieval architecture, Graphify Model Context Protocol (MCP) integration, and a deterministic 6-phase LangGraph agent pipeline with multi-layer verification gates.
 
 ---

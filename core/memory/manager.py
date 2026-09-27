@@ -10,6 +10,17 @@ from datetime import datetime
 import uuid
 
 
+class LazyMemoryManager:
+    """Defer opening SQLite until a command actually accesses memory."""
+    def __init__(self):
+        self._manager = None
+
+    def __getattr__(self, name):
+        if self._manager is None:
+            self._manager = MemoryManager()
+        return getattr(self._manager, name)
+
+
 class MemoryManager:
     def __init__(self):
         init_db()  # Ensure database is initialized

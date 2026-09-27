@@ -287,6 +287,7 @@ class BundleAgent:
             planned: List[dict[str, str]] = []
             if "source" in requests:
                 planned.append({"tool": "read_hunk", "path": hyp.file})
+                planned.append({"tool": "read_source", "path": hyp.file})
             if hyp.symbol:
                 if "symbol" in requests:
                     planned.append({"tool": "graph_node", "symbol": hyp.symbol})
@@ -381,6 +382,18 @@ class BundleAgent:
                     proof_raw = self._complete(self._proof_prompt(bundle, hypotheses, evidence))
                     raw_outputs.append(proof_raw)
                     proof_kind, proof_payload = parse_agent_output(proof_raw)
+                    if proof_kind == "candidates" and not proof_payload and len(raw_outputs) < self.max_steps:
+                        # One bounded repair pass. An empty proof response must
+                        # not silently close positive discovery hypotheses.
+                        repair = (self._proof_prompt(bundle, hypotheses, evidence)
+                            + "\nPrevious response:\n" + proof_raw
+                            + "\nRecheck each rejection against the supplied HEAD source and diff. "
+                              "State a concrete triggering input, its HEAD execution path, and old versus new outcome. "
+                              "A disproof must quote contradictory HEAD code, not merely restate the removed behavior. "
+                              "Do not manufacture a defect; unavailable evidence remains unresolved.")
+                        proof_raw = self._complete(repair)
+                        raw_outputs.append(proof_raw)
+                        proof_kind, proof_payload = parse_agent_output(proof_raw)
                     if proof_kind != "candidates":
                         return AgentRunResult(
                             status="INVALID_JSON", raw_outputs=raw_outputs, tool_calls=tool_calls,

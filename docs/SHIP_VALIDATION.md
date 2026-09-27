@@ -1,5 +1,8 @@
 # Ship validation — v0.2.0
 
+> Historical validation of v0.2.0 only. Current preview validation is recorded
+> in IMPLEMENTATION_VALIDATION.md; this report does not certify the current code.
+
 Date: 2026-09-15
 Repo/PR: confident-ai/deepeval#3288
 Classification: source

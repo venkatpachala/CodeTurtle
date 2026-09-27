@@ -10,13 +10,13 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 
 from config import settings
-from core.memory.manager import MemoryManager
+from core.memory.manager import LazyMemoryManager
 from core.observability import get_langfuse_client, get_logger
 from core.utils import handle_error
 
 logger = get_logger()
 console = Console()
-memory = MemoryManager()
+memory = LazyMemoryManager()
 
 
 def _ollama_model_and_source() -> tuple[str, str]:
@@ -136,11 +136,16 @@ class ReviewPipeline:
         show_uncertain: bool = False,
         json_output: Optional[str] = None,
         approve: bool = False,
+        expected_head_sha: str = "",
+        expected_base_sha: str = "",
+        github_auth: str = "configured",
     ):
         t0 = time.monotonic()
         from contextlib import ExitStack
         resources = ExitStack()
         try:
+            from core.ci import github_authentication
+            resources.enter_context(github_authentication(github_auth))
             from core.repo_config import (
                 RepoConfigError,
                 find_config_path,
@@ -205,15 +210,19 @@ class ReviewPipeline:
             self.context.conversation_id = get_current_session()
 
             model_name, model_source = _ollama_model_and_source()
+            if settings.llm_backend == "openai":
+                model_name = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+                model_source = "OPENAI_MODEL or default"
             if model_name:
                 settings.ollama_model = model_name
-            _warn_if_ollama_model_missing(model_name)
+            if settings.llm_backend == "ollama":
+                _warn_if_ollama_model_missing(model_name)
             console.print(
                 Panel.fit(
                     f"[bold cyan]CodeTurtle[/bold cyan]\n"
                     f"Session: {self.context.conversation_id}\n"
                     f"Repository: {repo}#{number}\n"
-                    f"Model: {model_name} (Ollama, {model_source})"
+                    f"Model: {model_name} ({settings.llm_backend}, {model_source})"
                 )
             )
             print(f"[Review] llm={model_name} source={model_source}")
@@ -224,6 +233,10 @@ class ReviewPipeline:
 
             token = resolve_github_token(fallback=str(settings.github_token or ""))
             self._fetch_pr()
+            if expected_head_sha and expected_head_sha != self.context.pr_head_sha:
+                raise ValueError("PR HEAD differs from frozen input")
+            if expected_base_sha and expected_base_sha != self.context.pr_base_sha:
+                raise ValueError("PR BASE differs from frozen input")
             from core.review.lease import repository_lease
             from core.user_config import home_dir
             resources.enter_context(repository_lease(repo, home_dir()))
@@ -271,20 +284,6 @@ class ReviewPipeline:
                 self.context.final_state = review_graph.invoke(self.context.state)
             else:
                 from core.runtime.review_runtime import ReviewRuntime, result_to_review_state
-                from core.gateway.gateway import AIGateway
-
-                verification_gateway = AIGateway()
-
-                def _verification_llm(prompt: str) -> str:
-                    response = verification_gateway.generate(
-                        prompt=prompt,
-                        capability="correctness_review",
-                        agent_name="FindingVerifier",
-                        temperature=0.0,
-                        max_tokens=96,
-                        retries=1,
-                    )
-                    return str(getattr(response, "content", None) or "")
 
                 console.print("[yellow]Running v4 review runtime...[/yellow]")
                 result = ReviewRuntime().run(self.context)
@@ -966,6 +965,8 @@ Description:
 
         # Canonical path: use ReviewResult.findings (List[ReviewFinding]) if available
         review_result = final.get("_review_result")
+        if review_result is not None:
+            model = review_result.provenance.get("model") or model
         if review_result is not None and hasattr(review_result, "findings"):
             review_data = review_result_to_benchmark_review(
                 review_result,
@@ -1032,9 +1033,12 @@ def review(
     comment: bool = typer.Option(
         False,
         "--comment",
-        help="Post one GitHub PR review (summary only). Overrides default dry-run.",
+        help="Post one GitHub PR review with summary and validated inlines. Overrides default dry-run.",
     ),
     approve: bool = typer.Option(False, "--approve", help="Explicitly approve an eligible complete MERGE recommendation when publishing"),
+    expected_head_sha: str = typer.Option("", "--expected-head-sha", help="Reject a PR that differs from frozen HEAD"),
+    expected_base_sha: str = typer.Option("", "--expected-base-sha", help="Reject a PR that differs from frozen BASE"),
+    github_auth: str = typer.Option("configured", "--github-auth", help="Credential source: configured, gh, or anonymous"),
     verbose: bool = typer.Option(
         False, "--verbose", "-v", help="Show detailed error information"
     ),
@@ -1092,4 +1096,7 @@ def review(
         show_uncertain=show_uncertain,
         json_output=json_output,
         approve=approve,
+        expected_head_sha=expected_head_sha,
+        expected_base_sha=expected_base_sha,
+        github_auth=github_auth,
     )

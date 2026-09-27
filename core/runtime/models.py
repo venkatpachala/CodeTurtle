@@ -62,6 +62,7 @@ class Candidate:
     kind: str = "defect"  # defect | note
     risk_signals: List[Dict[str, Any]] = field(default_factory=list)
     hypothesis_id: Optional[str] = None
+    candidate_id: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)

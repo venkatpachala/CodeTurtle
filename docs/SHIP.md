@@ -1,5 +1,8 @@
 # CodeTurtle v0.4 ship notes
 
+> Historical release notes. For the 0.5.0a1 preview, use CURRENT_ARCHITECTURE.md,
+> LIMITATIONS.md, RELEASE_CHECKLIST.md, and IMPLEMENTATION_VALIDATION.md.
+
 CLI reviewer. Default dry-run. Decision is Policy. A zero-finding MERGE also
 requires healthy bundle-agent runs and adequate changed-source coverage;
 otherwise the internal result is `COMMENT / review_inconclusive`.

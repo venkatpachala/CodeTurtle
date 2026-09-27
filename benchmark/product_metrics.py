@@ -10,24 +10,29 @@ def measurement(numerator: int, denominator: int) -> dict:
 
 
 def product_metrics(predictions: list[dict]) -> dict[str, Any]:
-    completed = abstained = failed = anchored = findings = delivered = 0
+    completed = abstained = failed = anchored = findings = delivered = delivery_eligible = 0
     for prediction in predictions:
         result = prediction.get("result") or prediction
         status = (result.get("health") or {}).get("status")
         completed += int(status == "completed")
         failed += int(status == "failed")
-        abstained += int(result.get("decision") in (None, "COMMENT"))
+        reasons = set(result.get("policy_reasons") or [])
+        abstained += int(result.get("decision") is None or status != "completed" or bool(reasons & {
+            "partial_analysis", "insufficient_inspection", "unresolved_hypotheses",
+            "execution_unattributed", "execution_inconclusive", "no_eligible_units"}))
         published = (prediction.get("publication") or {}).get("status") in {"published", "already_published"}
         plan = prediction.get("publication_preview") or {}
         product = result.get("product_findings") or []
         findings += len(product)
         anchored += len(plan.get("comments") or [])
         delivered += len(product) if published else 0
+        if (prediction.get("publication") or {}).get("status") not in {None, "dry_run"}:
+            delivery_eligible += len(product)
     return {"completion": measurement(completed, len(predictions)),
             "failed_analysis": measurement(failed, len(predictions)),
             "abstention": measurement(abstained, len(predictions)),
             "inline_coverage": measurement(anchored, findings),
-            "delivery_coverage": measurement(delivered, findings)}
+            "delivery_coverage": measurement(delivered, delivery_eligible)}
 
 
 def compare_regressions(baseline: dict[str, dict], candidate: dict[str, dict], *,

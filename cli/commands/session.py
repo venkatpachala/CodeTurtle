@@ -4,11 +4,11 @@ from rich.panel import Panel
 from rich.table import Table
 from datetime import datetime
 
-from core.memory.manager import MemoryManager
+from core.memory.manager import LazyMemoryManager
 from core.utils import handle_error
 
 console = Console()
-memory = MemoryManager()
+memory = LazyMemoryManager()
 
 
 def new_session():

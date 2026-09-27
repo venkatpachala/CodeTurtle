@@ -13,6 +13,7 @@ from pathlib import Path
 
 from core.review.artifacts import write_json_atomic
 from core.runtime.review_runtime import ReviewRuntime
+from cli.commands.review import PipelineContext
 
 
 def main() -> int:
@@ -36,16 +37,26 @@ def main() -> int:
     with tempfile.TemporaryDirectory(dir=output.parent, prefix="live-input-") as temporary:
         root = Path(temporary)
         for name, (before, after) in cases.items():
-            old, new = root / "old.py", root / "new.py"
-            old.write_bytes(before.encode())
-            new.write_bytes(after.encode())
-            proc = subprocess.run(["git", "diff", "--no-index", "--", str(old), str(new)], capture_output=True, text=True)
-            if proc.returncode != 1:
-                raise RuntimeError("real Git diff generation failed")
-            lines = proc.stdout.splitlines()
-            diff = "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n" + "\n".join(lines[next(i for i, line in enumerate(lines) if line.startswith("@@")):]) + "\n"
+            checkout = root / name
+            checkout.mkdir()
+            def git(*argv):
+                return subprocess.run(["git", "-C", str(checkout), *argv], check=True,
+                    capture_output=True, text=True).stdout.strip()
+            git("init")
+            git("config", "user.name", "CodeTurtle validation")
+            git("config", "user.email", "validation@example.invalid")
+            (checkout / "app.py").write_bytes(before.encode())
+            git("add", "app.py")
+            git("commit", "-m", "base")
+            base = git("rev-parse", "HEAD")
+            (checkout / "app.py").write_bytes(after.encode())
+            git("commit", "-am", "head")
+            head = git("rev-parse", "HEAD")
+            diff = git("diff", base, head) + "\n"
+            context = PipelineContext(files_changed=["app.py"], full_diff=diff,
+                repo_dir=str(checkout), pr_head_sha=head, pr_base_sha=base)
             started = time.monotonic()
-            result = ReviewRuntime().run(files_changed=["app.py"], full_diff=diff)
+            result = ReviewRuntime().run(context)
             reports.append({"case": name, "elapsed_seconds": time.monotonic() - started,
                             "result": result.to_dict()})
             write_json_atomic(output, {"kind": "synthetic_live_smoke", "model": args.model, "cases": reports})
