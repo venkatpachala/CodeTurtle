@@ -14,6 +14,8 @@ load_dotenv()
 class Settings(BaseSettings):
     # LLM Configuration
     llm_backend: str = "ollama"
+    rules_enabled: bool = True
+    verification_enabled: bool = True
     ollama_model: str = "qwen2.5:7b"
     ollama_base_url: str = "http://localhost:11434"
 

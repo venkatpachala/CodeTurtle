@@ -73,6 +73,25 @@ class BundleTools:
             return {"error": "invalid_symbol"}
         return graph_node(self.client, symbol)
 
+    def read_source(self, path: str) -> Dict[str, Any]:
+        """Read bounded HEAD source for a changed bundle path, never execute it."""
+        resolved = self._in_bundle(path)
+        if not resolved or self.repo_dir is None:
+            return {"error": "no_scoped_checkout"}
+        target = (self.repo_dir / resolved).resolve()
+        if not target.is_relative_to(self.repo_dir) or not target.is_file():
+            return {"error": "path_jail"}
+        if target.stat().st_size > 1_000_000:
+            return {"error": "source_budget"}
+        lines = target.read_text(encoding="utf-8", errors="replace").splitlines()
+        starts = [int(u.get("start_line", 1) if isinstance(u, dict) else getattr(u, "start_line", 1))
+                  for u in self.bundle.units if normalize_path(u.get("path", "") if isinstance(u, dict) else getattr(u, "path", "")) == resolved]
+        start = max(0, min(starts or [1]) - 21)
+        selected = lines[start:start + 100]
+        text = "\n".join(f"{i}: {line}" for i, line in enumerate(selected, start=start + 1))
+        return {"path": resolved, "text": text[:5000], "source": "head_checkout",
+                "truncated": start > 0 or start + len(selected) < len(lines) or len(text) > 5000}
+
     def graph_callers(self, symbol: str) -> Dict[str, Any]:
         if not is_valid_symbol(symbol):
             return {"error": "invalid_symbol"}
@@ -111,6 +130,8 @@ class BundleTools:
         stem = re.sub(r"(?<!^)(?=[A-Z])", "_", receiver.split("::")[-1]).lower() + ".rb"
         skip = {".git", "vendor", "node_modules", "tmp"}
         for path in self.repo_dir.rglob(stem):
+            if not path.resolve().is_relative_to(self.repo_dir):
+                continue
             if any(part in skip for part in path.parts):
                 continue
             try:
@@ -156,6 +177,8 @@ class BundleTools:
         hits = []
         scanned = 0
         for path in root.rglob("*"):
+            if not path.resolve().is_relative_to(root):
+                continue
             if scanned >= 2500 or len(hits) >= 20:
                 break
             if not path.is_file() or path.suffix.lower() not in extensions:
@@ -192,6 +215,8 @@ class BundleTools:
         name = str((payload or {}).get("tool") or "").strip()
         if name == "read_hunk":
             return self.read_hunk(str(payload.get("path") or payload.get("file") or ""))
+        if name == "read_source":
+            return self.read_source(str(payload.get("path") or payload.get("file") or ""))
         if name == "graph_node":
             return self.graph_node(str(payload.get("symbol") or payload.get("label") or ""))
         if name == "graph_callers":

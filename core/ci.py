@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import os
+import subprocess
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Mapping, Optional, Tuple
 
@@ -21,6 +23,8 @@ def resolve_github_token(
 ) -> str:
     """CODETURTLE_GITHUB_TOKEN, then GITHUB_TOKEN, then fallback/settings."""
     env = environ if environ is not None else os.environ
+    if str(env.get("CODETURTLE_ANONYMOUS") or "").lower() == "true":
+        return ""
     for key in ("CODETURTLE_GITHUB_TOKEN", "GITHUB_TOKEN"):
         v = (env.get(key) or "").strip()
         if v:
@@ -54,6 +58,35 @@ def ensure_session(
         sid = str(create())
     p.write_text(sid + "\n", encoding="utf-8")
     return sid
+
+
+@contextmanager
+def github_authentication(source: str = "configured"):
+    """CLI-scoped credential selection; never persists or prints the token."""
+    if source not in {"configured", "gh", "anonymous"}:
+        raise ValueError("github-auth must be configured, gh, or anonymous")
+    changes = {}
+    if source == "gh":
+        proc = subprocess.run(["gh", "auth", "token", "--hostname", "github.com"],
+                              capture_output=True, text=True, timeout=15,
+                              env={k: v for k, v in os.environ.items()
+                                   if k.upper() not in {"GH_TOKEN", "GITHUB_TOKEN", "CODETURTLE_GITHUB_TOKEN"}})
+        if proc.returncode != 0 or not proc.stdout.strip():
+            raise RuntimeError("GitHub CLI authentication is unavailable; run gh auth login")
+        changes["CODETURTLE_GITHUB_TOKEN"] = proc.stdout.strip()
+        changes["CODETURTLE_ANONYMOUS"] = "false"
+    elif source == "anonymous":
+        changes["CODETURTLE_ANONYMOUS"] = "true"
+    original = {key: os.environ.get(key) for key in changes}
+    os.environ.update(changes)
+    try:
+        yield
+    finally:
+        for key, previous in original.items():
+            if previous is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = previous
 
 
 def should_skip_pr_review(

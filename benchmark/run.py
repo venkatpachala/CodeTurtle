@@ -15,6 +15,7 @@ from benchmark.gates import evaluate_release_gate
 from benchmark.models import RunManifest
 from benchmark.reports import render_ascii, render_gate, write_aggregate
 from benchmark.splits import load_registered_splits, load_split
+from core.review.artifacts import write_json_atomic
 
 
 def _timeout_text(value: object) -> str:
@@ -116,7 +117,7 @@ def main() -> int:
         dataset = load_dataset(dataset_path, max_prs=cfg.limit, start=cfg.start)
     run_id = args.run_id or _run_id(cfg.model); run_dir = ROOT / cfg.runs_dir / run_id; pred_dir = run_dir / "predictions"; eval_dir = run_dir / "evaluations"
     pred_dir.mkdir(parents=True, exist_ok=False); eval_dir.mkdir()
-    (run_dir / "config.json").write_text(json.dumps(cfg.to_dict(), indent=2), encoding="utf-8")
+    write_json_atomic(run_dir / "config.json", cfg.to_dict())
     metadata = _git_metadata()
     metadata["dataset_sha256"] = _sha256(dataset.raw_path)
     if cfg.provider == "ollama":
@@ -164,13 +165,13 @@ def main() -> int:
         if completed.returncode:
             manifest.failures.append({"pr_url": pr.pr_url, "return_code": completed.returncode, "elapsed_seconds": round(elapsed, 2)}); continue
         prediction = json.loads(output.read_text(encoding="utf-8")); prediction["run_id"] = run_id; prediction.setdefault("pr_url", pr.pr_url); prediction.setdefault("telemetry", {})["latency_seconds"] = round(elapsed, 2)
-        output.write_text(json.dumps(prediction, indent=2), encoding="utf-8")
+        write_json_atomic(output, prediction)
         predictions.append(prediction); manifest.prs_completed += 1
         if not args.predict_only:
             evaluation = evaluate_pr(prediction, [vars(g) for g in pr.golden_comments]); evaluation["pr_url"] = pr.pr_url
-            (eval_dir / f"pr_{index + cfg.start:03d}.json").write_text(json.dumps(evaluation, indent=2), encoding="utf-8")
+            write_json_atomic(eval_dir / f"pr_{index + cfg.start:03d}.json", evaluation)
             evaluations.append(evaluation)
-    manifest.completed_at = datetime.now(timezone.utc).isoformat(); (run_dir / "manifest.json").write_text(json.dumps(manifest.to_dict(), indent=2), encoding="utf-8")
+    manifest.completed_at = datetime.now(timezone.utc).isoformat(); write_json_atomic(run_dir / "manifest.json", manifest.to_dict())
     if args.predict_only:
         print(f"Predictions sealed: {manifest.prs_completed}/{manifest.prs_total}; run: {run_dir}")
         return 0 if not manifest.failures else 1

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import math
 from typing import Any, Dict, List, Tuple
 
 from core.agent.contract import classify_kind
@@ -106,8 +107,9 @@ def candidate_dict(raw: Any, *, bundle_id: str) -> Dict[str, Any] | None:
         confidence = float(raw.get("confidence") if raw.get("confidence") is not None else 0.5)
     except (TypeError, ValueError):
         confidence = 0.5
+    confidence = max(0.0, min(1.0, confidence)) if math.isfinite(confidence) else 0.5
     return {
-        "bundle_id": str(raw.get("bundle_id") or bundle_id),
+        "bundle_id": bundle_id,
         "file": file,
         "symbol": str(raw.get("symbol") or ""),
         "start_line": start_line,

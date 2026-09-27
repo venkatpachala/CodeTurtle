@@ -352,7 +352,11 @@ def verify_candidates(
                 ]
                 _drop(cand, "disproved", dropped)
                 continue
-        if source_proves_config_regression(cand, index):
+        from core.rules.python_contracts import proves_removed_zero_guard
+        if index is not None and proves_removed_zero_guard(cand, index):
+            status = "VERIFIED"
+            print(f"[Verify] deterministic=removed_zero_guard file={cand.file}")
+        elif source_proves_config_regression(cand, index):
             status = "VERIFIED"
             impact = f"{cand.title or ''} {cand.claim or ''} {cand.actual or ''}"
             if not _HIGH_IMPACT_RE.search(impact):

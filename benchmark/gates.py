@@ -37,6 +37,16 @@ def evaluate_release_gate(metrics: dict[str, Any], thresholds: dict[str, Any]) -
         "decision_accuracy": observed["decision_accuracy"] >= float(thresholds.get("min_decision_accuracy", 0.7)),
         "over_blocking": observed["over_blocking_rate"] <= float(thresholds.get("max_over_blocking_rate", 0.1)),
     }
+    missing = {
+        "fp_per_pr": metrics.get("fp_per_pr"), "agent_reliability": metrics.get("agent_run_success_rate"),
+        "latency": (metrics.get("latency_seconds") or {}).get("p95"),
+        "decision_accuracy": decision.get("accuracy"), "over_blocking": decision.get("over_blocking_rate")}
+    for key, value in missing.items():
+        if value is None:
+            checks[key] = None
+            observed_key = {"agent_reliability": "agent_run_success_rate", "latency": "p95_latency_seconds",
+                            "over_blocking": "over_blocking_rate"}.get(key, key)
+            observed[observed_key] = None
     return {
         # A missing denominator is neither a passing nor failing measurement.
         # The release remains ineligible until every required gate is measured.

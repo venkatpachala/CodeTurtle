@@ -83,7 +83,9 @@ def build_publication_plan(result: ReviewResult, *, full_diff: str,
         path = finding.file.replace("\\", "/")
         if (path in index.file_set() and finding.line and index.line_in_new_file(path, finding.line)
                 and len(comments) < max(0, inline_max)):
-            comments.append(finding.to_github_comment())
+            comment = finding.to_github_comment()
+            comment["body"] += f"\n<!-- codeturtle-finding:{finding.fingerprint} -->"
+            comments.append(comment)
         else:
             summary_only.append(finding.id)
     if not result.product_findings:
