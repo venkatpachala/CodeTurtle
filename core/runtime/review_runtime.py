@@ -3,6 +3,11 @@
 from __future__ import annotations
 
 from typing import Any, Callable, Dict, List, Optional
+import hashlib
+import subprocess
+from core.review.contract import ReviewTarget, ReviewHealth, StageOutcome, evaluate_policy
+from core.review.inspection import collect_inspection, unresolved_hypotheses
+from core.review.budget import ReviewBudget
 
 from core.agent.contract import classify_kind, proof_complete
 from core.bundling.builder import BundleBuilder
@@ -110,8 +115,6 @@ def result_to_review_state(result: ReviewResult, context: Any = None) -> Dict[st
     # Findings are canonical; the legacy dictionaries remain only for callers
     # that have not yet migrated off ``validated_findings``.
     findings = [f.to_dict() for f in (getattr(result, "findings", None) or [])]
-    if not findings:
-        findings = [_finding_from_comment(c) for c in (result.comments or [])]
     pr = getattr(ctx, "pr", None)
     title = ""
     body = ""
@@ -176,6 +179,7 @@ def result_to_review_state(result: ReviewResult, context: Any = None) -> Dict[st
         else 0.5,
         "ignore_paths": list(getattr(repo_cfg, "ignore_paths", None) or []) if repo_cfg else [],
         "runtime": "v4",
+        "_review_result": result,
         "execution_report": dict(result.execution or {}),
         "pipeline_trace": (
             result.pipeline_trace.to_list()
@@ -222,6 +226,19 @@ class ReviewRuntime:
         self.graphify_client = graphify_client
         self.rule_engine = rule_engine
         self.agent = agent
+        self.stage_errors: List[StageOutcome] = []
+        self.budget = ReviewBudget()
+
+    def _verify_completion(self, prompt: str) -> str:
+        from core.gateway.gateway import AIGateway
+        try:
+            self.budget.reserve(prompt)
+            response = AIGateway().generate(prompt=prompt, capability="correctness_review",
+                agent_name="FindingVerifier", temperature=0.0, max_tokens=96, retries=1)
+            return str(response.content or "")
+        except Exception:
+            self.stage_errors.append(StageOutcome(stage="verification", status="failed", code="model_call_failed"))
+            raise
 
     def _client(self, repo: str) -> Any:
         if self.graphify_client is not None:
@@ -229,6 +246,13 @@ class ReviewRuntime:
         if not repo:
             return None
         try:
+            from config import settings
+            if not settings.graphify_enabled:
+                return None
+            from core.workspace import graph_is_stale, _run_default
+            from core.repository_knowledge.paths import resolve_repo_dir, resolve_graph_path
+            if graph_is_stale(resolve_repo_dir(repo), resolve_graph_path(repo), _run_default):
+                return None
             from core.repository_knowledge.structural import get_provider_if_available
 
             return get_provider_if_available(repo)
@@ -250,6 +274,7 @@ class ReviewRuntime:
 
                 fn = run_rule_engine
             except Exception:
+                self.stage_errors.append(StageOutcome(stage="rules", status="failed", code="rule_import_failed"))
                 return []
         try:
             return list(
@@ -268,8 +293,10 @@ class ReviewRuntime:
                 try:
                     return list(fn(bundles) or [])
                 except Exception:
+                    self.stage_errors.append(StageOutcome(stage="rules", status="failed", code="rule_execution_failed"))
                     return []
         except Exception:
+            self.stage_errors.append(StageOutcome(stage="rules", status="failed", code="rule_execution_failed"))
             return []
 
     def _agent_candidates(self, bundle: Bundle, tools: Any) -> tuple[List[Candidate], Dict[str, Any]]:
@@ -301,6 +328,10 @@ class ReviewRuntime:
         repo: str = "",
         classification: str = "",
     ) -> ReviewResult:
+        self.stage_errors = []
+        self.budget = ReviewBudget()
+        if self.agent is not None and hasattr(self.agent, "usage_records"):
+            self.agent.usage_records = []
         ctx = context
         files = list(
             files_changed
@@ -391,6 +422,8 @@ class ReviewRuntime:
 
         if self.agent is None:
             self.agent = BundleAgent(llm=self.llm, max_steps=agent_steps)
+        if isinstance(self.agent, BundleAgent):
+            self.agent.budget = self.budget
 
         trace = PipelineTrace()
         timing = TimingRecord()
@@ -453,9 +486,10 @@ class ReviewRuntime:
                     index=index,
                     line=line,
                     bundle_paths=own_paths,
+                    allow_summary_only=True,
                 )
-                if not keep or not line:
-                    drop_r = reason if not keep else "no_line"
+                if not keep:
+                    drop_r = reason
                     dropped.append({**cand.to_dict(), "drop_reason": drop_r})
                     stage = STAGE_POSITIONER if (not line) else STAGE_REFLECTOR
                     trace.drop(cid, stage, drop_r, cand)
@@ -471,7 +505,7 @@ class ReviewRuntime:
                 index=index,
                 bundles=bundles,
                 client=client,
-                llm=self.verification_llm or self.llm,
+                llm=self.verification_llm or self.llm or self._verify_completion,
             )
         # Record verifier drops with trace
         for vd in vdrop:
@@ -498,19 +532,14 @@ class ReviewRuntime:
             ln = position_candidate(cand, index)
             if ln is None:
                 ln = line_by_id.get(id(cand))
-            if not ln:
-                cid = getattr(cand, "_candidate_id", "?")
-                dropped.append({**cand.to_dict(), "drop_reason": "no_line"})
-                trace.drop(cid, STAGE_POSITIONER, "no_line", cand)
-                continue
             # Build canonical Comment (backward compat)
-            comments.append(comment_from_candidate(cand, int(ln)))
+            comments.append(comment_from_candidate(cand, int(ln or 0)))
             # Build canonical ReviewFinding (new path)
             finding_counter += 1
             fid = f"F-{finding_counter:03d}"
             cid = getattr(cand, "_candidate_id", "?")
-            rf = ReviewFinding.from_candidate_and_comment(cand, int(ln), finding_id=fid, candidate_id=cid)
-            trace.keep(cid, STAGE_FINAL, cand, int(ln))
+            rf = ReviewFinding.from_candidate_and_comment(cand, int(ln or 0), finding_id=fid, candidate_id=cid)
+            trace.keep(cid, STAGE_FINAL, cand, ln)
             review_findings.append(rf)
 
         coverage = _coverage_from_units(units, bundles)
@@ -576,14 +605,6 @@ class ReviewRuntime:
             comment.tests_run = evidence.status not in ("NOT_RUN", "SKIPPED")
         _log_sandbox(execution)
 
-        with timed(timing, "policy"):
-            decision, policy_reason = decide(
-                findings,
-                classification=classif,
-                coverage=coverage,
-                files_changed=files,
-                execution=execution,
-            )
         healthy_statuses = {"VALID_CANDIDATES", "VALID_EMPTY", "LEGACY"}
         unhealthy = [r for r in agent_runs if r.get("status") not in healthy_statuses]
         ratio, low = coverage_score(
@@ -597,11 +618,30 @@ class ReviewRuntime:
             "coverage_ratio": ratio,
             "coverage_adequate": not low,
         }
-        # A clean result is meaningful only when every scheduled reviewer
-        # completed and the changed executable context was represented.
-        if decision == "MERGE" and (unhealthy or low):
-            decision = "COMMENT"
-            policy_reason = "review_inconclusive"
+        inspection = collect_inspection(units, bundles, agent_runs)
+        unresolved = unresolved_hypotheses(agent_runs, candidates, dropped)
+        all_failed = bool(agent_runs) and len(unhealthy) == len(agent_runs)
+        health = ReviewHealth(status="failed" if all_failed else "partial" if unhealthy else "completed",
+            stages=[StageOutcome(stage=f"bundle:{r['bundle_id']}", status="failed" if r in unhealthy else "succeeded",
+                                 code=str(r.get("status"))) for r in agent_runs])
+        health.stages.extend(self.stage_errors)
+        if self.stage_errors and health.status == "completed":
+            health.status = "partial"
+        if client is None and inspection.eligible:
+            health.stages.append(StageOutcome(stage="graph", status="degraded", code="graph_unavailable"))
+            # A local bounded source search is useful, but not equivalent to
+            # complete cross-file structural context.
+            if len([p for p in files if p.endswith(".py")]) > 1 and health.status == "completed":
+                health.status = "partial"
+        intake_omissions = list(getattr(ctx, "intake_omissions", []) or [])
+        if intake_omissions and health.status == "completed":
+            health.status = "partial"
+        unresolved.extend(intake_omissions)
+        with timed(timing, "policy"):
+            outcome = evaluate_policy(health=health, coverage=inspection, findings=review_findings,
+                unresolved=unresolved, execution=execution, classification=classif)
+        decision, policy_reason = outcome.decision, outcome.reasons[0]
+        pipeline_health.update(status=health.status, inspection_ratio=inspection.inspection_ratio)
         timing.total_s = sum(
             timing.to_dict()[k] for k in timing.to_dict() if k != "total_s"
         )
@@ -634,7 +674,28 @@ class ReviewRuntime:
             timing=timing,
             agent_runs=agent_runs,
             pipeline_health=pipeline_health,
+            target=ReviewTarget(repo=repo_name, number=int(getattr(ctx, "number", 0) or 0),
+                head_sha=str(getattr(ctx, "pr_head_sha", "") or ""),
+                base_sha=str(getattr(ctx, "pr_base_sha", "") or ""),
+                diff_sha256=hashlib.sha256(diff.encode()).hexdigest()),
+            health=health, inspection=inspection, unresolved=unresolved,
+            approval_eligible=outcome.approval_eligible, policy_reasons=outcome.reasons,
+            provenance={**_provenance(self.agent), "budget": self.budget.to_dict()},
         )
+
+
+def _provenance(agent: Any) -> dict:
+    from core.agent.bundle_agent import PROMPT_VERSION
+    from config import settings
+    try:
+        commit = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, timeout=10).stdout.strip()
+        dirty = bool(subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True, timeout=10).stdout.strip())
+    except (OSError, subprocess.SubprocessError):
+        commit, dirty = "", None
+    return {"reviewer_commit": commit, "dirty": dirty, "prompt_version": PROMPT_VERSION,
+            "provider": getattr(settings, "llm_backend", "ollama"),
+            "model": getattr(settings, "ollama_model", ""),
+            "model_calls": list(getattr(agent, "usage_records", []) or [])}
 
 
 def _execution_evidence(execution: Dict[str, Any]):
@@ -653,7 +714,7 @@ def _execution_evidence(execution: Dict[str, Any]):
         status = "FAILED"
     return ExecutionEvidence(
         status=status,
-        sandbox=not skipped,
+        sandbox=False,
         environment=str(execution.get("python_env") or execution.get("env") or ""),
         command=str(execution.get("cmd") or ""),
         exit_code=execution.get("exit_code"),

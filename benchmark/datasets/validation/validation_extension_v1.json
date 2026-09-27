@@ -1,0 +1,10 @@
+{
+  "name": "validation_extension_v1",
+  "split": "validation",
+  "used_for_system_design": false,
+  "eligible_for_headline_metrics": true,
+  "selection_reason": "Replace a Keycloak replica whose original PR had a historical CodeTurtle result. Selected before opening this PR's gold labels; reviewer remains frozen.",
+  "prs": [
+    "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/3"
+  ]
+}

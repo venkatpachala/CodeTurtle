@@ -1,0 +1,12 @@
+{
+  "prs": {
+    "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/3": [
+      {
+        "gold_id": "G-002",
+        "failure_stage": "HYPOTHESIS_MISS",
+        "rationale": "The validator bundle ran successfully but its only hypothesis concerned blocked-email handling when no domain setting exists, not suffix matching without a boundary.",
+        "evidence": "extension prediction pr_000.json: B-003 H-001, VALID_EMPTY; lib/validators/email_validator.rb email_in_restriction_setting?"
+      }
+    ]
+  }
+}

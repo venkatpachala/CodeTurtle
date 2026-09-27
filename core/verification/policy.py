@@ -258,7 +258,7 @@ def decide(
         return "COMMENT", "lockfile-only"
 
     if _execution_failed(execution) or any(f.get("tests_passed") is False for f in findings):
-        return "REQUEST_CHANGES", "tests_failed"
+        return "COMMENT", "execution_unattributed"
 
     findings = [_cap_changelog_severity(f) for f in findings]
     findings = [_cap_hedge(f) for f in findings]
@@ -317,6 +317,10 @@ def policy_from_state(
 ) -> Tuple[str, str, float, bool]:
     """Decide from review state. Logs [Coverage] when review_coverage is present."""
     state = state or {}
+    canonical = state.get("_review_result")
+    if canonical is not None:
+        ratio = canonical.inspection.inspection_ratio
+        return canonical.decision, canonical.policy_reason, ratio or 0.0, not canonical.approval_eligible
     facts = state.get("pr_facts") if isinstance(state.get("pr_facts"), dict) else {}
     classification = str(facts.get("classification") or "")
     files = list(facts.get("files_changed") or state.get("files_changed") or [])

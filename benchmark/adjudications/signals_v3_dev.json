@@ -1,0 +1,10 @@
+{
+  "prs": {
+    "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/1": [
+      {"gold_id": "G-001", "status": "confirmed", "reason": "Previously matched to the duplicate Ruby method definition; development label.", "evidence": "app/models/optimized_image.rb: duplicate self.downsize definitions in development PR"},
+      {"gold_id": "G-002", "status": "confirmed", "reason": "Previously matched to the hardcoded upload limit in the changed diff; development label.", "evidence": "app/assets/javascripts/discourse/lib/utilities.js: maxSizeKB hardcoded to 10 * 1024"},
+      {"gold_id": "G-003", "status": "confirmed", "reason": "Previously matched to the GIF resize argument contract; development label.", "evidence": "app/controllers/uploads_controller.rb: passes 80% into animated resize path"},
+      {"gold_id": "G-004", "status": "adjudication_required", "reason": "Tempfile#size caching was not established, and the claimed infinite loop conflicts with the bounded attempt counter."}
+    ]
+  }
+}

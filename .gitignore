@@ -1,4 +1,5 @@
 # Python-generated files
+.validation/
 __pycache__/
 *.py[oc]
 *.pyc
@@ -23,6 +24,7 @@ tmp/
 data/
 outputs/
 benchmark/runs/
+benchmark/results/
 
 # Snapshots / artifacts
 artifacts/last_review_snapshot.json
@@ -35,6 +37,3 @@ debug_*.txt
 
 # GitHub
 .github/copilot-instructions.md
-
-#benchmark
-benchmark/

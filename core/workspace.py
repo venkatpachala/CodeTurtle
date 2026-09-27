@@ -6,6 +6,8 @@ import os
 import shutil
 import subprocess
 import sys
+import base64
+import re
 from pathlib import Path
 from typing import Callable, List, Optional, Sequence
 
@@ -46,6 +48,15 @@ def _run_default(
     timeout: Optional[int] = None,
     cwd: Optional[str] = None,
 ) -> subprocess.CompletedProcess:
+    env = dict(os.environ)
+    if argv and Path(str(argv[0])).stem.lower() == "git":
+        from core.ci import resolve_github_token
+        token = resolve_github_token()
+        env["GIT_TERMINAL_PROMPT"] = "0"
+        if token:
+            encoded = base64.b64encode(f"x-access-token:{token}".encode()).decode()
+            env.update(GIT_CONFIG_COUNT="1", GIT_CONFIG_KEY_0="http.https://github.com/.extraheader",
+                       GIT_CONFIG_VALUE_0=f"AUTHORIZATION: basic {encoded}")
     return subprocess.run(
         list(argv),
         check=check,
@@ -53,6 +64,7 @@ def _run_default(
         text=True,
         timeout=timeout,
         cwd=cwd,
+        env=env,
     )
 
 
@@ -87,8 +99,8 @@ def graph_is_stale(repo_dir: Path, graph: Path, run: RunFn) -> bool:
 
 def clone_url(repo: str, token: str = "") -> str:
     slug = repo.strip().strip("/")
-    if token:
-        return f"https://x-access-token:{token}@github.com/{slug}.git"
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", slug) or any(p in {".", ".."} for p in slug.split("/")):
+        raise WorkspaceError("invalid repository identity")
     return f"https://github.com/{slug}.git"
 
 
@@ -288,4 +300,6 @@ def ensure_checkout(
     run = run or _run_default
     dest = ensure_clone(repo, run=run, token=token)
     checkout_sha(dest, head_sha, number=number, run=run)
+    if head_sha and _head_sha(dest, run) != head_sha:
+        raise WorkspaceError("checkout does not match requested PR HEAD")
     return dest

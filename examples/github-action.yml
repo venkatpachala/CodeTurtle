@@ -1,110 +1,64 @@
-# Copy to: <your-repo>/.github/workflows/codeturtle-review.yml
-# See docs/github-action.md
-#
-# Reviews opened / updated / reopened PRs with:
-#   python -m cli.main review $GITHUB_REPOSITORY $PR --comment
-# Default: no --execute-tests, no --execute-install.
-# Skips drafts and dependabot[bot].
-
+# Preview-first workflow. Set CODETURTLE_REV to an audited full commit SHA.
+# Automated fork review is intentionally outside this workflow's support scope.
 name: CodeTurtle review
-
 on:
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
-      dry_run:
-        description: "Do not post to GitHub"
-        type: boolean
-        default: false
-      execute_tests:
-        description: "Opt-in pytest in the PR worktree (untrusted code)"
-        type: boolean
-        default: false
-      python_version:
-        description: "Python version"
+      pr_number:
+        description: PR number to review
+        required: true
         type: string
-        default: "3.12"
-
+      publish:
+        description: Publish the review after analysis
+        type: boolean
+        default: false
 permissions:
   contents: read
   pull-requests: write
-
+concurrency:
+  group: codeturtle-${{ github.repository }}-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
 jobs:
   review:
-    if: >
-      github.event_name != 'pull_request'
-      || (
-        github.event.pull_request.draft != true
-        && github.actor != 'dependabot[bot]'
-      )
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.draft != true)
     runs-on: ubuntu-latest
-    env:
-      # PAT (CODETURTLE_GITHUB_TOKEN) wins in CodeTurtle if GITHUB_TOKEN 403s
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      CODETURTLE_GITHUB_TOKEN: ${{ secrets.CODETURTLE_GITHUB_TOKEN }}
-      CODETURTLE_PR_DRAFT: ${{ github.event.pull_request.draft }}
-      GRAPHIFY_GRAPH_PATH: ${{ github.workspace }}/graphify-out/graph.json
-      CODETURTLE_CONFIG: ${{ github.workspace }}/.codeturtle.yaml
+    timeout-minutes: 20
     steps:
-      - name: Checkout PR head
-        uses: actions/checkout@v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ inputs.python_version || '3.12' }}
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-
-      - name: Install CodeTurtle
+          python-version: '3.12'
+      - name: Install trusted reviewer
         env:
-          CODETURTLE_GIT: ${{ vars.CODETURTLE_GIT }}
+          TOOL_REV: ${{ vars.CODETURTLE_REV }}
         run: |
-          if [ -n "$CODETURTLE_GIT" ]; then
-            uv pip install --system "codeturrle @ git+${CODETURTLE_GIT}"
-          elif [ -f pyproject.toml ] && grep -q 'name = "codeturrle"' pyproject.toml; then
-            uv sync --frozen || uv sync
-          else
-            echo "Set repository variable CODETURTLE_GIT to the CodeTurtle git URL" >&2
-            echo "e.g. https://github.com/YOU/codeturtle.git" >&2
-            exit 1
-          fi
-
-      - name: Graphify (code-only, no LLM)
-        continue-on-error: true
-        run: |
-          if command -v graphify >/dev/null 2>&1; then
-            graphify . --code-only
-          elif python -c "import graphifyy" >/dev/null 2>&1; then
-            python -m graphifyy . --code-only || true
-          else
-            echo "Graphify CLI not found; review will use GRAPHIFY_GRAPH_PATH if present"
-          fi
-
-      - name: Review PR
+          [[ "$TOOL_REV" =~ ^[0-9a-fA-F]{40}$ ]] || { echo 'Set CODETURTLE_REV to a full audited commit SHA'; exit 1; }
+          python -m pip install "codeturtle-review[openai] @ git+https://github.com/venkatpachala/CodeTurtle.git@$TOOL_REV"
+      - name: Review data with trusted tooling
         env:
-          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ github.token }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4o-mini' }}
+          LLM_BACKEND: openai
+          GRAPHIFY_ENABLED: 'false'
+          CODETURTLE_HOME: ${{ runner.temp }}/codeturtle
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number || inputs.pr_number }}
+          PUBLISH: ${{ inputs.publish || false }}
         run: |
-          REPO="${{ github.repository }}"
-          PR="${{ github.event.pull_request.number }}"
-          if [ -z "$PR" ]; then
-            echo "No pull_request.number (workflow_dispatch without a PR)" >&2
-            exit 1
-          fi
-          DRY="${{ inputs.dry_run || false }}"
-          EX="${{ inputs.execute_tests || false }}"
-          ARGS=(python -m cli.main review "$REPO" "$PR")
-          if [ "$DRY" = "true" ]; then
-            ARGS+=(--dry-run)
-          else
-            ARGS+=(--comment)
-          fi
-          if [ "$EX" = "true" ]; then
-            ARGS+=(--execute-tests)
-          fi
+          [[ "$PR" =~ ^[1-9][0-9]*$ ]] || exit 1
+          ARGS=(codeturtle review "$REPO" "$PR" --json-output review.json)
+          if [ "$PUBLISH" = 'true' ]; then ARGS+=(--comment); else ARGS+=(--dry-run); fi
           "${ARGS[@]}"
+      - name: Preserve review result
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: codeturtle-review-${{ github.run_id }}
+          path: review.json
+          if-no-files-found: warn
+          retention-days: 7

@@ -82,6 +82,15 @@ class AIGateway:
             "context_gathering": {"provider": "ollama", "model": default_model},   # ← Added
             "default": {"provider": "ollama", "model": default_model},
         }
+        from config import settings
+        backend = str(settings.llm_backend).lower()
+        if backend not in {"ollama", "openai"}:
+            raise ValueError(f"Unsupported LLM backend: {backend}")
+        if backend == "openai":
+            import os
+            model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+            for entry in self.model_registry.values():
+                entry.update(provider="openai", model=model)
 
     def _get_provider(self, capability: str):
         config = self.model_registry.get(capability, {"provider": self.default_provider})

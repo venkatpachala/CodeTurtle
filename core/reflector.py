@@ -118,6 +118,7 @@ def reflect_candidate(
     index: Optional[DiffIndex] = None,
     line: Optional[int] = None,
     bundle_paths: Optional[Iterable[str]] = None,
+    allow_summary_only: bool = False,
 ) -> Tuple[bool, str]:
     """Return (keep, reason). DROP rules are numbered in the v4 spec."""
     allowed = _files_set(files_changed)
@@ -169,7 +170,7 @@ def reflect_candidate(
     if candidate.symbol and _looks_like_path_or_py(candidate.symbol):
         return _drop("symbol_is_path")
 
-    if not line:
+    if not line and not allow_summary_only:
         return _drop("no_line")
 
     blob = _hunk_blob(index, path)
