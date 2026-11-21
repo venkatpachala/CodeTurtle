@@ -1,0 +1,306 @@
+{
+  "date": "2026-11-21",
+  "scope": "Source-bound final finding verification development diagnostics",
+  "eligible_for_headline_metrics": false,
+  "full_suite_tests_passed": 658,
+  "new_tests_since_previous_phase": 48,
+  "offline_snapshots_passed": 4,
+  "ci": {
+    "url": "https://github.com/venkatpachala/CodeTurtle/actions/runs/44911060599",
+    "reviewer_commit": "43b4447ab1214fc8130b78606c83431a66cb7153",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "contracts (ubuntu-latest, 3.11)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "contracts (ubuntu-latest, 3.12)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "contracts (windows-latest, 3.12)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "contracts (windows-latest, 3.11)",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "static_cli": {
+    "schema": "2.3",
+    "reviewed_head": "f1f814a6116a8fa4a26824735ebb8887c0170165",
+    "decision": "COMMENT",
+    "health": "partial",
+    "model_calls": 0,
+    "inspected_units": 0,
+    "product_findings": 0
+  },
+  "runs": [
+    {
+      "artifact_directory": "finding-verifier-v1",
+      "reviewer_commit": "862f7c0030633c55f33fc068cc7f6b89750f35fe",
+      "reviewer_dirty": false,
+      "selected_cases": 4,
+      "model": "qwen2.5-coder:7b",
+      "provider_profile": {
+        "transport": "windows-powershell-stdin",
+        "context_tokens": 8192,
+        "temperature": 0,
+        "seed": 42,
+        "request_timeout_seconds": 130
+      },
+      "prompt_versions": {
+        "bundle": "hypothesis-proof-v3-intent",
+        "requirement": "requirement-first-v3-bounded-repair",
+        "finding": "finding-source-v1"
+      },
+      "seal": {
+        "predictions_sha256": "6b38306365bac3e9e11cd1bf3a30349e4025e5c04a612146273c16e9a6240a0b",
+        "manifest_sha256": "23ed90ed8fa2f107f92a8c2e293a949dd8d9b65e9127b4347ad8117eb9f3da47",
+        "prediction_count": 8
+      },
+      "statistics": {
+        "investigate:legacy": {
+          "reviews": 4,
+          "completed": 3,
+          "requirement_outcomes": 4,
+          "matching_outcomes": 1,
+          "actual_model_calls": 19,
+          "reported_prompt_tokens": 23313,
+          "reported_completion_tokens": 3979,
+          "calls_missing_usage": 0,
+          "model_call_errors": 0,
+          "product_findings": 0,
+          "elapsed_seconds": 495.585,
+          "finding_verifications": 0,
+          "finding_verdicts": {},
+          "finding_verification_statuses": {},
+          "verification_repairs": 0
+        },
+        "investigate:structured": {
+          "reviews": 4,
+          "completed": 1,
+          "requirement_outcomes": 4,
+          "matching_outcomes": 1,
+          "actual_model_calls": 19,
+          "reported_prompt_tokens": 26895,
+          "reported_completion_tokens": 5361,
+          "calls_missing_usage": 0,
+          "model_call_errors": 0,
+          "product_findings": 0,
+          "elapsed_seconds": 579.02,
+          "finding_verifications": 1,
+          "finding_verdicts": {
+            "unresolved": 1
+          },
+          "finding_verification_statuses": {
+            "invalid_response": 1
+          },
+          "verification_repairs": 1
+        }
+      },
+      "outcomes": [
+        {
+          "case_id": "none-guard-removed",
+          "strategy": "investigate:legacy",
+          "expected_status": "violated",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 110.933
+        },
+        {
+          "case_id": "none-guard-removed",
+          "strategy": "investigate:structured",
+          "expected_status": "violated",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "partial",
+          "findings": 0,
+          "elapsed_seconds": 144.156
+        },
+        {
+          "case_id": "none-guard-preserved",
+          "strategy": "investigate:structured",
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "matches_label": true,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 83.145
+        },
+        {
+          "case_id": "none-guard-preserved",
+          "strategy": "investigate:legacy",
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "matches_label": true,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 84.166
+        },
+        {
+          "case_id": "tenant-filter-removed",
+          "strategy": "investigate:legacy",
+          "expected_status": "violated",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 136.473
+        },
+        {
+          "case_id": "tenant-filter-removed",
+          "strategy": "investigate:structured",
+          "expected_status": "violated",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "partial",
+          "findings": 0,
+          "elapsed_seconds": 183.205
+        },
+        {
+          "case_id": "tenant-guard-delegated",
+          "strategy": "investigate:structured",
+          "expected_status": "verified",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "partial",
+          "findings": 0,
+          "elapsed_seconds": 168.514
+        },
+        {
+          "case_id": "tenant-guard-delegated",
+          "strategy": "investigate:legacy",
+          "expected_status": "verified",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "partial",
+          "findings": 0,
+          "elapsed_seconds": 164.013
+        }
+      ]
+    },
+    {
+      "artifact_directory": "finding-verifier-v2",
+      "reviewer_commit": "a5b339566351d7ed34930ba3772899b2c263cd58",
+      "reviewer_dirty": false,
+      "selected_cases": 2,
+      "model": "qwen2.5-coder:7b",
+      "provider_profile": {
+        "transport": "windows-powershell-stdin",
+        "context_tokens": 8192,
+        "temperature": 0,
+        "seed": 42,
+        "request_timeout_seconds": 130
+      },
+      "prompt_versions": {
+        "bundle": "hypothesis-proof-v3-intent",
+        "requirement": "requirement-first-v3-bounded-repair",
+        "finding": "finding-source-v2"
+      },
+      "seal": {
+        "predictions_sha256": "efc47899f280bcc9c2c272a4009264beffd0c16a779a79e2799414629c42b051",
+        "manifest_sha256": "c21a8ffccf23df7220f778c81a2d67a9ca3134b4f29bc8776146a553de88d455",
+        "prediction_count": 4
+      },
+      "statistics": {
+        "investigate:legacy": {
+          "reviews": 2,
+          "completed": 2,
+          "requirement_outcomes": 2,
+          "matching_outcomes": 1,
+          "actual_model_calls": 7,
+          "reported_prompt_tokens": 7242,
+          "reported_completion_tokens": 1522,
+          "calls_missing_usage": 0,
+          "model_call_errors": 0,
+          "product_findings": 0,
+          "elapsed_seconds": 160.994,
+          "finding_verifications": 0,
+          "finding_verdicts": {},
+          "finding_verification_statuses": {},
+          "verification_repairs": 0
+        },
+        "investigate:structured": {
+          "reviews": 2,
+          "completed": 1,
+          "requirement_outcomes": 2,
+          "matching_outcomes": 1,
+          "actual_model_calls": 8,
+          "reported_prompt_tokens": 9964,
+          "reported_completion_tokens": 1976,
+          "calls_missing_usage": 0,
+          "model_call_errors": 0,
+          "product_findings": 0,
+          "elapsed_seconds": 220.386,
+          "finding_verifications": 1,
+          "finding_verdicts": {
+            "unresolved": 1
+          },
+          "finding_verification_statuses": {
+            "invalid_response": 1
+          },
+          "verification_repairs": 1
+        }
+      },
+      "outcomes": [
+        {
+          "case_id": "none-guard-removed",
+          "strategy": "investigate:legacy",
+          "expected_status": "violated",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 102.066
+        },
+        {
+          "case_id": "none-guard-removed",
+          "strategy": "investigate:structured",
+          "expected_status": "violated",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "partial",
+          "findings": 0,
+          "elapsed_seconds": 143.322
+        },
+        {
+          "case_id": "none-guard-preserved",
+          "strategy": "investigate:structured",
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "matches_label": true,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 77.064
+        },
+        {
+          "case_id": "none-guard-preserved",
+          "strategy": "investigate:legacy",
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "matches_label": true,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 58.928
+        }
+      ]
+    }
+  ],
+  "conclusion": "No measured detection gain. The local model still misses the removed None guard; invalid structured verdicts and citations remain unresolved and inspectable.",
+  "limitations": [
+    "Author-labelled synthetic development cases, not independent held-out evaluation.",
+    "Twelve reviews repeat four distinct cases; they are not twelve independent cases.",
+    "End-to-end variants rerun upstream model stages; source pairing does not freeze candidate generation.",
+    "Model tags and transport profiles are recorded, not immutable model weight digests.",
+    "Real-PR precision and recall remain unmeasured."
+  ]
+}

@@ -8,6 +8,9 @@ For the input-only requirement development corpus and sealed link-versus-investi
 experiment, see [the requirement-first walkthrough](../docs/REQUIREMENT_FIRST_PHASE.md).
 Those twelve synthetic cases and their outcome labels are development material,
 separate from the real-PR split manifests and held-out release evidence below.
+The same harness now supports `--verifier-modes legacy structured` for paired
+end-to-end final-verifier ablations. See the [source verification guide](../docs/SOURCE_FINDING_VERIFICATION.md)
+for source identity, configuration identity, recorded decisions, and limits on causal interpretation.
 
 `benchmark.paired_analysis` compares already adjudicated case outcomes. It does
 not generate labels, infer clean controls from an empty reference list, or grant

@@ -8,6 +8,7 @@ verifier returned `DISPROVED` without a recorded explanation or source citation.
 This is an evidence and reliability improvement. A valid citation establishes
 which source the model used; it does not establish that its reasoning is correct.
 The measured development results belong in the accompanying validation record.
+See [the recorded validation and limitations](FINDING_VERIFIER_VALIDATION.md).
 
 ## The failure and the new path
 
@@ -172,6 +173,9 @@ mode. Multiple verifier modes produce names such as `investigate:legacy` and
 `investigate:structured`. Both variants use the same materialized commits and
 source input ID, while configuration snapshot IDs distinguish the mode. Execution
 order alternates by case to reduce systematic warm-model bias.
+Each variant reruns upstream discovery and investigation. Pairing controls the
+source input, not the exact generated candidate or every upstream response; an
+end-to-end difference alone is not a causal estimate of the final gate's effect.
 
 Predict from a clean frozen checkout, seal outputs, then load labels separately
 for scoring. For example, in WSL with Ollama running on Windows:
@@ -214,3 +218,9 @@ analysis under matched model settings. Use that evidence to guide better scoped
 context retrieval and output reliability. Complete the common PR snapshot adapter
 before durable execution and dependency-aware re-review. A task queue, LangGraph,
 or extra agent roles would not by themselves fix unsupported verification.
+
+The first live prompt revision copied a filled-in JSON example's placeholder
+trigger even during repair. The next revision removes that example, supplies the
+actual required trigger in the package, and clarifies observable language-level
+behavior. Both runs are development iterations and must remain visible in the
+validation record; changing the prompt after observing a case is not held-out evaluation.

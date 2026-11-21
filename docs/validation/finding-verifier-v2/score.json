@@ -1,0 +1,93 @@
+{
+  "scope": "synthetic contract and integration development; not real PR quality",
+  "eligible_for_headline_metrics": false,
+  "precision": null,
+  "recall": null,
+  "strategies": {
+    "investigate:legacy": {
+      "reviews": 2,
+      "completed": 2,
+      "requirement_outcomes": 2,
+      "matching_outcomes": 1,
+      "actual_model_calls": 7,
+      "reported_prompt_tokens": 7242,
+      "reported_completion_tokens": 1522,
+      "calls_missing_usage": 0,
+      "model_call_errors": 0,
+      "product_findings": 0,
+      "elapsed_seconds": 160.994,
+      "finding_verifications": 0,
+      "finding_verdicts": {},
+      "finding_verification_statuses": {},
+      "verification_repairs": 0
+    },
+    "investigate:structured": {
+      "reviews": 2,
+      "completed": 1,
+      "requirement_outcomes": 2,
+      "matching_outcomes": 1,
+      "actual_model_calls": 8,
+      "reported_prompt_tokens": 9964,
+      "reported_completion_tokens": 1976,
+      "calls_missing_usage": 0,
+      "model_call_errors": 0,
+      "product_findings": 0,
+      "elapsed_seconds": 220.386,
+      "finding_verifications": 1,
+      "finding_verdicts": {
+        "unresolved": 1
+      },
+      "finding_verification_statuses": {
+        "invalid_response": 1
+      },
+      "verification_repairs": 1
+    }
+  },
+  "cases": [
+    {
+      "case_id": "none-guard-removed",
+      "strategy": "investigate:legacy",
+      "expected_status": "violated",
+      "actual_status": "unverified",
+      "matches_label": false,
+      "health": "completed",
+      "findings": 0,
+      "elapsed_seconds": 102.066
+    },
+    {
+      "case_id": "none-guard-removed",
+      "strategy": "investigate:structured",
+      "expected_status": "violated",
+      "actual_status": "unverified",
+      "matches_label": false,
+      "health": "partial",
+      "findings": 0,
+      "elapsed_seconds": 143.322
+    },
+    {
+      "case_id": "none-guard-preserved",
+      "strategy": "investigate:structured",
+      "expected_status": "verified",
+      "actual_status": "verified",
+      "matches_label": true,
+      "health": "completed",
+      "findings": 0,
+      "elapsed_seconds": 77.064
+    },
+    {
+      "case_id": "none-guard-preserved",
+      "strategy": "investigate:legacy",
+      "expected_status": "verified",
+      "actual_status": "verified",
+      "matches_label": true,
+      "health": "completed",
+      "findings": 0,
+      "elapsed_seconds": 58.928
+    }
+  ],
+  "limitations": [
+    "Author-labelled synthetic development cases; not held-out or independent adjudication.",
+    "Requirement outcome matches do not establish general defect-detection accuracy.",
+    "Local model tags are recorded, not immutable model artifact digests."
+  ]
+}

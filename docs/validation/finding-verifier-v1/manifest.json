@@ -1,0 +1,48 @@
+{
+  "scope": "synthetic contract and integration development; not real PR quality",
+  "eligible_for_headline_metrics": false,
+  "corpus": {
+    "name": "requirement_development_v1",
+    "version": 1,
+    "split": "development",
+    "case_count": 12,
+    "used_for_system_design": true,
+    "eligible_for_headline_metrics": false,
+    "scope": "synthetic contract and integration development; not real PR quality",
+    "inputs_sha256": "5a5b400fd8fa84611963548eecf03eeb442d709562082bc8382504c6229412a9",
+    "labels_sha256": "1d2cfa19003464b96b5862c6ecba0c99f4a62367cc13a9af97e714280e90f2da"
+  },
+  "model": "qwen2.5-coder:7b",
+  "strategies": [
+    "investigate:legacy",
+    "investigate:structured"
+  ],
+  "case_count": 4,
+  "intent_strategies": [
+    "investigate"
+  ],
+  "finding_verifier_modes": [
+    "legacy",
+    "structured"
+  ],
+  "baseline_type": "same-commit intent/final-verifier ablation, not historical v4",
+  "reviewer_commit": "862f7c0030633c55f33fc068cc7f6b89750f35fe",
+  "reviewer_dirty": false,
+  "provider_profile": {
+    "transport": "windows-powershell-stdin",
+    "context_tokens": 8192,
+    "temperature": 0,
+    "seed": 42,
+    "request_timeout_seconds": 130
+  },
+  "prompt_versions": {
+    "bundle": "hypothesis-proof-v3-intent",
+    "requirement": "requirement-first-v3-bounded-repair",
+    "finding": "finding-source-v1"
+  },
+  "budgets": {
+    "model_calls": 12,
+    "prompt_characters": 120000,
+    "between_call_seconds": 300
+  }
+}
