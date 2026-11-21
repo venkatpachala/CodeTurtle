@@ -117,3 +117,36 @@ def test_declared_missing_external_context_cannot_be_conclusive(requirement_case
         intent, provider, snapshot, ["app.py"])[0]
     assert run.status == "error"
     assert "incomplete context" in run.reason
+
+
+def test_one_protocol_repair_is_grounded_and_counts_against_shared_budget(requirement_case):
+    provider, snapshot, intent = requirement_case
+    calls = []
+    def complete(stage, prompt):
+        calls.append(stage)
+        if len(calls) == 1:
+            return "VIOLATED"
+        if len(calls) == 2:
+            package = json.loads(prompt.split("\nPACKAGE\n", 1)[1])
+            assert "format_repair" in package
+        return json.dumps(decision_for(prompt))
+    budget = ReviewBudget()
+    run = RequirementInvestigator(complete, budget).run(intent, provider, snapshot, ["app.py"])[0]
+    assert run.status == "proposed_violation"
+    assert calls == ["investigate", "investigate", "verify"]
+    assert budget.calls == 3
+    assert run.responses[1]["attempt"] == 2
+
+
+def test_invalid_source_is_not_retried_without_bound(requirement_case):
+    provider, snapshot, intent = requirement_case
+    calls = []
+    def complete(stage, prompt):
+        calls.append(stage)
+        decision = decision_for(prompt)
+        decision["citations"][0]["quote"] = "invented source"
+        return json.dumps(decision)
+    run = RequirementInvestigator(complete, ReviewBudget()).run(intent, provider, snapshot, ["app.py"])[0]
+    assert run.status == "error"
+    assert run.candidate is None
+    assert len(calls) == 2

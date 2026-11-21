@@ -17,7 +17,7 @@ from core.intent.service import ReviewIntent, ScopedRequirement
 from core.review.budget import BudgetExceeded, ReviewBudget
 from core.runtime.models import Candidate
 
-REQUIREMENT_PROMPT_VERSION = "requirement-first-v2-citations"
+REQUIREMENT_PROMPT_VERSION = "requirement-first-v3-bounded-repair"
 
 
 class RequirementDecision(DomainRecord):
@@ -92,6 +92,9 @@ Use numbered_lines to choose real line numbers and copy exact text. Prefer conci
 citations. A directly invoked public function with concrete input establishes reachability;
 missing external callers alone does not negate an explicit observable function contract.
 For violated, anchor_line points to the offending HEAD operation, not just its function header.
+For violated, execution_path must be nonempty function identifiers such as ["size"],
+and expected must differ from actual. BASE citations may be historical counterevidence;
+only HEAD protections can disprove a current failure.
 Return one JSON object, not a verdict word, candidates list, or commentary. Required shape:
 {"requirement_id":"R1","outcome":"unresolved","rationale":"reason","checked_scope":"scope",
 "citations":[],"counterevidence":[],"missing_evidence":["what is unknown"],"title":"",
@@ -101,7 +104,7 @@ For a violation, cite HEAD source in a changed scoped path and BASE evidence whe
 """
 
 
-def _prompt(run: RequirementRun, stage: str) -> str:
+def _prompt(run: RequirementRun, stage: str, repair: dict | None = None) -> str:
     instruction = _SYSTEM
     if stage == "verify":
         instruction += ("\nYou are a fresh verifier. Challenge the proposal, inspect counterevidence, and independently\n"
@@ -114,6 +117,10 @@ def _prompt(run: RequirementRun, stage: str) -> str:
                "context_gaps": list(run.gaps)}
     if stage == "verify":
         package["proposal"] = run.proposal.model_dump(mode="json")
+    if repair is not None:
+        package["format_repair"] = repair
+        instruction += ("\nThe prior response failed protocol validation. Correct its fields using the SAME observations.\n"
+                        "Do not invent evidence or force a conclusive answer; unresolved is valid. One repair is allowed.\n")
     return instruction + "\nPACKAGE\n" + json.dumps(package)
 
 
@@ -122,8 +129,7 @@ def validate_decision(decision: RequirementDecision, run: RequirementRun) -> Non
         raise ValueError("assessment refers to another requirement")
     observations = {item.id: item for item in run.observations}
     cited = [citation.validate_against(observations) for citation in decision.citations]
-    for citation in decision.counterevidence:
-        citation.validate_against(observations)
+    counter = [citation.validate_against(observations) for citation in decision.counterevidence]
     if decision.outcome == "unresolved":
         return
     if run.gaps:
@@ -141,7 +147,7 @@ def validate_decision(decision: RequirementDecision, run: RequirementRun) -> Non
             raise ValueError("violation requires scoped HEAD source")
         base_exists = any(item.revision_side == "base" and item.path in run.requirement.paths
                           and item.status == "success" for item in run.observations)
-        if base_exists and not any(item.revision_side == "base" for item in cited):
+        if base_exists and not any(item.revision_side == "base" for item in [*cited, *counter]):
             raise ValueError("change attribution requires BASE evidence")
 
 
@@ -155,16 +161,25 @@ class RequirementInvestigator:
         self.max_requirements = max_requirements
 
     def _call(self, run: RequirementRun, stage: str) -> RequirementDecision:
-        prompt = _prompt(run, stage)
-        self.budget.reserve(prompt)
-        run.attempted = True
-        raw = self.complete(stage, prompt)
-        run.responses.append({"stage": stage, "raw": raw[:16_000], "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest()})
-        if len(raw) > 16_000:
-            raise ValueError("model response exceeds structured output budget")
-        decision = RequirementDecision.model_validate(parse_agent_document(raw))
-        validate_decision(decision, run)
-        return decision
+        repair = None
+        for attempt in (1, 2):
+            prompt = _prompt(run, stage, repair)
+            self.budget.reserve(prompt)
+            run.attempted = True
+            raw = self.complete(stage, prompt)
+            run.responses.append({"stage": stage, "attempt": attempt, "raw": raw[:16_000],
+                                  "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest()})
+            try:
+                if len(raw) > 16_000:
+                    raise ValueError("model response exceeds structured output budget")
+                decision = RequirementDecision.model_validate(parse_agent_document(raw))
+                validate_decision(decision, run)
+                return decision
+            except ValueError as exc:
+                if attempt == 2:
+                    raise
+                repair = {"validation_error": str(exc)[:1200], "previous_response": raw[:16_000]}
+        raise AssertionError("bounded assessment attempts exhausted")
 
     def run(self, intent: ReviewIntent, provider: GitSnapshotProvider, snapshot: ReviewSnapshot,
             changed_paths: list[str], *, enabled: bool = True) -> list[RequirementRun]:
