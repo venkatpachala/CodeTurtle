@@ -35,7 +35,9 @@ class TestWorkflowFile(unittest.TestCase):
         self.assertIn("pull-requests: write", text)
         self.assertIn("--comment", text)
         self.assertNotIn("ARGS+=(--execute-install)", text)
-        self.assertIn("dependabot[bot]", text)
+        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", text)
+        self.assertIn("workflow_dispatch:", text)
+        self.assertIn("--dry-run", text)
 
     def test_repo_workflow_present(self):
         self.assertTrue(WORKFLOW.is_file())

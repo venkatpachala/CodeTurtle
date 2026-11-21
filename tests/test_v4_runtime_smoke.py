@@ -14,7 +14,7 @@ if str(ROOT) not in sys.path:
 from config import settings
 from core.pr_facts import build_pr_facts
 from core.runtime.review_runtime import ReviewRuntime, result_to_review_state
-from core.verification.policy import decide
+from core.review.contract import evaluate_policy
 
 LOADER = "pkg/api/loader.py"
 PIPELINE = "pkg/api/pipeline.py"
@@ -57,14 +57,15 @@ class TestRuntimeSmoke(unittest.TestCase):
             full_diff=DIFF,
             pr_facts=facts,
         )
-        expected, reason = decide(
-            [],
+        expected = evaluate_policy(
+            health=result.health, coverage=result.inspection, findings=result.findings,
+            unresolved=result.unresolved, execution=result.execution,
             classification=str(facts.get("classification") or ""),
-            coverage=result.coverage,
-            files_changed=FILES,
         )
-        self.assertEqual(result.decision, expected)
-        self.assertEqual(result.policy_reason, reason)
+        self.assertEqual(result.decision, expected.decision)
+        self.assertEqual(result.policy_reason, expected.reasons[0])
+        self.assertEqual(result.decision, "COMMENT")
+        self.assertFalse(result.approval_eligible)
         self.assertTrue(result.bundles)
         self.assertEqual(result.comments, [])
         self.assertIn(result.decision, ("MERGE", "COMMENT", "REQUEST_CHANGES"))

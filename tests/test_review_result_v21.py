@@ -11,6 +11,7 @@ from pydantic import ValidationError
 from benchmark.evaluator import evaluate_pr
 from cli.commands.review import ReviewPipeline
 from core.review.contract import ReviewHealth, ReviewTarget
+from core.domain.review_contracts import RevisionSide
 from core.review.finding import ExecutionEvidence, ReviewFinding
 from core.review.requirements import (
     EvidenceRecord,
@@ -122,7 +123,7 @@ def test_code_evidence_requires_explicit_review_revision(linked_review):
     with pytest.raises(ValueError, match="reviewed head"):
         replace(linked_review, evidence=[wrong_revision])
 
-    base_evidence = evidence.model_copy(update={"revision_side": "base", "revision_sha": BASE})
+    base_evidence = evidence.model_copy(update={"revision_side": RevisionSide.BASE, "revision_sha": BASE})
     with pytest.raises(ValueError, match="supporting evidence"):
         replace(linked_review, evidence=[base_evidence])
     historical_context = replace(linked_review, evidence=[base_evidence], requirement_assessments=[])
