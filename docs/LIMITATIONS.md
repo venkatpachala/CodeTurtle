@@ -6,10 +6,12 @@ This is a production-contract preview, not a demonstrated high-recall reviewer.
   a guarantee of correct reasoning. The live diagnostic traces preserve misses.
 - Structured final citations establish source grounding, not semantic truth.
   Final verification currently requires complete bounded context: six paths,
-  120 lines per file, and 10,000 shared source characters. Larger or unavailable
-  dependencies can leave claims unresolved. The narrow Python None-flow check
-  is not a general program analyzer. PR snapshot capture covers this final gate;
-  the entire PR pipeline has not migrated to the local immutable adapter.
+  120 lines per declared scope, and 10,000 shared source characters. Complete
+  lexical Python functions can be captured from larger modules; unresolved
+  dependencies still prevent conclusive scoped verification. The narrow
+  None/len source rule is not general Python analysis and does not generate
+  candidates. Normal PR investigation reads now use pinned snapshot tools; legacy
+  programmatic callers and broader graph provenance retain separate limits.
 - Static verification is not BASE/HEAD execution attribution. Existing test
   failures block approval eligibility but do not automatically establish a regression.
 - Local `--execute-tests` uses a worktree, path restrictions, a timeout, and a

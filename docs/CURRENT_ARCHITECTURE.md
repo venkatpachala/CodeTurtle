@@ -15,9 +15,13 @@ not have the v2 production contract guarantees.
 5. Build change units; prepare pinned comparison history with bounded fetches;
    create bounded implementation/test bundles.
 6. Run deterministic structural rules and model hypothesis discovery.
-7. Retrieve hunks, bounded HEAD source, and caller/test/graph context.
+7. Retrieve sealed hunks, pinned HEAD source, and bounded snapshot lexical context.
+   Normal PR risk reads also use pinned Git objects; no checkout fallback follows
+   CLI snapshot-preparation failure.
 8. Construct typed proof batches of at most two hypotheses, with at most one
    repair across the bundle inside both step and shared model-call budgets.
+   Valid decision siblings survive an invalid sibling; only invalid IDs enter
+   repair. Remaining failures preserve partial progress and cannot imply approval.
 9. Ground, position, reflect, and independently verify candidates.
 10. Build canonical findings, evidence-backed process coverage, health, and unresolved hypotheses.
 11. Evaluate a pure product policy once.
@@ -91,6 +95,14 @@ schema digest, requested limits, finish reason, and output truncation. Provider
 success and schema validity remain separate from grounded semantic correctness.
 See [the proof reliability phase](PROOF_RELIABILITY_PHASE.md) for the saved native
 PR run and the unresolved fixed-candidate final-gate checks.
+
+Normal PR investigations now share snapshot-backed source/search tools and Python
+AST context. Bounded function observations declare their scope, absolute lines,
+and unresolved lexical dependencies. A narrow `python-none-len-v1` source rule
+can verify an already proposed direct None/len candidate without a final model
+request. Records distinguish model verification from source-rule verification;
+the latter is reproduced against recorded observations during contract validation.
+See [snapshot context and source verification](SNAPSHOT_CONTEXT_PHASE.md).
 
 ## Local committed snapshots
 

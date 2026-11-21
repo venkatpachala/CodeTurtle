@@ -1,0 +1,354 @@
+{
+  "date": "2026-11-22",
+  "purpose": "native development validation; not held-out quality evaluation",
+  "unique_underlying_cases": 3,
+  "review_attempts": 7,
+  "recorded_model_requests": 27,
+  "provider": "ollama",
+  "model": "qwen2.5-coder:7b",
+  "model_weights_pinned": false,
+  "generation_profile": {
+    "protocol": "/api/chat",
+    "temperature": 0,
+    "context_tokens": 8192,
+    "stage_output_token_cap": 1400
+  },
+  "labels": {
+    "litellm-53337": "unadjudicated public development smoke",
+    "none-guard-removed": "author-defined defect-bearing synthetic development case",
+    "none-guard-preserved": "author-defined preserved-guard synthetic control"
+  },
+  "source_corpus": "benchmark/datasets/requirement_development_v1/inputs.json",
+  "source_corpus_sha256": "5a5b400fd8fa84611963548eecf03eeb442d709562082bc8382504c6229412a9",
+  "input_consistency": "Repeated cases reuse identical Git revisions, diff hashes and explicit requirements. Local source_input_id is unchanged across variants.",
+  "runs": [
+    {
+      "version": "v1",
+      "case": "litellm-53337",
+      "reviewer_commit": "4b164779378aa49125e45a80484a3016a522b24a",
+      "reviewer_dirty": false,
+      "exit_code": 1,
+      "wall_seconds": 205.03069206899818,
+      "decision": null,
+      "health": "failed",
+      "target": {
+        "repo": "BerriAI/litellm",
+        "number": 53337,
+        "base_sha": "754c2225d7db8ce71a94459df2216708995c037b",
+        "head_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+        "diff_sha256": "a3b31864ffd3f1d6b28b3cdfd76573799108d58ad1ac4c8406af718cae16ce5a",
+        "comparison_base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc"
+      },
+      "source_input_id": null,
+      "investigation_source": "git_snapshot",
+      "eligible_units": 3,
+      "inspected_units": 0,
+      "unresolved_records": 10,
+      "product_findings": 0,
+      "recorded_model_requests": 4,
+      "reserved_model_calls": 4,
+      "prompt_tokens": 13224,
+      "completion_tokens": 3042,
+      "verification_methods": [],
+      "source_rules": [],
+      "proof_runs": [
+        {
+          "hypothesis_ids": [
+            "H-001",
+            "H-002"
+          ],
+          "status": "invalid_response"
+        },
+        {
+          "hypothesis_ids": [
+            "H-003",
+            "H-004"
+          ],
+          "status": "invalid_response"
+        }
+      ],
+      "artifact": "snapshot-context-v1/litellm-53337.json"
+    },
+    {
+      "version": "v1",
+      "case": "none-guard-removed",
+      "reviewer_commit": "4b164779378aa49125e45a80484a3016a522b24a",
+      "reviewer_dirty": false,
+      "exit_code": 0,
+      "wall_seconds": 68.88601791499968,
+      "decision": "COMMENT",
+      "health": "partial",
+      "target": {
+        "repo": "",
+        "number": 0,
+        "base_sha": "3fdc0a10d819eb2f8cedc641e619b927581a704a",
+        "head_sha": "29c70e644b13053927fd8690c269a945a100af3c",
+        "diff_sha256": "387996271974cedf099c85e59cebf9561cd8ec6ab6298abc86927924c24f4994",
+        "comparison_base_sha": ""
+      },
+      "source_input_id": "44a349353b86a78a244047643e76c99dffb3d0dd799a7cbffcf43f68f143bfba",
+      "investigation_source": "git_snapshot",
+      "eligible_units": 1,
+      "inspected_units": 1,
+      "unresolved_records": 2,
+      "product_findings": 0,
+      "recorded_model_requests": 5,
+      "reserved_model_calls": 5,
+      "prompt_tokens": 6676,
+      "completion_tokens": 1202,
+      "verification_methods": [
+        "model"
+      ],
+      "source_rules": [],
+      "proof_runs": [],
+      "artifact": "snapshot-context-v1/none-guard-removed.json"
+    },
+    {
+      "version": "v1",
+      "case": "none-guard-preserved",
+      "reviewer_commit": "4b164779378aa49125e45a80484a3016a522b24a",
+      "reviewer_dirty": false,
+      "exit_code": 0,
+      "wall_seconds": 41.65781870199862,
+      "decision": "MERGE",
+      "health": "completed",
+      "target": {
+        "repo": "",
+        "number": 0,
+        "base_sha": "3fdc0a10d819eb2f8cedc641e619b927581a704a",
+        "head_sha": "183015815dd9e26e1907b942c4139b27b711c747",
+        "diff_sha256": "d3ba7466506773d27d4487fdbf357e7c26af3ac0ccc4621a0f9e66ffc3def534",
+        "comparison_base_sha": ""
+      },
+      "source_input_id": "e92a01e256a44f6ceef7d99c41c02a0b81f3733b3ac9189a94aff9d45ea0788e",
+      "investigation_source": "git_snapshot",
+      "eligible_units": 1,
+      "inspected_units": 1,
+      "unresolved_records": 0,
+      "product_findings": 0,
+      "recorded_model_requests": 3,
+      "reserved_model_calls": 3,
+      "prompt_tokens": 3587,
+      "completion_tokens": 741,
+      "verification_methods": [],
+      "source_rules": [],
+      "proof_runs": [],
+      "artifact": "snapshot-context-v1/none-guard-preserved.json"
+    },
+    {
+      "version": "v2",
+      "case": "litellm-53337",
+      "reviewer_commit": "b7affa6509c911165ba82edf92e2c8b6d56205bb",
+      "reviewer_dirty": false,
+      "exit_code": 0,
+      "wall_seconds": 160.0642688959997,
+      "decision": "COMMENT",
+      "health": "partial",
+      "target": {
+        "repo": "BerriAI/litellm",
+        "number": 53337,
+        "base_sha": "754c2225d7db8ce71a94459df2216708995c037b",
+        "head_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+        "diff_sha256": "a3b31864ffd3f1d6b28b3cdfd76573799108d58ad1ac4c8406af718cae16ce5a",
+        "comparison_base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc"
+      },
+      "source_input_id": null,
+      "investigation_source": "git_snapshot",
+      "eligible_units": 3,
+      "inspected_units": 0,
+      "unresolved_records": 10,
+      "product_findings": 0,
+      "recorded_model_requests": 4,
+      "reserved_model_calls": 4,
+      "prompt_tokens": 13080,
+      "completion_tokens": 2434,
+      "verification_methods": [],
+      "source_rules": [],
+      "proof_runs": [
+        {
+          "hypothesis_ids": [
+            "H-001",
+            "H-002"
+          ],
+          "status": "completed",
+          "validated_hypothesis_ids": [
+            "H-001",
+            "H-002"
+          ]
+        },
+        {
+          "hypothesis_ids": [
+            "H-003",
+            "H-004"
+          ],
+          "status": "partial_response",
+          "validated_hypothesis_ids": [
+            "H-003"
+          ],
+          "failure_status": "invalid_response"
+        }
+      ],
+      "artifact": "snapshot-context-v2/litellm-53337.json"
+    },
+    {
+      "version": "v2",
+      "case": "none-guard-removed",
+      "reviewer_commit": "b7affa6509c911165ba82edf92e2c8b6d56205bb",
+      "reviewer_dirty": false,
+      "exit_code": 0,
+      "wall_seconds": 66.35511897099786,
+      "decision": "COMMENT",
+      "health": "partial",
+      "target": {
+        "repo": "",
+        "number": 0,
+        "base_sha": "3fdc0a10d819eb2f8cedc641e619b927581a704a",
+        "head_sha": "29c70e644b13053927fd8690c269a945a100af3c",
+        "diff_sha256": "387996271974cedf099c85e59cebf9561cd8ec6ab6298abc86927924c24f4994",
+        "comparison_base_sha": ""
+      },
+      "source_input_id": "44a349353b86a78a244047643e76c99dffb3d0dd799a7cbffcf43f68f143bfba",
+      "investigation_source": "git_snapshot",
+      "eligible_units": 1,
+      "inspected_units": 1,
+      "unresolved_records": 2,
+      "product_findings": 0,
+      "recorded_model_requests": 5,
+      "reserved_model_calls": 5,
+      "prompt_tokens": 6634,
+      "completion_tokens": 1204,
+      "verification_methods": [
+        "model"
+      ],
+      "source_rules": [],
+      "proof_runs": [],
+      "artifact": "snapshot-context-v2/none-guard-removed.json"
+    },
+    {
+      "version": "v2",
+      "case": "none-guard-preserved",
+      "reviewer_commit": "b7affa6509c911165ba82edf92e2c8b6d56205bb",
+      "reviewer_dirty": false,
+      "exit_code": 0,
+      "wall_seconds": 40.72677853300411,
+      "decision": "MERGE",
+      "health": "completed",
+      "target": {
+        "repo": "",
+        "number": 0,
+        "base_sha": "3fdc0a10d819eb2f8cedc641e619b927581a704a",
+        "head_sha": "183015815dd9e26e1907b942c4139b27b711c747",
+        "diff_sha256": "d3ba7466506773d27d4487fdbf357e7c26af3ac0ccc4621a0f9e66ffc3def534",
+        "comparison_base_sha": ""
+      },
+      "source_input_id": "e92a01e256a44f6ceef7d99c41c02a0b81f3733b3ac9189a94aff9d45ea0788e",
+      "investigation_source": "git_snapshot",
+      "eligible_units": 1,
+      "inspected_units": 1,
+      "unresolved_records": 0,
+      "product_findings": 0,
+      "recorded_model_requests": 3,
+      "reserved_model_calls": 3,
+      "prompt_tokens": 3543,
+      "completion_tokens": 735,
+      "verification_methods": [],
+      "source_rules": [],
+      "proof_runs": [],
+      "artifact": "snapshot-context-v2/none-guard-preserved.json"
+    },
+    {
+      "version": "v3",
+      "case": "none-guard-removed",
+      "reviewer_commit": "834a8eb06937a04cce50212a901db239e635cb74",
+      "reviewer_dirty": false,
+      "exit_code": 0,
+      "wall_seconds": 42.63045821899868,
+      "decision": "REQUEST_CHANGES",
+      "health": "completed",
+      "target": {
+        "repo": "",
+        "number": 0,
+        "base_sha": "3fdc0a10d819eb2f8cedc641e619b927581a704a",
+        "head_sha": "29c70e644b13053927fd8690c269a945a100af3c",
+        "diff_sha256": "387996271974cedf099c85e59cebf9561cd8ec6ab6298abc86927924c24f4994",
+        "comparison_base_sha": ""
+      },
+      "source_input_id": "44a349353b86a78a244047643e76c99dffb3d0dd799a7cbffcf43f68f143bfba",
+      "investigation_source": "git_snapshot",
+      "eligible_units": 1,
+      "inspected_units": 1,
+      "unresolved_records": 0,
+      "product_findings": 1,
+      "recorded_model_requests": 3,
+      "reserved_model_calls": 3,
+      "prompt_tokens": 3533,
+      "completion_tokens": 779,
+      "verification_methods": [
+        "source_rule"
+      ],
+      "source_rules": [
+        "python-none-len-v1"
+      ],
+      "proof_runs": [],
+      "artifact": "snapshot-context-v3/none-guard-removed.json"
+    }
+  ],
+  "files_sha256": {
+    "snapshot-context-v1/litellm-53337.json": "5677b9f9db99a3fc4265bc6fe4550ee4715a8654d297b89f3ff6a22419f00bd3",
+    "snapshot-context-v1/none-guard-removed.json": "7bde55679c6264dabf0e7041ef7a928073771ee04e4b7240e4e70fbf1021a7af",
+    "snapshot-context-v1/none-guard-preserved.json": "d44f5f9f073c473b20d1a533a373cd1f5d1e42d5c1761f2a40d02ea85770e5bb",
+    "snapshot-context-v2/litellm-53337.json": "a82f389c3aae14c5f409f2e18a7f19f9181914db73686318ea86f352538bed2c",
+    "snapshot-context-v2/none-guard-removed.json": "173208eea4fcbe966c10d8174d3ae151a608e0f3807ca7a52272447d688b6c22",
+    "snapshot-context-v2/none-guard-preserved.json": "8f61be9bc0d58ebc45c6fa708a7440f2ea483447852720481d0dd4cacbca48f1",
+    "snapshot-context-v3/none-guard-removed.json": "8a24b9caaaacd2789a1f7628a7b0fb7c02f65b356e6ddf96329b00d62cb7f1e8"
+  },
+  "dollar_cost_measured": false,
+  "publication": "none",
+  "repository_code_executed": false,
+  "limitations": [
+    "All cases are development inputs used during implementation; none are held out.",
+    "One public PR and two distinct synthetic cases, not seven independent PRs.",
+    "All failed and partial native attempts are retained; v3 repeats only the affected removed-guard case.",
+    "The final defect validation uses a narrow source rule; no general model-reasoning gain is claimed.",
+    "The public PR remains partial with zero recorded inspected units; CLI exit zero does not establish a completed clean review.",
+    "The preserved-guard control was not rerun after the v3 generic-category normalization; v2 is its latest native result.",
+    "Wall seconds are external per-command elapsed time including CLI startup; no latency percentile or general speedup is claimed.",
+    "No secure untrusted execution, real-PR false-MERGE estimate, or independently adjudicated pilot is established."
+  ],
+  "validation": {
+    "full_local_suite": {
+      "passed": 742,
+      "failed": 0,
+      "environment": "WSL Ubuntu Python 3.12",
+      "code_commit": "0393f10bf4cba989d17e76d695b6bb8d82143a3f"
+    },
+    "artifact_checks": "All seven raw files loaded through canonical ReviewResult validation; repeated source identities asserted. All seven contracts also revalidated on 0393f10 after restricting the direct execution path; no new native run claimed for that restriction.",
+    "hosted_contracts": {
+      "code_commit": "0393f10bf4cba989d17e76d695b6bb8d82143a3f",
+      "run_id": 44939457560,
+      "url": "https://github.com/venkatpachala/CodeTurtle/actions/runs/44939457560",
+      "jobs": [
+        {
+          "os": "ubuntu-latest",
+          "python": "3.11",
+          "conclusion": "success"
+        },
+        {
+          "os": "ubuntu-latest",
+          "python": "3.12",
+          "conclusion": "success"
+        },
+        {
+          "os": "windows-latest",
+          "python": "3.11",
+          "conclusion": "success"
+        },
+        {
+          "os": "windows-latest",
+          "python": "3.12",
+          "conclusion": "success"
+        }
+      ]
+    }
+  }
+}

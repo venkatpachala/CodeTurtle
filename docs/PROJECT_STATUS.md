@@ -1,6 +1,6 @@
 # CodeTurtle project status and portfolio evidence
 
-Status date: 2026-11-21. CodeTurtle is a CLI-first, local-first code-review engine
+Status date: 2026-11-22. CodeTurtle is a CLI-first, local-first code-review engine
 with a modular Python runtime. It is a preview, not a completed CodeTurtle 2.0
 release or a demonstrated high-recall reviewer. The default runtime is sequential
 and does not use LangGraph. Optional integrations do not establish broad quality.
@@ -9,12 +9,12 @@ and does not use LangGraph. Optional integrations do not establish broad quality
 
 | Layer | Current implementation | Practical boundary |
 | --- | --- | --- |
-| Input | GitHub PR intake; direct local committed comparisons; revision identity | The entire PR path has not migrated to immutable snapshot tools |
+| Input | GitHub PR and local committed snapshots; normal PR investigation source/search/risk reads use pinned objects | Explicit legacy callers remain; working-tree snapshots and broader graph provenance are unfinished |
 | Planning | Change units, bounded source/test bundles, explicit scoped requirements | Packing is not inspection; omission remains visible |
 | Investigation | Structural rules, bounded hypothesis discovery, typed proof batches and shared repair limits | Model reasoning and broad-language accuracy remain unqualified |
 | Requirement investigation | Local requirement-first proposal and fresh challenge | GitHub mode currently supplies requirements and links verified findings |
-| Retrieval | Diff hunks, source lookup, Python AST change context, optional graph tools | No comprehensive impact/dataflow guarantee; graph can be unavailable |
-| Verification | Structured decisions, exact citations, HEAD support/counterevidence, one repair | Valid source grounding does not establish semantic truth |
+| Retrieval | Pinned source lookup, Python AST function scopes, dependency gaps, bounded lexical tools | Large/complex functions and external dependencies remain limited; no comprehensive impact/dataflow guarantee |
+| Verification | Structured decisions, exact citations, HEAD evidence, narrow None/len source rule, bounded repairs | Rule support is deliberately narrow; model reasoning remains unqualified |
 | Result | Canonical schema 2.3, claim identities, evidence links, health and unresolved records | Historical schemas remain readable; inspection describes process |
 | Policy | Deterministic MERGE/COMMENT/REQUEST_CHANGES or no verdict | MERGE is a recommendation, not a merge operation or correctness proof |
 | Delivery | Dry-run preview and explicitly requested SHA-bound grouped GitHub review | Cross-machine exactly-once delivery is not guaranteed |
@@ -79,22 +79,32 @@ for target identities, usage, CI evidence, and limitations.
 
 ## Evidence we have
 
-- Full local suite: 697 tests passed after proof-protocol reliability work,
-  extending the previous 663-test gateway milestone. See
-  [the implementation and validation report](PROOF_RELIABILITY_PHASE.md).
+- Full local suite: 742 tests passed after snapshot-context and partial-progress
+  fixes, extending the 697-test proof-protocol milestone. See
+  [snapshot-context implementation](SNAPSHOT_CONTEXT_PHASE.md) and
+  [the preceding proof-protocol report](PROOF_RELIABILITY_PHASE.md).
 - Four stored offline evaluation snapshots passed in the previous validation.
 - Hosted contract matrices have passed Windows/Linux and Python 3.11/3.12 for
   their recorded commits. New changes must be checked on their own revision.
 - Two sealed verifier experiments contain 12 reviews of four distinct synthetic
   development cases, with 53 actual model requests. They show no detection gain.
-- The local model still fails to publish a known removed-guard defect. Malformed
-  and contradictory structured decisions remain unresolved and inspectable.
+- Earlier model-only removed-guard replays remain failures. The new default
+  source-rule verifier can resolve a narrowly recognized None/len contract from
+  captured BASE/HEAD without model agreement. This does not improve model reasoning
+  or guarantee candidate discovery. Contradictory decisions remain inspectable.
 - Existing real-PR development diagnostics and source adjudication files are not
   a completed independently labeled held-out quality benchmark.
-- The original LiteLLM PR now completes its normal CLI protocol: three requests,
+- The earlier proof-protocol LiteLLM run completed with three requests,
   two valid proof batches, COMMENT/partial, seven unresolved records, zero product
-  findings, and no publication. A fixed-candidate final-gate replay still misses
-  the removed-guard defect; the preserved-guard control also remains unresolved.
+  findings, and no publication. Its model-only fixed-candidate final-gate replay
+  missed the removed-guard defect; the preserved-guard replay was also unresolved.
+- The later snapshot-context diagnostics preserve seven reviews of three distinct
+  development cases with 27 model requests. After a failed first PR attempt,
+  per-decision isolation recovered COMMENT/partial on that PR. The final removed-
+  guard CLI run reports one source-rule-verified defect and REQUEST_CHANGES;
+  the preserved control recommended MERGE in both earlier profiles. These are
+  development checks, not a held-out accuracy or false-MERGE estimate. See
+  [the combined record](validation/snapshot-context-phase.json).
 
 The benchmark adapter's Windows `/api/generate` runs and the normal gateway's
 native `/api/chat` smoke are different protocols/profiles. Do not combine their
@@ -104,11 +114,11 @@ latencies or outcomes into a controlled quality comparison.
 
 ### 1. Finish the normal PR input and model contracts
 
-Bounded historical Git preparation and explicit model context/options are now
-implemented. Finish the shared immutable PR investigation adapter.
-Replace whole-file-first truncation with scoped evidence capture whose completeness
-is honest. Current final verification admits six paths, 120 lines per file, and
-10,000 shared source characters; this can leave ordinary large files unresolved.
+Bounded Git preparation, immutable normal PR investigation tools/risk reads, and
+scoped Python capture are implemented. Expand dependency capture and graph
+provenance without treating excerpts as whole-repository completeness. Final
+verification still admits six paths, 120 lines per scope, and 10,000 shared source
+characters. Unsupported/oversized scopes and external contracts stay unresolved.
 
 ### 2. Isolate and improve verification reliability
 

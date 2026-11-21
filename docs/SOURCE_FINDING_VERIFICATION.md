@@ -37,6 +37,7 @@ The default runtime now follows this path:
 ```text
 Candidate after proof, positioning, and reflection
     -> Read bounded committed BASE and HEAD observations
+    -> Try the narrow None/len source rule when its exact contract applies
     -> Request a structured finding decision
     -> Validate the exact trigger and every source citation
     -> Check required HEAD support or HEAD counterevidence
@@ -58,11 +59,15 @@ execute reviewed code. Source observations carry revision side, path, line range
 captured text, file digest, excerpt digest, and snapshot identity. A model can cite
 these observations but cannot invent another successful tool read.
 
-The final verifier admits at most six paths, 120 lines per file, and 10,000 shared
+The final verifier admits at most six paths, 120 lines per declared scope, and 10,000 shared
 source characters. The candidate file is first; explicitly declared requirement
 `context_paths` can supply dependencies. Missing required HEAD files, truncation,
 read failures, and omitted paths result in unresolved verification. This favors
 honest incompleteness over unsupported conclusions and limits large-file coverage.
+Larger Python modules can supply complete function scopes with absolute lines
+when lexical dependencies are sufficiently bounded. Scope success is not module
+or repository completeness. See [the snapshot-context phase](SNAPSHOT_CONTEXT_PHASE.md)
+for dependency checks and the separate narrow source-rule contract.
 
 BASE and HEAD are separate prompt fields. They are not merged into a single
 undifferentiated diff. Graph text and related test matches are labeled as hints;
