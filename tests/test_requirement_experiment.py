@@ -41,6 +41,9 @@ def test_prediction_does_not_load_labels_and_cannot_overwrite_runs(tmp_path):
     output = tmp_path / "run"
     run_experiment(corpus, output, ScriptedProvider(), model="scripted-test", limit=1)
     assert (output / "seal.json").exists()
+    manifest = json.loads((output / "manifest.json").read_text())
+    assert manifest["provider_profile"]["transport"] == "injected"
+    assert manifest["prompt_versions"]["requirement"]
     with pytest.raises(FileExistsError):
         run_experiment(corpus, output, ScriptedProvider(), model="scripted-test", limit=1)
 

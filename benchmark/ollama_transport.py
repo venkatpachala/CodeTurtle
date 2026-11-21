@@ -20,6 +20,9 @@ class OllamaExperimentClient:
     def __init__(self, model: str, *, windows: bool = False):
         self.model = model
         self.windows = windows
+        self.profile = {"transport": "windows-powershell-stdin" if windows else "native-http",
+                        "context_tokens": 8192, "temperature": 0, "seed": 42,
+                        "request_timeout_seconds": 130 if windows else 120}
         self.calls: list[dict] = []
 
     def generate(self, stage: str, prompt: str, max_tokens: int = 1400) -> str:
@@ -45,7 +48,7 @@ class OllamaExperimentClient:
                                                  headers={"Content-Type": "application/json"})
                 with urllib.request.urlopen(request, timeout=120) as stream:
                     response = json.load(stream)
-            call.update(status="success", prompt_tokens=response.get("prompt_eval_count"),
+            call.update(status="success", actual_model=response.get("model"), prompt_tokens=response.get("prompt_eval_count"),
                         completion_tokens=response.get("eval_count"), done_reason=response.get("done_reason"))
             return str(response.get("response") or "")
         finally:

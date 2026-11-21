@@ -72,11 +72,15 @@ def run_experiment(corpus: Path, output: Path, provider: ExperimentProvider, *, 
         cases = cases[:limit]
     output.mkdir(parents=True, exist_ok=False)
     code_root = Path(__file__).resolve().parents[1]
+    from core.agent.bundle_agent import PROMPT_VERSION
+    from core.intent.investigator import REQUIREMENT_PROMPT_VERSION
     metadata = {"scope": manifest["scope"], "eligible_for_headline_metrics": False,
                 "corpus": manifest, "model": model, "strategies": list(strategies), "case_count": len(cases),
                 "baseline_type": "same-commit link/off ablation, not historical v4",
                 "reviewer_commit": _git(code_root, "rev-parse", "HEAD"),
                 "reviewer_dirty": bool(_git(code_root, "status", "--porcelain")),
+                "provider_profile": getattr(provider, "profile", {"transport": "injected"}),
+                "prompt_versions": {"bundle": PROMPT_VERSION, "requirement": REQUIREMENT_PROMPT_VERSION},
                 "budgets": {"model_calls": 12, "prompt_characters": 120000, "between_call_seconds": 300}}
     write_json_atomic(output / "manifest.json", metadata)
     predictions = []
