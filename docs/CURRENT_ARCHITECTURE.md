@@ -24,12 +24,12 @@ not have the v2 production contract guarantees.
 
 ## Canonical result
 
-`ReviewResult.to_dict()` emits schema version `2.1`. It includes target, health,
+`ReviewResult.to_dict()` emits schema version `2.2`. It includes target, health,
 inspection, findings, product findings, execution, trace, model/config provenance,
 policy reasons, and bounded-work telemetry. The additive requirement contracts
 record intent sources, requirements, assessments, investigations, and evidence.
 `ReviewResult.from_dict()` accepts a canonical result or its CLI envelope and
-upgrades stored `2.0` results to `2.1`. `findings` is diagnostic; the
+upgrades stored `2.0` and `2.1` results to `2.2`. `findings` is diagnostic; the
 `product_findings` projection contains verified defects. No empty-list fallback
 reconstructs v4 findings from legacy comments.
 
@@ -63,8 +63,16 @@ Intent/evidence classes are owned by `core/domain/review_contracts.py`; the prev
 `*_ids` record inputs remain accepted; canonical domain records serialize `*_refs`.
 An explicitly selected `--requirements` JSON file scopes acceptance criteria to paths.
 It informs discovery and proof construction. A separate source-level assessment can
-link verified defects to violated requirements; absence of a defect leaves a
-requirement unverified and cannot establish satisfaction.
+link verified defects to violated requirements in GitHub PR mode. Local snapshot
+mode additionally supports requirement-first planning, structured investigation,
+fresh verification, and exact source citations. A requirement-driven candidate
+still passes normal finding gates. Bounded satisfaction support is scoped and
+does not establish complete source inspection or universal correctness.
+
+Typed `source_observations` record tool-produced revision-bound excerpts. Evidence
+can reference them, and the canonical result validates snapshot/revision identity
+and excerpt digests. Structured model decisions and per-requirement outcomes remain
+inspectable in provenance. See REQUIREMENT_FIRST_PHASE.md for the current protocol.
 
 ## Local committed snapshots
 
@@ -78,7 +86,9 @@ rules and graph evidence are not used on this path.
 For Python files, bounded AST comparison supplies changed symbols, signatures,
 and module statements. Parse failures and omissions remain explicit gaps. This
 is structural context, not resolved dataflow or behavioral proof. `--static-only`
-skips model calls and preserves incomplete inspection. See LEARNING_IMPLEMENTATION.md.
+skips model requests and reservations and preserves incomplete inspection.
+Local `--requirement-strategy` selects investigate (default), link, or off;
+`--max-requirements` bounds task admission. See REQUIREMENT_FIRST_PHASE.md.
 
 ## Policy
 

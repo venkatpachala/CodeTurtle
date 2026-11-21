@@ -4,6 +4,11 @@ Tools to evaluate CodeTurtle on the official **Code Review Benchmark** (50 PRs).
 
 ## Paired adjudicated analysis
 
+For the input-only requirement development corpus and sealed link-versus-investigate
+experiment, see [the requirement-first walkthrough](../docs/REQUIREMENT_FIRST_PHASE.md).
+Those twelve synthetic cases and their outcome labels are development material,
+separate from the real-PR split manifests and held-out release evidence below.
+
 `benchmark.paired_analysis` compares already adjudicated case outcomes. It does
 not generate labels, infer clean controls from an empty reference list, or grant
 release eligibility. Each input is a JSON list with one row per attempted case:
