@@ -15,7 +15,7 @@ For each slice:
 5. Inspect the artifact or trace, explain the trade-off, and commit.
 6. Push the feature branch after verification. Keep publishing PR reviews separate.
 
-The initial branch is `codex/intent-review-foundations`. It builds on
+The implementation branch is `feat/intent-review-foundations`. It builds on
 `43acdc7`; existing uncommitted v2.1 work was reviewed and committed first.
 The unrelated local `prf_check.py` is deliberately excluded from these commits.
 
