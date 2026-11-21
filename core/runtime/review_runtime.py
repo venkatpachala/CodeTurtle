@@ -228,6 +228,7 @@ class ReviewRuntime:
         self.agent = agent
         self.stage_errors: List[StageOutcome] = []
         self.budget = ReviewBudget()
+        self.verification_usage: List[Dict[str, Any]] = []
 
     def _verify_completion(self, prompt: str) -> str:
         from core.gateway.gateway import AIGateway
@@ -235,6 +236,7 @@ class ReviewRuntime:
             self.budget.reserve(prompt)
             response = AIGateway().generate(prompt=prompt, capability="correctness_review",
                 agent_name="FindingVerifier", temperature=0.0, max_tokens=96, retries=1)
+            self.verification_usage.append(response.telemetry.model_dump(mode="json"))
             return str(response.content or "")
         except Exception:
             self.stage_errors.append(StageOutcome(stage="verification", status="failed", code="model_call_failed"))
@@ -330,6 +332,7 @@ class ReviewRuntime:
     ) -> ReviewResult:
         self.stage_errors = []
         self.budget = ReviewBudget()
+        self.verification_usage = []
         if self.agent is not None and hasattr(self.agent, "usage_records"):
             self.agent.usage_records = []
         ctx = context
@@ -695,7 +698,7 @@ class ReviewRuntime:
                 from core.gateway.gateway import AIGateway
                 response = AIGateway().generate(prompt=prompt, capability="correctness_review",
                     agent_name="RequirementAssessor", temperature=0.0, max_tokens=64, retries=1)
-                self.agent.usage_records.append(response.telemetry.model_dump(mode="json"))
+                self.verification_usage.append(response.telemetry.model_dump(mode="json"))
                 return str(response.content or "")
             requirement_assessments, requirement_investigations, requirement_evidence = assess_verified_findings(
                 intent, review_findings,
@@ -747,6 +750,7 @@ class ReviewRuntime:
             health=health, inspection=inspection, unresolved=unresolved,
             approval_eligible=outcome.approval_eligible, policy_reasons=outcome.reasons,
             provenance={**_provenance(self.agent), "budget": self.budget.to_dict(),
+                        "model_calls": [*getattr(self.agent, "usage_records", []), *self.verification_usage],
                         **({"input_snapshot": snapshot.model_dump(), "snapshot_id": snapshot.id}
                            if snapshot is not None else {})},
             intent_sources=[intent.source] if intent is not None else [],
