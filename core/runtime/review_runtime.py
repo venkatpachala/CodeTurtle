@@ -228,6 +228,7 @@ class ReviewRuntime:
         self.agent = agent
         self.stage_errors: List[StageOutcome] = []
         self.budget = ReviewBudget()
+        self.verification_usage: List[Dict[str, Any]] = []
 
     def _verify_completion(self, prompt: str) -> str:
         from core.gateway.gateway import AIGateway
@@ -235,6 +236,7 @@ class ReviewRuntime:
             self.budget.reserve(prompt)
             response = AIGateway().generate(prompt=prompt, capability="correctness_review",
                 agent_name="FindingVerifier", temperature=0.0, max_tokens=96, retries=1)
+            self.verification_usage.append(response.telemetry.model_dump(mode="json"))
             return str(response.content or "")
         except Exception:
             self.stage_errors.append(StageOutcome(stage="verification", status="failed", code="model_call_failed"))
@@ -330,9 +332,12 @@ class ReviewRuntime:
     ) -> ReviewResult:
         self.stage_errors = []
         self.budget = ReviewBudget()
+        self.verification_usage = []
         if self.agent is not None and hasattr(self.agent, "usage_records"):
             self.agent.usage_records = []
         ctx = context
+        snapshot = getattr(ctx, "review_snapshot", None)
+        input_provider = getattr(ctx, "input_provider", None)
         files = list(
             files_changed
             or getattr(ctx, "files_changed", None)
@@ -340,6 +345,15 @@ class ReviewRuntime:
         )
         files = [normalize_path(p) for p in files if p]
         diff = full_diff or getattr(ctx, "full_diff", "") or ""
+        if snapshot is not None:
+            from core.input.snapshot import InputError
+            if input_provider is None or input_provider.diff(snapshot) != diff:
+                raise InputError("runtime input does not match the sealed snapshot")
+            if (getattr(ctx, "pr_head_sha", "") != snapshot.head_sha
+                    or getattr(ctx, "pr_base_sha", "") != snapshot.base_sha):
+                raise InputError("runtime revision identity does not match the sealed snapshot")
+            if getattr(ctx, "execute_tests", False):
+                raise InputError("snapshot review does not execute repository code")
         facts = dict(pr_facts or getattr(ctx, "pr_facts", None) or {})
         if not facts:
             facts = build_pr_facts(
@@ -394,8 +408,25 @@ class ReviewRuntime:
             classification=classif,
             max_bundles=bundle_max,
         )
+        intent = getattr(ctx, "review_intent", None)
+        if intent is not None:
+            for bundle in bundles:
+                bundle.requirements = intent.for_paths(bundle.paths)
+        semantic_context = None
+        if snapshot is not None:
+            from core.intelligence.changes import build_change_context
+            semantic_context = build_change_context(input_provider, snapshot, files)
+            for bundle in bundles:
+                bundle.change_context = {
+                    "snapshot_id": snapshot.id,
+                    "changes": [change.model_dump() for change in semantic_context.changes if change.path in bundle.paths],
+                    "limitations": list(semantic_context.limitations),
+                    "unresolved_context": list(semantic_context.unresolved_context),
+                }
         repo_name = repo or getattr(ctx, "repo", "") or str(facts.get("repo") or "")
         client = self._client(repo_name)
+        if snapshot is not None:
+            client = None  # No graph may establish facts without matching snapshot provenance.
         repo_dir = str(getattr(ctx, "repo_dir", "") or "")
         if not repo_dir and repo_name:
             try:
@@ -408,7 +439,7 @@ class ReviewRuntime:
         from core.analysis.risk_signals import (
             analyze_risk_signals, attach_signals_to_bundles, attach_signals_to_candidates,
         )
-        risk_signals = analyze_risk_signals(
+        risk_signals = [] if snapshot is not None else analyze_risk_signals(
             repo_dir=repo_dir,
             files_changed=files,
             index=index,
@@ -432,7 +463,12 @@ class ReviewRuntime:
         agent_runs: List[Dict[str, Any]] = []
         from config import settings
         if settings.rules_enabled:
-            candidates.extend(self._rules(bundles, files, full_diff=diff, repo_dir=repo_dir))
+            if snapshot is not None and self.rule_engine is None:
+                from core.rules.engine import run_rule_engine
+                candidates.extend(run_rule_engine(bundles, files_changed=files, full_diff=diff,
+                                                 allow_checkout_tools=False))
+            else:
+                candidates.extend(self._rules(bundles, files, full_diff=diff, repo_dir=repo_dir))
         else:
             self.stage_errors.append(StageOutcome(stage="rules", status="skipped", code="ablation_disabled"))
         for bundle in bundles:
@@ -442,6 +478,9 @@ class ReviewRuntime:
                 if is_valid_symbol(s)
             ]
             tools = BundleTools(bundle, index=index, client=client, repo_dir=repo_dir or None)
+            if snapshot is not None:
+                from core.input.tools import SnapshotBundleTools
+                tools = SnapshotBundleTools(bundle, index=index, provider=input_provider, snapshot=snapshot)
             with timed(timing, "bundle_agent"):
                 bundle_candidates, agent_record = self._agent_candidates(bundle, tools)
                 candidates.extend(bundle_candidates)
@@ -640,6 +679,33 @@ class ReviewRuntime:
         if intake_omissions and health.status == "completed":
             health.status = "partial"
         unresolved.extend(intake_omissions)
+        if semantic_context is not None:
+            unresolved.extend({"reason": reason, "stage": "semantic_context"}
+                              for reason in semantic_context.unresolved_context)
+        for run in agent_runs:
+            for call in run.get("tool_calls") or []:
+                observation = call.get("result") or {}
+                if observation.get("truncated") or observation.get("error"):
+                    unresolved.append({"stage": "tool_context", "bundle_id": run.get("bundle_id"),
+                                       "reason": "incomplete_tool_observation"})
+        requirement_assessments, requirement_investigations, requirement_evidence = [], [], []
+        if intent is not None:
+            from core.intent.service import assess_verified_findings
+            def complete_requirement(prompt: str) -> str:
+                self.budget.reserve(prompt)
+                if self.verification_llm is not None or self.llm is not None:
+                    return str((self.verification_llm or self.llm)(prompt))
+                from core.gateway.gateway import AIGateway
+                response = AIGateway().generate(prompt=prompt, capability="correctness_review",
+                    agent_name="RequirementAssessor", temperature=0.0, max_tokens=64, retries=1)
+                self.verification_usage.append(response.telemetry.model_dump(mode="json"))
+                return str(response.content or "")
+            requirement_assessments, requirement_investigations, requirement_evidence = assess_verified_findings(
+                intent, review_findings,
+                ReviewTarget(head_sha=str(getattr(ctx, "pr_head_sha", "") or "")), complete_requirement,
+            )
+            unresolved.extend({"requirement_id": item.requirement_id, "reason": item.reason}
+                              for item in requirement_assessments if item.status == "unverified")
         with timed(timing, "policy"):
             outcome = evaluate_policy(health=health, coverage=inspection, findings=review_findings,
                 unresolved=unresolved, execution=execution, classification=classif)
@@ -683,7 +749,15 @@ class ReviewRuntime:
                 diff_sha256=hashlib.sha256(diff.encode()).hexdigest()),
             health=health, inspection=inspection, unresolved=unresolved,
             approval_eligible=outcome.approval_eligible, policy_reasons=outcome.reasons,
-            provenance={**_provenance(self.agent), "budget": self.budget.to_dict()},
+            provenance={**_provenance(self.agent), "budget": self.budget.to_dict(),
+                        "model_calls": [*getattr(self.agent, "usage_records", []), *self.verification_usage],
+                        **({"input_snapshot": snapshot.model_dump(), "snapshot_id": snapshot.id,
+                            "source_input_id": snapshot.source_id}
+                           if snapshot is not None else {})},
+            intent_sources=[intent.source] if intent is not None else [],
+            requirements=intent.requirements if intent is not None else [],
+            requirement_assessments=requirement_assessments,
+            investigations=requirement_investigations, evidence=requirement_evidence,
         )
 
 

@@ -77,6 +77,7 @@ class PipelineContext:
     change_units_payload: Optional[dict] = None
     repo_dir: str = ""
     show_uncertain: bool = False
+    review_intent: Optional[object] = None
 
 
 def get_current_session() -> str:
@@ -139,6 +140,7 @@ class ReviewPipeline:
         expected_head_sha: str = "",
         expected_base_sha: str = "",
         github_auth: str = "configured",
+        requirements_path: str = "",
     ):
         t0 = time.monotonic()
         from contextlib import ExitStack
@@ -156,6 +158,11 @@ class ReviewPipeline:
             self.context.repo = repo
             self.context.number = number
             self.context.config_path = config_path or ""
+            self.context.review_intent = None
+            if requirements_path:
+                from pathlib import Path
+                from core.intent.service import load_intent
+                self.context.review_intent = load_intent(Path(requirements_path))
 
             try:
                 cfg_path = find_config_path(config_path or None)
@@ -989,13 +996,12 @@ Description:
         # Retain the established top-level review_comments schema while also
         # exposing canonical v4 findings and diagnostics for benchmark runs.
         if review_result is not None:
-            payload["diagnostic_findings"] = [f.to_dict() for f in review_result.findings]
-            payload["findings"] = [f.to_dict() for f in review_result.product_findings]
-            payload["result"] = review_result.to_dict()
-            payload["schema_version"] = review_result.schema_version
-            payload["target"] = review_result.target.model_dump()
-            payload["health"] = review_result.health.model_dump()
-            payload["decision"] = review_result.decision
+            canonical = review_result.to_dict()
+            payload["diagnostic_findings"] = canonical["findings"]
+            payload["findings"] = canonical["product_findings"]
+            payload["result"] = canonical
+            for key in ("schema_version", "target", "health", "decision"):
+                payload[key] = canonical[key]
             payload["publication_preview"] = self.context.publication_preview
             payload["publication"] = self.context.publication
             trace = getattr(review_result, "pipeline_trace", None)
@@ -1070,6 +1076,9 @@ def review(
         "--json-output",
         help="Write structured review output to a JSON file.",
     ),
+    requirements: Optional[str] = typer.Option(
+        None, "--requirements", help="Explicit user-supplied scoped requirements JSON; never auto-loaded from the PR",
+    ),
 ):
     from core.cli_parse import parse_review_target
 
@@ -1099,4 +1108,5 @@ def review(
         expected_head_sha=expected_head_sha,
         expected_base_sha=expected_base_sha,
         github_auth=github_auth,
+        requirements_path=requirements or "",
     )

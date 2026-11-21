@@ -89,7 +89,7 @@ class TestSandboxSkip(unittest.TestCase):
 
 
 class TestSandboxResults(unittest.TestCase):
-    def test_mocked_exit_1_request_changes(self):
+    def test_mocked_exit_1_without_attribution_is_comment(self):
         def fake_exec(state, **kwargs):
             return {
                 "execution_report": {
@@ -104,8 +104,9 @@ class TestSandboxResults(unittest.TestCase):
         result = _run(
             [LOADER, TEST_LOADER], DIFF, execute_tests=True, exec_patch=fake_exec
         )
-        self.assertEqual(result.decision, "REQUEST_CHANGES")
-        self.assertEqual(result.policy_reason, "tests_failed")
+        self.assertEqual(result.decision, "COMMENT")
+        self.assertFalse(result.approval_eligible)
+        self.assertIn("execution_unattributed", result.policy_reasons)
 
     def test_mocked_exit_0_not_merge_from_tests_alone(self):
         def fake_exec(state, **kwargs):

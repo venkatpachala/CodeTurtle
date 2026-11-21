@@ -86,7 +86,7 @@ class TestEventsAndClamp(unittest.TestCase):
         rec = clamped_decision(state)
         self.assertNotEqual(rec, "REQUEST_CHANGES")
         self.assertEqual(rec, "MERGE")
-        self.assertEqual(github_event(rec, "mixed"), "APPROVE")
+        self.assertEqual(github_event(rec, "mixed"), "COMMENT")
 
     def test_source_supported_medium_request_changes(self):
         rec = clamp_recommendation("REQUEST_CHANGES", "REQUEST_CHANGES", "source")

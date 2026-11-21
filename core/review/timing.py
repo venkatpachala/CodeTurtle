@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import Dict, Generator, Optional
 
 
@@ -31,6 +31,14 @@ class TimingRecord:
             setattr(self, attr, getattr(self, attr) + seconds)
         else:
             self._extra[attr] = self._extra.get(attr, 0.0) + seconds
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, float]) -> TimingRecord:
+        stages = {stage.name for stage in fields(cls)} - {"_extra"}
+        return cls(
+            **{name: value for name, value in data.items() if name in stages},
+            _extra={name: value for name, value in data.items() if name not in stages},
+        )
 
     def to_dict(self) -> Dict[str, float]:
         d: Dict[str, float] = {

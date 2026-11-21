@@ -24,9 +24,12 @@ not have the v2 production contract guarantees.
 
 ## Canonical result
 
-`ReviewResult.to_dict()` is schema version `2.0`. It includes target, health,
+`ReviewResult.to_dict()` emits schema version `2.1`. It includes target, health,
 inspection, findings, product findings, execution, trace, model/config provenance,
-policy reasons, and bounded-work telemetry. `findings` is diagnostic; the
+policy reasons, and bounded-work telemetry. The additive requirement contracts
+record intent sources, requirements, assessments, investigations, and evidence.
+`ReviewResult.from_dict()` accepts a canonical result or its CLI envelope and
+upgrades stored `2.0` results to `2.1`. `findings` is diagnostic; the
 `product_findings` projection contains verified defects. No empty-list fallback
 reconstructs v4 findings from legacy comments.
 
@@ -43,6 +46,39 @@ delta, hypothesis outcome, and a valid unit evidence reference from a healthy ru
 Missing, truncated, or invalid assessments do not count as inspected. Zero eligible
 units produce a null ratio. These records establish process coverage, not semantic
 correctness or proof that all bugs were considered.
+
+Requirement coverage counts verified, violated, unverified, and unassessed
+requirements. A missing assessment counts as unassessed. Reasoned not-applicable
+requirements are excluded from the denominator. Its ratio is assessed divided by
+applicable requirements and is null when none apply.
+Conclusive requirement assessments cite directional evidence for the reviewed
+HEAD. BASE evidence can provide historical context. The existing verdict
+continues to use source-unit inspection. Findings linked to the new
+investigation records require a confirmed investigation and supporting HEAD
+evidence to enter product output. Stored v2.0 findings retain their existing
+verification status during migration.
+
+Intent/evidence classes are owned by `core/domain/review_contracts.py`; the previous
+`core/review/requirements.py` import path re-exports those same classes. Legacy
+`*_ids` record inputs remain accepted; canonical domain records serialize `*_refs`.
+An explicitly selected `--requirements` JSON file scopes acceptance criteria to paths.
+It informs discovery and proof construction. A separate source-level assessment can
+link verified defects to violated requirements; absence of a defect leaves a
+requirement unverified and cannot establish satisfaction.
+
+## Local committed snapshots
+
+`codeturtle review-local --base REF [--head REF]` compares exact committed trees
+without checkout, repository execution, or GitHub publication. Dirty and untracked
+files are excluded. `GitSnapshotProvider` reads regular Git blobs bound to sealed
+BASE/HEAD, diff, and supplied configuration hashes. Snapshot tools use bounded
+lexical retrieval and never fall back to mutable checkout reads. Checkout-based
+rules and graph evidence are not used on this path.
+
+For Python files, bounded AST comparison supplies changed symbols, signatures,
+and module statements. Parse failures and omissions remain explicit gaps. This
+is structural context, not resolved dataflow or behavioral proof. `--static-only`
+skips model calls and preserves incomplete inspection. See LEARNING_IMPLEMENTATION.md.
 
 ## Policy
 

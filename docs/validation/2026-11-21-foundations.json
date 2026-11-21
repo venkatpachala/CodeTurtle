@@ -1,0 +1,95 @@
+{
+  "date": "2026-11-21",
+  "scope": "Synthetic live integration diagnostics, not held-out quality evaluation",
+  "headline_eligible": false,
+  "precision": null,
+  "recall": null,
+  "clean_pr_false_positive_rate": null,
+  "limitations": [
+    "Removed-zero-guard detection uses an existing deterministic rule; not attributable to model discovery.",
+    "Both models and output limits differ; not a controlled model comparison.",
+    "Dirty development checkouts; no frozen release claim.",
+    "PowerShell bridge overhead included; not inference throughput measurements.",
+    "Two synthetic cases cannot establish real-PR defect detection quality."
+  ],
+  "runs": [
+    {
+      "model": "qwen2.5-coder:3b-instruct",
+      "transport": "windows-powershell-stdin",
+      "max_output_tokens": 1000,
+      "context_tokens": 8192,
+      "temperature": 0,
+      "actual_model_calls": 5,
+      "prompt_tokens": 4741,
+      "completion_tokens": 1880,
+      "model_call_wall_seconds": 107.133,
+      "cases": [
+        {
+          "case_id": "removed-zero-guard",
+          "health": "failed",
+          "decision": null,
+          "verified_findings": 1,
+          "requirement_status": "violated",
+          "inspected_units": 0,
+          "eligible_units": 1,
+          "agent_status": "INVALID_JSON",
+          "parse_error": "proof response did not contain a JSON candidate list",
+          "reviewer_commit": "16fa6704748095e9a056e70a2e27a68b12b2e214",
+          "reviewer_dirty": true
+        },
+        {
+          "case_id": "preserved-zero-guard",
+          "health": "failed",
+          "decision": null,
+          "verified_findings": 0,
+          "requirement_status": "unverified",
+          "inspected_units": 0,
+          "eligible_units": 1,
+          "agent_status": "INVALID_JSON",
+          "parse_error": "proof response did not contain a JSON candidate list",
+          "reviewer_commit": "16fa6704748095e9a056e70a2e27a68b12b2e214",
+          "reviewer_dirty": true
+        }
+      ]
+    },
+    {
+      "model": "qwen2.5-coder:7b",
+      "transport": "windows-powershell-stdin",
+      "max_output_tokens": 1400,
+      "context_tokens": 8192,
+      "temperature": 0,
+      "actual_model_calls": 5,
+      "prompt_tokens": 4890,
+      "completion_tokens": 569,
+      "model_call_wall_seconds": 76.964,
+      "cases": [
+        {
+          "case_id": "removed-zero-guard",
+          "health": "completed",
+          "decision": "REQUEST_CHANGES",
+          "verified_findings": 1,
+          "requirement_status": "violated",
+          "inspected_units": 1,
+          "eligible_units": 1,
+          "agent_status": "VALID_EMPTY",
+          "parse_error": null,
+          "reviewer_commit": "16fa6704748095e9a056e70a2e27a68b12b2e214",
+          "reviewer_dirty": true
+        },
+        {
+          "case_id": "preserved-zero-guard",
+          "health": "completed",
+          "decision": "COMMENT",
+          "verified_findings": 0,
+          "requirement_status": "unverified",
+          "inspected_units": 1,
+          "eligible_units": 1,
+          "agent_status": "VALID_EMPTY",
+          "parse_error": null,
+          "reviewer_commit": "16fa6704748095e9a056e70a2e27a68b12b2e214",
+          "reviewer_dirty": true
+        }
+      ]
+    }
+  ]
+}

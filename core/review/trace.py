@@ -125,5 +125,15 @@ class PipelineTrace:
             "drop_reasons": drop_reasons,
         }
 
+    @classmethod
+    def from_list(cls, data: List[Dict[str, Any]]) -> PipelineTrace:
+        events = [PipelineEvent(**event) for event in data]
+        counter = max(
+            (int(event.candidate_id[2:]) for event in events
+             if event.candidate_id.startswith("C-") and event.candidate_id[2:].isdigit()),
+            default=0,
+        )
+        return cls(events=events, _counter=counter)
+
     def to_list(self) -> List[Dict[str, Any]]:
         return [ev.to_dict() for ev in self.events]

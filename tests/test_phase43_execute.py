@@ -206,7 +206,7 @@ class TestExecuteHappyAndFail(unittest.TestCase):
         self.assertTrue(pytest_cmds)
         self.assertIn(TEST_SAN, pytest_cmds[0] or pytest_cmds[-1])
 
-    def test_fake_pytest_fail_policy_request_changes(self):
+    def test_fake_pytest_fail_without_attribution_is_comment(self):
         def runner(cmd, **kwargs):
             return FakeProc(1, "FAILED tests/test_sql_sanitizer.py::test_x\n1 failed\n")
 
@@ -242,7 +242,7 @@ class TestExecuteHappyAndFail(unittest.TestCase):
         rec = recommendation_from_verification(
             out["validated_findings"], classification="source", risk="low"
         )
-        self.assertEqual(rec, "REQUEST_CHANGES")
+        self.assertEqual(rec, "COMMENT")
 
     def test_no_runner(self):
         def fake_checkout(repo_dir, sha, dest_path, runner=None):
@@ -417,14 +417,14 @@ class TestGraphAndPolicy(unittest.TestCase):
         )
         self.assertEqual(rec, "COMMENT")
 
-    def test_execution_report_failed_requests_changes(self):
+    def test_execution_report_failed_without_verified_defect_is_comment(self):
         rec = recommendation_from_verification(
             [{"verification_status": "uncertain", "severity": "nit", "file": SANITIZER}],
             classification="source",
             risk="low",
             execution={"skipped": False, "exit_code": 1, "failed": 1, "passed": 0},
         )
-        self.assertEqual(rec, "REQUEST_CHANGES")
+        self.assertEqual(rec, "COMMENT")
 
     def test_reattach_stamps_survives_critic_schema(self):
         original = [

@@ -132,7 +132,7 @@ class BundleTools:
         for path in self.repo_dir.rglob(stem):
             if not path.resolve().is_relative_to(self.repo_dir):
                 continue
-            if any(part in skip for part in path.parts):
+            if any(part in skip for part in path.relative_to(self.repo_dir).parts):
                 continue
             try:
                 if path.stat().st_size > 1_000_000:

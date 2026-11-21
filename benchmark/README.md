@@ -2,6 +2,45 @@
 
 Tools to evaluate CodeTurtle on the official **Code Review Benchmark** (50 PRs).
 
+## Paired adjudicated analysis
+
+`benchmark.paired_analysis` compares already adjudicated case outcomes. It does
+not generate labels, infer clean controls from an empty reference list, or grant
+release eligibility. Each input is a JSON list with one row per attempted case:
+
+```json
+{
+  "case_id": "repository-pr-123",
+  "cluster_id": "repository-or-related-patch-group",
+  "source_input_id": "<64-character source-only SHA-256>",
+  "tp": 0,
+  "fp": 0,
+  "fn": 1,
+  "clean_control": false,
+  "status": "partial",
+  "latency_seconds": 12.5
+}
+```
+
+The row is a schema illustration, not a measured result. `source_input_id` identifies
+the same code input independently of reviewer configuration; local snapshots expose
+it in canonical provenance. Baseline/candidate case membership, source identity,
+reference-defect count, control labels, and cluster IDs must agree. Supply clean-control
+labels only after adjudication. Failed attempts remain part of completion accounting.
+
+```powershell
+uv run python -m benchmark.paired_analysis baseline-scored.json candidate-scored.json --output outputs/paired-analysis.json
+```
+
+The report includes micro precision/recall, false-positive comments per clean PR,
+completion rate, and paired cluster-bootstrap percentile intervals. Related cases
+are sampled together. Undefined metrics remain null. One cluster does not produce
+a confidence interval, and small cluster counts remain a substantial limitation.
+Intervals condition on replicates where both metrics are defined; inspect the
+reported valid-sample count, especially for sparse clean controls or findings.
+Dataset splits, annotation provenance, frozen reviewer/configuration identities,
+and matched budgets must still be managed by the experiment/release workflow.
+
 ## Directory Structure
 
 ```text

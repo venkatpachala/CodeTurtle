@@ -117,7 +117,7 @@ def _find_ruby_class_file(root: Path, receiver: str) -> Path | None:
     stem = re.sub(r"(?<!^)(?=[A-Z])", "_", receiver.split("::")[-1]).lower()
     target = f"{stem}.rb"
     for path in root.rglob(target):
-        if any(part in {".git", "vendor", "node_modules", "tmp"} for part in path.parts):
+        if any(part in {".git", "vendor", "node_modules", "tmp"} for part in path.relative_to(root).parts):
             continue
         return path
     return None
