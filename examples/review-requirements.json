@@ -1,0 +1,10 @@
+{
+  "requirements": [
+    {
+      "id": "R-TENANT-ISOLATION",
+      "description": "Document access respects tenant ownership",
+      "acceptance_criterion": "An authenticated user cannot retrieve a document owned by a different tenant.",
+      "paths": ["src/documents.py"]
+    }
+  ]
+}

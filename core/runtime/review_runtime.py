@@ -394,6 +394,10 @@ class ReviewRuntime:
             classification=classif,
             max_bundles=bundle_max,
         )
+        intent = getattr(ctx, "review_intent", None)
+        if intent is not None:
+            for bundle in bundles:
+                bundle.requirements = intent.for_paths(bundle.paths)
         repo_name = repo or getattr(ctx, "repo", "") or str(facts.get("repo") or "")
         client = self._client(repo_name)
         repo_dir = str(getattr(ctx, "repo_dir", "") or "")
@@ -640,6 +644,24 @@ class ReviewRuntime:
         if intake_omissions and health.status == "completed":
             health.status = "partial"
         unresolved.extend(intake_omissions)
+        requirement_assessments, requirement_investigations, requirement_evidence = [], [], []
+        if intent is not None:
+            from core.intent.service import assess_verified_findings
+            def complete_requirement(prompt: str) -> str:
+                self.budget.reserve(prompt)
+                if self.verification_llm is not None or self.llm is not None:
+                    return str((self.verification_llm or self.llm)(prompt))
+                from core.gateway.gateway import AIGateway
+                response = AIGateway().generate(prompt=prompt, capability="correctness_review",
+                    agent_name="RequirementAssessor", temperature=0.0, max_tokens=64, retries=1)
+                self.agent.usage_records.append(response.telemetry.model_dump(mode="json"))
+                return str(response.content or "")
+            requirement_assessments, requirement_investigations, requirement_evidence = assess_verified_findings(
+                intent, review_findings,
+                ReviewTarget(head_sha=str(getattr(ctx, "pr_head_sha", "") or "")), complete_requirement,
+            )
+            unresolved.extend({"requirement_id": item.requirement_id, "reason": item.reason}
+                              for item in requirement_assessments if item.status == "unverified")
         with timed(timing, "policy"):
             outcome = evaluate_policy(health=health, coverage=inspection, findings=review_findings,
                 unresolved=unresolved, execution=execution, classification=classif)
@@ -684,6 +706,10 @@ class ReviewRuntime:
             health=health, inspection=inspection, unresolved=unresolved,
             approval_eligible=outcome.approval_eligible, policy_reasons=outcome.reasons,
             provenance={**_provenance(self.agent), "budget": self.budget.to_dict()},
+            intent_sources=[intent.source] if intent is not None else [],
+            requirements=intent.requirements if intent is not None else [],
+            requirement_assessments=requirement_assessments,
+            investigations=requirement_investigations, evidence=requirement_evidence,
         )
 
 

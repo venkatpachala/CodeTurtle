@@ -77,6 +77,7 @@ class PipelineContext:
     change_units_payload: Optional[dict] = None
     repo_dir: str = ""
     show_uncertain: bool = False
+    review_intent: Optional[object] = None
 
 
 def get_current_session() -> str:
@@ -139,6 +140,7 @@ class ReviewPipeline:
         expected_head_sha: str = "",
         expected_base_sha: str = "",
         github_auth: str = "configured",
+        requirements_path: str = "",
     ):
         t0 = time.monotonic()
         from contextlib import ExitStack
@@ -156,6 +158,10 @@ class ReviewPipeline:
             self.context.repo = repo
             self.context.number = number
             self.context.config_path = config_path or ""
+            if requirements_path:
+                from pathlib import Path
+                from core.intent.service import load_intent
+                self.context.review_intent = load_intent(Path(requirements_path))
 
             try:
                 cfg_path = find_config_path(config_path or None)
@@ -1069,6 +1075,9 @@ def review(
         "--json-output",
         help="Write structured review output to a JSON file.",
     ),
+    requirements: Optional[str] = typer.Option(
+        None, "--requirements", help="Explicit user-supplied scoped requirements JSON; never auto-loaded from the PR",
+    ),
 ):
     from core.cli_parse import parse_review_target
 
@@ -1098,4 +1107,5 @@ def review(
         expected_head_sha=expected_head_sha,
         expected_base_sha=expected_base_sha,
         github_auth=github_auth,
+        requirements_path=requirements or "",
     )

@@ -36,6 +36,7 @@ class Bundle:
     symbols: List[str] = field(default_factory=list)
     kind: str = "source"
     risk_signals: List[Dict[str, Any]] = field(default_factory=list)
+    requirements: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         units = []
@@ -53,6 +54,7 @@ class Bundle:
             "symbols": list(self.symbols),
             "kind": self.kind,
             "risk_signals": [dict(signal) for signal in self.risk_signals],
+            "requirements": [dict(requirement) for requirement in self.requirements],
         }
 
 @dataclass
