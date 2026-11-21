@@ -17,6 +17,7 @@ from core.review.contract import (
 )
 from core.review.finding import ReviewFinding
 from core.domain.observations import SourceObservation
+from core.domain.finding_verification import CLAIM_FIELDS, FindingVerificationRecord
 from core.domain.review_contracts import validate_investigation_evidence
 from core.review.requirements import (
     EvidenceRecord,
@@ -202,6 +203,7 @@ class ReviewResult:
     investigations: list[InvestigationRecord] = field(default_factory=list)
     evidence: list[EvidenceRecord] = field(default_factory=list)
     source_observations: list[SourceObservation] = field(default_factory=list)
+    finding_verifications: list[FindingVerificationRecord] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self._validate_contract_links()
@@ -230,12 +232,26 @@ class ReviewResult:
         _unique_ids((item.id for item in self.source_observations), "observation ID")
         observations = {item.id: SourceObservation.model_validate(item) for item in self.source_observations}
         for observation in observations.values():
-            expected = self.target.head_sha if observation.revision_side == "head" else self.target.base_sha
+            expected = self.target.head_sha if observation.revision_side == "head" else (self.target.comparison_base_sha or self.target.base_sha)
             if observation.revision_sha != expected.lower():
                 raise ValueError("source observation does not match reviewed revision")
-            snapshot_id = self.provenance.get("snapshot_id")
-            if snapshot_id and observation.snapshot_id != snapshot_id:
+            snapshot_ids = {self.provenance.get("snapshot_id"), self.provenance.get("verification_snapshot_id")} - {None, ""}
+            if snapshot_ids and observation.snapshot_id not in snapshot_ids:
                 raise ValueError("source observation does not match reviewed snapshot")
+        _unique_ids((item.id for item in self.finding_verifications), "finding verification ID")
+        for verification in self.finding_verifications:
+            checked = FindingVerificationRecord.model_validate(verification)
+            checked.validate_sources(observations)
+            published = [finding for finding in self.findings if self._is_product_finding(finding)
+                         and finding.candidate_id == checked.candidate_id]
+            if published and checked.verdict != "supported":
+                raise ValueError("published finding requires supported final verification")
+            # ReviewFinding carries every claim field except symbol. Bind the full
+            # serialized behavior rather than accepting another claim at the same path.
+            if any(any((tuple(getattr(finding, name)) if name == "execution_path" else getattr(finding, name))
+                       != getattr(checked.claim, name) for name in CLAIM_FIELDS if name != "symbol")
+                   for finding in published):
+                raise ValueError("final verification addresses a different published claim")
         _unique_ids((item.requirement_id for item in self.requirement_assessments), "assessment")
 
         for requirement in self.requirements:
@@ -251,7 +267,7 @@ class ReviewResult:
                     raise ValueError("evidence does not match its source observation")
             _require_known((*item.supports_claim_refs, *item.contradicts_claim_refs), claim_refs, "claim")
             if item.revision_sha is not None:
-                expected = self.target.head_sha if item.revision_side == "head" else self.target.base_sha
+                expected = self.target.head_sha if item.revision_side == "head" else (self.target.comparison_base_sha or self.target.base_sha)
                 if item.revision_sha.lower() != expected.lower():
                     raise ValueError(f"evidence {item.id} does not match the reviewed {item.revision_side} revision")
 
@@ -333,6 +349,7 @@ class ReviewResult:
             investigations=[InvestigationRecord.model_validate(item) for item in raw.get("investigations", [])],
             evidence=[EvidenceRecord.model_validate(item) for item in raw.get("evidence", [])],
             source_observations=[SourceObservation.model_validate(item) for item in raw.get("source_observations", [])],
+            finding_verifications=[FindingVerificationRecord.model_validate(item) for item in raw.get("finding_verifications", [])],
         )
         result = cls(**data)
         if "requirement_coverage" in raw:
@@ -378,5 +395,6 @@ class ReviewResult:
             "investigations": [item.model_dump(mode="json") for item in self.investigations],
             "evidence": [item.model_dump(mode="json") for item in self.evidence],
             "source_observations": [item.model_dump(mode="json") for item in self.source_observations],
+            "finding_verifications": [item.model_dump(mode="json") for item in self.finding_verifications],
             "requirement_coverage": self.requirement_coverage.model_dump(mode="json"),
         }

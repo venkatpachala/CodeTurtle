@@ -19,7 +19,7 @@ def test_observations_roundtrip_and_legacy_21_upgrades(repository):
     result = ReviewResult(target=ReviewTarget(base_sha=base, head_sha=snapshot.head_sha),
                           source_observations=list(observations), provenance={"snapshot_id": snapshot.id})
     assert ReviewResult.from_dict(result.to_dict()).to_dict() == result.to_dict()
-    assert result.to_dict()["schema_version"] == "2.2"
+    assert result.to_dict()["schema_version"] == "2.3"
     old = ReviewResult().to_dict()
     old["schema_version"] = "2.1"
     old.pop("source_observations")

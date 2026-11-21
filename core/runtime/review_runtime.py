@@ -216,6 +216,8 @@ class ReviewRuntime:
         llm: Optional[Callable[[str], str]] = None,
         verification_llm: Optional[Callable[[str], str]] = None,
         requirement_llm: Optional[Callable[[str, str], str]] = None,
+        finding_verification_llm: Optional[Callable[[str], str]] = None,
+        finding_verifier_mode: str = "structured",
         graphify_client: Any = None,
         rule_engine: Optional[Callable[..., List[Candidate]]] = None,
         agent: Any = None,
@@ -225,6 +227,10 @@ class ReviewRuntime:
         # while BundleAgent requires a much larger completion budget.
         self.verification_llm = verification_llm
         self.requirement_llm = requirement_llm
+        if finding_verifier_mode not in {"structured", "legacy"}:
+            raise ValueError("unknown finding verifier mode")
+        self.finding_verification_llm = finding_verification_llm
+        self.finding_verifier_mode = finding_verifier_mode
         self.graphify_client = graphify_client
         self.rule_engine = rule_engine
         self.agent = agent
@@ -576,6 +582,44 @@ class ReviewRuntime:
             survivors.append((cand, line))
 
         from core.runtime.verify_loop import verify_candidates
+        from core.verification.source_verifier import SourceFindingVerifier, FINDING_PROMPT_VERSION
+
+        verification_inputs, verification_snapshot = input_provider, snapshot
+        if verification_snapshot is None and self.finding_verifier_mode == "structured" and repo_dir:
+            try:
+                from core.input.snapshot import GitSnapshotProvider
+                base_sha, head_sha = str(getattr(ctx, "pr_base_sha", "") or ""), str(getattr(ctx, "pr_head_sha", "") or "")
+                if not base_sha or not head_sha:
+                    raise ValueError("missing pinned source revisions")
+                verification_inputs = GitSnapshotProvider(repo_dir)
+                verification_snapshot = verification_inputs.resolve(base_sha, head_sha, comparison="merge_base",
+                    config={"prompt_version": FINDING_PROMPT_VERSION, "review_diff_sha256": hashlib.sha256(diff.encode()).hexdigest()})
+            except Exception:
+                verification_inputs, verification_snapshot = None, None
+                self.stage_errors.append(StageOutcome(stage="verification_context", status="degraded", code="snapshot_unavailable"))
+
+        def structured_completion(prompt: str) -> str:
+            if static_only:
+                raise RuntimeError("model verification disabled in static-only mode")
+            injected = self.finding_verification_llm or self.verification_llm or self.llm
+            if injected is not None:
+                return str(injected(prompt))
+            from core.gateway.gateway import AIGateway
+            response = AIGateway().generate(prompt=prompt, capability="correctness_review",
+                agent_name="FindingVerifier:structured", temperature=0.0, max_tokens=1400, retries=0)
+            self.verification_usage.append(response.telemetry.model_dump(mode="json"))
+            return str(response.content or "")
+
+        def finding_context_paths(candidate: Candidate, bundle: Bundle | None) -> tuple[str, ...]:
+            context_paths = []
+            if intent is not None:
+                for item in intent.items:
+                    if candidate.file in item.paths:
+                        context_paths.extend(item.context_paths)
+            return tuple(context_paths)
+
+        source_verifier = SourceFindingVerifier(verification_inputs, verification_snapshot,
+            structured_completion, self.budget, finding_context_paths)
 
         def verify_completion(prompt: str) -> str:
             if static_only:
@@ -590,7 +634,10 @@ class ReviewRuntime:
             if settings.verification_enabled:
                 verified_cands, vdrop = verify_candidates(
                     [c for c, _ in survivors], index=index, bundles=bundles, client=client,
-                    llm=verify_completion)
+                    llm=verify_completion,
+                    source_verifier=(lambda candidate, bundle, hints: "UNCERTAIN" if static_only
+                                     else source_verifier.verify(candidate, bundle, hints))
+                                    if self.finding_verifier_mode == "structured" else None)
             else:
                 verified_cands, vdrop = [], [{**c.to_dict(), "drop_reason": "verification_disabled"} for c, _ in survivors]
                 self.stage_errors.append(StageOutcome(stage="verification", status="skipped", code="ablation_disabled"))
@@ -766,13 +813,39 @@ class ReviewRuntime:
             from core.domain.review_contracts import RequirementAssessment
             requirement_assessments = [RequirementAssessment(requirement_id=item.id, status="not_assessed",
                 reason="Requirement model assessment disabled") for item in intent.items]
+        observation_index = {observation.id: observation for observation in source_observations}
+        observation_index.update(source_verifier.observations)
+        source_observations = list(observation_index.values())
+        from core.domain.review_contracts import EvidenceRecord
+        for record in source_verifier.records:
+            health.stages.append(StageOutcome(stage=f"finding_verifier:{record.candidate_id}",
+                status="succeeded" if record.status == "completed" else "degraded", code=record.status))
+            if record.status != "completed" and health.status == "completed":
+                health.status = "partial"
+            if record.verdict != "supported":
+                continue
+            for finding in review_findings:
+                if finding.candidate_id != record.candidate_id:
+                    continue
+                for citation in record.decision.supporting_citations:
+                    observation = observation_index[citation.observation_id]
+                    eid = "EF-" + hashlib.sha256(f"{record.id}:{observation.id}".encode()).hexdigest()[:24]
+                    if eid in finding.evidence_ids:
+                        continue
+                    requirement_evidence.append(EvidenceRecord(id=eid, kind="contract",
+                        source_ref=f"{observation.path}:{observation.start_line}-{observation.end_line}",
+                        content_hash=observation.excerpt_sha256, revision_sha=observation.revision_sha,
+                        revision_side=observation.revision_side, observation_refs=(observation.id,),
+                        supports_claim_refs=(finding.id,),
+                        limitations=("Source-grounded model verification; not execution or formal proof.",)))
+                    finding.evidence_ids.append(eid)
         unresolved.extend({"requirement_id": item.requirement_id, "reason": item.reason}
                           for item in requirement_assessments if item.status in {"unverified", "not_assessed"})
         with timed(timing, "policy"):
             outcome = evaluate_policy(health=health, coverage=inspection, findings=review_findings,
                 unresolved=unresolved, execution=execution, classification=classif)
         decision, policy_reason = outcome.decision, outcome.reasons[0]
-        pipeline_health.update(status=health.status, inspection_ratio=inspection.inspection_ratio)
+        pipeline_health.update(healthy=health.status == "completed", status=health.status, inspection_ratio=inspection.inspection_ratio)
         timing.total_s = sum(
             timing.to_dict()[k] for k in timing.to_dict() if k != "total_s"
         )
@@ -808,6 +881,7 @@ class ReviewRuntime:
             target=ReviewTarget(repo=repo_name, number=int(getattr(ctx, "number", 0) or 0),
                 head_sha=str(getattr(ctx, "pr_head_sha", "") or ""),
                 base_sha=str(getattr(ctx, "pr_base_sha", "") or ""),
+                comparison_base_sha=str(verification_snapshot.comparison_base_sha or "") if verification_snapshot else "",
                 diff_sha256=hashlib.sha256(diff.encode()).hexdigest()),
             health=health, inspection=inspection, unresolved=unresolved,
             approval_eligible=outcome.approval_eligible, policy_reasons=outcome.reasons,
@@ -815,6 +889,10 @@ class ReviewRuntime:
                         "model_calls": [*getattr(self.agent, "usage_records", []), *self.verification_usage],
                         "requirement_strategy": requirement_strategy,
                         "requirement_runs": [run.to_dict() for run in requirement_runs],
+                        "finding_verifier_mode": self.finding_verifier_mode,
+                        **({"verification_snapshot_id": verification_snapshot.id,
+                            "verification_snapshot": verification_snapshot.model_dump(mode="json")}
+                           if verification_snapshot else {}),
                         **({"input_snapshot": snapshot.model_dump(), "snapshot_id": snapshot.id,
                             "source_input_id": snapshot.source_id}
                            if snapshot is not None else {})},
@@ -823,6 +901,7 @@ class ReviewRuntime:
             requirement_assessments=requirement_assessments,
             investigations=requirement_investigations, evidence=requirement_evidence,
             source_observations=source_observations,
+            finding_verifications=list(source_verifier.records),
         )
 
 

@@ -292,6 +292,7 @@ def verify_candidates(
     bundles: Optional[Sequence[Bundle]] = None,
     client: Any = None,
     llm: Optional[Callable[[str], str]] = None,
+    source_verifier: Optional[Callable[[Candidate, Optional[Bundle], List[str]], str]] = None,
 ) -> Tuple[List[Candidate], List[dict]]:
     """Return (verified survivors, dropped). Uncertain is not a comment."""
     kept: List[Candidate] = []
@@ -306,7 +307,7 @@ def verify_candidates(
             _drop(cand, "incomplete_proof", dropped)
             continue
         if verified_n >= MAX_VERIFY:
-            _drop(cand, "unproven", dropped)
+            _drop(cand, "verification_limit" if source_verifier else "unproven", dropped)
             continue
         if is_hedge(cand.title, cand.claim, getattr(cand, "confidence", None)):
             cand.severity = "nit"
@@ -323,7 +324,7 @@ def verify_candidates(
         if q.status == PLAUSIBLE_BUT_UNPROVEN and q.reason != "plausible":
             _drop(cand, q.reason or "unproven", dropped)
             continue
-        if snippet_enforces_invariant(cand, hunk):
+        if source_verifier is None and snippet_enforces_invariant(cand, hunk):
             _drop(cand, "not_a_defect", dropped)
             continue
         if not (cand.execution_path or cand.symbol):
@@ -338,16 +339,22 @@ def verify_candidates(
         if bad_sym:
             continue
         last = _last_symbol(cand.execution_path) or cand.symbol
+        hints: List[str] = []
         disproved, counter = _graph_disproves(client, last, cand.invariant, graph_budget)
         if disproved:
-            if counter:
-                cand.counter_evidence = list(cand.counter_evidence or []) + [counter]
-            _drop(cand, "disproved", dropped)
-            continue
+            if source_verifier is not None:
+                hints.append("Unverified graph keyword match (not a refutation): " + counter[:400])
+            else:
+                if counter:
+                    cand.counter_evidence = list(cand.counter_evidence or []) + [counter]
+                _drop(cand, "disproved", dropped)
+                continue
         bundle = _bundle_for(cand, bundles or [])
         if _test_covers_invariant(cand, bundle):
             claim = f"{cand.title} {cand.claim}".lower()
-            if "test does not cover" not in claim:
+            if source_verifier is not None:
+                hints.append("Related test text exists; this is not execution evidence or proof of correctness.")
+            elif "test does not cover" not in claim:
                 cand.counter_evidence = list(cand.counter_evidence or []) + [
                     "same-bundle test asserts invariant"
                 ]
@@ -375,14 +382,14 @@ def verify_candidates(
             cand.severity = "medium"
             print(f"[Verify] deterministic=external_cli_contract file={cand.file} title={cand.title!r}")
         else:
-            status = _falsify_llm(cand, llm, hunk)
+            status = source_verifier(cand, bundle, hints) if source_verifier is not None else _falsify_llm(cand, llm, hunk)
         if status == "DISPROVED":
             _drop(cand, "disproved", dropped)
             continue
         if status != "VERIFIED":
             _drop(cand, "unproven", dropped)
             continue
-        if snippet_enforces_invariant(cand, hunk):
+        if source_verifier is None and snippet_enforces_invariant(cand, hunk):
             _drop(cand, "not_a_defect", dropped)
             continue
         q2 = qualify_finding(cand, hunk)

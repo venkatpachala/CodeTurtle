@@ -6,6 +6,7 @@ from core.runtime.models import ReviewResult
 from core.runtime.review_runtime import ReviewRuntime
 from tests.test_requirement_investigator import requirement_case, decision_for
 from tests.test_input_snapshot import repository
+from tests.test_source_finding_verifier import response_for
 
 
 def run_case(requirement_case, *, verdict="VERIFIED", outcome="violated", strategy="investigate", static=False):
@@ -19,6 +20,7 @@ def run_case(requirement_case, *, verdict="VERIFIED", outcome="violated", strate
         files_changed=["app.py"], full_diff=provider.diff(snapshot),
     )
     return ReviewRuntime(llm=lambda _: "[]", verification_llm=lambda _: verdict,
+                         finding_verification_llm=lambda prompt: json.dumps(response_for(prompt)) if verdict == "VERIFIED" else verdict,
                          requirement_llm=complete).run(context)
 
 

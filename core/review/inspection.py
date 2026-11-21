@@ -62,7 +62,7 @@ def unresolved_hypotheses(runs: list[dict], candidates: list, dropped: list[dict
                 unresolved.append({"bundle_id": run.get("bundle_id"), "hypothesis_id": hid,
                     "file": hyp.get("file"), "reason": outcome.get("reason") or "proof_not_substantiated"})
     for drop in dropped:
-        if drop.get("drop_reason") in {"incomplete_proof", "no_line", "PLAUSIBLE_BUT_UNPROVEN", "uncertain", "verify_limit", "unproven", "no_execution_path"}:
+        if drop.get("drop_reason") in {"incomplete_proof", "no_line", "PLAUSIBLE_BUT_UNPROVEN", "uncertain", "verify_limit", "verification_limit", "unproven", "no_execution_path"}:
             unresolved.append({"file": drop.get("file"), "hypothesis_id": drop.get("hypothesis_id"),
                                "reason": drop.get("drop_reason")})
     return unresolved
