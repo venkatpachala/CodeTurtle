@@ -354,6 +354,20 @@ class ReviewRuntime:
         )
         files = [normalize_path(p) for p in files if p]
         diff = full_diff or getattr(ctx, "full_diff", "") or ""
+        pr_snapshot = getattr(ctx, "pr_review_snapshot", None)
+        pr_inputs = getattr(ctx, "pr_input_provider", None)
+        prepared_pr = getattr(ctx, "source_preparation", None) is not None
+        if pr_snapshot is not None:
+            from core.input.snapshot import InputError
+            preparation = getattr(ctx, "source_preparation", None) or {}
+            if (pr_inputs is None or pr_snapshot.base_sha != getattr(ctx, "pr_base_sha", "")
+                    or pr_snapshot.head_sha != getattr(ctx, "pr_head_sha", "")
+                    or preparation.get("review_diff_sha256") != hashlib.sha256(diff.encode()).hexdigest()):
+                raise InputError("prepared PR source differs from runtime review identity")
+        investigation_snapshot = snapshot or pr_snapshot
+        investigation_inputs = input_provider or pr_inputs
+        if prepared_pr and pr_snapshot is None:
+            self.stage_errors.append(StageOutcome(stage="investigation_context", status="degraded", code="snapshot_unavailable"))
         if snapshot is not None:
             from core.input.snapshot import InputError
             if input_provider is None or input_provider.diff(snapshot) != diff:
@@ -425,19 +439,19 @@ class ReviewRuntime:
             for bundle in bundles:
                 bundle.requirements = intent.for_paths(bundle.paths)
         semantic_context = None
-        if snapshot is not None:
+        if investigation_snapshot is not None:
             from core.intelligence.changes import build_change_context
-            semantic_context = build_change_context(input_provider, snapshot, files)
+            semantic_context = build_change_context(investigation_inputs, investigation_snapshot, files)
             for bundle in bundles:
                 bundle.change_context = {
-                    "snapshot_id": snapshot.id,
+                    "snapshot_id": investigation_snapshot.id,
                     "changes": [change.model_dump() for change in semantic_context.changes if change.path in bundle.paths],
                     "limitations": list(semantic_context.limitations),
                     "unresolved_context": list(semantic_context.unresolved_context),
                 }
         repo_name = repo or getattr(ctx, "repo", "") or str(facts.get("repo") or "")
         client = self._client(repo_name)
-        if snapshot is not None:
+        if investigation_snapshot is not None or prepared_pr:
             client = None  # No graph may establish facts without matching snapshot provenance.
         repo_dir = str(getattr(ctx, "repo_dir", "") or "")
         if not repo_dir and repo_name:
@@ -451,11 +465,21 @@ class ReviewRuntime:
         from core.analysis.risk_signals import (
             analyze_risk_signals, attach_signals_to_bundles, attach_signals_to_candidates,
         )
-        risk_signals = [] if snapshot is not None else analyze_risk_signals(
-            repo_dir=repo_dir,
-            files_changed=files,
-            index=index,
-        )
+        risk_signals = []
+        if investigation_snapshot is not None and snapshot is None:
+            from core.input.snapshot import InputError, SourceNotFound
+            def read_pinned_source(path: str) -> str:
+                try:
+                    return investigation_inputs.read(investigation_snapshot, path).content.decode("utf-8", errors="strict")
+                except SourceNotFound:
+                    return ""  # Deleted files have no HEAD definitions.
+            try:
+                risk_signals = analyze_risk_signals(repo_dir=None, files_changed=files, index=index,
+                    read_source=read_pinned_source, repository_paths=investigation_inputs.paths(investigation_snapshot))
+            except (InputError, UnicodeError):
+                self.stage_errors.append(StageOutcome(stage="risk_context", status="degraded", code="snapshot_read_unavailable"))
+        elif snapshot is None and not prepared_pr:
+            risk_signals = analyze_risk_signals(repo_dir=repo_dir, files_changed=files, index=index)
         attach_signals_to_bundles(bundles, risk_signals)
         if risk_signals:
             print(f"[RiskSignals] n={len(risk_signals)} kinds={[signal.kind for signal in risk_signals]}")
@@ -475,7 +499,7 @@ class ReviewRuntime:
         agent_runs: List[Dict[str, Any]] = []
         from config import settings
         if settings.rules_enabled:
-            if snapshot is not None and self.rule_engine is None:
+            if (investigation_snapshot is not None or prepared_pr) and self.rule_engine is None:
                 from core.rules.engine import run_rule_engine
                 candidates.extend(run_rule_engine(bundles, files_changed=files, full_diff=diff,
                                                  allow_checkout_tools=False))
@@ -489,10 +513,11 @@ class ReviewRuntime:
                 for s in (symbols_from_units(bundle.units, bundle.paths) or list(bundle.symbols))
                 if is_valid_symbol(s)
             ]
-            tools = BundleTools(bundle, index=index, client=client, repo_dir=repo_dir or None)
-            if snapshot is not None:
+            tools = BundleTools(bundle, index=index, client=client,
+                                repo_dir=None if prepared_pr else repo_dir or None)
+            if investigation_snapshot is not None:
                 from core.input.tools import SnapshotBundleTools
-                tools = SnapshotBundleTools(bundle, index=index, provider=input_provider, snapshot=snapshot)
+                tools = SnapshotBundleTools(bundle, index=index, provider=investigation_inputs, snapshot=investigation_snapshot)
             with timed(timing, "bundle_agent"):
                 if static_only:
                     bundle_candidates, agent_record = [], {"bundle_id": bundle.id, "status": "VALID_EMPTY",
@@ -899,6 +924,7 @@ class ReviewRuntime:
             health=health, inspection=inspection, unresolved=unresolved,
             approval_eligible=outcome.approval_eligible, policy_reasons=outcome.reasons,
             provenance={**_provenance(self.agent), "budget": self.budget.to_dict(),
+                        "investigation_source": "git_snapshot" if investigation_snapshot is not None else "unavailable" if prepared_pr else "legacy_checkout",
                         "model_calls": [*getattr(self.agent, "usage_records", []), *self.verification_usage],
                         "requirement_strategy": requirement_strategy,
                         "requirement_runs": [run.to_dict() for run in requirement_runs],

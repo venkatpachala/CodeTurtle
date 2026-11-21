@@ -6,6 +6,7 @@ from pathlib import PurePosixPath
 
 from core.agent.tools import BundleTools
 from core.input.snapshot import GitSnapshotProvider, InputError, ReviewSnapshot
+from core.pr_facts import normalize_path
 
 
 class SnapshotBundleTools(BundleTools):
@@ -24,7 +25,8 @@ class SnapshotBundleTools(BundleTools):
             return {"error": str(exc), "status": "error"}
         lines = source.content.decode("utf-8", errors="replace").splitlines()
         starts = [int(unit.get("start_line", 1) if isinstance(unit, dict) else getattr(unit, "start_line", 1))
-                  for unit in self.bundle.units]
+                  for unit in self.bundle.units
+                  if normalize_path(unit.get("path", "") if isinstance(unit, dict) else getattr(unit, "path", "")) == resolved]
         start = max(0, min(starts or [1]) - 21)
         selected = lines[start:start + 100]
         text = "\n".join(f"{i}: {line}" for i, line in enumerate(selected, start=start + 1))
@@ -38,7 +40,35 @@ class SnapshotBundleTools(BundleTools):
         return self._search_repository(symbol, tests_only=False)
 
     def callee_contract(self, symbol: str) -> dict:
-        return {"error": "snapshot_callee_contract_not_supported", "status": "denied"}
+        if "." not in symbol:
+            return {"error": "invalid_symbol", "status": "denied"}
+        receiver, method = symbol.rsplit(".", 1)
+        if not re.fullmatch(r"[A-Z]\w*(?:::[A-Z]\w*)*", receiver) or not re.fullmatch(r"[a-z_]\w*[!?=]?", method):
+            return {"error": "invalid_symbol", "status": "denied"}
+        stem = re.sub(r"(?<!^)(?=[A-Z])", "_", receiver.split("::")[-1]).lower() + ".rb"
+        try:
+            matches = [p for p in self.provider.paths(self.snapshot) if PurePosixPath(p).name == stem
+                       and not set(PurePosixPath(p).parts) & {"vendor", "node_modules", "tmp"}]
+            if len(matches) != 1:
+                return {"error": "ambiguous_or_missing_callee", "status": "denied"}
+            path = matches[0]
+            source = self.provider.read(self.snapshot, path)
+        except InputError:
+            return {"error": "callee_source_unavailable", "status": "error"}
+        lines = source.content.decode("utf-8", errors="replace").splitlines()
+        names = {method, "optimize"}
+        if method in {"downsize", "resize"}:
+            names.update({"downsize_instructions_animated", "resize_instructions_animated"})
+        starts = [n for n, line in enumerate(lines)
+                  if any(re.match(rf"\s*def\s+self\.{re.escape(name)}\b", line) for name in names)]
+        if not starts:
+            return {"error": "callee_not_found", "status": "empty"}
+        numbers = sorted({n for start in starts[:4] for n in range(start, min(start + 16, len(lines)))})
+        text = "\n".join(f"{n+1}: {lines[n]}" for n in numbers)
+        return {"symbol": symbol, "path": path, "text": text[:3500], "source": "snapshot_callee_contract",
+                "snapshot_id": self.snapshot.id, "revision_sha": source.revision_sha,
+                "content_sha256": source.content_sha256, "truncated": True, "status": "truncated",
+                "limitations": ["Bounded Ruby method excerpts; not a resolved dispatch proof."]}
 
     def _search_repository(self, symbol: str, *, tests_only: bool) -> dict:
         key = (symbol, tests_only)

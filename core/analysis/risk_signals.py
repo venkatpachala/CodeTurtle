@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Callable, Iterable, Sequence
 
 from core.pr_facts import normalize_path
 from core.analysis.cli_contracts import GIFSICLE_RESIZE_FIT, violates_gifsicle_resize_fit
@@ -74,12 +74,13 @@ def _changed_text(index: DiffIndex, path: str) -> str:
     return "\n".join(str(h.added or "") for h in index.hunks_for(path))
 
 
-def _duplicate_definition_signals(root: Path, paths: Iterable[str], index: DiffIndex) -> list[RiskSignal]:
+def _duplicate_definition_signals(root: Path, paths: Iterable[str], index: DiffIndex,
+                                  read_source: Callable[[str], str] | None = None) -> list[RiskSignal]:
     signals: list[RiskSignal] = []
     for relative in paths:
         if not relative.lower().endswith(".rb"):
             continue
-        source = _read(_repo_file(root, relative) or Path())
+        source = read_source(relative) if read_source else _read(_repo_file(root, relative) or Path())
         definitions: dict[str, list[tuple[int, str]]] = {}
         for line_no, line in enumerate(source.splitlines(), start=1):
             match = _RUBY_DEF_RE.match(line)
@@ -123,14 +124,26 @@ def _find_ruby_class_file(root: Path, receiver: str) -> Path | None:
     return None
 
 
-def _contract_signals(root: Path, paths: Iterable[str], index: DiffIndex) -> list[RiskSignal]:
+def _contract_signals(root: Path, paths: Iterable[str], index: DiffIndex,
+                      read_source: Callable[[str], str] | None = None,
+                      repository_paths: Sequence[str] = ()) -> list[RiskSignal]:
     signals: list[RiskSignal] = []
     for relative in paths:
         added = _changed_text(index, relative)
         for match in _PERCENT_CALL_RE.finditer(added):
             receiver, method, args = match.group("receiver"), match.group("method"), match.group("args")
-            target = _find_ruby_class_file(root, receiver)
-            target_text = _read(target or Path())
+            if read_source:
+                stem = re.sub(r"(?<!^)(?=[A-Z])", "_", receiver.split("::")[-1]).lower() + ".rb"
+                matches = [p for p in repository_paths if Path(p).name == stem
+                           and not set(Path(p).parts) & {".git", "vendor", "node_modules", "tmp"}]
+                # Ambiguous class files do not establish a unique call contract.
+                target_rel = matches[0] if len(matches) == 1 else ""
+                target_text = read_source(target_rel) if target_rel else ""
+                target = None
+            else:
+                target = _find_ruby_class_file(root, receiver)
+                target_text = _read(target or Path())
+                target_rel = target.relative_to(root).as_posix() if target else ""
             if not target_text:
                 continue
             # The finding is not "percentages are always bad". It is a specific
@@ -140,10 +153,6 @@ def _contract_signals(root: Path, paths: Iterable[str], index: DiffIndex) -> lis
             argument_match = re.search(r"\d+(?:\.\d+)?%", args)
             if argument_match is None or not violates_gifsicle_resize_fit(argument_match.group(0)):
                 continue
-            try:
-                target_rel = target.relative_to(root).as_posix() if target else ""
-            except ValueError:
-                target_rel = ""
             evidence = (
                 f"{relative}: changed call {receiver}.{method}(..., {argument_match.group(0)}, allow_animation: ...)",
                 f"{target_rel}: animated path invokes gifsicle --resize-fit with dimensions",
@@ -205,17 +214,19 @@ def analyze_risk_signals(
     repo_dir: str | Path | None,
     files_changed: Sequence[str],
     index: DiffIndex,
+    read_source: Callable[[str], str] | None = None,
+    repository_paths: Sequence[str] = (),
 ) -> list[RiskSignal]:
     """Return bounded, deterministic PR risk signals from changed source files."""
-    if not repo_dir:
+    if not repo_dir and read_source is None:
         return []
-    root = Path(repo_dir)
-    if not root.is_dir():
+    root = Path(repo_dir or ".")
+    if read_source is None and not root.is_dir():
         return []
     paths = list(dict.fromkeys(normalize_path(path) for path in files_changed if path))[:100]
     signals = (
-        _duplicate_definition_signals(root, paths, index)
-        + _contract_signals(root, paths, index)
+        _duplicate_definition_signals(root, paths, index, read_source)
+        + _contract_signals(root, paths, index, read_source, repository_paths)
         + _stale_loop_signals(paths, index)
     )
     # Prevent duplicate signals from noisy multi-hunk files.
