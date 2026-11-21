@@ -7,6 +7,8 @@ evaluation; this is not a high-recall or automatic-merge claim.
 Current references: [architecture](docs/CURRENT_ARCHITECTURE.md),
 [limitations](docs/LIMITATIONS.md), [release checklist](docs/RELEASE_CHECKLIST.md),
 and [implementation validation](docs/IMPLEMENTATION_VALIDATION.md).
+See the [current project status and remaining phases](docs/PROJECT_STATUS.md)
+for implemented behavior, native gateway validation, and portfolio evidence.
 
 Local committed review now supports requirement-first investigation with exact
 source citations. See the [implementation and learning walkthrough](docs/REQUIREMENT_FIRST_PHASE.md)

@@ -1,0 +1,129 @@
+{
+  "date": "2026-11-21",
+  "scope": "Native WSL gateway connection and normal CLI integration smoke",
+  "eligible_for_headline_metrics": false,
+  "full_suite_tests_passed": 663,
+  "gateway_http_tests_added": 5,
+  "ci": {
+    "reviewer_commit": "770b0bb225446ae42b01f829dd6b2ca071a96ba3",
+    "url": "https://github.com/venkatpachala/CodeTurtle/actions/runs/44926265338",
+    "conclusion": "success",
+    "matrix": [
+      "Windows Python 3.11",
+      "Windows Python 3.12",
+      "Linux Python 3.11",
+      "Linux Python 3.12"
+    ]
+  },
+  "connection": {
+    "transport": "normal gateway via native Ollama /api/chat",
+    "endpoint": "http://172.31.160.1:11434",
+    "model": "qwen2.5-coder:7b",
+    "probe_response": "CONNECTED",
+    "probe_prompt_tokens": 38,
+    "probe_completion_tokens": 3,
+    "probe_latency_seconds": 8.167454719543457,
+    "probe_retries": 0,
+    "observed_server_context_tokens": 4096,
+    "configuration_scope": "WSL user config; host IP can change after network restart"
+  },
+  "normal_pr": {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/1",
+    "reviewer_commit": "770b0bb225446ae42b01f829dd6b2ca071a96ba3",
+    "reviewer_dirty": true,
+    "target": {
+      "repo": "ai-code-review-evaluation/discourse-graphite",
+      "number": 1,
+      "base_sha": "3f71fa15c93bb0b751bb92abae1b5dc9a21bd4ca",
+      "head_sha": "ffbaf8c54269df2ce510de91245760fddce09896",
+      "diff_sha256": "843cfa2c924c1414a470ebe9ce08a58fe70931e513824bd25449f6e20f743281",
+      "comparison_base_sha": ""
+    },
+    "process_exit_code": 0,
+    "health": "partial",
+    "stages": [
+      {
+        "stage": "bundle:B-001",
+        "status": "succeeded",
+        "code": "VALID_EMPTY",
+        "detail": "",
+        "retryable": false
+      },
+      {
+        "stage": "bundle:B-002",
+        "status": "succeeded",
+        "code": "VALID_CANDIDATES",
+        "detail": "",
+        "retryable": false
+      },
+      {
+        "stage": "bundle:B-003",
+        "status": "succeeded",
+        "code": "VALID_EMPTY",
+        "detail": "",
+        "retryable": false
+      },
+      {
+        "stage": "verification_context",
+        "status": "degraded",
+        "code": "snapshot_unavailable",
+        "detail": "",
+        "retryable": false
+      },
+      {
+        "stage": "graph",
+        "status": "degraded",
+        "code": "graph_unavailable",
+        "detail": "",
+        "retryable": false
+      }
+    ],
+    "decision": "REQUEST_CHANGES",
+    "policy_reasons": [
+      "verified_blocker",
+      "partial_analysis",
+      "unresolved_hypotheses"
+    ],
+    "eligible_units": 4,
+    "packed_units": 4,
+    "inspected_units": 4,
+    "unresolved_entries": 17,
+    "product_findings": 1,
+    "reported_findings": [
+      {
+        "id": "F-001",
+        "title": "Animated GIFs will fail to resize due to the percentage syntax not being accepted by `gifsicle --resize-fit`.",
+        "file": "app/controllers/uploads_controller.rb",
+        "line": 67,
+        "source": "agent",
+        "verification_status": "verified",
+        "evidence_level": "statically_substantiated"
+      }
+    ],
+    "source_observations": 0,
+    "finding_verifications": 0,
+    "actual_model_calls": 8,
+    "reported_prompt_tokens": 18323.0,
+    "reported_completion_tokens": 4065.0,
+    "latency_seconds": 222.58,
+    "publication": {
+      "status": "dry_run",
+      "review_id": null,
+      "url": "",
+      "error_code": "",
+      "error": ""
+    },
+    "raw_local_report": ".validation/normal-pr-connection-review.json",
+    "raw_local_report_sha256": "7d570369274991e027cce8e447f20702bc32eacb98189ae2d5805d4224069c39"
+  },
+  "monetary_cost_usd": null,
+  "limitations": [
+    "Previously used public development PR; one integration smoke, not held-out quality evaluation.",
+    "Dirty workspace and different native chat/context profile; not comparable to frozen verifier experiments.",
+    "Reported finding passed an existing static contract route, not the new source-bound model verifier.",
+    "PR verification snapshot was unavailable in the shallow checkout and graph context was unavailable.",
+    "Recorded inspection 4/4 does not establish semantic completeness; health remained partial.",
+    "No independent finding adjudication or aggregate precision/recall/false-MERGE estimate was performed.",
+    "USD cost was not measured."
+  ]
+}

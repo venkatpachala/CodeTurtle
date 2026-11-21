@@ -141,5 +141,7 @@ excluded. Publishing is explicit through manual dispatch. Third-party Actions ar
 pinned by commit. Repository test execution is rejected in GitHub Actions.
 
 The contract CI runs actual deterministic components, filesystem operations, Git,
-and subprocesses across Windows/Linux and Python 3.11/3.12. Its live execution on
-GitHub still requires pushing this implementation.
+subprocesses, and local HTTP gateway contracts across Windows/Linux and Python
+3.11/3.12. Recorded hosted runs passed the four-platform matrix; each report is
+evidence for its specific commit. See FINDING_VERIFIER_VALIDATION.md and
+PROJECT_STATUS.md for the current milestone and remaining work.

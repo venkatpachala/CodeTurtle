@@ -2,6 +2,33 @@
 
 Configure credentials in `.env` — see [`.env.example`](../.env.example).
 
+## WSL client with Ollama on Windows
+
+The normal CLI uses `OLLAMA_BASE_URL` through the native Ollama provider; the
+benchmark's PowerShell bridge is a separate transport. In WSL NAT mode, Windows
+services are reached through the Windows host IP rather than assuming WSL
+`localhost` reaches them. See [Microsoft's WSL networking documentation](https://learn.microsoft.com/en-us/windows/wsl/networking).
+
+Inspect the current host address from WSL with `ip route show default`. Verify
+`http://HOST_IP:11434/api/tags` is reachable and the requested model is installed,
+then save the endpoint and model in the WSL user's `~/.codeturtle/config.toml`:
+
+```toml
+llm_backend = "ollama"
+ollama_model = "qwen2.5-coder:7b"
+ollama_base_url = "http://HOST_IP:11434"
+```
+
+Replace `HOST_IP` with the verified address. Environment variables override the
+user configuration. The address can change after WSL/network restarts; this
+configuration does not implement automatic rediscovery. No model API key is
+required for this local Ollama connection.
+
+The gateway keeps its historical positive `retries` values as a total-attempt
+budget. Values `0` and `1` each allow one request; zero disables retries rather
+than disabling generation. An explicit value `2` allows at most two attempts.
+Review budget accounting still applies separately to logical stage requests.
+
 ## Commands
 
 ### `new-session`
