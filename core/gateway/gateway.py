@@ -108,12 +108,18 @@ class AIGateway:
     ) -> GatewayResponse:
         """
         Main entry point for all agents with full observability.
+
+        For compatibility, positive ``retries`` values bound total attempts.
+        Zero means one request with no retry; it must never skip generation.
         """
+        if retries < 0:
+            raise ValueError("retries must be nonnegative")
+        attempt_limit = max(1, retries)
         provider, model = self._get_provider(capability)
         start_time = time.time()
         last_error = None
 
-        for attempt in range(retries):
+        for attempt in range(attempt_limit):
             try:
                 if structured_output:
                     response = provider.structured_generate(
@@ -164,7 +170,7 @@ class AIGateway:
 
             except Exception as e:
                 last_error = str(e)
-                if attempt == retries - 1:
+                if attempt == attempt_limit - 1:
                     break
                 time.sleep(2 ** attempt + random.random())
 
@@ -180,18 +186,18 @@ class AIGateway:
             completion_tokens=0,
             total_tokens=0,
             latency=latency,
-            retries=retries,
+            retries=attempt_limit - 1,
             estimated_cost=0.0,
             success=False,
             error=last_error,
         )
 
         try:
-            console.print(f"[bold red][FAIL] LLM Call Failed[/bold red] {agent_name} | {capability} | {model} | {latency:.2f}s | Retries: {retries}")
+            console.print(f"[bold red][FAIL] LLM Call Failed[/bold red] {agent_name} | {capability} | {model} | {latency:.2f}s | Attempts: {attempt_limit}")
         except Exception:
             pass
 
-        raise Exception(f"Gateway failed after {retries} retries: {last_error}")
+        raise RuntimeError(f"Gateway failed after {attempt_limit} attempt(s): {last_error}")
 
 
     def generate_structured(
