@@ -70,9 +70,16 @@ class FindingVerificationRecord(DomainRecord):
     attempts: tuple[VerificationAttempt, ...] = ()
     hints: tuple[str, ...] = ()
     prompt_version: NonBlank
+    verification_method: Literal["model", "source_rule"] = "model"
+    source_rule_id: str = ""
 
     @model_validator(mode="after")
     def validate_outcome(self) -> FindingVerificationRecord:
+        if self.verification_method == "source_rule":
+            if not self.source_rule_id or self.attempts or self.status != "completed" or self.verdict == "unresolved":
+                raise ValueError("source-rule verification requires a conclusive completed result without model attempts")
+        elif self.source_rule_id:
+            raise ValueError("model verification cannot claim a source rule")
         if self.candidate_fingerprint != self.claim.fingerprint:
             raise ValueError("verification claim fingerprint mismatch")
         if self.decision and self.decision.checked_trigger != self.claim.violating_condition:
@@ -93,6 +100,12 @@ class FindingVerificationRecord(DomainRecord):
         if self.decision is None:
             return
         permitted = {ref: observations[ref] for ref in self.observation_refs}
+        if self.verification_method == "source_rule":
+            from core.verification.none_len_contract import RULE_ID, verify_none_len
+            from core.runtime.models import Candidate
+            checked = verify_none_len(Candidate(bundle_id="source-recheck", **self.claim.model_dump(mode="json")), tuple(permitted.values()))
+            if self.source_rule_id != RULE_ID or checked is None or checked != self.decision:
+                raise ValueError("source-rule verdict cannot be reproduced from its recorded observations")
         support = [(citation, citation.validate_against(permitted)) for citation in self.decision.supporting_citations]
         counter = [(citation, citation.validate_against(permitted)) for citation in self.decision.counter_citations]
         if self.verdict == "supported" and not any(

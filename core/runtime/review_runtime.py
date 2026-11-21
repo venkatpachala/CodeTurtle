@@ -218,6 +218,7 @@ class ReviewRuntime:
         requirement_llm: Optional[Callable[[str, str], str]] = None,
         finding_verification_llm: Optional[Callable[[str], str]] = None,
         finding_verifier_mode: str = "structured",
+        finding_source_rules: bool = True,
         graphify_client: Any = None,
         rule_engine: Optional[Callable[..., List[Candidate]]] = None,
         agent: Any = None,
@@ -231,6 +232,7 @@ class ReviewRuntime:
             raise ValueError("unknown finding verifier mode")
         self.finding_verification_llm = finding_verification_llm
         self.finding_verifier_mode = finding_verifier_mode
+        self.finding_source_rules = finding_source_rules
         self.graphify_client = graphify_client
         self.rule_engine = rule_engine
         self.agent = agent
@@ -657,7 +659,8 @@ class ReviewRuntime:
             return tuple(context_paths)
 
         source_verifier = SourceFindingVerifier(verification_inputs, verification_snapshot,
-            structured_completion, self.budget, finding_context_paths, lambda: finding_generation_metadata)
+            structured_completion, self.budget, finding_context_paths, lambda: finding_generation_metadata,
+            source_rules=self.finding_source_rules and not static_only)
 
         def verify_completion(prompt: str) -> str:
             if static_only:
@@ -929,6 +932,7 @@ class ReviewRuntime:
                         "requirement_strategy": requirement_strategy,
                         "requirement_runs": [run.to_dict() for run in requirement_runs],
                         "finding_verifier_mode": self.finding_verifier_mode,
+                        "finding_source_rules": self.finding_source_rules,
                         "source_preparation": getattr(ctx, "source_preparation", None),
                         **({"verification_snapshot_id": verification_snapshot.id,
                             "verification_snapshot": verification_snapshot.model_dump(mode="json")}

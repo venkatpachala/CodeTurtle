@@ -19,7 +19,7 @@ def run_case(requirement_case, *, verdict="VERIFIED", outcome="violated", strate
         pr_head_sha=snapshot.head_sha, pr_base_sha=snapshot.base_sha,
         files_changed=["app.py"], full_diff=provider.diff(snapshot),
     )
-    return ReviewRuntime(llm=lambda _: "[]", verification_llm=lambda _: verdict,
+    return ReviewRuntime(llm=lambda _: "[]", verification_llm=lambda _: verdict, finding_source_rules=False,
                          finding_verification_llm=lambda prompt: json.dumps(response_for(prompt)) if verdict == "VERIFIED" else verdict,
                          requirement_llm=complete).run(context)
 

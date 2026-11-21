@@ -163,7 +163,7 @@ def test_runtime_final_gate_requests_schema_and_validates_citations(ollama_serve
     snapshot = provider.resolve(base)
     state["respond"] = lambda prompt: json.dumps(response_for(prompt))
     fixed_agent = SimpleNamespace(run=lambda *a, **k: [candidate()])
-    result = ReviewRuntime(agent=fixed_agent, rule_engine=lambda *a, **k: []).run(SimpleNamespace(
+    result = ReviewRuntime(agent=fixed_agent, rule_engine=lambda *a, **k: [], finding_source_rules=False).run(SimpleNamespace(
         repo_dir=str(tmp_path), pr_base_sha=base, pr_head_sha=snapshot.head_sha,
         files_changed=["app.py"], full_diff=provider.diff(snapshot)))
     assert len(requests) == 1

@@ -20,7 +20,7 @@ _BUILTINS = {"len", "isinstance", "issubclass", "abs", "min", "max", "sum", "all
              "zip", "sorted", "reversed", "round", "ValueError", "TypeError", "RuntimeError"}
 
 
-def _dependencies(tree: ast.Module, node: ast.FunctionDef | ast.AsyncFunctionDef, qualified: str) -> tuple[str, ...]:
+def lexical_dependencies(tree: ast.Module, node: ast.FunctionDef | ast.AsyncFunctionDef, qualified: str) -> tuple[str, ...]:
     args = node.args
     parameters = {arg.arg for arg in [*args.posonlyargs, *args.args, *args.kwonlyargs]}
     parameters.update(arg.arg for arg in (args.vararg, args.kwarg) if arg is not None)
@@ -101,7 +101,7 @@ def capture_excerpt(content: str, path: str, *, symbol: str = "", anchor: int = 
                 name, node = matches[0]
                 start = min([node.lineno, *(d.lineno for d in node.decorator_list)])
                 text = "\n".join(lines[start - 1:node.end_lineno])
-                dependencies = _dependencies(tree, node, name)
+                dependencies = lexical_dependencies(tree, node, name)
                 if node.end_lineno - start + 1 <= max_lines and len(text) <= max_chars:
                     return SourceExcerpt(text, start, "python_function", name, True, dependencies)
                 selected = anchor if start <= anchor <= node.end_lineno else start

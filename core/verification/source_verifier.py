@@ -109,11 +109,13 @@ class SourceFindingVerifier:
     def __init__(self, provider: GitSnapshotProvider | None, snapshot: ReviewSnapshot | None,
                  complete: Callable[[str], str], budget: ReviewBudget,
                  context_paths: Callable[[Candidate, Bundle | None], tuple[str, ...]] | None = None,
-                 generation_metadata: Callable[[], dict] = lambda: {}):
+                 generation_metadata: Callable[[], dict] = lambda: {},
+                 source_rules: bool = False):
         self.provider, self.snapshot = provider, snapshot
         self.complete, self.budget = complete, budget
         self.context_paths = context_paths or (lambda candidate, bundle: (candidate.file,))
         self.generation_metadata = generation_metadata
+        self.source_rules = source_rules
         self.records: list[FindingVerificationRecord] = []
         self.observations: dict[str, SourceObservation] = {}
 
@@ -127,6 +129,7 @@ class SourceFindingVerifier:
         attempts: list[VerificationAttempt] = []
         observations: tuple[SourceObservation, ...] = ()
         decision, verdict, status, reason = None, "unresolved", "context_unavailable", "sealed source context unavailable"
+        method, rule_id = "model", ""
         try:
             if self.provider is None or self.snapshot is None:
                 return "UNCERTAIN"
@@ -139,6 +142,14 @@ class SourceFindingVerifier:
             if gaps:
                 reason = "; ".join(gaps)
                 return "UNCERTAIN"
+            if self.source_rules:
+                from core.verification.none_len_contract import RULE_ID, verify_none_len
+                rule_decision = verify_none_len(candidate, observations)
+                if rule_decision is not None:
+                    validate_finding_decision(rule_decision, candidate, {obs.id: obs for obs in observations}, gaps)
+                    decision, verdict, status, reason = rule_decision, rule_decision.verdict, "completed", rule_decision.rationale
+                    method, rule_id = "source_rule", RULE_ID
+                    return {"supported": "VERIFIED", "refuted": "DISPROVED"}[verdict]
             package = {"required_checked_trigger": candidate.violating_condition.strip(),
                 "candidate": {name: getattr(candidate, name) for name in (
                 "file", "symbol", "claim", "invariant", "violating_condition", "existing_code", "expected", "actual", "execution_path")},
@@ -180,7 +191,7 @@ class SourceFindingVerifier:
         finally:
             self.records.append(FindingVerificationRecord(**common, verdict=verdict, status=status,
                 reason=reason, observation_refs=tuple(obs.id for obs in observations), decision=decision,
-                attempts=tuple(attempts)))
+                attempts=tuple(attempts), verification_method=method, source_rule_id=rule_id))
 
     @staticmethod
     def _view(observation: SourceObservation) -> dict:
