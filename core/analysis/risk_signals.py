@@ -145,7 +145,7 @@ def _contract_signals(root: Path, paths: Iterable[str], index: DiffIndex) -> lis
             except ValueError:
                 target_rel = ""
             evidence = (
-                f"{relative}: changed call {receiver}.{method}(..., {re.search(r'\d+(?:\.\d+)?%', args).group(0)}, allow_animation: ...)",
+                f"{relative}: changed call {receiver}.{method}(..., {argument_match.group(0)}, allow_animation: ...)",
                 f"{target_rel}: animated path invokes gifsicle --resize-fit with dimensions",
                 f"known_cli_contract: gifsicle --resize-fit {GIFSICLE_RESIZE_FIT.description} ({GIFSICLE_RESIZE_FIT.source_url})",
             )
