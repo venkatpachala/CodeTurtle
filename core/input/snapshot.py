@@ -31,24 +31,25 @@ class ReviewSnapshot(BaseModel):
     head_sha: RevisionSHA
     diff_sha256: ContentHash
     config_sha256: ContentHash
+    comparison_base_sha: RevisionSHA | None = None
     schema_version: Literal["1.0"] = "1.0"
 
     @property
     def id(self) -> str:
-        encoded = json.dumps(self.model_dump(), sort_keys=True, separators=(",", ":")).encode()
+        encoded = json.dumps(self.model_dump(exclude_none=True), sort_keys=True, separators=(",", ":")).encode()
         return hashlib.sha256(encoded).hexdigest()
 
     @property
     def source_id(self) -> str:
         """Source-only identity for paired experiments with different review configurations."""
-        encoded = json.dumps(self.model_dump(exclude={"config_sha256"}),
+        encoded = json.dumps(self.model_dump(exclude={"config_sha256"}, exclude_none=True),
                              sort_keys=True, separators=(",", ":")).encode()
         return hashlib.sha256(encoded).hexdigest()
 
     def revision(self, side: RevisionSide) -> str:
         if side not in {"base", "head"}:
             raise InputError("revision side must be base or head")
-        return self.base_sha if side == "base" else self.head_sha
+        return (self.comparison_base_sha or self.base_sha) if side == "base" else self.head_sha
 
 
 class SourceRead(BaseModel):
@@ -112,18 +113,24 @@ class GitSnapshotProvider:
         return self._git("diff", "--no-ext-diff", "--no-textconv", "--no-color", "--binary",
                          "--find-renames", base, head, "--", limit=self.max_diff_bytes)
 
-    def resolve(self, base: str, head: str = "HEAD", *, config: dict | None = None) -> ReviewSnapshot:
+    def resolve(self, base: str, head: str = "HEAD", *, config: dict | None = None,
+                comparison: Literal["direct", "merge_base"] = "direct") -> ReviewSnapshot:
         base_sha, head_sha = self._commit(base), self._commit(head)
+        if comparison not in {"direct", "merge_base"}:
+            raise ValueError("unknown Git comparison mode")
+        comparison_base = (self._git("merge-base", base_sha, head_sha, limit=256).decode().strip()
+                           if comparison == "merge_base" else base_sha)
         config_bytes = json.dumps(config or {}, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
         return ReviewSnapshot(
             repository_identity=self.identity, base_sha=base_sha, head_sha=head_sha,
-            diff_sha256=hashlib.sha256(self._diff(base_sha, head_sha)).hexdigest(),
+            diff_sha256=hashlib.sha256(self._diff(comparison_base, head_sha)).hexdigest(),
             config_sha256=hashlib.sha256(config_bytes).hexdigest(),
+            comparison_base_sha=comparison_base if comparison_base != base_sha else None,
         )
 
     def diff(self, snapshot: ReviewSnapshot) -> str:
         self._assert_repository(snapshot)
-        content = self._diff(snapshot.base_sha, snapshot.head_sha)
+        content = self._diff(snapshot.revision("base"), snapshot.head_sha)
         if hashlib.sha256(content).hexdigest() != snapshot.diff_sha256:
             raise InputError("sealed diff integrity mismatch")
         return content.decode("utf-8", errors="replace")
