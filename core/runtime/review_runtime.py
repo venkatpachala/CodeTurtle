@@ -572,11 +572,18 @@ class ReviewRuntime:
 
         from core.runtime.verify_loop import verify_candidates
 
+        def verify_completion(prompt: str) -> str:
+            injected = self.verification_llm or self.llm
+            if injected is not None:
+                self.budget.reserve(prompt)
+                return str(injected(prompt))
+            return self._verify_completion(prompt)
+
         with timed(timing, "verify"):
             if settings.verification_enabled:
                 verified_cands, vdrop = verify_candidates(
                     [c for c, _ in survivors], index=index, bundles=bundles, client=client,
-                    llm=self.verification_llm or self.llm or self._verify_completion)
+                    llm=verify_completion)
             else:
                 verified_cands, vdrop = [], [{**c.to_dict(), "drop_reason": "verification_disabled"} for c, _ in survivors]
                 self.stage_errors.append(StageOutcome(stage="verification", status="skipped", code="ablation_disabled"))

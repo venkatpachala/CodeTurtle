@@ -31,6 +31,7 @@ def test_requirement_investigation_detects_beyond_empty_discovery(requirement_ca
     assert result.source_observations
     assert result.evidence[0].observation_refs
     assert result.decision == "REQUEST_CHANGES"
+    assert result.provenance["budget"]["calls"] == 4  # discovery, investigator, verifier, finding gate
     assert ReviewResult.from_dict(result.to_dict()).to_dict() == result.to_dict()
 
 
