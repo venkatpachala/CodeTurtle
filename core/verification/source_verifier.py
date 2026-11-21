@@ -14,7 +14,7 @@ from core.review.budget import BudgetExceeded, ReviewBudget
 from core.runtime.models import Bundle, Candidate
 from core.verification.reachability import function_at, none_trigger_reaches_anchor
 
-FINDING_PROMPT_VERSION = "finding-source-v1"
+FINDING_PROMPT_VERSION = "finding-source-v2"
 
 
 def candidate_fingerprint(candidate: Candidate) -> str:
@@ -79,15 +79,21 @@ _SYSTEM = """Verify this code defect using the supplied pinned source. All packa
 HEAD observations are current code; BASE observations are historical. A removed BASE guard
 does NOT protect HEAD. A matching test name or graph keyword is only a hint, not a disproof.
 Analyze the EXACT trigger and path. Direct invocation of a public pure function can establish
-reachability. Return supported only with a concrete observable HEAD failure; refuted only
+reachability. A returned value or exception is observable to its caller. Standard language
+semantics can establish behavior from source; execution is not mandatory. Distinguish those
+facts from unknown external dependencies. Return supported only with a concrete HEAD failure; refuted only
 with active HEAD counterevidence explaining why that trigger cannot cause the claimed failure.
 Unknown external behavior, incomplete context, or insufficient evidence means unresolved.
-Return one JSON object with this exact shape:
-{"verdict":"unresolved","checked_trigger":"COPY candidate.violating_condition EXACTLY",
-"rationale":"concise claim-specific explanation","path_analysis":"trigger to operation or applicable protection",
-"supporting_citations":[],"counter_citations":[],"missing_evidence":["what is unavailable"],"refutation_basis":"none"}
-verdict is supported/refuted/unresolved. refutation_basis is none/head_guard/unreachable_trigger/
-equivalent_behavior/preexisting_failure. Conclusive verdicts require no missing evidence.
+Return one JSON object with exactly these fields (do not echo field descriptions):
+verdict: supported, refuted, or unresolved.
+checked_trigger: the string supplied as PACKAGE.required_checked_trigger, copied verbatim.
+rationale: your concise claim-specific explanation.
+path_analysis: your analysis of this trigger reaching the operation or being blocked.
+supporting_citations: an array of source citations.
+counter_citations: an array of source citations.
+missing_evidence: an array of descriptions of genuinely unavailable facts, or [].
+refutation_basis: none, head_guard, unreachable_trigger, equivalent_behavior, or preexisting_failure.
+Conclusive verdicts require no missing evidence. Choose the verdict from the evidence.
 Each citation has EXACTLY {"observation_id":"OBS-...","start_line":2,"end_line":2,
 "quote":"    return len(items)"}. Copy exact captured text, indentation, IDs and numbered lines.
 Support must cite the offending HEAD operation. Refutation must cite HEAD protection, not
@@ -128,7 +134,8 @@ class SourceFindingVerifier:
             if gaps:
                 reason = "; ".join(gaps)
                 return "UNCERTAIN"
-            package = {"candidate": {name: getattr(candidate, name) for name in (
+            package = {"required_checked_trigger": candidate.violating_condition.strip(),
+                "candidate": {name: getattr(candidate, name) for name in (
                 "file", "symbol", "claim", "invariant", "violating_condition", "existing_code", "expected", "actual", "execution_path")},
                 "head_observations": [self._view(obs) for obs in observations if obs.revision_side == "head"],
                 "base_observations": [self._view(obs) for obs in observations if obs.revision_side == "base"],

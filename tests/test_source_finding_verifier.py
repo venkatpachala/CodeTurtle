@@ -64,6 +64,18 @@ def test_removed_guard_is_supported_with_head_evidence_and_recorded_trace(verifi
     assert budget.calls == 1
 
 
+def test_prompt_supplies_actual_trigger_instead_of_an_echoable_placeholder(verification_case):
+    provider, snapshot = verification_case()
+    def complete(prompt):
+        package = json.loads(prompt.split("\nPACKAGE\n", 1)[1])
+        assert package["required_checked_trigger"] == "items is None"
+        assert "COPY candidate.violating_condition EXACTLY" not in prompt
+        assert "execution is not mandatory" in prompt
+        return json.dumps(response_for(prompt))
+    verifier = SourceFindingVerifier(provider, snapshot, complete, ReviewBudget())
+    assert verifier.verify(candidate(), None, []) == "VERIFIED"
+
+
 @pytest.mark.parametrize("kind", ["bare", "base_guard", "invented", "missing", "wrong_trigger"])
 def test_unsupported_verdicts_never_promote_or_refute(verification_case, kind):
     provider, snapshot = verification_case()
