@@ -24,6 +24,22 @@ def parse_agent_document(text: str) -> Any:
     return _load_json(blob)
 
 
+def parse_proof_output(text: str) -> tuple[list, list]:
+    """Proof is not discovery or a tool result; never salvage truncated JSON.
+
+    Bare candidate lists remain accepted for historical injected callers.
+    """
+    document = parse_agent_document(text)
+    if isinstance(document, list):
+        return document, []
+    if not isinstance(document, dict) or not isinstance(document.get("candidates"), list):
+        raise ValueError("proof response must contain a candidates list")
+    outcomes = document.get("outcomes", [])
+    if not isinstance(outcomes, list):
+        raise ValueError("proof outcomes must be a list")
+    return document["candidates"], outcomes
+
+
 def _extract_json_blob(text: str) -> str | None:
     raw = (text or "").strip()
     if not raw:

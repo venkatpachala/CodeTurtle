@@ -7,7 +7,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, List, Optional
 
-from core.agent.parse import candidate_dict, parse_agent_output, parse_agent_document
+from core.agent.parse import candidate_dict, parse_agent_output, parse_agent_document, parse_proof_output
+from core.review.budget import BudgetExceeded
 from core.agent.hypothesis import ReviewHypothesis, hypothesis_dict
 from core.agent.tools import BundleTools
 from core.runtime.models import Bundle, Candidate
@@ -37,6 +38,7 @@ class AgentRunResult:
     latency_ms: float = 0.0
     assessments: List[dict[str, Any]] = field(default_factory=list)
     hypothesis_outcomes: List[dict[str, Any]] = field(default_factory=list)
+    protocol_errors: List[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -56,6 +58,7 @@ class AgentRunResult:
             "model_calls": len(self.raw_outputs),
             "assessments": list(self.assessments),
             "hypothesis_outcomes": list(self.hypothesis_outcomes),
+            "protocol_errors": list(self.protocol_errors),
             "estimated_completion_tokens": sum(max(1, len(x) // 4) for x in self.raw_outputs),
         }
 
@@ -344,6 +347,9 @@ class BundleAgent:
         tool_calls: List[dict[str, Any]] = []
         started = time.perf_counter()
         assessments: List[dict[str, Any]] = []
+        hypotheses: List[ReviewHypothesis] = []
+        evidence: List[dict[str, Any]] = []
+        protocol_errors: List[dict[str, Any]] = []
         try:
             for _ in range(self.max_steps):
                 raw = self._complete(self._discovery_prompt(bundle, history))
@@ -387,33 +393,41 @@ class BundleAgent:
                             raw_outputs=raw_outputs, tool_calls=tool_calls, assessments=assessments)
                     proof_raw = self._complete(self._proof_prompt(bundle, hypotheses, evidence))
                     raw_outputs.append(proof_raw)
-                    proof_kind, proof_payload = parse_agent_output(proof_raw)
-                    if proof_kind == "candidates" and not proof_payload and len(raw_outputs) < self.max_steps:
-                        # One bounded repair pass. An empty proof response must
-                        # not silently close positive discovery hypotheses.
+                    proof_payload, outcomes, proof_error = [], [], ""
+                    try:
+                        proof_payload, outcomes = parse_proof_output(proof_raw)
+                    except (ValueError, TypeError) as exc:
+                        proof_error = str(exc)
+                        protocol_errors.append({"stage": "proof", "attempt": 1, "error": proof_error})
+                    if (proof_error or not proof_payload) and len(raw_outputs) < self.max_steps:
+                        # One repair covers malformed responses as well as empty
+                        # proofs. It uses the same evidence and shared budget.
                         repair = (self._proof_prompt(bundle, hypotheses, evidence)
                             + "\nPrevious response:\n" + proof_raw
+                            + "\nValidation feedback: " + (proof_error or "Empty proof: recheck the supplied hypotheses.")
+                            + "\nReturn only the required candidates/outcomes object, not a copy of tool results."
                             + "\nRecheck each rejection against the supplied HEAD source and diff. "
                               "State a concrete triggering input, its HEAD execution path, and old versus new outcome. "
                               "A disproof must quote contradictory HEAD code, not merely restate the removed behavior. "
                               "Do not manufacture a defect; unavailable evidence remains unresolved.")
                         proof_raw = self._complete(repair)
                         raw_outputs.append(proof_raw)
-                        proof_kind, proof_payload = parse_agent_output(proof_raw)
-                    if proof_kind != "candidates":
+                        try:
+                            proof_payload, outcomes = parse_proof_output(proof_raw)
+                            proof_error = ""
+                        except (ValueError, TypeError) as exc:
+                            proof_error = str(exc)
+                            protocol_errors.append({"stage": "proof", "attempt": 2, "error": proof_error})
+                    if proof_error:
                         return AgentRunResult(
                             status="INVALID_JSON", raw_outputs=raw_outputs, tool_calls=tool_calls,
                             hypotheses=hypotheses, evidence_items=evidence,
                             stage_status={"discovery": "VALID_HYPOTHESES", "proof": "INVALID_JSON"},
-                            parse_error="proof response did not contain a JSON candidate list",
+                            assessments=assessments, protocol_errors=protocol_errors,
+                            parse_error="proof response did not contain a JSON candidate list: " + proof_error,
                             latency_ms=(time.perf_counter() - started) * 1000,
                         )
                     out, invalid_proofs = self._parse_candidates(proof_payload, bundle)
-                    try:
-                        proof_document = parse_agent_document(proof_raw)
-                        outcomes = proof_document.get("outcomes", []) if isinstance(proof_document, dict) else []
-                    except (ValueError, TypeError):
-                        outcomes = []
                     status = "VALID_CANDIDATES" if out else (
                         "INVALID_SCHEMA" if invalid_proofs else "VALID_EMPTY"
                     )
@@ -421,6 +435,7 @@ class BundleAgent:
                         status=status, candidates=out, raw_outputs=raw_outputs,
                         tool_calls=tool_calls, hypotheses=hypotheses, evidence_items=evidence,
                         assessments=assessments, hypothesis_outcomes=outcomes,
+                        protocol_errors=protocol_errors,
                         stage_status={
                             "discovery": "VALID_HYPOTHESES",
                             "evidence": "AVAILABLE" if evidence else "EMPTY",
@@ -443,7 +458,9 @@ class BundleAgent:
                 )
         except Exception as exc:
             return AgentRunResult(
-                status="EXCEPTION", raw_outputs=raw_outputs, tool_calls=tool_calls,
+                status="BUDGET_EXHAUSTED" if isinstance(exc, BudgetExceeded) else "EXCEPTION",
+                raw_outputs=raw_outputs, tool_calls=tool_calls, hypotheses=hypotheses,
+                evidence_items=evidence, assessments=assessments, protocol_errors=protocol_errors,
                 exception=f"{type(exc).__name__}: {exc}",
                 latency_ms=(time.perf_counter() - started) * 1000,
             )
