@@ -37,6 +37,7 @@ class Bundle:
     kind: str = "source"
     risk_signals: List[Dict[str, Any]] = field(default_factory=list)
     requirements: List[Dict[str, Any]] = field(default_factory=list)
+    change_context: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         units = []
@@ -55,6 +56,7 @@ class Bundle:
             "kind": self.kind,
             "risk_signals": [dict(signal) for signal in self.risk_signals],
             "requirements": [dict(requirement) for requirement in self.requirements],
+            "change_context": dict(self.change_context),
         }
 
 @dataclass

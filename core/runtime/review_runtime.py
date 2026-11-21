@@ -409,6 +409,17 @@ class ReviewRuntime:
         if intent is not None:
             for bundle in bundles:
                 bundle.requirements = intent.for_paths(bundle.paths)
+        semantic_context = None
+        if snapshot is not None:
+            from core.intelligence.changes import build_change_context
+            semantic_context = build_change_context(input_provider, snapshot, files)
+            for bundle in bundles:
+                bundle.change_context = {
+                    "snapshot_id": snapshot.id,
+                    "changes": [change.model_dump() for change in semantic_context.changes if change.path in bundle.paths],
+                    "limitations": list(semantic_context.limitations),
+                    "unresolved_context": list(semantic_context.unresolved_context),
+                }
         repo_name = repo or getattr(ctx, "repo", "") or str(facts.get("repo") or "")
         client = self._client(repo_name)
         if snapshot is not None:
@@ -665,6 +676,15 @@ class ReviewRuntime:
         if intake_omissions and health.status == "completed":
             health.status = "partial"
         unresolved.extend(intake_omissions)
+        if semantic_context is not None:
+            unresolved.extend({"reason": reason, "stage": "semantic_context"}
+                              for reason in semantic_context.unresolved_context)
+        for run in agent_runs:
+            for call in run.get("tool_calls") or []:
+                observation = call.get("result") or {}
+                if observation.get("truncated") or observation.get("error"):
+                    unresolved.append({"stage": "tool_context", "bundle_id": run.get("bundle_id"),
+                                       "reason": "incomplete_tool_observation"})
         requirement_assessments, requirement_investigations, requirement_evidence = [], [], []
         if intent is not None:
             from core.intent.service import assess_verified_findings

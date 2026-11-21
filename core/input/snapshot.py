@@ -19,6 +19,10 @@ class InputError(RuntimeError):
     """Input cannot be resolved, read safely, or kept within its budget."""
 
 
+class SourceNotFound(InputError):
+    """The path is absent from this exact tree, including added/deleted files."""
+
+
 class ReviewSnapshot(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -130,7 +134,7 @@ class GitSnapshotProvider:
         revision = snapshot.revision(side)
         entry = self._git("ls-tree", "-z", revision, "--", f":(literal){path}", limit=16_384)
         if not entry:
-            raise InputError("source is absent from the specified revision")
+            raise SourceNotFound("source is absent from the specified revision")
         metadata, _, stored_path = entry.rstrip(b"\x00").partition(b"\t")
         parts = metadata.split()
         if len(parts) != 3 or parts[0] not in {b"100644", b"100755"} or stored_path.decode() != path:
