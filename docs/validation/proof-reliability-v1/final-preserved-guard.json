@@ -1,0 +1,161 @@
+{
+  "purpose": "isolated development candidate replay; not end-to-end discovery or held-out evaluation",
+  "case": "preserved-guard",
+  "expected_author_label": "refuted",
+  "reviewer_commit": "be9dcbdd039ab2cc90460708cc2a9a17b6648197",
+  "reviewer_dirty": false,
+  "snapshot": {
+    "repository_identity": "/home/venkat/projects/CodeTurtle/.validation/proof-reliability/final-preserved-guard",
+    "base_sha": "3dd2ee44d617a5d53da3e848454f0a0eecea1580",
+    "head_sha": "28ce90f3d410182e1e1dd4ca32a0168a787279c4",
+    "diff_sha256": "87dd5c4240c707c1770933325af2e905cc50520fb2c36a642deb0e47be3bb6fa",
+    "config_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "comparison_base_sha": null,
+    "schema_version": "1.0"
+  },
+  "base_source": "def size(items):\n    if items is None:\n        return 0\n    return len(items)\n",
+  "head_source": "def size(items):\n    \"\"\"Count items, treating None as empty.\"\"\"\n    if items is None:\n        return 0\n    return len(items)\n",
+  "candidate": {
+    "bundle_id": "B1",
+    "file": "app.py",
+    "symbol": "size",
+    "start_line": 5,
+    "title": "None input raises TypeError",
+    "claim": "size(None) raises TypeError after the guard is removed",
+    "existing_code": "return len(items)",
+    "invariant": "size(None) returns zero",
+    "violating_condition": "items is None",
+    "expected": "0",
+    "actual": "TypeError",
+    "execution_path": [
+      "size"
+    ],
+    "evidence": [
+      "app.py"
+    ],
+    "counter_evidence": [],
+    "verify_status": "candidate",
+    "severity": "medium",
+    "confidence": 0.5,
+    "source": "agent",
+    "evidence_paths": [
+      "app.py"
+    ],
+    "kind": "defect",
+    "risk_signals": [],
+    "hypothesis_id": null,
+    "candidate_id": "C-001"
+  },
+  "outcome": "UNCERTAIN",
+  "wall_seconds": 9.688438352997764,
+  "verification": [
+    {
+      "id": "FV-C-001",
+      "candidate_id": "C-001",
+      "candidate_fingerprint": "28fb36bf4c7fd35aef67affc06822cbc85ed4cc0d6a6b0c62b98044ed84fa9e2",
+      "claim": {
+        "file": "app.py",
+        "symbol": "size",
+        "claim": "size(None) raises TypeError after the guard is removed",
+        "existing_code": "return len(items)",
+        "invariant": "size(None) returns zero",
+        "violating_condition": "items is None",
+        "expected": "0",
+        "actual": "TypeError",
+        "execution_path": [
+          "size"
+        ]
+      },
+      "snapshot_id": "f16cdb808c42ccc3e0ebad78d11531f0b8667cd3ac4507dd8cdb769d25a57b62",
+      "verdict": "unresolved",
+      "status": "completed",
+      "reason": "The claim that 'size(None) raises TypeError after the guard is removed' is not supported by the evidence. The existing code already handles the case where 'items' is None by returning 0, and there is no indication that removing the guard would cause a TypeError.",
+      "observation_refs": [
+        "OBS-c94a0f6d19a0daeea2e83ed0",
+        "OBS-bc54729c34a6517cb822933c"
+      ],
+      "decision": {
+        "verdict": "unresolved",
+        "checked_trigger": "items is None",
+        "rationale": "The claim that 'size(None) raises TypeError after the guard is removed' is not supported by the evidence. The existing code already handles the case where 'items' is None by returning 0, and there is no indication that removing the guard would cause a TypeError.",
+        "path_analysis": "The function 'size' checks if 'items' is None and returns 0 if it is. If 'items' is not None, it returns the length of 'items'. There is no path in the code that would cause a TypeError when 'items' is None.",
+        "supporting_citations": [],
+        "counter_citations": [],
+        "missing_evidence": [],
+        "refutation_basis": "none"
+      },
+      "attempts": [
+        {
+          "prompt_sha256": "b62e6bef63086a5efca660255a419668dd7375bcc5c4790a67b29b7d5f5524c2",
+          "response": "{\n  \"verdict\": \"unresolved\",\n  \"checked_trigger\": \"items is None\",\n  \"rationale\": \"The claim that 'size(None) raises TypeError after the guard is removed' is not supported by the evidence. The existing code already handles the case where 'items' is None by returning 0, and there is no indication that removing the guard would cause a TypeError.\",\n  \"path_analysis\": \"The function 'size' checks if 'items' is None and returns 0 if it is. If 'items' is not None, it returns the length of 'items'. There is no path in the code that would cause a TypeError when 'items' is None.\",\n  \"supporting_citations\": [],\n  \"counter_citations\": [],\n  \"missing_evidence\": [],\n  \"refutation_basis\": \"none\"\n}",
+          "attempt": 1
+        }
+      ],
+      "hints": [],
+      "prompt_version": "finding-source-v2"
+    }
+  ],
+  "observations": [
+    {
+      "id": "OBS-c94a0f6d19a0daeea2e83ed0",
+      "snapshot_id": "f16cdb808c42ccc3e0ebad78d11531f0b8667cd3ac4507dd8cdb769d25a57b62",
+      "revision_sha": "3dd2ee44d617a5d53da3e848454f0a0eecea1580",
+      "revision_side": "base",
+      "path": "app.py",
+      "status": "success",
+      "start_line": 1,
+      "end_line": 4,
+      "text": "def size(items):\n    if items is None:\n        return 0\n    return len(items)",
+      "file_sha256": "ef884f9fbb995dbc79c66cd4abc894d219cf888f435a329b257b1a097546f7a3",
+      "excerpt_sha256": "daba15914d2ab778cfa0c23090338471e4e52e0319831cfb2696357069508402",
+      "detail": ""
+    },
+    {
+      "id": "OBS-bc54729c34a6517cb822933c",
+      "snapshot_id": "f16cdb808c42ccc3e0ebad78d11531f0b8667cd3ac4507dd8cdb769d25a57b62",
+      "revision_sha": "28ce90f3d410182e1e1dd4ca32a0168a787279c4",
+      "revision_side": "head",
+      "path": "app.py",
+      "status": "success",
+      "start_line": 1,
+      "end_line": 5,
+      "text": "def size(items):\n    \"\"\"Count items, treating None as empty.\"\"\"\n    if items is None:\n        return 0\n    return len(items)",
+      "file_sha256": "c832535290bb52a8d16f619cc1ac279425bfddc71f5c96010a81cc2a66cb553d",
+      "excerpt_sha256": "f4d4d121d3a5a78729789f834a2cdc5eb6bb5fc969fc385f4d842fa30edc66dc",
+      "detail": ""
+    }
+  ],
+  "calls": [
+    {
+      "timestamp": "2026-11-21T18:14:05.766589",
+      "agent_name": "FindingVerifier:structured",
+      "capability": "correctness_review",
+      "provider": "ollama_provider",
+      "model": "qwen2.5-coder:7b",
+      "prompt_tokens": 1374,
+      "completion_tokens": 174,
+      "total_tokens": 1548,
+      "latency": 9.673142433166504,
+      "retries": 0,
+      "estimated_cost": 0.0,
+      "success": true,
+      "error": null,
+      "finish_reason": "stop",
+      "output_truncated": false,
+      "max_output_tokens": 1400,
+      "context_tokens": 8192,
+      "response_format": "json_schema",
+      "schema_sha256": "f37d4a6ad6a7dd789a35f54c47ac80c9530229f89f93fc428eb4289b0dd36f21",
+      "prompt_characters": 4178
+    }
+  ],
+  "budget": {
+    "calls": 1,
+    "prompt_chars": 4178,
+    "elapsed_seconds": 9.688483421996352,
+    "max_model_calls": 12,
+    "max_prompt_chars": 120000,
+    "max_wall_seconds": 300.0
+  },
+  "dollar_cost_measured": false
+}

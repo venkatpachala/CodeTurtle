@@ -1,0 +1,1734 @@
+{
+  "tool": "codeturtle",
+  "pr_url": "https://github.com/BerriAI/litellm/pull/53337",
+  "repo_name": "BerriAI/litellm",
+  "model": "qwen2.5-coder:7b",
+  "review_comments": [],
+  "latency_seconds": 164.81,
+  "decision": "COMMENT",
+  "policy_reason": "partial_analysis",
+  "coverage_total": 3,
+  "coverage_packed": 3,
+  "coverage_ratio": 1.0,
+  "created_at": null,
+  "diagnostic_findings": [],
+  "findings": [],
+  "result": {
+    "schema_version": "2.3",
+    "run_id": "9ba3b94d33d24ad9a1b8a21ce7c21dd5",
+    "target": {
+      "repo": "BerriAI/litellm",
+      "number": 53337,
+      "base_sha": "754c2225d7db8ce71a94459df2216708995c037b",
+      "head_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+      "diff_sha256": "a3b31864ffd3f1d6b28b3cdfd76573799108d58ad1ac4c8406af718cae16ce5a",
+      "comparison_base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc"
+    },
+    "health": {
+      "status": "partial",
+      "stages": [
+        {
+          "stage": "bundle:B-001",
+          "status": "succeeded",
+          "code": "VALID_CANDIDATES",
+          "detail": "",
+          "retryable": false
+        },
+        {
+          "stage": "graph",
+          "status": "degraded",
+          "code": "graph_unavailable",
+          "detail": "",
+          "retryable": false
+        }
+      ]
+    },
+    "inspection": {
+      "eligible": 3,
+      "packed": 3,
+      "inspected": 3,
+      "assessments": [
+        {
+          "unit_id": "CU-001",
+          "path": "litellm/batches/main.py",
+          "status": "inspected",
+          "behavioral_delta": "The error message for unsupported providers has been updated from 'list_batch' to 'list_batches'.",
+          "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+          "evidence_refs": [
+            "CU-001"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-002",
+          "path": "litellm/batches/main.py",
+          "status": "inspected",
+          "behavioral_delta": "The HTTP method in the error response has been changed from 'create_thread' to 'GET'.",
+          "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+          "evidence_refs": [
+            "CU-002"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-003",
+          "path": "tests/unit/batches/test_main.py",
+          "status": "inspected",
+          "behavioral_delta": "A new test case has been added to verify that the error message and HTTP method are correct.",
+          "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+          "evidence_refs": [
+            "CU-003"
+          ],
+          "reason": ""
+        }
+      ],
+      "ratio": 1.0
+    },
+    "policy_reasons": [
+      "partial_analysis",
+      "unresolved_hypotheses"
+    ],
+    "unresolved": [
+      {
+        "bundle_id": "B-001",
+        "hypothesis_id": "H-001",
+        "file": "litellm/batches/main.py",
+        "reason": "The error message is now correctly formatted and consistent with the function name."
+      },
+      {
+        "bundle_id": "B-001",
+        "hypothesis_id": "H-002",
+        "file": "litellm/batches/main.py",
+        "reason": "The HTTP method in the error response is now 'GET' instead of 'create_thread'. The observation contradicts the hypothesis."
+      },
+      {
+        "bundle_id": "B-001",
+        "hypothesis_id": "H-003",
+        "file": "tests/unit/batches/test_main.py",
+        "reason": "The new test case correctly verifies that the error message and HTTP method are correct."
+      },
+      {
+        "stage": "tool_context",
+        "bundle_id": "B-001",
+        "reason": "incomplete_tool_observation"
+      },
+      {
+        "stage": "tool_context",
+        "bundle_id": "B-001",
+        "reason": "incomplete_tool_observation"
+      },
+      {
+        "stage": "tool_context",
+        "bundle_id": "B-001",
+        "reason": "incomplete_tool_observation"
+      },
+      {
+        "stage": "tool_context",
+        "bundle_id": "B-001",
+        "reason": "incomplete_tool_observation"
+      }
+    ],
+    "approval_eligible": false,
+    "provenance": {
+      "reviewer_commit": "baa2b3c3522958dad54aa556399e7f10251037a9",
+      "dirty": false,
+      "prompt_version": "hypothesis-proof-v4-schema-batches",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b",
+      "model_calls": [
+        {
+          "timestamp": "2026-11-21T18:09:51.108853",
+          "agent_name": "BundleAgent",
+          "capability": "correctness_review",
+          "provider": "ollama_provider",
+          "model": "qwen2.5-coder:7b",
+          "prompt_tokens": 1010,
+          "completion_tokens": 875,
+          "total_tokens": 1885,
+          "latency": 54.96128177642822,
+          "retries": 0,
+          "estimated_cost": 0.0,
+          "success": true,
+          "error": null,
+          "finish_reason": "stop",
+          "output_truncated": false,
+          "max_output_tokens": 1400,
+          "context_tokens": 8192,
+          "response_format": "text",
+          "schema_sha256": null,
+          "prompt_characters": 4439,
+          "stage": "discovery"
+        },
+        {
+          "timestamp": "2026-11-21T18:10:36.652479",
+          "agent_name": "BundleAgent",
+          "capability": "correctness_review",
+          "provider": "ollama_provider",
+          "model": "qwen2.5-coder:7b",
+          "prompt_tokens": 3347,
+          "completion_tokens": 643,
+          "total_tokens": 3990,
+          "latency": 41.127657651901245,
+          "retries": 0,
+          "estimated_cost": 0.0,
+          "success": true,
+          "error": null,
+          "finish_reason": "stop",
+          "output_truncated": false,
+          "max_output_tokens": 1400,
+          "context_tokens": 8192,
+          "response_format": "json_schema",
+          "schema_sha256": "acfc75bb28e57b58897ffe422827abe716569c6039df310bbcba96b62a2fbc39",
+          "prompt_characters": 11461,
+          "stage": "proof"
+        },
+        {
+          "timestamp": "2026-11-21T18:11:07.200882",
+          "agent_name": "BundleAgent",
+          "capability": "correctness_review",
+          "provider": "ollama_provider",
+          "model": "qwen2.5-coder:7b",
+          "prompt_tokens": 2398,
+          "completion_tokens": 528,
+          "total_tokens": 2926,
+          "latency": 30.543443202972412,
+          "retries": 0,
+          "estimated_cost": 0.0,
+          "success": true,
+          "error": null,
+          "finish_reason": "stop",
+          "output_truncated": false,
+          "max_output_tokens": 1400,
+          "context_tokens": 8192,
+          "response_format": "json_schema",
+          "schema_sha256": "681ef4da62202675d5c64d83429036324be34ae2d0dc7a4e63d03aba22473db5",
+          "prompt_characters": 8293,
+          "stage": "proof"
+        }
+      ],
+      "budget": {
+        "calls": 3,
+        "prompt_chars": 24193,
+        "elapsed_seconds": 131.59328215599817,
+        "max_model_calls": 12,
+        "max_prompt_chars": 120000,
+        "max_wall_seconds": 300.0
+      },
+      "requirement_strategy": "link",
+      "requirement_runs": [],
+      "finding_verifier_mode": "structured",
+      "source_preparation": {
+        "status": "ready",
+        "attempted_fetch_depths": [
+          32,
+          128,
+          512
+        ],
+        "snapshot_id": "70646f666cae8006d2f8e8a8b578b57136c31ac0a29c139dacdabab55864eec9",
+        "review_diff_sha256": "a3b31864ffd3f1d6b28b3cdfd76573799108d58ad1ac4c8406af718cae16ce5a",
+        "comparison_base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc"
+      },
+      "verification_snapshot_id": "70646f666cae8006d2f8e8a8b578b57136c31ac0a29c139dacdabab55864eec9",
+      "verification_snapshot": {
+        "repository_identity": "/home/venkat/.codeturtle/repos/BerriAI_litellm",
+        "base_sha": "754c2225d7db8ce71a94459df2216708995c037b",
+        "head_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+        "diff_sha256": "0fca4bce110e1b4d37914fb0d7652232e06b714eeefa3b13f98d1ab93069c093",
+        "config_sha256": "c1d02a6cccd697d7d468f986fff6149d657c7d5e64b8c7b0dc469b0ca8d2c952",
+        "comparison_base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc",
+        "schema_version": "1.0"
+      }
+    },
+    "product_findings": [],
+    "decision": "COMMENT",
+    "policy_reason": "partial_analysis",
+    "comments": [],
+    "dropped": [
+      {
+        "bundle_id": "B-001",
+        "file": "tests/unit/batches/test_main.py",
+        "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+        "start_line": 348,
+        "title": "Test Case for Error Message and HTTP Method",
+        "claim": "The new test case correctly verifies that the error message and HTTP method are correct.",
+        "existing_code": "@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\n         m.assert_not_called()\n \n \n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n+    \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n+        bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n+\n+    error = exc_info.value\n+    assert \"list_batches\" in error.message\n+    assert \"list_batch'\" not in error.message  # no singular form\n+    assert error.response.request.method == \"GET\"\n+\n+\n # ===========================================================================",
+        "invariant": "The error message should contain 'list_batches' and not 'list_batch'. The HTTP method should be 'GET'.",
+        "violating_condition": "The error message contains 'list_batch' and the HTTP method is not 'GET'.",
+        "expected": "The error message should contain 'list_batches' and the HTTP method should be 'GET'.",
+        "actual": "The error message contains 'list_batch' and the HTTP method is 'GET'.",
+        "execution_path": [
+          "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method"
+        ],
+        "evidence": [
+          "tests/unit/batches/test_main.py"
+        ],
+        "counter_evidence": [],
+        "verify_status": "candidate",
+        "severity": "low",
+        "confidence": 0.9,
+        "source": "agent",
+        "evidence_paths": [
+          "tests/unit/batches/test_main.py"
+        ],
+        "kind": "note",
+        "risk_signals": [],
+        "hypothesis_id": "H-003",
+        "candidate_id": "C-002",
+        "drop_reason": "note"
+      },
+      {
+        "bundle_id": "B-001",
+        "file": "litellm/batches/main.py",
+        "symbol": "list_batches",
+        "start_line": 879,
+        "title": "Error message for unsupported providers",
+        "claim": "The error message for unsupported providers is now correctly formatted.",
+        "existing_code": "@@ -879,7 +879,7 @@ def list_batches(\n             )\n         else:\n             raise litellm.exceptions.BadRequestError(\n-                message=\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\".format(\n+                message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n                     custom_llm_provider,\n                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n                 ),\n\n@@ -888,7 +888,7 @@ def list_batches(\n                 response=httpx.Response(\n                     status_code=400,\n                     content=\"Unsupported provider\",\n-                    request=httpx.Request(method=\"create_thread\", url=\"https://github.com/BerriAI/litellm\"),\n+                    request=httpx.Request(, \"",
+        "invariant": "The error message should be consistent with the function name.",
+        "violating_condition": "The error message is now correctly formatted.",
+        "expected": "The error message for unsupported providers is now correctly formatted.",
+        "actual": "The error message for unsupported providers is now correctly formatted.",
+        "execution_path": [
+          "litellm/batches/main.py",
+          "litellm/router.py",
+          "litellm/main.py",
+          "litellm/router_python_host.py",
+          "litellm/proxy/common_request_processing.py",
+          "litellm/proxy/route_llm_request.py",
+          "litellm/litellm_core_utils/health_check_helpers.py",
+          "litellm/proxy/batches_endpoints/endpoints.py"
+        ],
+        "evidence": [
+          "litellm/batches/main.py"
+        ],
+        "counter_evidence": [],
+        "verify_status": "uncertain",
+        "severity": "low",
+        "confidence": 1.0,
+        "source": "agent",
+        "evidence_paths": [
+          "litellm/batches/main.py"
+        ],
+        "kind": "defect",
+        "risk_signals": [],
+        "hypothesis_id": "H-001",
+        "candidate_id": "C-001",
+        "drop_reason": "snippet_not_in_hunk"
+      }
+    ],
+    "bundles": [
+      {
+        "id": "B-001",
+        "paths": [
+          "litellm/batches/main.py",
+          "tests/unit/batches/test_main.py"
+        ],
+        "units": [
+          {
+            "id": "CU-001",
+            "path": "litellm/batches/main.py",
+            "start_line": 879,
+            "end_line": 885,
+            "symbols": [
+              "list_batches",
+              "format"
+            ],
+            "excerpt": "@@ -879,7 +879,7 @@ def list_batches(\n             )\n         else:\n             raise litellm.exceptions.BadRequestError(\n-                message=\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\".format(\n+                message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n                     custom_llm_provider,\n                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n                 ),",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-002",
+            "path": "litellm/batches/main.py",
+            "start_line": 888,
+            "end_line": 894,
+            "symbols": [
+              "list_batches",
+              "httpx.Request",
+              "github.com",
+              "Request"
+            ],
+            "excerpt": "@@ -888,7 +888,7 @@ def list_batches(\n                 response=httpx.Response(\n                     status_code=400,\n                     content=\"Unsupported provider\",\n-                    request=httpx.Request(method=\"create_thread\", url=\"https://github.com/BerriAI/litellm\"),\n+                    request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n                 ),\n             )\n         return response\n",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "io"
+          },
+          {
+            "id": "CU-003",
+            "path": "tests/unit/batches/test_main.py",
+            "start_line": 348,
+            "end_line": 365,
+            "symbols": [
+              "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+              "test_list__unsupported_provider_raises_badrequest",
+              "httpx.Request",
+              "pytest.raises",
+              "litellm.exceptions.BadRequestError",
+              "bm.list_batches",
+              "exc_info.value",
+              "error.message",
+              "error.response.request.method",
+              "raises",
+              "list_batches"
+            ],
+            "excerpt": "@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\n         m.assert_not_called()\n \n \n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n+    \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n+        bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n+\n+    error = exc_info.value\n+    assert \"list_batches\" in error.message\n+    assert \"list_batch'\" not in error.message  # no singular form\n+    assert error.response.request.method == \"GET\"\n+\n+\n # =========================================================================== #\n # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n # =========================================================================== #",
+            "n_added": 11,
+            "n_removed": 0,
+            "kind": "test",
+            "risk_hint": "io"
+          }
+        ],
+        "symbols": [
+          "list_batches",
+          "format",
+          "httpx.Request",
+          "github.com",
+          "Request",
+          "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+          "test_list__unsupported_provider_raises_badrequest",
+          "pytest.raises",
+          "litellm.exceptions.BadRequestError",
+          "bm.list_batches",
+          "exc_info.value",
+          "error.message",
+          "error.response.request.method",
+          "raises"
+        ],
+        "kind": "source",
+        "risk_signals": [],
+        "requirements": [],
+        "change_context": {}
+      }
+    ],
+    "coverage": {
+      "units_total": 3,
+      "units_packed": 3,
+      "units_omitted": 0,
+      "source_units": 2
+    },
+    "execution": {
+      "enabled": false,
+      "skipped": true,
+      "skip_reason": "flag_off",
+      "cmd": "",
+      "cwd": "",
+      "exit_code": null,
+      "elapsed_s": 0.0,
+      "passed": null,
+      "failed": null,
+      "failed_names": [],
+      "raw_tail": "",
+      "ran_paths": [],
+      "python_env": "",
+      "python": {
+        "skipped": true,
+        "skip_reason": null,
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "env": "",
+        "frozen": false,
+        "cached": false,
+        "install_cmd": "",
+        "install_elapsed_s": 0.0
+      },
+      "js": {
+        "skipped": true,
+        "skip_reason": null,
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "env": "",
+        "frozen": false,
+        "cached": false,
+        "install_cmd": "",
+        "install_elapsed_s": 0.0
+      }
+    },
+    "findings": [],
+    "pipeline_trace": [
+      {
+        "candidate_id": "C-001",
+        "stage": "reflector",
+        "status": "kept",
+        "file": "litellm/batches/main.py",
+        "line": 881,
+        "title": "Error message for unsupported providers",
+        "drop_reason": null,
+        "detail": ""
+      },
+      {
+        "candidate_id": "C-002",
+        "stage": "classify",
+        "status": "dropped",
+        "file": "tests/unit/batches/test_main.py",
+        "line": null,
+        "title": "Test Case for Error Message and HTTP Method",
+        "drop_reason": "note",
+        "detail": ""
+      },
+      {
+        "candidate_id": "C-001",
+        "stage": "verifier",
+        "status": "dropped",
+        "file": "litellm/batches/main.py",
+        "line": null,
+        "title": "Error message for unsupported providers",
+        "drop_reason": "snippet_not_in_hunk",
+        "detail": ""
+      }
+    ],
+    "timing": {
+      "workspace_s": 0.0,
+      "graphify_s": 0.0,
+      "pr_facts_s": 0.0,
+      "change_units_s": 0.0,
+      "bundling_s": 0.0,
+      "bundle_agent_s": 131.389,
+      "reflect_s": 0.0,
+      "verify_s": 0.0,
+      "sandbox_s": 0.0,
+      "policy_s": 0.0,
+      "total_s": 131.389
+    },
+    "agent_runs": [
+      {
+        "status": "VALID_CANDIDATES",
+        "candidate_count": 2,
+        "raw_outputs": [
+          "```json\n{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"The error message for unsupported providers has been updated from 'list_batch' to 'list_batches'.\",\n      \"hypothesis_outcome\": \"No concrete evidence found to support or refute this hypothesis.\",\n      \"evidence_refs\": [\"CU-001\"]\n    },\n    {\n      \"unit_id\": \"CU-002\",\n      \"behavioral_delta\": \"The HTTP method in the error response has been changed from 'create_thread' to 'GET'.\",\n      \"hypothesis_outcome\": \"No concrete evidence found to support or refute this hypothesis.\",\n      \"evidence_refs\": [\"CU-002\"]\n    },\n    {\n      \"unit_id\": \"CU-003\",\n      \"behavioral_delta\": \"A new test case has been added to verify that the error message and HTTP method are correct.\",\n      \"hypothesis_outcome\": \"No concrete evidence found to support or refute this hypothesis.\",\n      \"evidence_refs\": [\"CU-003\"]\n    }\n  ],\n  \"hypotheses\": [\n    {\n      \"file\": \"litellm/batches/main.py\",\n      \"symbol\": \"list_batches\",\n      \"category\": \"correctness\",\n      \"observation\": \"The error message now correctly refers to 'list_batches' instead of 'list_batch'.\",\n      \"hypothesis\": \"The error message for unsupported providers is now correctly formatted.\",\n      \"why_investigate\": \"The error message should be consistent with the function name.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    },\n    {\n      \"file\": \"litellm/batches/main.py\",\n      \"symbol\": \"list_batches\",\n      \"category\": \"correctness\",\n      \"observation\": \"The HTTP method in the error response is now 'GET' instead of 'create_thread'.\",\n      \"hypothesis\": \"The HTTP method in the error response is now correctly set to 'GET'.\",\n      \"why_investigate\": \"The HTTP method should be consistent with the expected request method.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    },\n    {\n      \"file\": \"tests/unit/batches/test_main.py\",\n      \"symbol\": \"test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method\",\n      \"category\": \"correctness\",\n      \"observation\": \"A new test case has been added to verify the error message and HTTP method.\",\n      \"hypothesis\": \"The new test case correctly verifies that the error message and HTTP method are correct.\",\n      \"why_investigate\": \"The new test case should ensure that the error handling is working as expected.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    },\n    {\n      \"file\": \"litellm/batches/main.py\",\n      \"symbol\": \"list_batches\",\n      \"category\": \"correctness\",\n      \"observation\": \"The error message now correctly refers to 'list_batches' instead of 'list_batch'.\",\n      \"hypothesis\": \"The error message for unsupported providers is now correctly formatted.\",\n      \"why_investigate\": \"The error message should be consistent with the function name.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    },\n    {\n      \"file\": \"litellm/batches/main.py\",\n      \"symbol\": \"list_batches\",\n      \"category\": \"correctness\",\n      \"observation\": \"The HTTP method in the error response is now 'GET' instead of 'create_thread'.\",\n      \"hypothesis\": \"The HTTP method in the error response is now correctly set to 'GET'.\",\n      \"why_investigate\": \"The HTTP method should be consistent with the expected request method.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    }\n  ]\n}\n```",
+          "{\n  \"decisions\": [\n    {\n      \"hypothesis_id\": \"H-001\",\n      \"status\": \"substantiated\",\n      \"candidate\": {\n        \"file\": \"litellm/batches/main.py\",\n        \"symbol\": \"list_batches\",\n        \"start_line\": 879,\n        \"title\": \"Error message for unsupported providers\",\n        \"claim\": \"The error message for unsupported providers is now correctly formatted.\",\n        \"existing_code\": \"@@ -879,7 +879,7 @@ def list_batches(\\n             )\\n         else:\\n             raise litellm.exceptions.BadRequestError(\\n-                message=\\\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\\\".format(\\n+                message=\\\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\\\".format(\\n                     custom_llm_provider,\\n                     \\\", \\\".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\\n                 ),\\n\\n@@ -888,7 +888,7 @@ def list_batches(\\n                 response=httpx.Response(\\n                     status_code=400,\\n                     content=\\\"Unsupported provider\\\",\\n-                    request=httpx.Request(method=\\\"create_thread\\\", url=\\\"https://github.com/BerriAI/litellm\\\"),\\n+                    request=httpx.Request(, \\\"\", \"invariant\": \"The error message should be consistent with the function name.\",\n        \"violating_condition\": \"The error message is now correctly formatted.\",\n        \"expected\": \"The error message for unsupported providers is now correctly formatted.\",\n        \"actual\": \"The error message for unsupported providers is now correctly formatted.\",\n        \"execution_path\": [\"litellm/batches/main.py\", \"litellm/router.py\", \"litellm/main.py\", \"litellm/router_python_host.py\", \"litellm/proxy/common_request_processing.py\", \"litellm/proxy/route_llm_request.py\", \"litellm/litellm_core_utils/health_check_helpers.py\", \"litellm/proxy/batches_endpoints/endpoints.py\"],\n        \"severity\": \"low\",\n        \"confidence\": 1.0\n      },\n      \"reason\": \"The error message is now correctly formatted and consistent with the function name.\",\n      \"evidence_refs\": [\"EV-B-001-001\", \"EV-B-001-002\", \"EV-B-001-003\", \"EV-B-001-004\"],\n      \"missing_evidence\": []\n    },\n    {\n      \"hypothesis_id\": \"H-002\",\n      \"status\": \"disproved\",\n      \"candidate\": null,\n      \"reason\": \"The HTTP method in the error response is now 'GET' instead of 'create_thread'. The observation contradicts the hypothesis.\",\n      \"evidence_refs\": [\"EV-B-001-001\"],\n      \"missing_evidence\": []\n    }\n  ]\n}",
+          "{\n  \"decisions\": [\n    {\n      \"hypothesis_id\": \"H-003\",\n      \"status\": \"substantiated\",\n      \"candidate\": {\n        \"file\": \"tests/unit/batches/test_main.py\",\n        \"symbol\": \"test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method\",\n        \"start_line\": 348,\n        \"title\": \"Test Case for Error Message and HTTP Method\",\n        \"claim\": \"The new test case correctly verifies that the error message and HTTP method are correct.\",\n        \"existing_code\": \"@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\\n         m.assert_not_called()\\n \\n \\n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\\n+    \\\"\\\"\\\"Regression: the error handler must say 'list_batches' (not 'list_batch')\\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\\\"\\\"\\\"\\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\\n+        bm.list_batches(custom_llm_provider=\\\"anthropic\\\")  # type: ignore[arg-type]\\n+\\n+    error = exc_info.value\\n+    assert \\\"list_batches\\\" in error.message\\n+    assert \\\"list_batch'\\\" not in error.message  # no singular form\\n+    assert error.response.request.method == \\\"GET\\\"\\n+\\n+\\n # ===========================================================================\\n\",\n        \"invariant\": \"The error message should contain 'list_batches' and not 'list_batch'. The HTTP method should be 'GET'.\",\n        \"violating_condition\": \"The error message contains 'list_batch' and the HTTP method is not 'GET'.\",\n        \"expected\": \"The error message should contain 'list_batches' and the HTTP method should be 'GET'.\",\n        \"actual\": \"The error message contains 'list_batch' and the HTTP method is 'GET'.\",\n        \"execution_path\": [\n          \"test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method\"\n        ],\n        \"severity\": \"low\",\n        \"confidence\": 0.9\n      },\n      \"reason\": \"The new test case correctly verifies that the error message and HTTP method are correct.\",\n      \"evidence_refs\": [\n        \"EV-B-001-005\"\n      ],\n      \"missing_evidence\": []\n    }\n  ]\n}"
+        ],
+        "tool_calls": [
+          {
+            "id": "EV-B-001-001",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "read_hunk",
+              "path": "litellm/batches/main.py"
+            },
+            "result": {
+              "path": "litellm/batches/main.py",
+              "text": "@@ -879,7 +879,7 @@ def list_batches(\n             )\n         else:\n             raise litellm.exceptions.BadRequestError(\n-                message=\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\".format(\n+                message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n                     custom_llm_provider,\n                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n                 ),\n\n@@ -888,7 +888,7 @@ def list_batches(\n                 response=httpx.Response(\n                     status_code=400,\n                     content=\"Unsupported provider\",\n-                    request=httpx.Request(method=\"create_thread\", url=\"https://github.com/BerriAI/litellm\"),\n+                    request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n                 ),\n             )\n         return response\n"
+            }
+          },
+          {
+            "id": "EV-B-001-002",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "read_source",
+              "path": "litellm/batches/main.py"
+            },
+            "result": {
+              "path": "litellm/batches/main.py",
+              "text": "859:         elif custom_llm_provider == \"vertex_ai\":\n860:             api_base = optional_params.api_base or \"\"\n861:             vertex_ai_project: Final = (\n862:                 optional_params.vertex_project or litellm.vertex_project or get_secret_str(\"VERTEXAI_PROJECT\")\n863:             )\n864:             vertex_ai_location: Final = (\n865:                 optional_params.vertex_location or litellm.vertex_location or get_secret_str(\"VERTEXAI_LOCATION\")\n866:             )\n867:             vertex_credentials: Final = optional_params.vertex_credentials or get_secret_str(\"VERTEXAI_CREDENTIALS\")\n868: \n869:             response = vertex_ai_batches_instance.list_batches(\n870:                 _is_async=_is_async,\n871:                 after=after,\n872:                 limit=limit,\n873:                 api_base=api_base,\n874:                 vertex_project=vertex_ai_project,\n875:                 vertex_location=vertex_ai_location,\n876:                 vertex_credentials=vertex_credentials,\n877:                 timeout=timeout,\n878:                 max_retries=optional_params.max_retries,\n879:             )\n880:         else:\n881:             raise litellm.exceptions.BadRequestError(\n882:                 message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n883:                     custom_llm_provider,\n884:                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n885:                 ),\n886:                 model=\"n/a\",\n887:                 llm_provider=custom_llm_provider,\n888:                 response=httpx.Response(\n889:                     status_code=400,\n890:                     content=\"Unsupported provider\",\n891:                     request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n892:                 ),\n893:             )\n894:         return response\n895:     except Exception as e:\n896:         raise e\n897: \n898: \n899: async def acancel_batch(\n900:     batch_id: str,\n901:     model: str | None = None,\n902:     custom_llm_provider: Literal[\"openai\", \"azure\", \"vertex_ai\", \"bedrock\", \"litellm_proxy\", \"xai\"] = \"openai\",\n903:     metadata: dict[str, str] | None = None,\n904:     extra_headers: dict[str, str] | None = None,\n905:     extra_body: dict[str, str] | None = None,\n906:     **kwargs,\n907: ) -> LiteLLMBatch:\n908:     \"\"\"\n909:     Async: Cancels a batch.\n910: \n911:     LiteLLM Equivalent of POST https://api.openai.com/v1/batches/{batch_id}/cancel\n912:     \"\"\"\n913:     try:\n914:         loop: Final = asyncio.get_event_loop()\n915:         kwargs[\"acancel_batch\"] = True\n916:         # Preserve model parameter - only pop from kwargs if it exists there\n917:         # (to avoid passing it twice), otherwise keep the function parameter value\n918:         model = kwargs.pop(\"model\", None) or model\n919: \n920:         # Use a partial function to pass your keyword arguments\n921:         func: Final = partial(\n922:             cancel_batch,\n923:             batch_id,\n924:             model,\n925:             custom_llm_provider,\n926:             metadata,\n927:             extra_headers,\n928:             extra_body,\n929:             **kwargs,\n930:         )\n931:         # Add the context to the function\n932:         ctx: Final = contextvars.copy_context()\n933:         func_with_context: Final = partial(ctx.run, func)\n934:         init_response: Final = await loop.run_in_executor(None, func_with_context)\n935:         if asyncio.iscoroutine(init_response):\n936:             response = await init_response\n937:         else:\n938:             response = init_response\n939: \n940:         return response\n941:     except Exception as e:\n942:         raise e\n943: \n944: \n945: def cancel_batch(\n946:     batch_id: str,\n947:     model: str | None = None,\n948:     custom_llm_provider: Literal[\"openai\", \"azure\", \"vertex_ai\", \"bedrock\", \"litellm_proxy\", \"xai\"] | str = \"openai\",\n949:     metadata: dict[str, str] | None = None,\n950:     extra_headers: dict[str, str] | None = None,\n951:     extra_body: dict[str, str] | None = None,\n952:     **kwargs,\n953: ) -> LiteLLMBatch | Coroutine[object, None, LiteLLMBatch]:\n954:     \"\"\"\n955:     Cancels a batch.\n956: \n957:     LiteLLM Equivalent of POST https://api.openai.com/v1/batches/{batch_id}/cancel\n958:     \"\"\"",
+              "source": "head_checkout",
+              "truncated": true
+            }
+          },
+          {
+            "id": "EV-B-001-003",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "graph_callers",
+              "symbol": "list_batches"
+            },
+            "result": {
+              "symbol": "list_batches",
+              "text": "litellm/router.py:319: alist_batches: Callable[..., Awaitable[Mapping[str, object]]]\nlitellm/main.py:9763: \"batch\": (\"alist_batches\" if custom_llm_provider in LIST_BATCHES_SUPPORTED_PROVIDERS else \"acompletion\"),\nlitellm/router_python_host.py:97: def invoke(self, op: Literal[\"alist_batches\"]) -> Callable[..., Awaitable[object]]: ...\nlitellm/proxy/common_request_processing.py:247: \"alist_batches\",\nlitellm/proxy/common_request_processing.py:3058: \"alist_batches\",\nlitellm/proxy/route_llm_request.py:668: \"alist_batches\",\nlitellm/batches/main.py:710: async def alist_batches(\nlitellm/batches/main.py:725: kwargs[\"alist_batches\"] = True\nlitellm/batches/main.py:729: list_batches,\nlitellm/batches/main.py:753: def list_batches(\nlitellm/batches/main.py:795: _is_async: Final = kwargs.pop(\"alist_batches\", False) is True\nlitellm/batches/main.py:797: return xai_batches_instance.list_batches(\nlitellm/batches/main.py:821: response = openai_batches_instance.list_batches(\nlitellm/batches/main.py:850: response = azure_batches_instance.list_batches(\nlitellm/batches/main.py:869: response = vertex_ai_batches_instance.list_batches(\nlitellm/batches/main.py:882: message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\nlitellm/litellm_core_utils/health_check_helpers.py:231: Calls list_batches for providers that support it. For all other providers (e.g. bedrock)\nlitellm/litellm_core_utils/health_check_helpers.py:232: the batch API surface doesn't include list_batches, so we fall back to acompletion to\nlitellm/litellm_core_utils/health_check_helpers.py:250: return await litellm.alist_batches(**{**filtered_model_params, \"custom_llm_provider\": custom_llm_provider})\nlitellm/proxy/batches_endpoints/endpoints.py:889: async def list_batches(",
+              "n": 20,
+              "source": "repository_search"
+            }
+          },
+          {
+            "id": "EV-B-001-004",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "graph_tests",
+              "symbol": "list_batches"
+            },
+            "result": {
+              "symbol": "list_batches",
+              "text": "tests/e2e/llm_translation/passthrough_client.py:357: def openai_passthrough_list_batches(self, key: str) -> Result[PassthroughBatchList]:\ntests/e2e/llm_translation/test_passthrough_e2e.py:354: listed = unwrap(client.openai_passthrough_list_batches(scoped_key))\ntests/e2e/batches/batch_client.py:232: def list_batches(\ntests/e2e/batches/test_batches_e2e.py:338: list_result = client.list_batches(key=key, provider=provider)\ntests/e2e/batches/test_batches_e2e.py:345: listed = unwrap(client.list_batches(key=key, provider=None))\ntests/e2e/batches/test_batches_e2e.py:1778: client.list_batches(key=key, model=OPENAI_BATCH_MODEL, limit=TERMINAL_LIST_LIMIT)",
+              "n": 6,
+              "source": "repository_search"
+            }
+          },
+          {
+            "id": "EV-B-001-005",
+            "hypothesis_id": "H-003",
+            "request": {
+              "tool": "read_hunk",
+              "path": "tests/unit/batches/test_main.py"
+            },
+            "result": {
+              "path": "tests/unit/batches/test_main.py",
+              "text": "@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\n         m.assert_not_called()\n \n \n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n+    \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n+        bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n+\n+    error = exc_info.value\n+    assert \"list_batches\" in error.message\n+    assert \"list_batch'\" not in error.message  # no singular form\n+    assert error.response.request.method == \"GET\"\n+\n+\n # =========================================================================== #\n # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n # =========================================================================== #"
+            }
+          },
+          {
+            "id": "EV-B-001-006",
+            "hypothesis_id": "H-003",
+            "request": {
+              "tool": "read_source",
+              "path": "tests/unit/batches/test_main.py"
+            },
+            "result": {
+              "path": "tests/unit/batches/test_main.py",
+              "text": "328: def test_list__azure_dispatch(seams):\n329:     result = bm.list_batches(custom_llm_provider=\"azure\")\n330: \n331:     assert result is seams.azure.list_batches.return_value\n332:     _assert_only(seams.azure.list_batches, seams, \"list_batches\")\n333: \n334: \n335: def test_list__vertex_ai_dispatch(seams):\n336:     result = bm.list_batches(custom_llm_provider=\"vertex_ai\")\n337: \n338:     assert result is seams.vertex.list_batches.return_value\n339:     _assert_only(seams.vertex.list_batches, seams, \"list_batches\")\n340: \n341: \n342: def test_list__unsupported_provider_raises_badrequest(seams):\n343:     # anthropic supports retrieve but NOT list - good negative case.\n344:     with pytest.raises(litellm.exceptions.BadRequestError):\n345:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n346: \n347:     for m in _all_seam_methods(seams, \"list_batches\"):\n348:         m.assert_not_called()\n349: \n350: \n351: def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n352:     \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n353:     and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n354:     with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n355:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n356: \n357:     error = exc_info.value\n358:     assert \"list_batches\" in error.message\n359:     assert \"list_batch'\" not in error.message  # no singular form\n360:     assert error.response.request.method == \"GET\"\n361: \n362: \n363: # =========================================================================== #\n364: # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n365: # =========================================================================== #\n366: \n367: \n368: def test_cancel__openai_dispatch_and_payload(seams):\n369:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\")\n370: \n371:     assert result is seams.openai.cancel_batch.return_value\n372:     _assert_only(seams.openai.cancel_batch, seams, \"cancel_batch\")\n373: \n374:     kw = seams.openai.cancel_batch.call_args.kwargs\n375:     assert kw[\"cancel_batch_data\"] == {\n376:         \"batch_id\": \"batch-1\",\n377:         \"extra_headers\": None,\n378:         \"extra_body\": None,\n379:     }\n380:     assert kw[\"_is_async\"] is False\n381: \n382: \n383: def test_cancel__azure_dispatch(seams):\n384:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"azure\")\n385: \n386:     assert result is seams.azure.cancel_batch.return_value\n387:     _assert_only(seams.azure.cancel_batch, seams, \"cancel_batch\")\n388: \n389: \n390: def test_cancel__vertex_ai_dispatch(seams):\n391:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"vertex_ai\")\n392: \n393:     assert result is seams.vertex.cancel_batch.return_value\n394:     _assert_only(seams.vertex.cancel_batch, seams, \"cancel_batch\")\n395: \n396: \n397: def test_cancel__unsupported_provider_raises_badrequest(seams):\n398:     with pytest.raises(litellm.exceptions.BadRequestError):\n399:         bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"cohere\")\n400: \n401:     for m in _all_seam_methods(seams, \"cancel_batch\"):\n402:         m.assert_not_called()\n403: \n404: \n405: def test_cancel__async_flag_propagates_is_async(seams):\n406:     bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\", acancel_batch=True)\n407: \n408:     assert seams.openai.cancel_batch.call_args.kwargs[\"_is_async\"] is True\n409: \n410: \n411: # =========================================================================== #\n412: # Async wrappers - delegate to the sync function in an executor, set the right\n413: # \"_is_async\" flag, and return the result untouched.\n414: # =========================================================================== #\n415: \n416: \n417: @pytest.mark.asyncio\n418: async def test_acreate_batch_delegates_to_create_batch():\n419:     with patch.object(bm, \"create_batch\", MagicMock(return_value=\"SENTINEL\")) as m:\n420:         result = await bm.acreate_batch(**CREATE_KW, custom_llm_provider=\"openai\")\n421: \n422:     assert result == \"SENTINEL\"\n423:     assert m.call_count == 1\n424:     assert m.call_args.kwargs.get(\"acreate_batch\") is True\n425:     # positional handoff: (completion_window, endpoint, input_file_id, provider, ...)\n426:     assert m.call_args.args[0] == \"24h\"\n427:     assert m.call_args.args[2] == \"file-abc\"",
+              "source": "head_checkout",
+              "truncated": true
+            }
+          },
+          {
+            "id": "EV-B-001-007",
+            "hypothesis_id": "H-003",
+            "request": {
+              "tool": "graph_callers",
+              "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method"
+            },
+            "result": {
+              "error": "not_found",
+              "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+              "source": "repository_search"
+            }
+          },
+          {
+            "id": "EV-B-001-008",
+            "hypothesis_id": "H-003",
+            "request": {
+              "tool": "graph_tests",
+              "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method"
+            },
+            "result": {
+              "error": "not_found",
+              "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+              "source": "repository_search"
+            }
+          }
+        ],
+        "hypotheses": [
+          {
+            "id": "H-001",
+            "bundle_id": "B-001",
+            "file": "litellm/batches/main.py",
+            "observation": "The error message now correctly refers to 'list_batches' instead of 'list_batch'.",
+            "hypothesis": "The error message for unsupported providers is now correctly formatted.",
+            "symbol": "list_batches",
+            "category": "correctness",
+            "why_investigate": "The error message should be consistent with the function name.",
+            "required_evidence": [
+              "source",
+              "callers",
+              "tests"
+            ],
+            "confidence": 0.8
+          },
+          {
+            "id": "H-002",
+            "bundle_id": "B-001",
+            "file": "litellm/batches/main.py",
+            "observation": "The HTTP method in the error response is now 'GET' instead of 'create_thread'.",
+            "hypothesis": "The HTTP method in the error response is now correctly set to 'GET'.",
+            "symbol": "list_batches",
+            "category": "correctness",
+            "why_investigate": "The HTTP method should be consistent with the expected request method.",
+            "required_evidence": [
+              "source",
+              "callers",
+              "tests"
+            ],
+            "confidence": 0.8
+          },
+          {
+            "id": "H-003",
+            "bundle_id": "B-001",
+            "file": "tests/unit/batches/test_main.py",
+            "observation": "A new test case has been added to verify the error message and HTTP method.",
+            "hypothesis": "The new test case correctly verifies that the error message and HTTP method are correct.",
+            "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+            "category": "correctness",
+            "why_investigate": "The new test case should ensure that the error handling is working as expected.",
+            "required_evidence": [
+              "source",
+              "callers",
+              "tests"
+            ],
+            "confidence": 0.8
+          }
+        ],
+        "hypothesis_count": 3,
+        "evidence_items": [
+          {
+            "id": "EV-B-001-001",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "read_hunk",
+              "path": "litellm/batches/main.py"
+            },
+            "result": {
+              "path": "litellm/batches/main.py",
+              "text": "@@ -879,7 +879,7 @@ def list_batches(\n             )\n         else:\n             raise litellm.exceptions.BadRequestError(\n-                message=\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\".format(\n+                message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n                     custom_llm_provider,\n                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n                 ),\n\n@@ -888,7 +888,7 @@ def list_batches(\n                 response=httpx.Response(\n                     status_code=400,\n                     content=\"Unsupported provider\",\n-                    request=httpx.Request(method=\"create_thread\", url=\"https://github.com/BerriAI/litellm\"),\n+                    request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n                 ),\n             )\n         return response\n"
+            }
+          },
+          {
+            "id": "EV-B-001-002",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "read_source",
+              "path": "litellm/batches/main.py"
+            },
+            "result": {
+              "path": "litellm/batches/main.py",
+              "text": "859:         elif custom_llm_provider == \"vertex_ai\":\n860:             api_base = optional_params.api_base or \"\"\n861:             vertex_ai_project: Final = (\n862:                 optional_params.vertex_project or litellm.vertex_project or get_secret_str(\"VERTEXAI_PROJECT\")\n863:             )\n864:             vertex_ai_location: Final = (\n865:                 optional_params.vertex_location or litellm.vertex_location or get_secret_str(\"VERTEXAI_LOCATION\")\n866:             )\n867:             vertex_credentials: Final = optional_params.vertex_credentials or get_secret_str(\"VERTEXAI_CREDENTIALS\")\n868: \n869:             response = vertex_ai_batches_instance.list_batches(\n870:                 _is_async=_is_async,\n871:                 after=after,\n872:                 limit=limit,\n873:                 api_base=api_base,\n874:                 vertex_project=vertex_ai_project,\n875:                 vertex_location=vertex_ai_location,\n876:                 vertex_credentials=vertex_credentials,\n877:                 timeout=timeout,\n878:                 max_retries=optional_params.max_retries,\n879:             )\n880:         else:\n881:             raise litellm.exceptions.BadRequestError(\n882:                 message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n883:                     custom_llm_provider,\n884:                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n885:                 ),\n886:                 model=\"n/a\",\n887:                 llm_provider=custom_llm_provider,\n888:                 response=httpx.Response(\n889:                     status_code=400,\n890:                     content=\"Unsupported provider\",\n891:                     request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n892:                 ),\n893:             )\n894:         return response\n895:     except Exception as e:\n896:         raise e\n897: \n898: \n899: async def acancel_batch(\n900:     batch_id: str,\n901:     model: str | None = None,\n902:     custom_llm_provider: Literal[\"openai\", \"azure\", \"vertex_ai\", \"bedrock\", \"litellm_proxy\", \"xai\"] = \"openai\",\n903:     metadata: dict[str, str] | None = None,\n904:     extra_headers: dict[str, str] | None = None,\n905:     extra_body: dict[str, str] | None = None,\n906:     **kwargs,\n907: ) -> LiteLLMBatch:\n908:     \"\"\"\n909:     Async: Cancels a batch.\n910: \n911:     LiteLLM Equivalent of POST https://api.openai.com/v1/batches/{batch_id}/cancel\n912:     \"\"\"\n913:     try:\n914:         loop: Final = asyncio.get_event_loop()\n915:         kwargs[\"acancel_batch\"] = True\n916:         # Preserve model parameter - only pop from kwargs if it exists there\n917:         # (to avoid passing it twice), otherwise keep the function parameter value\n918:         model = kwargs.pop(\"model\", None) or model\n919: \n920:         # Use a partial function to pass your keyword arguments\n921:         func: Final = partial(\n922:             cancel_batch,\n923:             batch_id,\n924:             model,\n925:             custom_llm_provider,\n926:             metadata,\n927:             extra_headers,\n928:             extra_body,\n929:             **kwargs,\n930:         )\n931:         # Add the context to the function\n932:         ctx: Final = contextvars.copy_context()\n933:         func_with_context: Final = partial(ctx.run, func)\n934:         init_response: Final = await loop.run_in_executor(None, func_with_context)\n935:         if asyncio.iscoroutine(init_response):\n936:             response = await init_response\n937:         else:\n938:             response = init_response\n939: \n940:         return response\n941:     except Exception as e:\n942:         raise e\n943: \n944: \n945: def cancel_batch(\n946:     batch_id: str,\n947:     model: str | None = None,\n948:     custom_llm_provider: Literal[\"openai\", \"azure\", \"vertex_ai\", \"bedrock\", \"litellm_proxy\", \"xai\"] | str = \"openai\",\n949:     metadata: dict[str, str] | None = None,\n950:     extra_headers: dict[str, str] | None = None,\n951:     extra_body: dict[str, str] | None = None,\n952:     **kwargs,\n953: ) -> LiteLLMBatch | Coroutine[object, None, LiteLLMBatch]:\n954:     \"\"\"\n955:     Cancels a batch.\n956: \n957:     LiteLLM Equivalent of POST https://api.openai.com/v1/batches/{batch_id}/cancel\n958:     \"\"\"",
+              "source": "head_checkout",
+              "truncated": true
+            }
+          },
+          {
+            "id": "EV-B-001-003",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "graph_callers",
+              "symbol": "list_batches"
+            },
+            "result": {
+              "symbol": "list_batches",
+              "text": "litellm/router.py:319: alist_batches: Callable[..., Awaitable[Mapping[str, object]]]\nlitellm/main.py:9763: \"batch\": (\"alist_batches\" if custom_llm_provider in LIST_BATCHES_SUPPORTED_PROVIDERS else \"acompletion\"),\nlitellm/router_python_host.py:97: def invoke(self, op: Literal[\"alist_batches\"]) -> Callable[..., Awaitable[object]]: ...\nlitellm/proxy/common_request_processing.py:247: \"alist_batches\",\nlitellm/proxy/common_request_processing.py:3058: \"alist_batches\",\nlitellm/proxy/route_llm_request.py:668: \"alist_batches\",\nlitellm/batches/main.py:710: async def alist_batches(\nlitellm/batches/main.py:725: kwargs[\"alist_batches\"] = True\nlitellm/batches/main.py:729: list_batches,\nlitellm/batches/main.py:753: def list_batches(\nlitellm/batches/main.py:795: _is_async: Final = kwargs.pop(\"alist_batches\", False) is True\nlitellm/batches/main.py:797: return xai_batches_instance.list_batches(\nlitellm/batches/main.py:821: response = openai_batches_instance.list_batches(\nlitellm/batches/main.py:850: response = azure_batches_instance.list_batches(\nlitellm/batches/main.py:869: response = vertex_ai_batches_instance.list_batches(\nlitellm/batches/main.py:882: message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\nlitellm/litellm_core_utils/health_check_helpers.py:231: Calls list_batches for providers that support it. For all other providers (e.g. bedrock)\nlitellm/litellm_core_utils/health_check_helpers.py:232: the batch API surface doesn't include list_batches, so we fall back to acompletion to\nlitellm/litellm_core_utils/health_check_helpers.py:250: return await litellm.alist_batches(**{**filtered_model_params, \"custom_llm_provider\": custom_llm_provider})\nlitellm/proxy/batches_endpoints/endpoints.py:889: async def list_batches(",
+              "n": 20,
+              "source": "repository_search"
+            }
+          },
+          {
+            "id": "EV-B-001-004",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "graph_tests",
+              "symbol": "list_batches"
+            },
+            "result": {
+              "symbol": "list_batches",
+              "text": "tests/e2e/llm_translation/passthrough_client.py:357: def openai_passthrough_list_batches(self, key: str) -> Result[PassthroughBatchList]:\ntests/e2e/llm_translation/test_passthrough_e2e.py:354: listed = unwrap(client.openai_passthrough_list_batches(scoped_key))\ntests/e2e/batches/batch_client.py:232: def list_batches(\ntests/e2e/batches/test_batches_e2e.py:338: list_result = client.list_batches(key=key, provider=provider)\ntests/e2e/batches/test_batches_e2e.py:345: listed = unwrap(client.list_batches(key=key, provider=None))\ntests/e2e/batches/test_batches_e2e.py:1778: client.list_batches(key=key, model=OPENAI_BATCH_MODEL, limit=TERMINAL_LIST_LIMIT)",
+              "n": 6,
+              "source": "repository_search"
+            }
+          },
+          {
+            "id": "EV-B-001-005",
+            "hypothesis_id": "H-003",
+            "request": {
+              "tool": "read_hunk",
+              "path": "tests/unit/batches/test_main.py"
+            },
+            "result": {
+              "path": "tests/unit/batches/test_main.py",
+              "text": "@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\n         m.assert_not_called()\n \n \n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n+    \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n+        bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n+\n+    error = exc_info.value\n+    assert \"list_batches\" in error.message\n+    assert \"list_batch'\" not in error.message  # no singular form\n+    assert error.response.request.method == \"GET\"\n+\n+\n # =========================================================================== #\n # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n # =========================================================================== #"
+            }
+          },
+          {
+            "id": "EV-B-001-006",
+            "hypothesis_id": "H-003",
+            "request": {
+              "tool": "read_source",
+              "path": "tests/unit/batches/test_main.py"
+            },
+            "result": {
+              "path": "tests/unit/batches/test_main.py",
+              "text": "328: def test_list__azure_dispatch(seams):\n329:     result = bm.list_batches(custom_llm_provider=\"azure\")\n330: \n331:     assert result is seams.azure.list_batches.return_value\n332:     _assert_only(seams.azure.list_batches, seams, \"list_batches\")\n333: \n334: \n335: def test_list__vertex_ai_dispatch(seams):\n336:     result = bm.list_batches(custom_llm_provider=\"vertex_ai\")\n337: \n338:     assert result is seams.vertex.list_batches.return_value\n339:     _assert_only(seams.vertex.list_batches, seams, \"list_batches\")\n340: \n341: \n342: def test_list__unsupported_provider_raises_badrequest(seams):\n343:     # anthropic supports retrieve but NOT list - good negative case.\n344:     with pytest.raises(litellm.exceptions.BadRequestError):\n345:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n346: \n347:     for m in _all_seam_methods(seams, \"list_batches\"):\n348:         m.assert_not_called()\n349: \n350: \n351: def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n352:     \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n353:     and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n354:     with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n355:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n356: \n357:     error = exc_info.value\n358:     assert \"list_batches\" in error.message\n359:     assert \"list_batch'\" not in error.message  # no singular form\n360:     assert error.response.request.method == \"GET\"\n361: \n362: \n363: # =========================================================================== #\n364: # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n365: # =========================================================================== #\n366: \n367: \n368: def test_cancel__openai_dispatch_and_payload(seams):\n369:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\")\n370: \n371:     assert result is seams.openai.cancel_batch.return_value\n372:     _assert_only(seams.openai.cancel_batch, seams, \"cancel_batch\")\n373: \n374:     kw = seams.openai.cancel_batch.call_args.kwargs\n375:     assert kw[\"cancel_batch_data\"] == {\n376:         \"batch_id\": \"batch-1\",\n377:         \"extra_headers\": None,\n378:         \"extra_body\": None,\n379:     }\n380:     assert kw[\"_is_async\"] is False\n381: \n382: \n383: def test_cancel__azure_dispatch(seams):\n384:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"azure\")\n385: \n386:     assert result is seams.azure.cancel_batch.return_value\n387:     _assert_only(seams.azure.cancel_batch, seams, \"cancel_batch\")\n388: \n389: \n390: def test_cancel__vertex_ai_dispatch(seams):\n391:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"vertex_ai\")\n392: \n393:     assert result is seams.vertex.cancel_batch.return_value\n394:     _assert_only(seams.vertex.cancel_batch, seams, \"cancel_batch\")\n395: \n396: \n397: def test_cancel__unsupported_provider_raises_badrequest(seams):\n398:     with pytest.raises(litellm.exceptions.BadRequestError):\n399:         bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"cohere\")\n400: \n401:     for m in _all_seam_methods(seams, \"cancel_batch\"):\n402:         m.assert_not_called()\n403: \n404: \n405: def test_cancel__async_flag_propagates_is_async(seams):\n406:     bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\", acancel_batch=True)\n407: \n408:     assert seams.openai.cancel_batch.call_args.kwargs[\"_is_async\"] is True\n409: \n410: \n411: # =========================================================================== #\n412: # Async wrappers - delegate to the sync function in an executor, set the right\n413: # \"_is_async\" flag, and return the result untouched.\n414: # =========================================================================== #\n415: \n416: \n417: @pytest.mark.asyncio\n418: async def test_acreate_batch_delegates_to_create_batch():\n419:     with patch.object(bm, \"create_batch\", MagicMock(return_value=\"SENTINEL\")) as m:\n420:         result = await bm.acreate_batch(**CREATE_KW, custom_llm_provider=\"openai\")\n421: \n422:     assert result == \"SENTINEL\"\n423:     assert m.call_count == 1\n424:     assert m.call_args.kwargs.get(\"acreate_batch\") is True\n425:     # positional handoff: (completion_window, endpoint, input_file_id, provider, ...)\n426:     assert m.call_args.args[0] == \"24h\"\n427:     assert m.call_args.args[2] == \"file-abc\"",
+              "source": "head_checkout",
+              "truncated": true
+            }
+          }
+        ],
+        "evidence_count": 6,
+        "stage_status": {
+          "discovery": "VALID_HYPOTHESES",
+          "proof": "VALID_CANDIDATES"
+        },
+        "parse_error": null,
+        "exception": null,
+        "latency_ms": 131389.33,
+        "prompt_version": "hypothesis-proof-v4-schema-batches",
+        "model_calls": 3,
+        "assessments": [
+          {
+            "unit_id": "CU-001",
+            "behavioral_delta": "The error message for unsupported providers has been updated from 'list_batch' to 'list_batches'.",
+            "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+            "evidence_refs": [
+              "CU-001"
+            ]
+          },
+          {
+            "unit_id": "CU-002",
+            "behavioral_delta": "The HTTP method in the error response has been changed from 'create_thread' to 'GET'.",
+            "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+            "evidence_refs": [
+              "CU-002"
+            ]
+          },
+          {
+            "unit_id": "CU-003",
+            "behavioral_delta": "A new test case has been added to verify that the error message and HTTP method are correct.",
+            "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+            "evidence_refs": [
+              "CU-003"
+            ]
+          }
+        ],
+        "hypothesis_outcomes": [
+          {
+            "hypothesis_id": "H-001",
+            "status": "substantiated",
+            "reason": "The error message is now correctly formatted and consistent with the function name.",
+            "evidence_refs": [
+              "EV-B-001-001",
+              "EV-B-001-002",
+              "EV-B-001-003",
+              "EV-B-001-004"
+            ]
+          },
+          {
+            "hypothesis_id": "H-002",
+            "status": "disproved",
+            "reason": "The HTTP method in the error response is now 'GET' instead of 'create_thread'. The observation contradicts the hypothesis.",
+            "evidence_refs": [
+              "EV-B-001-001"
+            ]
+          },
+          {
+            "hypothesis_id": "H-003",
+            "status": "substantiated",
+            "reason": "The new test case correctly verifies that the error message and HTTP method are correct.",
+            "evidence_refs": [
+              "EV-B-001-005"
+            ]
+          }
+        ],
+        "protocol_errors": [],
+        "proof_runs": [
+          {
+            "hypothesis_ids": [
+              "H-001",
+              "H-002"
+            ],
+            "status": "completed",
+            "attempts": [
+              {
+                "prompt_sha256": "23f169362c8bbb44b10ecf4aba45a782a4d479e6e244fc8e6b62ec8f7ddab248",
+                "response_index": 1,
+                "finish_reason": "stop"
+              }
+            ],
+            "evidence_refs": [
+              "EV-B-001-001",
+              "EV-B-001-002",
+              "EV-B-001-003",
+              "EV-B-001-004"
+            ]
+          },
+          {
+            "hypothesis_ids": [
+              "H-003"
+            ],
+            "status": "completed",
+            "attempts": [
+              {
+                "prompt_sha256": "1eabaeac55a3d52826722fd86cf92571a3d6a4d9363b8680f9fa433512d48897",
+                "response_index": 2,
+                "finish_reason": "stop"
+              }
+            ],
+            "evidence_refs": [
+              "EV-B-001-005",
+              "EV-B-001-006"
+            ]
+          }
+        ],
+        "estimated_completion_tokens": 2039,
+        "bundle_id": "B-001"
+      }
+    ],
+    "pipeline_health": {
+      "healthy": false,
+      "agent_runs": 1,
+      "unhealthy_runs": 0,
+      "unhealthy_statuses": [],
+      "coverage_ratio": 1.0,
+      "coverage_adequate": true,
+      "status": "partial",
+      "inspection_ratio": 1.0
+    },
+    "intent_sources": [],
+    "requirements": [],
+    "requirement_assessments": [],
+    "investigations": [],
+    "evidence": [],
+    "source_observations": [],
+    "finding_verifications": [],
+    "requirement_coverage": {
+      "total": 0,
+      "verified": 0,
+      "violated": 0,
+      "unverified": 0,
+      "not_assessed": 0,
+      "not_applicable": 0,
+      "assessed": 0,
+      "applicable": 0,
+      "ratio": null
+    }
+  },
+  "schema_version": "2.3",
+  "target": {
+    "repo": "BerriAI/litellm",
+    "number": 53337,
+    "base_sha": "754c2225d7db8ce71a94459df2216708995c037b",
+    "head_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+    "diff_sha256": "a3b31864ffd3f1d6b28b3cdfd76573799108d58ad1ac4c8406af718cae16ce5a",
+    "comparison_base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc"
+  },
+  "health": {
+    "status": "partial",
+    "stages": [
+      {
+        "stage": "bundle:B-001",
+        "status": "succeeded",
+        "code": "VALID_CANDIDATES",
+        "detail": "",
+        "retryable": false
+      },
+      {
+        "stage": "graph",
+        "status": "degraded",
+        "code": "graph_unavailable",
+        "detail": "",
+        "retryable": false
+      }
+    ]
+  },
+  "publication_preview": {
+    "repo": "BerriAI/litellm",
+    "number": 53337,
+    "head_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+    "base_sha": "754c2225d7db8ce71a94459df2216708995c037b",
+    "event": "COMMENT",
+    "body": "<!-- codeturtle-review-v2:6ed710af546a2dc6c0734d5ccc027a1e07ca6a6bd694e117e1b362b1e8b744c8 -->\n<!-- codeturtle-sha:ae0ac16cec6e2ba89c5814f3d1d936db90317582 -->\n\n## CodeTurtle review\n\n**Recommendation:** COMMENT\n**Analysis:** partial\n**Inspection:** 3/3 (100%)\n**Reasons:** partial_analysis, unresolved_hypotheses\n\nThis is a review recommendation. No merge operation was performed.\nTests are supporting evidence; this run does not establish BASE/HEAD regression attribution.\n\n7 unresolved investigation(s); human review required.\n- graph: degraded (graph_unavailable)\n\nNo substantiated defects found within the reported analysis scope.",
+    "comments": [],
+    "summary_only_findings": [],
+    "marker": "<!-- codeturtle-review-v2:6ed710af546a2dc6c0734d5ccc027a1e07ca6a6bd694e117e1b362b1e8b744c8 -->"
+  },
+  "publication": {
+    "status": "dry_run",
+    "review_id": null,
+    "url": "",
+    "error_code": "",
+    "error": ""
+  },
+  "pipeline_trace": [
+    {
+      "candidate_id": "C-001",
+      "stage": "reflector",
+      "status": "kept",
+      "file": "litellm/batches/main.py",
+      "line": 881,
+      "title": "Error message for unsupported providers",
+      "drop_reason": null,
+      "detail": ""
+    },
+    {
+      "candidate_id": "C-002",
+      "stage": "classify",
+      "status": "dropped",
+      "file": "tests/unit/batches/test_main.py",
+      "line": null,
+      "title": "Test Case for Error Message and HTTP Method",
+      "drop_reason": "note",
+      "detail": ""
+    },
+    {
+      "candidate_id": "C-001",
+      "stage": "verifier",
+      "status": "dropped",
+      "file": "litellm/batches/main.py",
+      "line": null,
+      "title": "Error message for unsupported providers",
+      "drop_reason": "snippet_not_in_hunk",
+      "detail": ""
+    }
+  ],
+  "agent_runs": [
+    {
+      "status": "VALID_CANDIDATES",
+      "candidate_count": 2,
+      "raw_outputs": [
+        "```json\n{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"The error message for unsupported providers has been updated from 'list_batch' to 'list_batches'.\",\n      \"hypothesis_outcome\": \"No concrete evidence found to support or refute this hypothesis.\",\n      \"evidence_refs\": [\"CU-001\"]\n    },\n    {\n      \"unit_id\": \"CU-002\",\n      \"behavioral_delta\": \"The HTTP method in the error response has been changed from 'create_thread' to 'GET'.\",\n      \"hypothesis_outcome\": \"No concrete evidence found to support or refute this hypothesis.\",\n      \"evidence_refs\": [\"CU-002\"]\n    },\n    {\n      \"unit_id\": \"CU-003\",\n      \"behavioral_delta\": \"A new test case has been added to verify that the error message and HTTP method are correct.\",\n      \"hypothesis_outcome\": \"No concrete evidence found to support or refute this hypothesis.\",\n      \"evidence_refs\": [\"CU-003\"]\n    }\n  ],\n  \"hypotheses\": [\n    {\n      \"file\": \"litellm/batches/main.py\",\n      \"symbol\": \"list_batches\",\n      \"category\": \"correctness\",\n      \"observation\": \"The error message now correctly refers to 'list_batches' instead of 'list_batch'.\",\n      \"hypothesis\": \"The error message for unsupported providers is now correctly formatted.\",\n      \"why_investigate\": \"The error message should be consistent with the function name.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    },\n    {\n      \"file\": \"litellm/batches/main.py\",\n      \"symbol\": \"list_batches\",\n      \"category\": \"correctness\",\n      \"observation\": \"The HTTP method in the error response is now 'GET' instead of 'create_thread'.\",\n      \"hypothesis\": \"The HTTP method in the error response is now correctly set to 'GET'.\",\n      \"why_investigate\": \"The HTTP method should be consistent with the expected request method.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    },\n    {\n      \"file\": \"tests/unit/batches/test_main.py\",\n      \"symbol\": \"test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method\",\n      \"category\": \"correctness\",\n      \"observation\": \"A new test case has been added to verify the error message and HTTP method.\",\n      \"hypothesis\": \"The new test case correctly verifies that the error message and HTTP method are correct.\",\n      \"why_investigate\": \"The new test case should ensure that the error handling is working as expected.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    },\n    {\n      \"file\": \"litellm/batches/main.py\",\n      \"symbol\": \"list_batches\",\n      \"category\": \"correctness\",\n      \"observation\": \"The error message now correctly refers to 'list_batches' instead of 'list_batch'.\",\n      \"hypothesis\": \"The error message for unsupported providers is now correctly formatted.\",\n      \"why_investigate\": \"The error message should be consistent with the function name.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    },\n    {\n      \"file\": \"litellm/batches/main.py\",\n      \"symbol\": \"list_batches\",\n      \"category\": \"correctness\",\n      \"observation\": \"The HTTP method in the error response is now 'GET' instead of 'create_thread'.\",\n      \"hypothesis\": \"The HTTP method in the error response is now correctly set to 'GET'.\",\n      \"why_investigate\": \"The HTTP method should be consistent with the expected request method.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    }\n  ]\n}\n```",
+        "{\n  \"decisions\": [\n    {\n      \"hypothesis_id\": \"H-001\",\n      \"status\": \"substantiated\",\n      \"candidate\": {\n        \"file\": \"litellm/batches/main.py\",\n        \"symbol\": \"list_batches\",\n        \"start_line\": 879,\n        \"title\": \"Error message for unsupported providers\",\n        \"claim\": \"The error message for unsupported providers is now correctly formatted.\",\n        \"existing_code\": \"@@ -879,7 +879,7 @@ def list_batches(\\n             )\\n         else:\\n             raise litellm.exceptions.BadRequestError(\\n-                message=\\\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\\\".format(\\n+                message=\\\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\\\".format(\\n                     custom_llm_provider,\\n                     \\\", \\\".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\\n                 ),\\n\\n@@ -888,7 +888,7 @@ def list_batches(\\n                 response=httpx.Response(\\n                     status_code=400,\\n                     content=\\\"Unsupported provider\\\",\\n-                    request=httpx.Request(method=\\\"create_thread\\\", url=\\\"https://github.com/BerriAI/litellm\\\"),\\n+                    request=httpx.Request(, \\\"\", \"invariant\": \"The error message should be consistent with the function name.\",\n        \"violating_condition\": \"The error message is now correctly formatted.\",\n        \"expected\": \"The error message for unsupported providers is now correctly formatted.\",\n        \"actual\": \"The error message for unsupported providers is now correctly formatted.\",\n        \"execution_path\": [\"litellm/batches/main.py\", \"litellm/router.py\", \"litellm/main.py\", \"litellm/router_python_host.py\", \"litellm/proxy/common_request_processing.py\", \"litellm/proxy/route_llm_request.py\", \"litellm/litellm_core_utils/health_check_helpers.py\", \"litellm/proxy/batches_endpoints/endpoints.py\"],\n        \"severity\": \"low\",\n        \"confidence\": 1.0\n      },\n      \"reason\": \"The error message is now correctly formatted and consistent with the function name.\",\n      \"evidence_refs\": [\"EV-B-001-001\", \"EV-B-001-002\", \"EV-B-001-003\", \"EV-B-001-004\"],\n      \"missing_evidence\": []\n    },\n    {\n      \"hypothesis_id\": \"H-002\",\n      \"status\": \"disproved\",\n      \"candidate\": null,\n      \"reason\": \"The HTTP method in the error response is now 'GET' instead of 'create_thread'. The observation contradicts the hypothesis.\",\n      \"evidence_refs\": [\"EV-B-001-001\"],\n      \"missing_evidence\": []\n    }\n  ]\n}",
+        "{\n  \"decisions\": [\n    {\n      \"hypothesis_id\": \"H-003\",\n      \"status\": \"substantiated\",\n      \"candidate\": {\n        \"file\": \"tests/unit/batches/test_main.py\",\n        \"symbol\": \"test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method\",\n        \"start_line\": 348,\n        \"title\": \"Test Case for Error Message and HTTP Method\",\n        \"claim\": \"The new test case correctly verifies that the error message and HTTP method are correct.\",\n        \"existing_code\": \"@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\\n         m.assert_not_called()\\n \\n \\n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\\n+    \\\"\\\"\\\"Regression: the error handler must say 'list_batches' (not 'list_batch')\\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\\\"\\\"\\\"\\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\\n+        bm.list_batches(custom_llm_provider=\\\"anthropic\\\")  # type: ignore[arg-type]\\n+\\n+    error = exc_info.value\\n+    assert \\\"list_batches\\\" in error.message\\n+    assert \\\"list_batch'\\\" not in error.message  # no singular form\\n+    assert error.response.request.method == \\\"GET\\\"\\n+\\n+\\n # ===========================================================================\\n\",\n        \"invariant\": \"The error message should contain 'list_batches' and not 'list_batch'. The HTTP method should be 'GET'.\",\n        \"violating_condition\": \"The error message contains 'list_batch' and the HTTP method is not 'GET'.\",\n        \"expected\": \"The error message should contain 'list_batches' and the HTTP method should be 'GET'.\",\n        \"actual\": \"The error message contains 'list_batch' and the HTTP method is 'GET'.\",\n        \"execution_path\": [\n          \"test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method\"\n        ],\n        \"severity\": \"low\",\n        \"confidence\": 0.9\n      },\n      \"reason\": \"The new test case correctly verifies that the error message and HTTP method are correct.\",\n      \"evidence_refs\": [\n        \"EV-B-001-005\"\n      ],\n      \"missing_evidence\": []\n    }\n  ]\n}"
+      ],
+      "tool_calls": [
+        {
+          "id": "EV-B-001-001",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "read_hunk",
+            "path": "litellm/batches/main.py"
+          },
+          "result": {
+            "path": "litellm/batches/main.py",
+            "text": "@@ -879,7 +879,7 @@ def list_batches(\n             )\n         else:\n             raise litellm.exceptions.BadRequestError(\n-                message=\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\".format(\n+                message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n                     custom_llm_provider,\n                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n                 ),\n\n@@ -888,7 +888,7 @@ def list_batches(\n                 response=httpx.Response(\n                     status_code=400,\n                     content=\"Unsupported provider\",\n-                    request=httpx.Request(method=\"create_thread\", url=\"https://github.com/BerriAI/litellm\"),\n+                    request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n                 ),\n             )\n         return response\n"
+          }
+        },
+        {
+          "id": "EV-B-001-002",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "read_source",
+            "path": "litellm/batches/main.py"
+          },
+          "result": {
+            "path": "litellm/batches/main.py",
+            "text": "859:         elif custom_llm_provider == \"vertex_ai\":\n860:             api_base = optional_params.api_base or \"\"\n861:             vertex_ai_project: Final = (\n862:                 optional_params.vertex_project or litellm.vertex_project or get_secret_str(\"VERTEXAI_PROJECT\")\n863:             )\n864:             vertex_ai_location: Final = (\n865:                 optional_params.vertex_location or litellm.vertex_location or get_secret_str(\"VERTEXAI_LOCATION\")\n866:             )\n867:             vertex_credentials: Final = optional_params.vertex_credentials or get_secret_str(\"VERTEXAI_CREDENTIALS\")\n868: \n869:             response = vertex_ai_batches_instance.list_batches(\n870:                 _is_async=_is_async,\n871:                 after=after,\n872:                 limit=limit,\n873:                 api_base=api_base,\n874:                 vertex_project=vertex_ai_project,\n875:                 vertex_location=vertex_ai_location,\n876:                 vertex_credentials=vertex_credentials,\n877:                 timeout=timeout,\n878:                 max_retries=optional_params.max_retries,\n879:             )\n880:         else:\n881:             raise litellm.exceptions.BadRequestError(\n882:                 message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n883:                     custom_llm_provider,\n884:                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n885:                 ),\n886:                 model=\"n/a\",\n887:                 llm_provider=custom_llm_provider,\n888:                 response=httpx.Response(\n889:                     status_code=400,\n890:                     content=\"Unsupported provider\",\n891:                     request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n892:                 ),\n893:             )\n894:         return response\n895:     except Exception as e:\n896:         raise e\n897: \n898: \n899: async def acancel_batch(\n900:     batch_id: str,\n901:     model: str | None = None,\n902:     custom_llm_provider: Literal[\"openai\", \"azure\", \"vertex_ai\", \"bedrock\", \"litellm_proxy\", \"xai\"] = \"openai\",\n903:     metadata: dict[str, str] | None = None,\n904:     extra_headers: dict[str, str] | None = None,\n905:     extra_body: dict[str, str] | None = None,\n906:     **kwargs,\n907: ) -> LiteLLMBatch:\n908:     \"\"\"\n909:     Async: Cancels a batch.\n910: \n911:     LiteLLM Equivalent of POST https://api.openai.com/v1/batches/{batch_id}/cancel\n912:     \"\"\"\n913:     try:\n914:         loop: Final = asyncio.get_event_loop()\n915:         kwargs[\"acancel_batch\"] = True\n916:         # Preserve model parameter - only pop from kwargs if it exists there\n917:         # (to avoid passing it twice), otherwise keep the function parameter value\n918:         model = kwargs.pop(\"model\", None) or model\n919: \n920:         # Use a partial function to pass your keyword arguments\n921:         func: Final = partial(\n922:             cancel_batch,\n923:             batch_id,\n924:             model,\n925:             custom_llm_provider,\n926:             metadata,\n927:             extra_headers,\n928:             extra_body,\n929:             **kwargs,\n930:         )\n931:         # Add the context to the function\n932:         ctx: Final = contextvars.copy_context()\n933:         func_with_context: Final = partial(ctx.run, func)\n934:         init_response: Final = await loop.run_in_executor(None, func_with_context)\n935:         if asyncio.iscoroutine(init_response):\n936:             response = await init_response\n937:         else:\n938:             response = init_response\n939: \n940:         return response\n941:     except Exception as e:\n942:         raise e\n943: \n944: \n945: def cancel_batch(\n946:     batch_id: str,\n947:     model: str | None = None,\n948:     custom_llm_provider: Literal[\"openai\", \"azure\", \"vertex_ai\", \"bedrock\", \"litellm_proxy\", \"xai\"] | str = \"openai\",\n949:     metadata: dict[str, str] | None = None,\n950:     extra_headers: dict[str, str] | None = None,\n951:     extra_body: dict[str, str] | None = None,\n952:     **kwargs,\n953: ) -> LiteLLMBatch | Coroutine[object, None, LiteLLMBatch]:\n954:     \"\"\"\n955:     Cancels a batch.\n956: \n957:     LiteLLM Equivalent of POST https://api.openai.com/v1/batches/{batch_id}/cancel\n958:     \"\"\"",
+            "source": "head_checkout",
+            "truncated": true
+          }
+        },
+        {
+          "id": "EV-B-001-003",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "graph_callers",
+            "symbol": "list_batches"
+          },
+          "result": {
+            "symbol": "list_batches",
+            "text": "litellm/router.py:319: alist_batches: Callable[..., Awaitable[Mapping[str, object]]]\nlitellm/main.py:9763: \"batch\": (\"alist_batches\" if custom_llm_provider in LIST_BATCHES_SUPPORTED_PROVIDERS else \"acompletion\"),\nlitellm/router_python_host.py:97: def invoke(self, op: Literal[\"alist_batches\"]) -> Callable[..., Awaitable[object]]: ...\nlitellm/proxy/common_request_processing.py:247: \"alist_batches\",\nlitellm/proxy/common_request_processing.py:3058: \"alist_batches\",\nlitellm/proxy/route_llm_request.py:668: \"alist_batches\",\nlitellm/batches/main.py:710: async def alist_batches(\nlitellm/batches/main.py:725: kwargs[\"alist_batches\"] = True\nlitellm/batches/main.py:729: list_batches,\nlitellm/batches/main.py:753: def list_batches(\nlitellm/batches/main.py:795: _is_async: Final = kwargs.pop(\"alist_batches\", False) is True\nlitellm/batches/main.py:797: return xai_batches_instance.list_batches(\nlitellm/batches/main.py:821: response = openai_batches_instance.list_batches(\nlitellm/batches/main.py:850: response = azure_batches_instance.list_batches(\nlitellm/batches/main.py:869: response = vertex_ai_batches_instance.list_batches(\nlitellm/batches/main.py:882: message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\nlitellm/litellm_core_utils/health_check_helpers.py:231: Calls list_batches for providers that support it. For all other providers (e.g. bedrock)\nlitellm/litellm_core_utils/health_check_helpers.py:232: the batch API surface doesn't include list_batches, so we fall back to acompletion to\nlitellm/litellm_core_utils/health_check_helpers.py:250: return await litellm.alist_batches(**{**filtered_model_params, \"custom_llm_provider\": custom_llm_provider})\nlitellm/proxy/batches_endpoints/endpoints.py:889: async def list_batches(",
+            "n": 20,
+            "source": "repository_search"
+          }
+        },
+        {
+          "id": "EV-B-001-004",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "graph_tests",
+            "symbol": "list_batches"
+          },
+          "result": {
+            "symbol": "list_batches",
+            "text": "tests/e2e/llm_translation/passthrough_client.py:357: def openai_passthrough_list_batches(self, key: str) -> Result[PassthroughBatchList]:\ntests/e2e/llm_translation/test_passthrough_e2e.py:354: listed = unwrap(client.openai_passthrough_list_batches(scoped_key))\ntests/e2e/batches/batch_client.py:232: def list_batches(\ntests/e2e/batches/test_batches_e2e.py:338: list_result = client.list_batches(key=key, provider=provider)\ntests/e2e/batches/test_batches_e2e.py:345: listed = unwrap(client.list_batches(key=key, provider=None))\ntests/e2e/batches/test_batches_e2e.py:1778: client.list_batches(key=key, model=OPENAI_BATCH_MODEL, limit=TERMINAL_LIST_LIMIT)",
+            "n": 6,
+            "source": "repository_search"
+          }
+        },
+        {
+          "id": "EV-B-001-005",
+          "hypothesis_id": "H-003",
+          "request": {
+            "tool": "read_hunk",
+            "path": "tests/unit/batches/test_main.py"
+          },
+          "result": {
+            "path": "tests/unit/batches/test_main.py",
+            "text": "@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\n         m.assert_not_called()\n \n \n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n+    \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n+        bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n+\n+    error = exc_info.value\n+    assert \"list_batches\" in error.message\n+    assert \"list_batch'\" not in error.message  # no singular form\n+    assert error.response.request.method == \"GET\"\n+\n+\n # =========================================================================== #\n # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n # =========================================================================== #"
+          }
+        },
+        {
+          "id": "EV-B-001-006",
+          "hypothesis_id": "H-003",
+          "request": {
+            "tool": "read_source",
+            "path": "tests/unit/batches/test_main.py"
+          },
+          "result": {
+            "path": "tests/unit/batches/test_main.py",
+            "text": "328: def test_list__azure_dispatch(seams):\n329:     result = bm.list_batches(custom_llm_provider=\"azure\")\n330: \n331:     assert result is seams.azure.list_batches.return_value\n332:     _assert_only(seams.azure.list_batches, seams, \"list_batches\")\n333: \n334: \n335: def test_list__vertex_ai_dispatch(seams):\n336:     result = bm.list_batches(custom_llm_provider=\"vertex_ai\")\n337: \n338:     assert result is seams.vertex.list_batches.return_value\n339:     _assert_only(seams.vertex.list_batches, seams, \"list_batches\")\n340: \n341: \n342: def test_list__unsupported_provider_raises_badrequest(seams):\n343:     # anthropic supports retrieve but NOT list - good negative case.\n344:     with pytest.raises(litellm.exceptions.BadRequestError):\n345:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n346: \n347:     for m in _all_seam_methods(seams, \"list_batches\"):\n348:         m.assert_not_called()\n349: \n350: \n351: def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n352:     \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n353:     and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n354:     with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n355:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n356: \n357:     error = exc_info.value\n358:     assert \"list_batches\" in error.message\n359:     assert \"list_batch'\" not in error.message  # no singular form\n360:     assert error.response.request.method == \"GET\"\n361: \n362: \n363: # =========================================================================== #\n364: # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n365: # =========================================================================== #\n366: \n367: \n368: def test_cancel__openai_dispatch_and_payload(seams):\n369:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\")\n370: \n371:     assert result is seams.openai.cancel_batch.return_value\n372:     _assert_only(seams.openai.cancel_batch, seams, \"cancel_batch\")\n373: \n374:     kw = seams.openai.cancel_batch.call_args.kwargs\n375:     assert kw[\"cancel_batch_data\"] == {\n376:         \"batch_id\": \"batch-1\",\n377:         \"extra_headers\": None,\n378:         \"extra_body\": None,\n379:     }\n380:     assert kw[\"_is_async\"] is False\n381: \n382: \n383: def test_cancel__azure_dispatch(seams):\n384:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"azure\")\n385: \n386:     assert result is seams.azure.cancel_batch.return_value\n387:     _assert_only(seams.azure.cancel_batch, seams, \"cancel_batch\")\n388: \n389: \n390: def test_cancel__vertex_ai_dispatch(seams):\n391:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"vertex_ai\")\n392: \n393:     assert result is seams.vertex.cancel_batch.return_value\n394:     _assert_only(seams.vertex.cancel_batch, seams, \"cancel_batch\")\n395: \n396: \n397: def test_cancel__unsupported_provider_raises_badrequest(seams):\n398:     with pytest.raises(litellm.exceptions.BadRequestError):\n399:         bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"cohere\")\n400: \n401:     for m in _all_seam_methods(seams, \"cancel_batch\"):\n402:         m.assert_not_called()\n403: \n404: \n405: def test_cancel__async_flag_propagates_is_async(seams):\n406:     bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\", acancel_batch=True)\n407: \n408:     assert seams.openai.cancel_batch.call_args.kwargs[\"_is_async\"] is True\n409: \n410: \n411: # =========================================================================== #\n412: # Async wrappers - delegate to the sync function in an executor, set the right\n413: # \"_is_async\" flag, and return the result untouched.\n414: # =========================================================================== #\n415: \n416: \n417: @pytest.mark.asyncio\n418: async def test_acreate_batch_delegates_to_create_batch():\n419:     with patch.object(bm, \"create_batch\", MagicMock(return_value=\"SENTINEL\")) as m:\n420:         result = await bm.acreate_batch(**CREATE_KW, custom_llm_provider=\"openai\")\n421: \n422:     assert result == \"SENTINEL\"\n423:     assert m.call_count == 1\n424:     assert m.call_args.kwargs.get(\"acreate_batch\") is True\n425:     # positional handoff: (completion_window, endpoint, input_file_id, provider, ...)\n426:     assert m.call_args.args[0] == \"24h\"\n427:     assert m.call_args.args[2] == \"file-abc\"",
+            "source": "head_checkout",
+            "truncated": true
+          }
+        },
+        {
+          "id": "EV-B-001-007",
+          "hypothesis_id": "H-003",
+          "request": {
+            "tool": "graph_callers",
+            "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method"
+          },
+          "result": {
+            "error": "not_found",
+            "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+            "source": "repository_search"
+          }
+        },
+        {
+          "id": "EV-B-001-008",
+          "hypothesis_id": "H-003",
+          "request": {
+            "tool": "graph_tests",
+            "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method"
+          },
+          "result": {
+            "error": "not_found",
+            "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+            "source": "repository_search"
+          }
+        }
+      ],
+      "hypotheses": [
+        {
+          "id": "H-001",
+          "bundle_id": "B-001",
+          "file": "litellm/batches/main.py",
+          "observation": "The error message now correctly refers to 'list_batches' instead of 'list_batch'.",
+          "hypothesis": "The error message for unsupported providers is now correctly formatted.",
+          "symbol": "list_batches",
+          "category": "correctness",
+          "why_investigate": "The error message should be consistent with the function name.",
+          "required_evidence": [
+            "source",
+            "callers",
+            "tests"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "id": "H-002",
+          "bundle_id": "B-001",
+          "file": "litellm/batches/main.py",
+          "observation": "The HTTP method in the error response is now 'GET' instead of 'create_thread'.",
+          "hypothesis": "The HTTP method in the error response is now correctly set to 'GET'.",
+          "symbol": "list_batches",
+          "category": "correctness",
+          "why_investigate": "The HTTP method should be consistent with the expected request method.",
+          "required_evidence": [
+            "source",
+            "callers",
+            "tests"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "id": "H-003",
+          "bundle_id": "B-001",
+          "file": "tests/unit/batches/test_main.py",
+          "observation": "A new test case has been added to verify the error message and HTTP method.",
+          "hypothesis": "The new test case correctly verifies that the error message and HTTP method are correct.",
+          "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+          "category": "correctness",
+          "why_investigate": "The new test case should ensure that the error handling is working as expected.",
+          "required_evidence": [
+            "source",
+            "callers",
+            "tests"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      "hypothesis_count": 3,
+      "evidence_items": [
+        {
+          "id": "EV-B-001-001",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "read_hunk",
+            "path": "litellm/batches/main.py"
+          },
+          "result": {
+            "path": "litellm/batches/main.py",
+            "text": "@@ -879,7 +879,7 @@ def list_batches(\n             )\n         else:\n             raise litellm.exceptions.BadRequestError(\n-                message=\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\".format(\n+                message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n                     custom_llm_provider,\n                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n                 ),\n\n@@ -888,7 +888,7 @@ def list_batches(\n                 response=httpx.Response(\n                     status_code=400,\n                     content=\"Unsupported provider\",\n-                    request=httpx.Request(method=\"create_thread\", url=\"https://github.com/BerriAI/litellm\"),\n+                    request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n                 ),\n             )\n         return response\n"
+          }
+        },
+        {
+          "id": "EV-B-001-002",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "read_source",
+            "path": "litellm/batches/main.py"
+          },
+          "result": {
+            "path": "litellm/batches/main.py",
+            "text": "859:         elif custom_llm_provider == \"vertex_ai\":\n860:             api_base = optional_params.api_base or \"\"\n861:             vertex_ai_project: Final = (\n862:                 optional_params.vertex_project or litellm.vertex_project or get_secret_str(\"VERTEXAI_PROJECT\")\n863:             )\n864:             vertex_ai_location: Final = (\n865:                 optional_params.vertex_location or litellm.vertex_location or get_secret_str(\"VERTEXAI_LOCATION\")\n866:             )\n867:             vertex_credentials: Final = optional_params.vertex_credentials or get_secret_str(\"VERTEXAI_CREDENTIALS\")\n868: \n869:             response = vertex_ai_batches_instance.list_batches(\n870:                 _is_async=_is_async,\n871:                 after=after,\n872:                 limit=limit,\n873:                 api_base=api_base,\n874:                 vertex_project=vertex_ai_project,\n875:                 vertex_location=vertex_ai_location,\n876:                 vertex_credentials=vertex_credentials,\n877:                 timeout=timeout,\n878:                 max_retries=optional_params.max_retries,\n879:             )\n880:         else:\n881:             raise litellm.exceptions.BadRequestError(\n882:                 message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n883:                     custom_llm_provider,\n884:                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n885:                 ),\n886:                 model=\"n/a\",\n887:                 llm_provider=custom_llm_provider,\n888:                 response=httpx.Response(\n889:                     status_code=400,\n890:                     content=\"Unsupported provider\",\n891:                     request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n892:                 ),\n893:             )\n894:         return response\n895:     except Exception as e:\n896:         raise e\n897: \n898: \n899: async def acancel_batch(\n900:     batch_id: str,\n901:     model: str | None = None,\n902:     custom_llm_provider: Literal[\"openai\", \"azure\", \"vertex_ai\", \"bedrock\", \"litellm_proxy\", \"xai\"] = \"openai\",\n903:     metadata: dict[str, str] | None = None,\n904:     extra_headers: dict[str, str] | None = None,\n905:     extra_body: dict[str, str] | None = None,\n906:     **kwargs,\n907: ) -> LiteLLMBatch:\n908:     \"\"\"\n909:     Async: Cancels a batch.\n910: \n911:     LiteLLM Equivalent of POST https://api.openai.com/v1/batches/{batch_id}/cancel\n912:     \"\"\"\n913:     try:\n914:         loop: Final = asyncio.get_event_loop()\n915:         kwargs[\"acancel_batch\"] = True\n916:         # Preserve model parameter - only pop from kwargs if it exists there\n917:         # (to avoid passing it twice), otherwise keep the function parameter value\n918:         model = kwargs.pop(\"model\", None) or model\n919: \n920:         # Use a partial function to pass your keyword arguments\n921:         func: Final = partial(\n922:             cancel_batch,\n923:             batch_id,\n924:             model,\n925:             custom_llm_provider,\n926:             metadata,\n927:             extra_headers,\n928:             extra_body,\n929:             **kwargs,\n930:         )\n931:         # Add the context to the function\n932:         ctx: Final = contextvars.copy_context()\n933:         func_with_context: Final = partial(ctx.run, func)\n934:         init_response: Final = await loop.run_in_executor(None, func_with_context)\n935:         if asyncio.iscoroutine(init_response):\n936:             response = await init_response\n937:         else:\n938:             response = init_response\n939: \n940:         return response\n941:     except Exception as e:\n942:         raise e\n943: \n944: \n945: def cancel_batch(\n946:     batch_id: str,\n947:     model: str | None = None,\n948:     custom_llm_provider: Literal[\"openai\", \"azure\", \"vertex_ai\", \"bedrock\", \"litellm_proxy\", \"xai\"] | str = \"openai\",\n949:     metadata: dict[str, str] | None = None,\n950:     extra_headers: dict[str, str] | None = None,\n951:     extra_body: dict[str, str] | None = None,\n952:     **kwargs,\n953: ) -> LiteLLMBatch | Coroutine[object, None, LiteLLMBatch]:\n954:     \"\"\"\n955:     Cancels a batch.\n956: \n957:     LiteLLM Equivalent of POST https://api.openai.com/v1/batches/{batch_id}/cancel\n958:     \"\"\"",
+            "source": "head_checkout",
+            "truncated": true
+          }
+        },
+        {
+          "id": "EV-B-001-003",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "graph_callers",
+            "symbol": "list_batches"
+          },
+          "result": {
+            "symbol": "list_batches",
+            "text": "litellm/router.py:319: alist_batches: Callable[..., Awaitable[Mapping[str, object]]]\nlitellm/main.py:9763: \"batch\": (\"alist_batches\" if custom_llm_provider in LIST_BATCHES_SUPPORTED_PROVIDERS else \"acompletion\"),\nlitellm/router_python_host.py:97: def invoke(self, op: Literal[\"alist_batches\"]) -> Callable[..., Awaitable[object]]: ...\nlitellm/proxy/common_request_processing.py:247: \"alist_batches\",\nlitellm/proxy/common_request_processing.py:3058: \"alist_batches\",\nlitellm/proxy/route_llm_request.py:668: \"alist_batches\",\nlitellm/batches/main.py:710: async def alist_batches(\nlitellm/batches/main.py:725: kwargs[\"alist_batches\"] = True\nlitellm/batches/main.py:729: list_batches,\nlitellm/batches/main.py:753: def list_batches(\nlitellm/batches/main.py:795: _is_async: Final = kwargs.pop(\"alist_batches\", False) is True\nlitellm/batches/main.py:797: return xai_batches_instance.list_batches(\nlitellm/batches/main.py:821: response = openai_batches_instance.list_batches(\nlitellm/batches/main.py:850: response = azure_batches_instance.list_batches(\nlitellm/batches/main.py:869: response = vertex_ai_batches_instance.list_batches(\nlitellm/batches/main.py:882: message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\nlitellm/litellm_core_utils/health_check_helpers.py:231: Calls list_batches for providers that support it. For all other providers (e.g. bedrock)\nlitellm/litellm_core_utils/health_check_helpers.py:232: the batch API surface doesn't include list_batches, so we fall back to acompletion to\nlitellm/litellm_core_utils/health_check_helpers.py:250: return await litellm.alist_batches(**{**filtered_model_params, \"custom_llm_provider\": custom_llm_provider})\nlitellm/proxy/batches_endpoints/endpoints.py:889: async def list_batches(",
+            "n": 20,
+            "source": "repository_search"
+          }
+        },
+        {
+          "id": "EV-B-001-004",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "graph_tests",
+            "symbol": "list_batches"
+          },
+          "result": {
+            "symbol": "list_batches",
+            "text": "tests/e2e/llm_translation/passthrough_client.py:357: def openai_passthrough_list_batches(self, key: str) -> Result[PassthroughBatchList]:\ntests/e2e/llm_translation/test_passthrough_e2e.py:354: listed = unwrap(client.openai_passthrough_list_batches(scoped_key))\ntests/e2e/batches/batch_client.py:232: def list_batches(\ntests/e2e/batches/test_batches_e2e.py:338: list_result = client.list_batches(key=key, provider=provider)\ntests/e2e/batches/test_batches_e2e.py:345: listed = unwrap(client.list_batches(key=key, provider=None))\ntests/e2e/batches/test_batches_e2e.py:1778: client.list_batches(key=key, model=OPENAI_BATCH_MODEL, limit=TERMINAL_LIST_LIMIT)",
+            "n": 6,
+            "source": "repository_search"
+          }
+        },
+        {
+          "id": "EV-B-001-005",
+          "hypothesis_id": "H-003",
+          "request": {
+            "tool": "read_hunk",
+            "path": "tests/unit/batches/test_main.py"
+          },
+          "result": {
+            "path": "tests/unit/batches/test_main.py",
+            "text": "@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\n         m.assert_not_called()\n \n \n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n+    \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n+        bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n+\n+    error = exc_info.value\n+    assert \"list_batches\" in error.message\n+    assert \"list_batch'\" not in error.message  # no singular form\n+    assert error.response.request.method == \"GET\"\n+\n+\n # =========================================================================== #\n # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n # =========================================================================== #"
+          }
+        },
+        {
+          "id": "EV-B-001-006",
+          "hypothesis_id": "H-003",
+          "request": {
+            "tool": "read_source",
+            "path": "tests/unit/batches/test_main.py"
+          },
+          "result": {
+            "path": "tests/unit/batches/test_main.py",
+            "text": "328: def test_list__azure_dispatch(seams):\n329:     result = bm.list_batches(custom_llm_provider=\"azure\")\n330: \n331:     assert result is seams.azure.list_batches.return_value\n332:     _assert_only(seams.azure.list_batches, seams, \"list_batches\")\n333: \n334: \n335: def test_list__vertex_ai_dispatch(seams):\n336:     result = bm.list_batches(custom_llm_provider=\"vertex_ai\")\n337: \n338:     assert result is seams.vertex.list_batches.return_value\n339:     _assert_only(seams.vertex.list_batches, seams, \"list_batches\")\n340: \n341: \n342: def test_list__unsupported_provider_raises_badrequest(seams):\n343:     # anthropic supports retrieve but NOT list - good negative case.\n344:     with pytest.raises(litellm.exceptions.BadRequestError):\n345:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n346: \n347:     for m in _all_seam_methods(seams, \"list_batches\"):\n348:         m.assert_not_called()\n349: \n350: \n351: def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n352:     \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n353:     and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n354:     with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n355:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n356: \n357:     error = exc_info.value\n358:     assert \"list_batches\" in error.message\n359:     assert \"list_batch'\" not in error.message  # no singular form\n360:     assert error.response.request.method == \"GET\"\n361: \n362: \n363: # =========================================================================== #\n364: # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n365: # =========================================================================== #\n366: \n367: \n368: def test_cancel__openai_dispatch_and_payload(seams):\n369:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\")\n370: \n371:     assert result is seams.openai.cancel_batch.return_value\n372:     _assert_only(seams.openai.cancel_batch, seams, \"cancel_batch\")\n373: \n374:     kw = seams.openai.cancel_batch.call_args.kwargs\n375:     assert kw[\"cancel_batch_data\"] == {\n376:         \"batch_id\": \"batch-1\",\n377:         \"extra_headers\": None,\n378:         \"extra_body\": None,\n379:     }\n380:     assert kw[\"_is_async\"] is False\n381: \n382: \n383: def test_cancel__azure_dispatch(seams):\n384:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"azure\")\n385: \n386:     assert result is seams.azure.cancel_batch.return_value\n387:     _assert_only(seams.azure.cancel_batch, seams, \"cancel_batch\")\n388: \n389: \n390: def test_cancel__vertex_ai_dispatch(seams):\n391:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"vertex_ai\")\n392: \n393:     assert result is seams.vertex.cancel_batch.return_value\n394:     _assert_only(seams.vertex.cancel_batch, seams, \"cancel_batch\")\n395: \n396: \n397: def test_cancel__unsupported_provider_raises_badrequest(seams):\n398:     with pytest.raises(litellm.exceptions.BadRequestError):\n399:         bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"cohere\")\n400: \n401:     for m in _all_seam_methods(seams, \"cancel_batch\"):\n402:         m.assert_not_called()\n403: \n404: \n405: def test_cancel__async_flag_propagates_is_async(seams):\n406:     bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\", acancel_batch=True)\n407: \n408:     assert seams.openai.cancel_batch.call_args.kwargs[\"_is_async\"] is True\n409: \n410: \n411: # =========================================================================== #\n412: # Async wrappers - delegate to the sync function in an executor, set the right\n413: # \"_is_async\" flag, and return the result untouched.\n414: # =========================================================================== #\n415: \n416: \n417: @pytest.mark.asyncio\n418: async def test_acreate_batch_delegates_to_create_batch():\n419:     with patch.object(bm, \"create_batch\", MagicMock(return_value=\"SENTINEL\")) as m:\n420:         result = await bm.acreate_batch(**CREATE_KW, custom_llm_provider=\"openai\")\n421: \n422:     assert result == \"SENTINEL\"\n423:     assert m.call_count == 1\n424:     assert m.call_args.kwargs.get(\"acreate_batch\") is True\n425:     # positional handoff: (completion_window, endpoint, input_file_id, provider, ...)\n426:     assert m.call_args.args[0] == \"24h\"\n427:     assert m.call_args.args[2] == \"file-abc\"",
+            "source": "head_checkout",
+            "truncated": true
+          }
+        }
+      ],
+      "evidence_count": 6,
+      "stage_status": {
+        "discovery": "VALID_HYPOTHESES",
+        "proof": "VALID_CANDIDATES"
+      },
+      "parse_error": null,
+      "exception": null,
+      "latency_ms": 131389.33,
+      "prompt_version": "hypothesis-proof-v4-schema-batches",
+      "model_calls": 3,
+      "assessments": [
+        {
+          "unit_id": "CU-001",
+          "behavioral_delta": "The error message for unsupported providers has been updated from 'list_batch' to 'list_batches'.",
+          "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+          "evidence_refs": [
+            "CU-001"
+          ]
+        },
+        {
+          "unit_id": "CU-002",
+          "behavioral_delta": "The HTTP method in the error response has been changed from 'create_thread' to 'GET'.",
+          "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+          "evidence_refs": [
+            "CU-002"
+          ]
+        },
+        {
+          "unit_id": "CU-003",
+          "behavioral_delta": "A new test case has been added to verify that the error message and HTTP method are correct.",
+          "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+          "evidence_refs": [
+            "CU-003"
+          ]
+        }
+      ],
+      "hypothesis_outcomes": [
+        {
+          "hypothesis_id": "H-001",
+          "status": "substantiated",
+          "reason": "The error message is now correctly formatted and consistent with the function name.",
+          "evidence_refs": [
+            "EV-B-001-001",
+            "EV-B-001-002",
+            "EV-B-001-003",
+            "EV-B-001-004"
+          ]
+        },
+        {
+          "hypothesis_id": "H-002",
+          "status": "disproved",
+          "reason": "The HTTP method in the error response is now 'GET' instead of 'create_thread'. The observation contradicts the hypothesis.",
+          "evidence_refs": [
+            "EV-B-001-001"
+          ]
+        },
+        {
+          "hypothesis_id": "H-003",
+          "status": "substantiated",
+          "reason": "The new test case correctly verifies that the error message and HTTP method are correct.",
+          "evidence_refs": [
+            "EV-B-001-005"
+          ]
+        }
+      ],
+      "protocol_errors": [],
+      "proof_runs": [
+        {
+          "hypothesis_ids": [
+            "H-001",
+            "H-002"
+          ],
+          "status": "completed",
+          "attempts": [
+            {
+              "prompt_sha256": "23f169362c8bbb44b10ecf4aba45a782a4d479e6e244fc8e6b62ec8f7ddab248",
+              "response_index": 1,
+              "finish_reason": "stop"
+            }
+          ],
+          "evidence_refs": [
+            "EV-B-001-001",
+            "EV-B-001-002",
+            "EV-B-001-003",
+            "EV-B-001-004"
+          ]
+        },
+        {
+          "hypothesis_ids": [
+            "H-003"
+          ],
+          "status": "completed",
+          "attempts": [
+            {
+              "prompt_sha256": "1eabaeac55a3d52826722fd86cf92571a3d6a4d9363b8680f9fa433512d48897",
+              "response_index": 2,
+              "finish_reason": "stop"
+            }
+          ],
+          "evidence_refs": [
+            "EV-B-001-005",
+            "EV-B-001-006"
+          ]
+        }
+      ],
+      "estimated_completion_tokens": 2039,
+      "bundle_id": "B-001"
+    }
+  ],
+  "pipeline_health": {
+    "healthy": false,
+    "agent_runs": 1,
+    "unhealthy_runs": 0,
+    "unhealthy_statuses": [],
+    "coverage_ratio": 1.0,
+    "coverage_adequate": true,
+    "status": "partial",
+    "inspection_ratio": 1.0
+  },
+  "telemetry": {
+    "timing": {
+      "workspace_s": 0.0,
+      "graphify_s": 0.0,
+      "pr_facts_s": 0.0,
+      "change_units_s": 0.0,
+      "bundling_s": 0.0,
+      "bundle_agent_s": 131.389,
+      "reflect_s": 0.0,
+      "verify_s": 0.0,
+      "sandbox_s": 0.0,
+      "policy_s": 0.0,
+      "total_s": 131.389
+    },
+    "agent_runs": [
+      {
+        "status": "VALID_CANDIDATES",
+        "candidate_count": 2,
+        "raw_outputs": [
+          "```json\n{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"The error message for unsupported providers has been updated from 'list_batch' to 'list_batches'.\",\n      \"hypothesis_outcome\": \"No concrete evidence found to support or refute this hypothesis.\",\n      \"evidence_refs\": [\"CU-001\"]\n    },\n    {\n      \"unit_id\": \"CU-002\",\n      \"behavioral_delta\": \"The HTTP method in the error response has been changed from 'create_thread' to 'GET'.\",\n      \"hypothesis_outcome\": \"No concrete evidence found to support or refute this hypothesis.\",\n      \"evidence_refs\": [\"CU-002\"]\n    },\n    {\n      \"unit_id\": \"CU-003\",\n      \"behavioral_delta\": \"A new test case has been added to verify that the error message and HTTP method are correct.\",\n      \"hypothesis_outcome\": \"No concrete evidence found to support or refute this hypothesis.\",\n      \"evidence_refs\": [\"CU-003\"]\n    }\n  ],\n  \"hypotheses\": [\n    {\n      \"file\": \"litellm/batches/main.py\",\n      \"symbol\": \"list_batches\",\n      \"category\": \"correctness\",\n      \"observation\": \"The error message now correctly refers to 'list_batches' instead of 'list_batch'.\",\n      \"hypothesis\": \"The error message for unsupported providers is now correctly formatted.\",\n      \"why_investigate\": \"The error message should be consistent with the function name.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    },\n    {\n      \"file\": \"litellm/batches/main.py\",\n      \"symbol\": \"list_batches\",\n      \"category\": \"correctness\",\n      \"observation\": \"The HTTP method in the error response is now 'GET' instead of 'create_thread'.\",\n      \"hypothesis\": \"The HTTP method in the error response is now correctly set to 'GET'.\",\n      \"why_investigate\": \"The HTTP method should be consistent with the expected request method.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    },\n    {\n      \"file\": \"tests/unit/batches/test_main.py\",\n      \"symbol\": \"test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method\",\n      \"category\": \"correctness\",\n      \"observation\": \"A new test case has been added to verify the error message and HTTP method.\",\n      \"hypothesis\": \"The new test case correctly verifies that the error message and HTTP method are correct.\",\n      \"why_investigate\": \"The new test case should ensure that the error handling is working as expected.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    },\n    {\n      \"file\": \"litellm/batches/main.py\",\n      \"symbol\": \"list_batches\",\n      \"category\": \"correctness\",\n      \"observation\": \"The error message now correctly refers to 'list_batches' instead of 'list_batch'.\",\n      \"hypothesis\": \"The error message for unsupported providers is now correctly formatted.\",\n      \"why_investigate\": \"The error message should be consistent with the function name.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    },\n    {\n      \"file\": \"litellm/batches/main.py\",\n      \"symbol\": \"list_batches\",\n      \"category\": \"correctness\",\n      \"observation\": \"The HTTP method in the error response is now 'GET' instead of 'create_thread'.\",\n      \"hypothesis\": \"The HTTP method in the error response is now correctly set to 'GET'.\",\n      \"why_investigate\": \"The HTTP method should be consistent with the expected request method.\",\n      \"required_evidence\": [\"source\", \"callers\", \"tests\"],\n      \"confidence\": 0.8\n    }\n  ]\n}\n```",
+          "{\n  \"decisions\": [\n    {\n      \"hypothesis_id\": \"H-001\",\n      \"status\": \"substantiated\",\n      \"candidate\": {\n        \"file\": \"litellm/batches/main.py\",\n        \"symbol\": \"list_batches\",\n        \"start_line\": 879,\n        \"title\": \"Error message for unsupported providers\",\n        \"claim\": \"The error message for unsupported providers is now correctly formatted.\",\n        \"existing_code\": \"@@ -879,7 +879,7 @@ def list_batches(\\n             )\\n         else:\\n             raise litellm.exceptions.BadRequestError(\\n-                message=\\\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\\\".format(\\n+                message=\\\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\\\".format(\\n                     custom_llm_provider,\\n                     \\\", \\\".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\\n                 ),\\n\\n@@ -888,7 +888,7 @@ def list_batches(\\n                 response=httpx.Response(\\n                     status_code=400,\\n                     content=\\\"Unsupported provider\\\",\\n-                    request=httpx.Request(method=\\\"create_thread\\\", url=\\\"https://github.com/BerriAI/litellm\\\"),\\n+                    request=httpx.Request(, \\\"\", \"invariant\": \"The error message should be consistent with the function name.\",\n        \"violating_condition\": \"The error message is now correctly formatted.\",\n        \"expected\": \"The error message for unsupported providers is now correctly formatted.\",\n        \"actual\": \"The error message for unsupported providers is now correctly formatted.\",\n        \"execution_path\": [\"litellm/batches/main.py\", \"litellm/router.py\", \"litellm/main.py\", \"litellm/router_python_host.py\", \"litellm/proxy/common_request_processing.py\", \"litellm/proxy/route_llm_request.py\", \"litellm/litellm_core_utils/health_check_helpers.py\", \"litellm/proxy/batches_endpoints/endpoints.py\"],\n        \"severity\": \"low\",\n        \"confidence\": 1.0\n      },\n      \"reason\": \"The error message is now correctly formatted and consistent with the function name.\",\n      \"evidence_refs\": [\"EV-B-001-001\", \"EV-B-001-002\", \"EV-B-001-003\", \"EV-B-001-004\"],\n      \"missing_evidence\": []\n    },\n    {\n      \"hypothesis_id\": \"H-002\",\n      \"status\": \"disproved\",\n      \"candidate\": null,\n      \"reason\": \"The HTTP method in the error response is now 'GET' instead of 'create_thread'. The observation contradicts the hypothesis.\",\n      \"evidence_refs\": [\"EV-B-001-001\"],\n      \"missing_evidence\": []\n    }\n  ]\n}",
+          "{\n  \"decisions\": [\n    {\n      \"hypothesis_id\": \"H-003\",\n      \"status\": \"substantiated\",\n      \"candidate\": {\n        \"file\": \"tests/unit/batches/test_main.py\",\n        \"symbol\": \"test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method\",\n        \"start_line\": 348,\n        \"title\": \"Test Case for Error Message and HTTP Method\",\n        \"claim\": \"The new test case correctly verifies that the error message and HTTP method are correct.\",\n        \"existing_code\": \"@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\\n         m.assert_not_called()\\n \\n \\n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\\n+    \\\"\\\"\\\"Regression: the error handler must say 'list_batches' (not 'list_batch')\\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\\\"\\\"\\\"\\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\\n+        bm.list_batches(custom_llm_provider=\\\"anthropic\\\")  # type: ignore[arg-type]\\n+\\n+    error = exc_info.value\\n+    assert \\\"list_batches\\\" in error.message\\n+    assert \\\"list_batch'\\\" not in error.message  # no singular form\\n+    assert error.response.request.method == \\\"GET\\\"\\n+\\n+\\n # ===========================================================================\\n\",\n        \"invariant\": \"The error message should contain 'list_batches' and not 'list_batch'. The HTTP method should be 'GET'.\",\n        \"violating_condition\": \"The error message contains 'list_batch' and the HTTP method is not 'GET'.\",\n        \"expected\": \"The error message should contain 'list_batches' and the HTTP method should be 'GET'.\",\n        \"actual\": \"The error message contains 'list_batch' and the HTTP method is 'GET'.\",\n        \"execution_path\": [\n          \"test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method\"\n        ],\n        \"severity\": \"low\",\n        \"confidence\": 0.9\n      },\n      \"reason\": \"The new test case correctly verifies that the error message and HTTP method are correct.\",\n      \"evidence_refs\": [\n        \"EV-B-001-005\"\n      ],\n      \"missing_evidence\": []\n    }\n  ]\n}"
+        ],
+        "tool_calls": [
+          {
+            "id": "EV-B-001-001",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "read_hunk",
+              "path": "litellm/batches/main.py"
+            },
+            "result": {
+              "path": "litellm/batches/main.py",
+              "text": "@@ -879,7 +879,7 @@ def list_batches(\n             )\n         else:\n             raise litellm.exceptions.BadRequestError(\n-                message=\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\".format(\n+                message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n                     custom_llm_provider,\n                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n                 ),\n\n@@ -888,7 +888,7 @@ def list_batches(\n                 response=httpx.Response(\n                     status_code=400,\n                     content=\"Unsupported provider\",\n-                    request=httpx.Request(method=\"create_thread\", url=\"https://github.com/BerriAI/litellm\"),\n+                    request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n                 ),\n             )\n         return response\n"
+            }
+          },
+          {
+            "id": "EV-B-001-002",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "read_source",
+              "path": "litellm/batches/main.py"
+            },
+            "result": {
+              "path": "litellm/batches/main.py",
+              "text": "859:         elif custom_llm_provider == \"vertex_ai\":\n860:             api_base = optional_params.api_base or \"\"\n861:             vertex_ai_project: Final = (\n862:                 optional_params.vertex_project or litellm.vertex_project or get_secret_str(\"VERTEXAI_PROJECT\")\n863:             )\n864:             vertex_ai_location: Final = (\n865:                 optional_params.vertex_location or litellm.vertex_location or get_secret_str(\"VERTEXAI_LOCATION\")\n866:             )\n867:             vertex_credentials: Final = optional_params.vertex_credentials or get_secret_str(\"VERTEXAI_CREDENTIALS\")\n868: \n869:             response = vertex_ai_batches_instance.list_batches(\n870:                 _is_async=_is_async,\n871:                 after=after,\n872:                 limit=limit,\n873:                 api_base=api_base,\n874:                 vertex_project=vertex_ai_project,\n875:                 vertex_location=vertex_ai_location,\n876:                 vertex_credentials=vertex_credentials,\n877:                 timeout=timeout,\n878:                 max_retries=optional_params.max_retries,\n879:             )\n880:         else:\n881:             raise litellm.exceptions.BadRequestError(\n882:                 message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n883:                     custom_llm_provider,\n884:                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n885:                 ),\n886:                 model=\"n/a\",\n887:                 llm_provider=custom_llm_provider,\n888:                 response=httpx.Response(\n889:                     status_code=400,\n890:                     content=\"Unsupported provider\",\n891:                     request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n892:                 ),\n893:             )\n894:         return response\n895:     except Exception as e:\n896:         raise e\n897: \n898: \n899: async def acancel_batch(\n900:     batch_id: str,\n901:     model: str | None = None,\n902:     custom_llm_provider: Literal[\"openai\", \"azure\", \"vertex_ai\", \"bedrock\", \"litellm_proxy\", \"xai\"] = \"openai\",\n903:     metadata: dict[str, str] | None = None,\n904:     extra_headers: dict[str, str] | None = None,\n905:     extra_body: dict[str, str] | None = None,\n906:     **kwargs,\n907: ) -> LiteLLMBatch:\n908:     \"\"\"\n909:     Async: Cancels a batch.\n910: \n911:     LiteLLM Equivalent of POST https://api.openai.com/v1/batches/{batch_id}/cancel\n912:     \"\"\"\n913:     try:\n914:         loop: Final = asyncio.get_event_loop()\n915:         kwargs[\"acancel_batch\"] = True\n916:         # Preserve model parameter - only pop from kwargs if it exists there\n917:         # (to avoid passing it twice), otherwise keep the function parameter value\n918:         model = kwargs.pop(\"model\", None) or model\n919: \n920:         # Use a partial function to pass your keyword arguments\n921:         func: Final = partial(\n922:             cancel_batch,\n923:             batch_id,\n924:             model,\n925:             custom_llm_provider,\n926:             metadata,\n927:             extra_headers,\n928:             extra_body,\n929:             **kwargs,\n930:         )\n931:         # Add the context to the function\n932:         ctx: Final = contextvars.copy_context()\n933:         func_with_context: Final = partial(ctx.run, func)\n934:         init_response: Final = await loop.run_in_executor(None, func_with_context)\n935:         if asyncio.iscoroutine(init_response):\n936:             response = await init_response\n937:         else:\n938:             response = init_response\n939: \n940:         return response\n941:     except Exception as e:\n942:         raise e\n943: \n944: \n945: def cancel_batch(\n946:     batch_id: str,\n947:     model: str | None = None,\n948:     custom_llm_provider: Literal[\"openai\", \"azure\", \"vertex_ai\", \"bedrock\", \"litellm_proxy\", \"xai\"] | str = \"openai\",\n949:     metadata: dict[str, str] | None = None,\n950:     extra_headers: dict[str, str] | None = None,\n951:     extra_body: dict[str, str] | None = None,\n952:     **kwargs,\n953: ) -> LiteLLMBatch | Coroutine[object, None, LiteLLMBatch]:\n954:     \"\"\"\n955:     Cancels a batch.\n956: \n957:     LiteLLM Equivalent of POST https://api.openai.com/v1/batches/{batch_id}/cancel\n958:     \"\"\"",
+              "source": "head_checkout",
+              "truncated": true
+            }
+          },
+          {
+            "id": "EV-B-001-003",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "graph_callers",
+              "symbol": "list_batches"
+            },
+            "result": {
+              "symbol": "list_batches",
+              "text": "litellm/router.py:319: alist_batches: Callable[..., Awaitable[Mapping[str, object]]]\nlitellm/main.py:9763: \"batch\": (\"alist_batches\" if custom_llm_provider in LIST_BATCHES_SUPPORTED_PROVIDERS else \"acompletion\"),\nlitellm/router_python_host.py:97: def invoke(self, op: Literal[\"alist_batches\"]) -> Callable[..., Awaitable[object]]: ...\nlitellm/proxy/common_request_processing.py:247: \"alist_batches\",\nlitellm/proxy/common_request_processing.py:3058: \"alist_batches\",\nlitellm/proxy/route_llm_request.py:668: \"alist_batches\",\nlitellm/batches/main.py:710: async def alist_batches(\nlitellm/batches/main.py:725: kwargs[\"alist_batches\"] = True\nlitellm/batches/main.py:729: list_batches,\nlitellm/batches/main.py:753: def list_batches(\nlitellm/batches/main.py:795: _is_async: Final = kwargs.pop(\"alist_batches\", False) is True\nlitellm/batches/main.py:797: return xai_batches_instance.list_batches(\nlitellm/batches/main.py:821: response = openai_batches_instance.list_batches(\nlitellm/batches/main.py:850: response = azure_batches_instance.list_batches(\nlitellm/batches/main.py:869: response = vertex_ai_batches_instance.list_batches(\nlitellm/batches/main.py:882: message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\nlitellm/litellm_core_utils/health_check_helpers.py:231: Calls list_batches for providers that support it. For all other providers (e.g. bedrock)\nlitellm/litellm_core_utils/health_check_helpers.py:232: the batch API surface doesn't include list_batches, so we fall back to acompletion to\nlitellm/litellm_core_utils/health_check_helpers.py:250: return await litellm.alist_batches(**{**filtered_model_params, \"custom_llm_provider\": custom_llm_provider})\nlitellm/proxy/batches_endpoints/endpoints.py:889: async def list_batches(",
+              "n": 20,
+              "source": "repository_search"
+            }
+          },
+          {
+            "id": "EV-B-001-004",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "graph_tests",
+              "symbol": "list_batches"
+            },
+            "result": {
+              "symbol": "list_batches",
+              "text": "tests/e2e/llm_translation/passthrough_client.py:357: def openai_passthrough_list_batches(self, key: str) -> Result[PassthroughBatchList]:\ntests/e2e/llm_translation/test_passthrough_e2e.py:354: listed = unwrap(client.openai_passthrough_list_batches(scoped_key))\ntests/e2e/batches/batch_client.py:232: def list_batches(\ntests/e2e/batches/test_batches_e2e.py:338: list_result = client.list_batches(key=key, provider=provider)\ntests/e2e/batches/test_batches_e2e.py:345: listed = unwrap(client.list_batches(key=key, provider=None))\ntests/e2e/batches/test_batches_e2e.py:1778: client.list_batches(key=key, model=OPENAI_BATCH_MODEL, limit=TERMINAL_LIST_LIMIT)",
+              "n": 6,
+              "source": "repository_search"
+            }
+          },
+          {
+            "id": "EV-B-001-005",
+            "hypothesis_id": "H-003",
+            "request": {
+              "tool": "read_hunk",
+              "path": "tests/unit/batches/test_main.py"
+            },
+            "result": {
+              "path": "tests/unit/batches/test_main.py",
+              "text": "@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\n         m.assert_not_called()\n \n \n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n+    \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n+        bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n+\n+    error = exc_info.value\n+    assert \"list_batches\" in error.message\n+    assert \"list_batch'\" not in error.message  # no singular form\n+    assert error.response.request.method == \"GET\"\n+\n+\n # =========================================================================== #\n # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n # =========================================================================== #"
+            }
+          },
+          {
+            "id": "EV-B-001-006",
+            "hypothesis_id": "H-003",
+            "request": {
+              "tool": "read_source",
+              "path": "tests/unit/batches/test_main.py"
+            },
+            "result": {
+              "path": "tests/unit/batches/test_main.py",
+              "text": "328: def test_list__azure_dispatch(seams):\n329:     result = bm.list_batches(custom_llm_provider=\"azure\")\n330: \n331:     assert result is seams.azure.list_batches.return_value\n332:     _assert_only(seams.azure.list_batches, seams, \"list_batches\")\n333: \n334: \n335: def test_list__vertex_ai_dispatch(seams):\n336:     result = bm.list_batches(custom_llm_provider=\"vertex_ai\")\n337: \n338:     assert result is seams.vertex.list_batches.return_value\n339:     _assert_only(seams.vertex.list_batches, seams, \"list_batches\")\n340: \n341: \n342: def test_list__unsupported_provider_raises_badrequest(seams):\n343:     # anthropic supports retrieve but NOT list - good negative case.\n344:     with pytest.raises(litellm.exceptions.BadRequestError):\n345:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n346: \n347:     for m in _all_seam_methods(seams, \"list_batches\"):\n348:         m.assert_not_called()\n349: \n350: \n351: def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n352:     \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n353:     and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n354:     with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n355:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n356: \n357:     error = exc_info.value\n358:     assert \"list_batches\" in error.message\n359:     assert \"list_batch'\" not in error.message  # no singular form\n360:     assert error.response.request.method == \"GET\"\n361: \n362: \n363: # =========================================================================== #\n364: # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n365: # =========================================================================== #\n366: \n367: \n368: def test_cancel__openai_dispatch_and_payload(seams):\n369:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\")\n370: \n371:     assert result is seams.openai.cancel_batch.return_value\n372:     _assert_only(seams.openai.cancel_batch, seams, \"cancel_batch\")\n373: \n374:     kw = seams.openai.cancel_batch.call_args.kwargs\n375:     assert kw[\"cancel_batch_data\"] == {\n376:         \"batch_id\": \"batch-1\",\n377:         \"extra_headers\": None,\n378:         \"extra_body\": None,\n379:     }\n380:     assert kw[\"_is_async\"] is False\n381: \n382: \n383: def test_cancel__azure_dispatch(seams):\n384:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"azure\")\n385: \n386:     assert result is seams.azure.cancel_batch.return_value\n387:     _assert_only(seams.azure.cancel_batch, seams, \"cancel_batch\")\n388: \n389: \n390: def test_cancel__vertex_ai_dispatch(seams):\n391:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"vertex_ai\")\n392: \n393:     assert result is seams.vertex.cancel_batch.return_value\n394:     _assert_only(seams.vertex.cancel_batch, seams, \"cancel_batch\")\n395: \n396: \n397: def test_cancel__unsupported_provider_raises_badrequest(seams):\n398:     with pytest.raises(litellm.exceptions.BadRequestError):\n399:         bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"cohere\")\n400: \n401:     for m in _all_seam_methods(seams, \"cancel_batch\"):\n402:         m.assert_not_called()\n403: \n404: \n405: def test_cancel__async_flag_propagates_is_async(seams):\n406:     bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\", acancel_batch=True)\n407: \n408:     assert seams.openai.cancel_batch.call_args.kwargs[\"_is_async\"] is True\n409: \n410: \n411: # =========================================================================== #\n412: # Async wrappers - delegate to the sync function in an executor, set the right\n413: # \"_is_async\" flag, and return the result untouched.\n414: # =========================================================================== #\n415: \n416: \n417: @pytest.mark.asyncio\n418: async def test_acreate_batch_delegates_to_create_batch():\n419:     with patch.object(bm, \"create_batch\", MagicMock(return_value=\"SENTINEL\")) as m:\n420:         result = await bm.acreate_batch(**CREATE_KW, custom_llm_provider=\"openai\")\n421: \n422:     assert result == \"SENTINEL\"\n423:     assert m.call_count == 1\n424:     assert m.call_args.kwargs.get(\"acreate_batch\") is True\n425:     # positional handoff: (completion_window, endpoint, input_file_id, provider, ...)\n426:     assert m.call_args.args[0] == \"24h\"\n427:     assert m.call_args.args[2] == \"file-abc\"",
+              "source": "head_checkout",
+              "truncated": true
+            }
+          },
+          {
+            "id": "EV-B-001-007",
+            "hypothesis_id": "H-003",
+            "request": {
+              "tool": "graph_callers",
+              "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method"
+            },
+            "result": {
+              "error": "not_found",
+              "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+              "source": "repository_search"
+            }
+          },
+          {
+            "id": "EV-B-001-008",
+            "hypothesis_id": "H-003",
+            "request": {
+              "tool": "graph_tests",
+              "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method"
+            },
+            "result": {
+              "error": "not_found",
+              "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+              "source": "repository_search"
+            }
+          }
+        ],
+        "hypotheses": [
+          {
+            "id": "H-001",
+            "bundle_id": "B-001",
+            "file": "litellm/batches/main.py",
+            "observation": "The error message now correctly refers to 'list_batches' instead of 'list_batch'.",
+            "hypothesis": "The error message for unsupported providers is now correctly formatted.",
+            "symbol": "list_batches",
+            "category": "correctness",
+            "why_investigate": "The error message should be consistent with the function name.",
+            "required_evidence": [
+              "source",
+              "callers",
+              "tests"
+            ],
+            "confidence": 0.8
+          },
+          {
+            "id": "H-002",
+            "bundle_id": "B-001",
+            "file": "litellm/batches/main.py",
+            "observation": "The HTTP method in the error response is now 'GET' instead of 'create_thread'.",
+            "hypothesis": "The HTTP method in the error response is now correctly set to 'GET'.",
+            "symbol": "list_batches",
+            "category": "correctness",
+            "why_investigate": "The HTTP method should be consistent with the expected request method.",
+            "required_evidence": [
+              "source",
+              "callers",
+              "tests"
+            ],
+            "confidence": 0.8
+          },
+          {
+            "id": "H-003",
+            "bundle_id": "B-001",
+            "file": "tests/unit/batches/test_main.py",
+            "observation": "A new test case has been added to verify the error message and HTTP method.",
+            "hypothesis": "The new test case correctly verifies that the error message and HTTP method are correct.",
+            "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+            "category": "correctness",
+            "why_investigate": "The new test case should ensure that the error handling is working as expected.",
+            "required_evidence": [
+              "source",
+              "callers",
+              "tests"
+            ],
+            "confidence": 0.8
+          }
+        ],
+        "hypothesis_count": 3,
+        "evidence_items": [
+          {
+            "id": "EV-B-001-001",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "read_hunk",
+              "path": "litellm/batches/main.py"
+            },
+            "result": {
+              "path": "litellm/batches/main.py",
+              "text": "@@ -879,7 +879,7 @@ def list_batches(\n             )\n         else:\n             raise litellm.exceptions.BadRequestError(\n-                message=\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\".format(\n+                message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n                     custom_llm_provider,\n                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n                 ),\n\n@@ -888,7 +888,7 @@ def list_batches(\n                 response=httpx.Response(\n                     status_code=400,\n                     content=\"Unsupported provider\",\n-                    request=httpx.Request(method=\"create_thread\", url=\"https://github.com/BerriAI/litellm\"),\n+                    request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n                 ),\n             )\n         return response\n"
+            }
+          },
+          {
+            "id": "EV-B-001-002",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "read_source",
+              "path": "litellm/batches/main.py"
+            },
+            "result": {
+              "path": "litellm/batches/main.py",
+              "text": "859:         elif custom_llm_provider == \"vertex_ai\":\n860:             api_base = optional_params.api_base or \"\"\n861:             vertex_ai_project: Final = (\n862:                 optional_params.vertex_project or litellm.vertex_project or get_secret_str(\"VERTEXAI_PROJECT\")\n863:             )\n864:             vertex_ai_location: Final = (\n865:                 optional_params.vertex_location or litellm.vertex_location or get_secret_str(\"VERTEXAI_LOCATION\")\n866:             )\n867:             vertex_credentials: Final = optional_params.vertex_credentials or get_secret_str(\"VERTEXAI_CREDENTIALS\")\n868: \n869:             response = vertex_ai_batches_instance.list_batches(\n870:                 _is_async=_is_async,\n871:                 after=after,\n872:                 limit=limit,\n873:                 api_base=api_base,\n874:                 vertex_project=vertex_ai_project,\n875:                 vertex_location=vertex_ai_location,\n876:                 vertex_credentials=vertex_credentials,\n877:                 timeout=timeout,\n878:                 max_retries=optional_params.max_retries,\n879:             )\n880:         else:\n881:             raise litellm.exceptions.BadRequestError(\n882:                 message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n883:                     custom_llm_provider,\n884:                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n885:                 ),\n886:                 model=\"n/a\",\n887:                 llm_provider=custom_llm_provider,\n888:                 response=httpx.Response(\n889:                     status_code=400,\n890:                     content=\"Unsupported provider\",\n891:                     request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n892:                 ),\n893:             )\n894:         return response\n895:     except Exception as e:\n896:         raise e\n897: \n898: \n899: async def acancel_batch(\n900:     batch_id: str,\n901:     model: str | None = None,\n902:     custom_llm_provider: Literal[\"openai\", \"azure\", \"vertex_ai\", \"bedrock\", \"litellm_proxy\", \"xai\"] = \"openai\",\n903:     metadata: dict[str, str] | None = None,\n904:     extra_headers: dict[str, str] | None = None,\n905:     extra_body: dict[str, str] | None = None,\n906:     **kwargs,\n907: ) -> LiteLLMBatch:\n908:     \"\"\"\n909:     Async: Cancels a batch.\n910: \n911:     LiteLLM Equivalent of POST https://api.openai.com/v1/batches/{batch_id}/cancel\n912:     \"\"\"\n913:     try:\n914:         loop: Final = asyncio.get_event_loop()\n915:         kwargs[\"acancel_batch\"] = True\n916:         # Preserve model parameter - only pop from kwargs if it exists there\n917:         # (to avoid passing it twice), otherwise keep the function parameter value\n918:         model = kwargs.pop(\"model\", None) or model\n919: \n920:         # Use a partial function to pass your keyword arguments\n921:         func: Final = partial(\n922:             cancel_batch,\n923:             batch_id,\n924:             model,\n925:             custom_llm_provider,\n926:             metadata,\n927:             extra_headers,\n928:             extra_body,\n929:             **kwargs,\n930:         )\n931:         # Add the context to the function\n932:         ctx: Final = contextvars.copy_context()\n933:         func_with_context: Final = partial(ctx.run, func)\n934:         init_response: Final = await loop.run_in_executor(None, func_with_context)\n935:         if asyncio.iscoroutine(init_response):\n936:             response = await init_response\n937:         else:\n938:             response = init_response\n939: \n940:         return response\n941:     except Exception as e:\n942:         raise e\n943: \n944: \n945: def cancel_batch(\n946:     batch_id: str,\n947:     model: str | None = None,\n948:     custom_llm_provider: Literal[\"openai\", \"azure\", \"vertex_ai\", \"bedrock\", \"litellm_proxy\", \"xai\"] | str = \"openai\",\n949:     metadata: dict[str, str] | None = None,\n950:     extra_headers: dict[str, str] | None = None,\n951:     extra_body: dict[str, str] | None = None,\n952:     **kwargs,\n953: ) -> LiteLLMBatch | Coroutine[object, None, LiteLLMBatch]:\n954:     \"\"\"\n955:     Cancels a batch.\n956: \n957:     LiteLLM Equivalent of POST https://api.openai.com/v1/batches/{batch_id}/cancel\n958:     \"\"\"",
+              "source": "head_checkout",
+              "truncated": true
+            }
+          },
+          {
+            "id": "EV-B-001-003",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "graph_callers",
+              "symbol": "list_batches"
+            },
+            "result": {
+              "symbol": "list_batches",
+              "text": "litellm/router.py:319: alist_batches: Callable[..., Awaitable[Mapping[str, object]]]\nlitellm/main.py:9763: \"batch\": (\"alist_batches\" if custom_llm_provider in LIST_BATCHES_SUPPORTED_PROVIDERS else \"acompletion\"),\nlitellm/router_python_host.py:97: def invoke(self, op: Literal[\"alist_batches\"]) -> Callable[..., Awaitable[object]]: ...\nlitellm/proxy/common_request_processing.py:247: \"alist_batches\",\nlitellm/proxy/common_request_processing.py:3058: \"alist_batches\",\nlitellm/proxy/route_llm_request.py:668: \"alist_batches\",\nlitellm/batches/main.py:710: async def alist_batches(\nlitellm/batches/main.py:725: kwargs[\"alist_batches\"] = True\nlitellm/batches/main.py:729: list_batches,\nlitellm/batches/main.py:753: def list_batches(\nlitellm/batches/main.py:795: _is_async: Final = kwargs.pop(\"alist_batches\", False) is True\nlitellm/batches/main.py:797: return xai_batches_instance.list_batches(\nlitellm/batches/main.py:821: response = openai_batches_instance.list_batches(\nlitellm/batches/main.py:850: response = azure_batches_instance.list_batches(\nlitellm/batches/main.py:869: response = vertex_ai_batches_instance.list_batches(\nlitellm/batches/main.py:882: message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\nlitellm/litellm_core_utils/health_check_helpers.py:231: Calls list_batches for providers that support it. For all other providers (e.g. bedrock)\nlitellm/litellm_core_utils/health_check_helpers.py:232: the batch API surface doesn't include list_batches, so we fall back to acompletion to\nlitellm/litellm_core_utils/health_check_helpers.py:250: return await litellm.alist_batches(**{**filtered_model_params, \"custom_llm_provider\": custom_llm_provider})\nlitellm/proxy/batches_endpoints/endpoints.py:889: async def list_batches(",
+              "n": 20,
+              "source": "repository_search"
+            }
+          },
+          {
+            "id": "EV-B-001-004",
+            "hypothesis_id": "H-001",
+            "request": {
+              "tool": "graph_tests",
+              "symbol": "list_batches"
+            },
+            "result": {
+              "symbol": "list_batches",
+              "text": "tests/e2e/llm_translation/passthrough_client.py:357: def openai_passthrough_list_batches(self, key: str) -> Result[PassthroughBatchList]:\ntests/e2e/llm_translation/test_passthrough_e2e.py:354: listed = unwrap(client.openai_passthrough_list_batches(scoped_key))\ntests/e2e/batches/batch_client.py:232: def list_batches(\ntests/e2e/batches/test_batches_e2e.py:338: list_result = client.list_batches(key=key, provider=provider)\ntests/e2e/batches/test_batches_e2e.py:345: listed = unwrap(client.list_batches(key=key, provider=None))\ntests/e2e/batches/test_batches_e2e.py:1778: client.list_batches(key=key, model=OPENAI_BATCH_MODEL, limit=TERMINAL_LIST_LIMIT)",
+              "n": 6,
+              "source": "repository_search"
+            }
+          },
+          {
+            "id": "EV-B-001-005",
+            "hypothesis_id": "H-003",
+            "request": {
+              "tool": "read_hunk",
+              "path": "tests/unit/batches/test_main.py"
+            },
+            "result": {
+              "path": "tests/unit/batches/test_main.py",
+              "text": "@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\n         m.assert_not_called()\n \n \n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n+    \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n+        bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n+\n+    error = exc_info.value\n+    assert \"list_batches\" in error.message\n+    assert \"list_batch'\" not in error.message  # no singular form\n+    assert error.response.request.method == \"GET\"\n+\n+\n # =========================================================================== #\n # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n # =========================================================================== #"
+            }
+          },
+          {
+            "id": "EV-B-001-006",
+            "hypothesis_id": "H-003",
+            "request": {
+              "tool": "read_source",
+              "path": "tests/unit/batches/test_main.py"
+            },
+            "result": {
+              "path": "tests/unit/batches/test_main.py",
+              "text": "328: def test_list__azure_dispatch(seams):\n329:     result = bm.list_batches(custom_llm_provider=\"azure\")\n330: \n331:     assert result is seams.azure.list_batches.return_value\n332:     _assert_only(seams.azure.list_batches, seams, \"list_batches\")\n333: \n334: \n335: def test_list__vertex_ai_dispatch(seams):\n336:     result = bm.list_batches(custom_llm_provider=\"vertex_ai\")\n337: \n338:     assert result is seams.vertex.list_batches.return_value\n339:     _assert_only(seams.vertex.list_batches, seams, \"list_batches\")\n340: \n341: \n342: def test_list__unsupported_provider_raises_badrequest(seams):\n343:     # anthropic supports retrieve but NOT list - good negative case.\n344:     with pytest.raises(litellm.exceptions.BadRequestError):\n345:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n346: \n347:     for m in _all_seam_methods(seams, \"list_batches\"):\n348:         m.assert_not_called()\n349: \n350: \n351: def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n352:     \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n353:     and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n354:     with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n355:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n356: \n357:     error = exc_info.value\n358:     assert \"list_batches\" in error.message\n359:     assert \"list_batch'\" not in error.message  # no singular form\n360:     assert error.response.request.method == \"GET\"\n361: \n362: \n363: # =========================================================================== #\n364: # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n365: # =========================================================================== #\n366: \n367: \n368: def test_cancel__openai_dispatch_and_payload(seams):\n369:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\")\n370: \n371:     assert result is seams.openai.cancel_batch.return_value\n372:     _assert_only(seams.openai.cancel_batch, seams, \"cancel_batch\")\n373: \n374:     kw = seams.openai.cancel_batch.call_args.kwargs\n375:     assert kw[\"cancel_batch_data\"] == {\n376:         \"batch_id\": \"batch-1\",\n377:         \"extra_headers\": None,\n378:         \"extra_body\": None,\n379:     }\n380:     assert kw[\"_is_async\"] is False\n381: \n382: \n383: def test_cancel__azure_dispatch(seams):\n384:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"azure\")\n385: \n386:     assert result is seams.azure.cancel_batch.return_value\n387:     _assert_only(seams.azure.cancel_batch, seams, \"cancel_batch\")\n388: \n389: \n390: def test_cancel__vertex_ai_dispatch(seams):\n391:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"vertex_ai\")\n392: \n393:     assert result is seams.vertex.cancel_batch.return_value\n394:     _assert_only(seams.vertex.cancel_batch, seams, \"cancel_batch\")\n395: \n396: \n397: def test_cancel__unsupported_provider_raises_badrequest(seams):\n398:     with pytest.raises(litellm.exceptions.BadRequestError):\n399:         bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"cohere\")\n400: \n401:     for m in _all_seam_methods(seams, \"cancel_batch\"):\n402:         m.assert_not_called()\n403: \n404: \n405: def test_cancel__async_flag_propagates_is_async(seams):\n406:     bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\", acancel_batch=True)\n407: \n408:     assert seams.openai.cancel_batch.call_args.kwargs[\"_is_async\"] is True\n409: \n410: \n411: # =========================================================================== #\n412: # Async wrappers - delegate to the sync function in an executor, set the right\n413: # \"_is_async\" flag, and return the result untouched.\n414: # =========================================================================== #\n415: \n416: \n417: @pytest.mark.asyncio\n418: async def test_acreate_batch_delegates_to_create_batch():\n419:     with patch.object(bm, \"create_batch\", MagicMock(return_value=\"SENTINEL\")) as m:\n420:         result = await bm.acreate_batch(**CREATE_KW, custom_llm_provider=\"openai\")\n421: \n422:     assert result == \"SENTINEL\"\n423:     assert m.call_count == 1\n424:     assert m.call_args.kwargs.get(\"acreate_batch\") is True\n425:     # positional handoff: (completion_window, endpoint, input_file_id, provider, ...)\n426:     assert m.call_args.args[0] == \"24h\"\n427:     assert m.call_args.args[2] == \"file-abc\"",
+              "source": "head_checkout",
+              "truncated": true
+            }
+          }
+        ],
+        "evidence_count": 6,
+        "stage_status": {
+          "discovery": "VALID_HYPOTHESES",
+          "proof": "VALID_CANDIDATES"
+        },
+        "parse_error": null,
+        "exception": null,
+        "latency_ms": 131389.33,
+        "prompt_version": "hypothesis-proof-v4-schema-batches",
+        "model_calls": 3,
+        "assessments": [
+          {
+            "unit_id": "CU-001",
+            "behavioral_delta": "The error message for unsupported providers has been updated from 'list_batch' to 'list_batches'.",
+            "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+            "evidence_refs": [
+              "CU-001"
+            ]
+          },
+          {
+            "unit_id": "CU-002",
+            "behavioral_delta": "The HTTP method in the error response has been changed from 'create_thread' to 'GET'.",
+            "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+            "evidence_refs": [
+              "CU-002"
+            ]
+          },
+          {
+            "unit_id": "CU-003",
+            "behavioral_delta": "A new test case has been added to verify that the error message and HTTP method are correct.",
+            "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+            "evidence_refs": [
+              "CU-003"
+            ]
+          }
+        ],
+        "hypothesis_outcomes": [
+          {
+            "hypothesis_id": "H-001",
+            "status": "substantiated",
+            "reason": "The error message is now correctly formatted and consistent with the function name.",
+            "evidence_refs": [
+              "EV-B-001-001",
+              "EV-B-001-002",
+              "EV-B-001-003",
+              "EV-B-001-004"
+            ]
+          },
+          {
+            "hypothesis_id": "H-002",
+            "status": "disproved",
+            "reason": "The HTTP method in the error response is now 'GET' instead of 'create_thread'. The observation contradicts the hypothesis.",
+            "evidence_refs": [
+              "EV-B-001-001"
+            ]
+          },
+          {
+            "hypothesis_id": "H-003",
+            "status": "substantiated",
+            "reason": "The new test case correctly verifies that the error message and HTTP method are correct.",
+            "evidence_refs": [
+              "EV-B-001-005"
+            ]
+          }
+        ],
+        "protocol_errors": [],
+        "proof_runs": [
+          {
+            "hypothesis_ids": [
+              "H-001",
+              "H-002"
+            ],
+            "status": "completed",
+            "attempts": [
+              {
+                "prompt_sha256": "23f169362c8bbb44b10ecf4aba45a782a4d479e6e244fc8e6b62ec8f7ddab248",
+                "response_index": 1,
+                "finish_reason": "stop"
+              }
+            ],
+            "evidence_refs": [
+              "EV-B-001-001",
+              "EV-B-001-002",
+              "EV-B-001-003",
+              "EV-B-001-004"
+            ]
+          },
+          {
+            "hypothesis_ids": [
+              "H-003"
+            ],
+            "status": "completed",
+            "attempts": [
+              {
+                "prompt_sha256": "1eabaeac55a3d52826722fd86cf92571a3d6a4d9363b8680f9fa433512d48897",
+                "response_index": 2,
+                "finish_reason": "stop"
+              }
+            ],
+            "evidence_refs": [
+              "EV-B-001-005",
+              "EV-B-001-006"
+            ]
+          }
+        ],
+        "estimated_completion_tokens": 2039,
+        "bundle_id": "B-001"
+      }
+    ],
+    "pipeline_health": {
+      "healthy": false,
+      "agent_runs": 1,
+      "unhealthy_runs": 0,
+      "unhealthy_statuses": [],
+      "coverage_ratio": 1.0,
+      "coverage_adequate": true,
+      "status": "partial",
+      "inspection_ratio": 1.0
+    },
+    "candidate_count": 2,
+    "verified_count": 0,
+    "drop_reasons": {
+      "note": 1,
+      "snippet_not_in_hunk": 1
+    }
+  }
+}

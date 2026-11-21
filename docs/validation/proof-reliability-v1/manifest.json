@@ -1,0 +1,196 @@
+{
+  "purpose": "development reliability diagnostics; ineligible for headline accuracy or latency claims",
+  "date": "2026-11-21",
+  "model": "qwen2.5-coder:7b",
+  "model_weights_pinned": false,
+  "normal_pr": {
+    "reviewer_commit": "baa2b3c3522958dad54aa556399e7f10251037a9",
+    "reviewer_dirty": false,
+    "pr_url": "https://github.com/BerriAI/litellm/pull/53337",
+    "target": {
+      "repo": "BerriAI/litellm",
+      "number": 53337,
+      "base_sha": "754c2225d7db8ce71a94459df2216708995c037b",
+      "head_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+      "diff_sha256": "a3b31864ffd3f1d6b28b3cdfd76573799108d58ad1ac4c8406af718cae16ce5a",
+      "comparison_base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc"
+    },
+    "decision": "COMMENT",
+    "health": "partial",
+    "actual_model_requests": 3,
+    "schema_proof_requests": 2,
+    "prompt_tokens": 6755,
+    "completion_tokens": 2046,
+    "wall_seconds": 164.81,
+    "product_findings": 0,
+    "unresolved_records": 7,
+    "inspection": {
+      "eligible": 3,
+      "packed": 3,
+      "inspected": 3,
+      "assessments": [
+        {
+          "unit_id": "CU-001",
+          "path": "litellm/batches/main.py",
+          "status": "inspected",
+          "behavioral_delta": "The error message for unsupported providers has been updated from 'list_batch' to 'list_batches'.",
+          "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+          "evidence_refs": [
+            "CU-001"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-002",
+          "path": "litellm/batches/main.py",
+          "status": "inspected",
+          "behavioral_delta": "The HTTP method in the error response has been changed from 'create_thread' to 'GET'.",
+          "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+          "evidence_refs": [
+            "CU-002"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-003",
+          "path": "tests/unit/batches/test_main.py",
+          "status": "inspected",
+          "behavioral_delta": "A new test case has been added to verify that the error message and HTTP method are correct.",
+          "hypothesis_outcome": "No concrete evidence found to support or refute this hypothesis.",
+          "evidence_refs": [
+            "CU-003"
+          ],
+          "reason": ""
+        }
+      ],
+      "ratio": 1.0
+    },
+    "source_preparation": {
+      "status": "ready",
+      "attempted_fetch_depths": [
+        32,
+        128,
+        512
+      ],
+      "snapshot_id": "70646f666cae8006d2f8e8a8b578b57136c31ac0a29c139dacdabab55864eec9",
+      "review_diff_sha256": "a3b31864ffd3f1d6b28b3cdfd76573799108d58ad1ac4c8406af718cae16ce5a",
+      "comparison_base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc"
+    },
+    "proof_batches": [
+      [
+        {
+          "hypothesis_ids": [
+            "H-001",
+            "H-002"
+          ],
+          "status": "completed",
+          "attempts": [
+            {
+              "prompt_sha256": "23f169362c8bbb44b10ecf4aba45a782a4d479e6e244fc8e6b62ec8f7ddab248",
+              "response_index": 1,
+              "finish_reason": "stop"
+            }
+          ],
+          "evidence_refs": [
+            "EV-B-001-001",
+            "EV-B-001-002",
+            "EV-B-001-003",
+            "EV-B-001-004"
+          ]
+        },
+        {
+          "hypothesis_ids": [
+            "H-003"
+          ],
+          "status": "completed",
+          "attempts": [
+            {
+              "prompt_sha256": "1eabaeac55a3d52826722fd86cf92571a3d6a4d9363b8680f9fa433512d48897",
+              "response_index": 2,
+              "finish_reason": "stop"
+            }
+          ],
+          "evidence_refs": [
+            "EV-B-001-005",
+            "EV-B-001-006"
+          ]
+        }
+      ]
+    ],
+    "interpretation": "Protocol completion; two semantically weak candidates rejected downstream; no independent truth label or accuracy gain."
+  },
+  "isolated_final_gate": [
+    {
+      "case": "removed-guard",
+      "expected": "supported",
+      "outcome": "UNCERTAIN",
+      "status": "invalid_response",
+      "verdict": "unresolved",
+      "calls": 2,
+      "wall_seconds": 27.16272680300608
+    },
+    {
+      "case": "preserved-guard",
+      "expected": "refuted",
+      "outcome": "UNCERTAIN",
+      "status": "completed",
+      "verdict": "unresolved",
+      "calls": 1,
+      "wall_seconds": 9.688438352997764
+    }
+  ],
+  "labels": "Two synthetic final-gate cases are author-defined; no independent adjudication. Expected outcomes are not passed to the model.",
+  "profiles": "Native /api/chat; temperature 0; explicit num_ctx 8192; stage output cap 1400; schema connection probe cap 64. Not matched to older /api/generate experiments.",
+  "dollar_cost_measured": false,
+  "limitations": [
+    "one public PR, two distinct synthetic final-gate cases; no held-out benchmark",
+    "original failure replay, connection probe, PR run, and isolated final-gate replay have different purposes; do not pool their counts as independent PRs",
+    "PR reviewer baa2b3c predates final-gate schema integration; isolated final-gate replay uses be9dcbd",
+    "isolated replay bypasses discovery with a fixed candidate; it is not end-to-end detection",
+    "preserved-guard abstention is not a successful refutation; removed-guard rejection is a false negative",
+    "no PR code executed; no GitHub review published; no cloud model requests"
+  ],
+  "files_sha256": {
+    "litellm-v1.json": "13cfc238bc14c2d5deee93a9d8f1c07e35f3875e038d5de56cb17bc859bd0fd6",
+    "final-removed-guard.json": "68970f87eadeed033285298fc777dcb2b976205300f6e2665e1bdf8ef0eb5d59",
+    "final-preserved-guard.json": "2da568baa88d2359deb5ca90e92ca9c7303baf487512be7a8e0c713c78a0ebc1",
+    "gateway-schema-probe.json": "926a194dec5f6eae399ffb9511aea5d59bd15f5814723a0169fe92449d369e40"
+  },
+  "validation": {
+    "full_local_suite": {
+      "passed": 697,
+      "failed": 0,
+      "python": "3.12",
+      "environment": "WSL Ubuntu",
+      "reviewer_commit": "be9dcbdd039ab2cc90460708cc2a9a17b6648197"
+    },
+    "hosted_contracts": {
+      "run_id": 44934256861,
+      "url": "https://github.com/venkatpachala/CodeTurtle/actions/runs/44934256861",
+      "reviewer_commit": "be9dcbdd039ab2cc90460708cc2a9a17b6648197",
+      "jobs": [
+        {
+          "os": "ubuntu-latest",
+          "python": "3.11",
+          "conclusion": "success"
+        },
+        {
+          "os": "ubuntu-latest",
+          "python": "3.12",
+          "conclusion": "success"
+        },
+        {
+          "os": "windows-latest",
+          "python": "3.11",
+          "conclusion": "success"
+        },
+        {
+          "os": "windows-latest",
+          "python": "3.12",
+          "conclusion": "success"
+        }
+      ]
+    },
+    "artifact_validation": "SHA-256 checks for four raw files; canonical PR result and both final-gate records validated; replay script AST parsed."
+  }
+}

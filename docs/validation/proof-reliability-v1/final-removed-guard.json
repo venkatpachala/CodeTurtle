@@ -1,0 +1,179 @@
+{
+  "purpose": "isolated development candidate replay; not end-to-end discovery or held-out evaluation",
+  "case": "removed-guard",
+  "expected_author_label": "supported",
+  "reviewer_commit": "be9dcbdd039ab2cc90460708cc2a9a17b6648197",
+  "reviewer_dirty": false,
+  "snapshot": {
+    "repository_identity": "/home/venkat/projects/CodeTurtle/.validation/proof-reliability/final-removed-guard",
+    "base_sha": "53fe4ce258475bd28b55e70d451d07eade40427d",
+    "head_sha": "dfee2e00497dff741b21e99a8f0fb53b00f75c69",
+    "diff_sha256": "387996271974cedf099c85e59cebf9561cd8ec6ab6298abc86927924c24f4994",
+    "config_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "comparison_base_sha": null,
+    "schema_version": "1.0"
+  },
+  "base_source": "def size(items):\n    if items is None:\n        return 0\n    return len(items)\n",
+  "head_source": "def size(items):\n    return len(items)\n",
+  "candidate": {
+    "bundle_id": "B1",
+    "file": "app.py",
+    "symbol": "size",
+    "start_line": 2,
+    "title": "None input raises TypeError",
+    "claim": "size(None) raises TypeError after the guard is removed",
+    "existing_code": "return len(items)",
+    "invariant": "size(None) returns zero",
+    "violating_condition": "items is None",
+    "expected": "0",
+    "actual": "TypeError",
+    "execution_path": [
+      "size"
+    ],
+    "evidence": [
+      "app.py"
+    ],
+    "counter_evidence": [],
+    "verify_status": "candidate",
+    "severity": "medium",
+    "confidence": 0.5,
+    "source": "agent",
+    "evidence_paths": [
+      "app.py"
+    ],
+    "kind": "defect",
+    "risk_signals": [],
+    "hypothesis_id": null,
+    "candidate_id": "C-001"
+  },
+  "outcome": "UNCERTAIN",
+  "wall_seconds": 27.16272680300608,
+  "verification": [
+    {
+      "id": "FV-C-001",
+      "candidate_id": "C-001",
+      "candidate_fingerprint": "28fb36bf4c7fd35aef67affc06822cbc85ed4cc0d6a6b0c62b98044ed84fa9e2",
+      "claim": {
+        "file": "app.py",
+        "symbol": "size",
+        "claim": "size(None) raises TypeError after the guard is removed",
+        "existing_code": "return len(items)",
+        "invariant": "size(None) returns zero",
+        "violating_condition": "items is None",
+        "expected": "0",
+        "actual": "TypeError",
+        "execution_path": [
+          "size"
+        ]
+      },
+      "snapshot_id": "fddbad971d549a275bd4e1259bc221493976694d9f5d07f0e3ed7130d03bc7e6",
+      "verdict": "unresolved",
+      "status": "invalid_response",
+      "reason": "1 validation error for FindingDecision\n  Value error, refutation requires counterevidence and an explicit basis [type=value_error, input_value={'verdict': 'refuted', 'c...: 'equivalent_behavior'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+      "observation_refs": [
+        "OBS-c5d10d25fba51e9eb2f84a06",
+        "OBS-21a47178c406df88b777f9c4"
+      ],
+      "decision": null,
+      "attempts": [
+        {
+          "prompt_sha256": "1f5cec413332e743c02914f3cc9cf1395715ed12e8c29de187c314c63977287d",
+          "response": "{\n  \"verdict\": \"refuted\",\n  \"checked_trigger\": \"items is None\",\n  \"rationale\": \"The function `size` does not raise a `TypeError` when `items` is `None`. Instead, it returns `0` as per the base code.\",\n  \"path_analysis\": \"The function `size` is directly invoked with `None` as the argument. The base code includes a guard that checks if `items` is `None` and returns `0` in that case. The HEAD code does not include this guard, but the function still returns `0` when `None` is passed.\",\n  \"supporting_citations\": [\n    {\n      \"observation_id\": \"OBS-c5d10d25fba51e9eb2f84a06\",\n      \"start_line\": 2,\n      \"end_line\": 4,\n      \"quote\": \"    if items is None:\\n        return 0\\n    return len(items)\"\n    }\n  ],\n  \"counter_citations\": [],\n  \"missing_evidence\": [],\n  \"refutation_basis\": \"equivalent_behavior\"\n}",
+          "attempt": 1
+        },
+        {
+          "prompt_sha256": "2ae162d5437a6dde337efc6d87f330a12e165122ea92e8f9f1ba0580d6232c53",
+          "response": "{\n  \"verdict\": \"refuted\",\n  \"checked_trigger\": \"items is None\",\n  \"rationale\": \"The function `size` does not raise a `TypeError` when `items` is `None`. Instead, it returns `0` as per the base code.\",\n  \"path_analysis\": \"The function `size` is directly invoked with `None` as the argument. The base code includes a guard that checks if `items` is `None` and returns `0` in that case. The HEAD code does not include this guard, but the function still returns `0` when `None` is passed.\",\n  \"supporting_citations\": [\n    {\n      \"observation_id\": \"OBS-c5d10d25fba51e9eb2f84a06\",\n      \"start_line\": 2,\n      \"end_line\": 4,\n      \"quote\": \"    if items is None:\\n        return 0\\n    return len(items)\"\n    }\n  ],\n  \"counter_citations\": [],\n  \"missing_evidence\": [],\n  \"refutation_basis\": \"equivalent_behavior\"\n}",
+          "attempt": 2
+        }
+      ],
+      "hints": [],
+      "prompt_version": "finding-source-v2"
+    }
+  ],
+  "observations": [
+    {
+      "id": "OBS-c5d10d25fba51e9eb2f84a06",
+      "snapshot_id": "fddbad971d549a275bd4e1259bc221493976694d9f5d07f0e3ed7130d03bc7e6",
+      "revision_sha": "53fe4ce258475bd28b55e70d451d07eade40427d",
+      "revision_side": "base",
+      "path": "app.py",
+      "status": "success",
+      "start_line": 1,
+      "end_line": 4,
+      "text": "def size(items):\n    if items is None:\n        return 0\n    return len(items)",
+      "file_sha256": "ef884f9fbb995dbc79c66cd4abc894d219cf888f435a329b257b1a097546f7a3",
+      "excerpt_sha256": "daba15914d2ab778cfa0c23090338471e4e52e0319831cfb2696357069508402",
+      "detail": ""
+    },
+    {
+      "id": "OBS-21a47178c406df88b777f9c4",
+      "snapshot_id": "fddbad971d549a275bd4e1259bc221493976694d9f5d07f0e3ed7130d03bc7e6",
+      "revision_sha": "dfee2e00497dff741b21e99a8f0fb53b00f75c69",
+      "revision_side": "head",
+      "path": "app.py",
+      "status": "success",
+      "start_line": 1,
+      "end_line": 2,
+      "text": "def size(items):\n    return len(items)",
+      "file_sha256": "0c26e3839fef761d2f95d7a8926550f64fb3bdb6410fa543fe62ad38251d2191",
+      "excerpt_sha256": "e9fe4d22ab43b441987bd7dc6b11275cc5bfa16e9d182d713ae6fe38b753710a",
+      "detail": ""
+    }
+  ],
+  "calls": [
+    {
+      "timestamp": "2026-11-21T18:13:42.935984",
+      "agent_name": "FindingVerifier:structured",
+      "capability": "correctness_review",
+      "provider": "ollama_provider",
+      "model": "qwen2.5-coder:7b",
+      "prompt_tokens": 1300,
+      "completion_tokens": 240,
+      "total_tokens": 1540,
+      "latency": 13.693635940551758,
+      "retries": 0,
+      "estimated_cost": 0.0,
+      "success": true,
+      "error": null,
+      "finish_reason": "stop",
+      "output_truncated": false,
+      "max_output_tokens": 1400,
+      "context_tokens": 8192,
+      "response_format": "json_schema",
+      "schema_sha256": "f37d4a6ad6a7dd789a35f54c47ac80c9530229f89f93fc428eb4289b0dd36f21",
+      "prompt_characters": 3913
+    },
+    {
+      "timestamp": "2026-11-21T18:13:56.042508",
+      "agent_name": "FindingVerifier:structured",
+      "capability": "correctness_review",
+      "provider": "ollama_provider",
+      "model": "qwen2.5-coder:7b",
+      "prompt_tokens": 1650,
+      "completion_tokens": 240,
+      "total_tokens": 1890,
+      "latency": 13.099989175796509,
+      "retries": 0,
+      "estimated_cost": 0.0,
+      "success": true,
+      "error": null,
+      "finish_reason": "stop",
+      "output_truncated": false,
+      "max_output_tokens": 1400,
+      "context_tokens": 8192,
+      "response_format": "json_schema",
+      "schema_sha256": "f37d4a6ad6a7dd789a35f54c47ac80c9530229f89f93fc428eb4289b0dd36f21",
+      "prompt_characters": 5145
+    }
+  ],
+  "budget": {
+    "calls": 2,
+    "prompt_chars": 9058,
+    "elapsed_seconds": 27.162761169005535,
+    "max_model_calls": 12,
+    "max_prompt_chars": 120000,
+    "max_wall_seconds": 300.0
+  },
+  "dollar_cost_measured": false
+}

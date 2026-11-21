@@ -17,6 +17,7 @@ then save the endpoint and model in the WSL user's `~/.codeturtle/config.toml`:
 llm_backend = "ollama"
 ollama_model = "qwen2.5-coder:7b"
 ollama_base_url = "http://HOST_IP:11434"
+ollama_context_tokens = 8192
 ```
 
 Replace `HOST_IP` with the verified address. Environment variables override the
@@ -50,6 +51,32 @@ codeturtle review owner/repo 123 --dry-run
 codeturtle review owner/repo#123 --dry-run
 codeturtle review https://github.com/owner/repo/pull/123 --dry-run
 ```
+
+Inside an existing **WSL/Bash** terminal, run Python directly. Bash uses a trailing
+backslash for continuation:
+
+```bash
+.venv/bin/python -m cli.main review https://github.com/BerriAI/litellm/pull/53337 \
+  --github-auth gh --dry-run --show-uncertain \
+  --json-output .validation/my-pr-review.json
+```
+
+From **PowerShell**, this equivalent single line launches WSL:
+
+```powershell
+wsl.exe -d Ubuntu --cd /home/venkat/projects/CodeTurtle .venv/bin/python -m cli.main review https://github.com/BerriAI/litellm/pull/53337 --github-auth gh --dry-run --show-uncertain --json-output .validation/my-pr-review.json
+```
+
+PowerShell backticks entered in Bash perform command substitution. If Bash is
+waiting at a `>` continuation prompt after a malformed command, press Ctrl+C and
+run the Bash command above. HTTP 200, CLI exit zero, and partial COMMENT have
+different meanings: inspect the JSON health, unresolved records, and product
+findings before interpreting the result.
+
+The normal PR path prepares historical comparison objects before model calls.
+It attempts finite fetch depths 32, 128, and 512 within a bounded preparation
+budget. Missing history remains explicit. Proof requests use small typed batches
+and at most one repair per bundle; unresolved work cannot imply clean code.
 
 Default runtime is **v4**. Printed `Decision:` is Policy (`MERGE` / `COMMENT` / `REQUEST_CHANGES`), not leftover LLM Final text. Set `runtime: legacy` in `.codeturtle.yaml` to use the 17-node graph.
 
@@ -97,5 +124,6 @@ See [`.env.example`](../.env.example) for the full list. Key variables:
 | `GITHUB_TOKEN` | GitHub personal access token (`public_repo` scope minimum) |
 | `OLLAMA_MODEL` | Ollama model name (default: `qwen2.5:7b`) |
 | `OLLAMA_BASE_URL` | Ollama server URL (default: `http://localhost:11434`) |
+| `OLLAMA_CONTEXT_TOKENS` | Explicit Ollama context window (default: 8192; allowed 1024–32768) |
 | `LLM_BACKEND` | `ollama` (default) or `openai` |
 | `GRAPHIFY_GRAPH_PATH` | Path to `graphify-out/graph.json` for the target repo |

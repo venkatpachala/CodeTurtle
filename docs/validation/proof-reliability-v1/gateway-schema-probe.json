@@ -1,0 +1,25 @@
+{
+  "content": "{\n  \"answer\": \"CONNECTED\"\n}",
+  "telemetry": {
+    "timestamp": "2026-11-21T17:55:35.263815",
+    "agent_name": "SchemaConnectionProbe",
+    "capability": "reasoning",
+    "provider": "ollama_provider",
+    "model": "qwen2.5-coder:7b",
+    "prompt_tokens": 36,
+    "completion_tokens": 11,
+    "total_tokens": 47,
+    "latency": 9.428775310516357,
+    "retries": 0,
+    "estimated_cost": 0.0,
+    "success": true,
+    "error": null,
+    "finish_reason": "stop",
+    "output_truncated": false,
+    "max_output_tokens": 64,
+    "context_tokens": 8192,
+    "response_format": "json_schema",
+    "schema_sha256": "d5e25c76095c8bfecc3578a232291e049c6f5a2c934859decb0d322999e7b3f2",
+    "prompt_characters": 34
+  }
+}

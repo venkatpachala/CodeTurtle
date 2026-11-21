@@ -11,7 +11,7 @@ and does not use LangGraph. Optional integrations do not establish broad quality
 | --- | --- | --- |
 | Input | GitHub PR intake; direct local committed comparisons; revision identity | The entire PR path has not migrated to immutable snapshot tools |
 | Planning | Change units, bounded source/test bundles, explicit scoped requirements | Packing is not inspection; omission remains visible |
-| Investigation | Structural rules and bounded hypothesis/proof model stages | Model reasoning and broad-language accuracy remain unqualified |
+| Investigation | Structural rules, bounded hypothesis discovery, typed proof batches and shared repair limits | Model reasoning and broad-language accuracy remain unqualified |
 | Requirement investigation | Local requirement-first proposal and fresh challenge | GitHub mode currently supplies requirements and links verified findings |
 | Retrieval | Diff hunks, source lookup, Python AST change context, optional graph tools | No comprehensive impact/dataflow guarantee; graph can be unavailable |
 | Verification | Structured decisions, exact citations, HEAD support/counterevidence, one repair | Valid source grounding does not establish semantic truth |
@@ -26,7 +26,7 @@ and does not use LangGraph. Optional integrations do not establish broad quality
 1. Load configuration, selected provider, GitHub authentication, and optional user requirements.
 2. Fetch PR metadata and BASE/HEAD identities; apply configured skip/ignore policy.
 3. Acquire a repository lease, prepare the checkout, and verify the reviewed HEAD.
-4. Build the diff and change units; record missing patches and scope omissions.
+4. Build the diff and change units; prepare pinned historical source with bounded fetches; record missing context and scope omissions.
 5. Pack bounded bundles and run structural rules plus model hypothesis/proof stages.
 6. For local snapshot review with supplied requirements, additionally investigate each admitted requirement and challenge proposals.
 7. Apply proof, location, and reflection gates to candidates.
@@ -79,8 +79,9 @@ for target identities, usage, CI evidence, and limitations.
 
 ## Evidence we have
 
-- Full local suite: 663 tests passed after the gateway fix; 48 verifier-phase
-  additions and five gateway tests extend the previous 610-test milestone.
+- Full local suite: 697 tests passed after proof-protocol reliability work,
+  extending the previous 663-test gateway milestone. See
+  [the implementation and validation report](PROOF_RELIABILITY_PHASE.md).
 - Four stored offline evaluation snapshots passed in the previous validation.
 - Hosted contract matrices have passed Windows/Linux and Python 3.11/3.12 for
   their recorded commits. New changes must be checked on their own revision.
@@ -90,6 +91,10 @@ for target identities, usage, CI evidence, and limitations.
   and contradictory structured decisions remain unresolved and inspectable.
 - Existing real-PR development diagnostics and source adjudication files are not
   a completed independently labeled held-out quality benchmark.
+- The original LiteLLM PR now completes its normal CLI protocol: three requests,
+  two valid proof batches, COMMENT/partial, seven unresolved records, zero product
+  findings, and no publication. A fixed-candidate final-gate replay still misses
+  the removed-guard defect; the preserved-guard control also remains unresolved.
 
 The benchmark adapter's Windows `/api/generate` runs and the normal gateway's
 native `/api/chat` smoke are different protocols/profiles. Do not combine their
@@ -99,8 +104,8 @@ latencies or outcomes into a controlled quality comparison.
 
 ### 1. Finish the normal PR input and model contracts
 
-Ensure required historical Git objects are available for comparison; finish the
-shared immutable PR source adapter. Record model context/options explicitly.
+Bounded historical Git preparation and explicit model context/options are now
+implemented. Finish the shared immutable PR investigation adapter.
 Replace whole-file-first truncation with scoped evidence capture whose completeness
 is honest. Current final verification admits six paths, 120 lines per file, and
 10,000 shared source characters; this can leave ordinary large files unresolved.
@@ -109,8 +114,9 @@ is honest. Current final verification admits six paths, 120 lines per file, and
 
 Freeze a candidate and its observations before comparing verifier variants.
 Measure schema validity, citation validity, semantic decision quality, repairs,
-abstention, requests, tokens, and latency separately. Test constrained output and
-backend-resolved citation text without silently changing a wrong verdict. Use a
+abstention, requests, tokens, and latency separately. Provider-constrained output
+is implemented and live-tested; it has not established semantic improvement.
+Test backend-resolved citation text without silently changing a wrong verdict. Use a
 bounded stronger-model comparison if needed; no improvement is presumed.
 
 ### 3. Implement explicit benchmark truth and decision metrics

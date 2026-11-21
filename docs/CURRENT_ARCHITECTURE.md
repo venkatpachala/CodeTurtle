@@ -12,10 +12,12 @@ not have the v2 production contract guarantees.
 3. Hold an OS-backed repository lease across checkout, analysis, and publication.
 4. Check out HEAD and verify the resulting Git revision. Git authentication is
    passed through subprocess environment headers, not clone URLs.
-5. Build change units and bounded implementation/test bundles.
+5. Build change units; prepare pinned comparison history with bounded fetches;
+   create bounded implementation/test bundles.
 6. Run deterministic structural rules and model hypothesis discovery.
 7. Retrieve hunks, bounded HEAD source, and caller/test/graph context.
-8. Construct proof, with at most one repair pass inside the model-call budget.
+8. Construct typed proof batches of at most two hypotheses, with at most one
+   repair across the bundle inside both step and shared model-call budgets.
 9. Ground, position, reflect, and independently verify candidates.
 10. Build canonical findings, evidence-backed process coverage, health, and unresolved hypotheses.
 11. Evaluate a pure product policy once.
@@ -82,6 +84,13 @@ PR source capture distinguishes the target tip (`base_sha`) from the historical
 comparison merge-base (`comparison_base_sha`). Existing deterministic verification
 routes remain separate. See SOURCE_FINDING_VERIFICATION.md for the contract,
 limits, tests, and paired verifier experiment.
+
+Proof and final-finding requests now send JSON schemas through the provider.
+Ollama context defaults explicitly to 8,192 tokens. Generation records include
+schema digest, requested limits, finish reason, and output truncation. Provider
+success and schema validity remain separate from grounded semantic correctness.
+See [the proof reliability phase](PROOF_RELIABILITY_PHASE.md) for the saved native
+PR run and the unresolved fixed-candidate final-gate checks.
 
 ## Local committed snapshots
 
