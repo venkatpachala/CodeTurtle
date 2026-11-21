@@ -32,12 +32,16 @@ def _extract_json_blob(text: str) -> str | None:
         inner = (m.group(1) or "").strip()
         if inner:
             return inner
-    for opener, closer in (("[", "]"), ("{", "}")):
-        start = raw.find(opener)
-        end = raw.rfind(closer)
-        if start >= 0 and end > start:
-            return raw[start : end + 1]
-    return None
+    starts = [position for position in (raw.find("["), raw.find("{")) if position >= 0]
+    if not starts:
+        return None
+    start = min(starts)
+    try:
+        _, end = json.JSONDecoder().raw_decode(raw, start)
+    except json.JSONDecodeError:
+        # Do not salvage a nested list from a truncated outer document.
+        return None
+    return raw[start:end]
 
 
 def parse_agent_output(text: str) -> Tuple[str, Any]:
