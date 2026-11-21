@@ -16,6 +16,7 @@ _TOML_KEYS = (
     "ollama_model",
     "llm_backend",
     "ollama_base_url",
+    "ollama_context_tokens",
     "openai_api_key",
 )
 
@@ -24,6 +25,7 @@ _ENV_FOR_KEY = {
     "ollama_model": "OLLAMA_MODEL",
     "llm_backend": "LLM_BACKEND",
     "ollama_base_url": "OLLAMA_BASE_URL",
+    "ollama_context_tokens": "OLLAMA_CONTEXT_TOKENS",
     "openai_api_key": "OPENAI_API_KEY",
 }
 
@@ -129,6 +131,8 @@ def apply_user_config_to_settings(settings_obj: Any) -> None:
         settings_obj.llm_backend = str(data["llm_backend"])
     if data.get("ollama_base_url"):
         settings_obj.ollama_base_url = str(data["ollama_base_url"])
+    if data.get("ollama_context_tokens"):
+        settings_obj.ollama_context_tokens = int(data["ollama_context_tokens"])
 
 
 def detect_github_token(

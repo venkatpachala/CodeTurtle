@@ -3,6 +3,8 @@ from pydantic import BaseModel
 import time
 import random
 from datetime import datetime
+import hashlib
+import json
 from rich.console import Console
 
 console = Console()
@@ -41,6 +43,13 @@ class GatewayTelemetry(BaseModel):
     estimated_cost: float = 0.0
     success: bool
     error: Optional[str] = None
+    finish_reason: Optional[str] = None
+    output_truncated: bool = False
+    max_output_tokens: Optional[int] = None
+    context_tokens: Optional[int] = None
+    response_format: str = "text"
+    schema_sha256: Optional[str] = None
+    prompt_characters: int = 0
 
 
 class GatewayResponse(BaseModel):
@@ -105,6 +114,7 @@ class AIGateway:
         structured_output: Optional[BaseModel] = None,
         retries: int = 3,
         agent_name: str = "unknown",
+        response_schema: type[BaseModel] | None = None,
     ) -> GatewayResponse:
         """
         Main entry point for all agents with full observability.
@@ -115,6 +125,8 @@ class AIGateway:
         if retries < 0:
             raise ValueError("retries must be nonnegative")
         attempt_limit = max(1, retries)
+        if structured_output is not None and response_schema is not None:
+            raise ValueError("choose parsed structured_output or raw response_schema")
         provider, model = self._get_provider(capability)
         start_time = time.time()
         last_error = None
@@ -130,14 +142,17 @@ class AIGateway:
                         model=model
                     )
                 else:
+                    schema_options = {"response_schema": response_schema} if response_schema is not None else {}
                     response = provider.generate(
                         prompt=prompt,
                         temperature=temperature,
                         max_tokens=max_tokens,
-                        model=model
+                        model=model,
+                        **schema_options,
                     )
 
                 latency = time.time() - start_time
+                metadata = getattr(response, "metadata", {}) or {}
 
                 telemetry = GatewayTelemetry(
                     timestamp=datetime.now(),
@@ -152,6 +167,14 @@ class AIGateway:
                     retries=attempt,
                     estimated_cost=0.0,
                     success=True,
+                    finish_reason=metadata.get("finish_reason"),
+                    output_truncated=metadata.get("finish_reason") == "length",
+                    max_output_tokens=max_tokens,
+                    context_tokens=metadata.get("context_tokens"),
+                    response_format=metadata.get("response_format", "text"),
+                    schema_sha256=(hashlib.sha256(json.dumps(response_schema.model_json_schema(), sort_keys=True).encode()).hexdigest()
+                                   if response_schema is not None else None),
+                    prompt_characters=len(prompt),
                 )
 
                 try:

@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from pydantic import ConfigDict, field_validator
+from pydantic import ConfigDict, Field, field_validator
 from dotenv import load_dotenv
 import os
 import sys
@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     verification_enabled: bool = True
     ollama_model: str = "qwen2.5:7b"
     ollama_base_url: str = "http://localhost:11434"
+    ollama_context_tokens: int = Field(default=8192, ge=1024, le=32768)
 
     @field_validator("ollama_model", "ollama_base_url", "llm_backend", mode="before")
     @classmethod

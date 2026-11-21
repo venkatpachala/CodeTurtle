@@ -12,10 +12,11 @@ def _usage(response) -> dict:
 
 
 class OllamaResponse:
-    def __init__(self, content: str, model: str, usage: dict):
+    def __init__(self, content, model: str, usage: dict, metadata: dict | None = None):
         self.content = content
         self.model = model
         self.usage = usage
+        self.metadata = metadata or {}
 
 
 def structured_generate(
@@ -25,21 +26,9 @@ def structured_generate(
     max_tokens: int = 1500,
     model: str = "qwen2.5-coder:7b",
 ) -> OllamaResponse:
-    llm = ChatOllama(
-        model=model,
-        temperature=temperature,
-        num_predict=max_tokens,
-        base_url=settings.ollama_base_url,
-        client_kwargs={"timeout": 120.0},
-    )
-    structured_llm = llm.with_structured_output(schema)
-    response = structured_llm.invoke(prompt)
-
-    return OllamaResponse(
-        content=response,
-        model=model,
-        usage=_usage(response)
-    )
+    response = generate(prompt, temperature, max_tokens, model, response_schema=schema)
+    response.content = schema.model_validate_json(response.content)
+    return response
 
 
 def generate(
@@ -47,12 +36,15 @@ def generate(
     temperature: float = 0.2,
     max_tokens: int = 1500,
     model: str = "qwen2.5-coder:7b",
+    response_schema: type[BaseModel] | None = None,
 ) -> OllamaResponse:
     """Plain text generation for non-structured calls."""
     llm = ChatOllama(
         model=model,
         temperature=temperature,
         num_predict=max_tokens,
+        num_ctx=settings.ollama_context_tokens,
+        format=response_schema.model_json_schema() if response_schema is not None else None,
         base_url=settings.ollama_base_url,
         client_kwargs={"timeout": 120.0},
     )
@@ -61,5 +53,8 @@ def generate(
     return OllamaResponse(
         content=response.content,
         model=model,
-        usage=_usage(response)
+        usage=_usage(response),
+        metadata={"finish_reason": (response.response_metadata or {}).get("done_reason"),
+                  "context_tokens": settings.ollama_context_tokens,
+                  "response_format": "json_schema" if response_schema is not None else "text"},
     )

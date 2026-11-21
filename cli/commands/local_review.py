@@ -44,6 +44,7 @@ def review_local(
                   "model": os.environ.get("OPENAI_MODEL", "gpt-4o-mini") if settings.llm_backend == "openai"
                            else settings.ollama_model,
                   "prompt_version": PROMPT_VERSION, "rules_enabled": settings.rules_enabled,
+                  "ollama_context_tokens": settings.ollama_context_tokens if settings.llm_backend == "ollama" else None,
                   "verification_enabled": settings.verification_enabled}
         config.update(requirement_strategy=requirement_strategy.value, max_requirements=max_requirements)
         snapshot = provider.resolve(base, head, config=config)

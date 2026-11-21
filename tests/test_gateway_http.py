@@ -8,6 +8,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 
 import pytest
+from pydantic import BaseModel, ConfigDict
 
 from config import settings
 from core.gateway.gateway import AIGateway
@@ -28,8 +29,8 @@ def ollama_server(monkeypatch):
             failed = len(requests) <= state["failures"]
             payload = {"error": "fixture service unavailable"} if failed else {
                 "model": request["model"], "created_at": "2026-11-21T00:00:00Z",
-                "message": {"role": "assistant", "content": "gateway-ok"},
-                "done": True, "done_reason": "stop", "prompt_eval_count": 5, "eval_count": 2,
+                "message": {"role": "assistant", "content": state.get("content", "gateway-ok")},
+                "done": True, "done_reason": state.get("done_reason", "stop"), "prompt_eval_count": 5, "eval_count": 2,
             }
             content = (json.dumps(payload) + "\n").encode()
             self.send_response(503 if failed else 200)
@@ -85,3 +86,37 @@ def test_negative_budget_is_rejected_without_network_request(ollama_server):
     with pytest.raises(ValueError, match="nonnegative"):
         AIGateway().generate("transport probe", retries=-1)
     assert not requests
+
+
+class StructuredReply(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    answer: str
+
+
+def test_schema_and_context_reach_the_real_sdk_http_request(ollama_server):
+    requests, state = ollama_server
+    state["content"] = '{"answer":"ok"}'
+    response = AIGateway().generate("JSON answer", response_schema=StructuredReply, retries=0)
+    assert requests[0]["body"]["format"] == StructuredReply.model_json_schema()
+    assert requests[0]["body"]["options"]["num_ctx"] == settings.ollama_context_tokens
+    assert response.content == state["content"]  # Raw response remains available for validation/repair.
+    assert response.telemetry.response_format == "json_schema"
+    assert response.telemetry.finish_reason == "stop"
+    assert response.telemetry.schema_sha256
+
+
+def test_truncation_is_transport_success_but_explicitly_recorded(ollama_server):
+    _, state = ollama_server
+    state.update(content='{"answer":', done_reason="length")
+    response = AIGateway().generate("JSON answer", response_schema=StructuredReply, max_tokens=8, retries=0)
+    assert response.telemetry.success and response.telemetry.output_truncated
+    assert response.telemetry.max_output_tokens == 8
+    assert response.content == '{"answer":'
+
+
+def test_parsed_structured_calls_keep_usage(ollama_server):
+    _, state = ollama_server
+    state["content"] = '{"answer":"ok"}'
+    response = AIGateway().generate("JSON answer", structured_output=StructuredReply, retries=0)
+    assert response.content.answer == "ok"
+    assert response.usage["completion_tokens"] == 2
