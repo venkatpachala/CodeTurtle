@@ -38,6 +38,13 @@ class ReviewSnapshot(BaseModel):
         encoded = json.dumps(self.model_dump(), sort_keys=True, separators=(",", ":")).encode()
         return hashlib.sha256(encoded).hexdigest()
 
+    @property
+    def source_id(self) -> str:
+        """Source-only identity for paired experiments with different review configurations."""
+        encoded = json.dumps(self.model_dump(exclude={"config_sha256"}),
+                             sort_keys=True, separators=(",", ":")).encode()
+        return hashlib.sha256(encoded).hexdigest()
+
     def revision(self, side: RevisionSide) -> str:
         if side not in {"base", "head"}:
             raise InputError("revision side must be base or head")

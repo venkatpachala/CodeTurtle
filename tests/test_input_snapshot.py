@@ -46,6 +46,7 @@ def test_identity_is_deterministic_and_configuration_sensitive(repository):
     provider = GitSnapshotProvider(root)
     assert provider.resolve(base).id == provider.resolve(base).id
     assert provider.resolve(base).id != provider.resolve(base, config={"mode": "deep"}).id
+    assert provider.resolve(base).source_id == provider.resolve(base, config={"mode": "deep"}).source_id
 
 
 @pytest.mark.parametrize("path", ["../secret", "/etc/passwd", "C:/secret", "a/../app.py", "./app.py", "a\\b", ":(glob)*"])
