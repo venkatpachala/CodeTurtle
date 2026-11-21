@@ -13,11 +13,13 @@ from typing import Annotated, Literal, Self
 
 from pydantic import (
     AfterValidator,
+    AliasChoices,
     AwareDatetime,
     BaseModel,
     ConfigDict,
     Field,
     StringConstraints,
+    computed_field,
     model_validator,
 )
 
@@ -32,6 +34,7 @@ class SourceKind(StrEnum):
     SPECIFICATION = "specification"
     REPOSITORY_POLICY = "repository_policy"
     PR_DESCRIPTION = "pr_description"
+    CODE = "code"
 
 
 class RequirementKind(StrEnum):
@@ -110,13 +113,22 @@ class IntentSource(DomainRecord):
     """One captured source of developer intent."""
 
     id: NonBlank
-    kind: SourceKind
+    kind: SourceKind = Field(validation_alias=AliasChoices("kind", "source_type"))
     source_ref: NonBlank
     content_hash: ContentHash
     revision: NonBlank | None = None
     captured_at: AwareDatetime | None = None
     authority_level: Literal["authoritative", "contextual", "untrusted"] = "untrusted"
     trusted_for: Refs = ()
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_source_type(cls, value):
+        if isinstance(value, Mapping) and "source_type" in value and "kind" not in value:
+            value = dict(value)
+            raw = value.pop("source_type")
+            value["kind"] = {"policy": "repository_policy", "pr": "pr_description"}.get(raw, raw)
+        return value
 
     @model_validator(mode="after")
     def require_capture_identity(self) -> Self:
@@ -141,7 +153,7 @@ class RequirementAssessment(DomainRecord):
 
     requirement_id: NonBlank
     status: RequirementStatus = RequirementStatus.NOT_ASSESSED
-    evidence_refs: Refs = ()
+    evidence_refs: Refs = Field(default=(), validation_alias=AliasChoices("evidence_refs", "evidence_ids"))
     reason: NonBlank | None = None
 
     @model_validator(mode="after")
@@ -162,7 +174,8 @@ class InvestigationRecord(DomainRecord):
     hypothesis: NonBlank
     status: InvestigationStatus = InvestigationStatus.PLANNED
     requirement_refs: Refs = ()
-    evidence_refs: Refs = ()
+    claim_refs: Refs = Field(default=(), validation_alias=AliasChoices("claim_refs", "claim_ids"))
+    evidence_refs: Refs = Field(default=(), validation_alias=AliasChoices("evidence_refs", "evidence_ids"))
     reason: NonBlank | None = None
 
     @model_validator(mode="after")
@@ -181,8 +194,8 @@ class EvidenceRecord(DomainRecord):
     content_hash: ContentHash
     revision_sha: RevisionSHA | None = None
     revision_side: RevisionSide | None = None
-    supports_claim_refs: Refs = ()
-    contradicts_claim_refs: Refs = ()
+    supports_claim_refs: Refs = Field(default=(), validation_alias=AliasChoices("supports_claim_refs", "supports_claim_ids"))
+    contradicts_claim_refs: Refs = Field(default=(), validation_alias=AliasChoices("contradicts_claim_refs", "contradicts_claim_ids"))
     limitations: tuple[NonBlank, ...] = ()
 
     @model_validator(mode="after")
@@ -216,14 +229,17 @@ class RequirementCoverage(DomainRecord):
             raise ValueError("requirement coverage outcomes must add up to total")
         return self
 
+    @computed_field
     @property
     def assessed(self) -> int:
         return self.verified + self.violated + self.unverified
 
+    @computed_field
     @property
     def applicable(self) -> int:
         return self.total - self.not_applicable
 
+    @computed_field
     @property
     def ratio(self) -> float | None:
         """Share of applicable requirements for which verification was attempted."""
@@ -292,6 +308,7 @@ class ReviewKnowledge(DomainRecord):
         for investigation in self.investigations:
             owner = f"investigation {investigation.id}"
             _require_known(investigation.requirement_refs, requirement_ids, "requirement", owner)
+            _require_known(investigation.claim_refs, claim_ids, "claim", owner)
             _require_known(investigation.evidence_refs, evidence, "evidence", owner)
             if investigation.status in _RESOLVED_INVESTIGATIONS:
                 _require_directional_evidence(

@@ -50,17 +50,17 @@ def linked_review():
             ),
         ],
         requirement_assessments=[
-            RequirementAssessment(requirement_id="R1", status="verified", evidence_ids=("E1",)),
+            RequirementAssessment(requirement_id="R1", status="verified", evidence_refs=("E1",)),
         ],
         evidence=[
             EvidenceRecord(
                 id="E1", kind="static_proof", source_ref="retry.py:17", content_hash=DIGEST,
-                revision_sha=HEAD, revision_side="head", supports_claim_ids=("R1",),
+                revision_sha=HEAD, revision_side="head", supports_claim_refs=("R1",),
             ),
         ],
         investigations=[
             InvestigationRecord(id="I1", hypothesis="Auth failures may retry", status="unresolved",
-                                claim_ids=("R2",)),
+                                claim_refs=("R2",)),
         ],
     )
 
@@ -80,11 +80,11 @@ def test_coverage_is_derived_separately_from_inspection(linked_review):
     data = linked_review.to_dict()
     assert data["requirement_coverage"] == {
         "total": 2, "verified": 1, "violated": 0, "unverified": 0,
-        "not_assessed": 1, "assessed": 1, "ratio": 0.5,
+        "not_assessed": 1, "not_applicable": 0, "applicable": 2, "assessed": 1, "ratio": 0.5,
     }
     assert data["inspection"]["ratio"] is None
     assert data["investigations"][0]["status"] == "unresolved"
-    assert data["investigations"][0]["evidence_ids"] == []
+    assert data["investigations"][0]["evidence_refs"] == []
     assert ReviewResult.from_dict(json.loads(json.dumps(data))).to_dict() == data
 
 
@@ -109,7 +109,7 @@ def test_reference_integrity(linked_review):
         replace(linked_review, evidence=[])
     with pytest.raises(ValueError, match="duplicate requirement ID.*R1"):
         replace(linked_review, requirements=linked_review.requirements * 2)
-    unlinked = linked_review.evidence[0].model_copy(update={"supports_claim_ids": ("missing",)})
+    unlinked = linked_review.evidence[0].model_copy(update={"supports_claim_refs": ("missing",)})
     with pytest.raises(ValueError, match="unknown claim.*missing"):
         replace(linked_review, evidence=[unlinked])
 
@@ -133,12 +133,12 @@ def test_code_evidence_requires_explicit_review_revision(linked_review):
 def test_conclusive_assessment_requires_directional_behavior_evidence(linked_review, status):
     with pytest.raises(ValidationError, match="requires evidence"):
         RequirementAssessment(requirement_id="R1", status=status)
-    assessment = RequirementAssessment(requirement_id="R1", status=status, evidence_ids=("E1",))
+    assessment = RequirementAssessment(requirement_id="R1", status=status, evidence_refs=("E1",))
     evidence = linked_review.evidence[0]
     text_only = EvidenceRecord(
         id="E1", kind="requirement", source_ref="task.md", content_hash=DIGEST,
-        supports_claim_ids=("R1",) if status == "verified" else (),
-        contradicts_claim_ids=("R1",) if status == "violated" else (),
+        supports_claim_refs=("R1",) if status == "verified" else (),
+        contradicts_claim_refs=("R1",) if status == "violated" else (),
     )
     with pytest.raises(ValueError, match="evidence"):
         replace(linked_review, requirement_assessments=[assessment], evidence=[text_only])
@@ -146,7 +146,7 @@ def test_conclusive_assessment_requires_directional_behavior_evidence(linked_rev
         with pytest.raises(ValueError, match="contradicting evidence"):
             replace(linked_review, requirement_assessments=[assessment])
         evidence = evidence.model_copy(
-            update={"supports_claim_ids": (), "contradicts_claim_ids": ("R1",)},
+            update={"supports_claim_refs": (), "contradicts_claim_refs": ("R1",)},
         )
     data = replace(linked_review, requirement_assessments=[assessment], evidence=[evidence]).to_dict()
     assert data["requirement_coverage"][status] == 1
@@ -159,7 +159,7 @@ def test_coverage_rejects_impossible_counts():
 
 def test_pending_assessments_and_duplicate_assessments(linked_review):
     with pytest.raises(ValidationError, match="not_assessed"):
-        RequirementAssessment(requirement_id="R2", status="not_assessed", evidence_ids=("E1",))
+        RequirementAssessment(requirement_id="R2", status="not_assessed", evidence_refs=("E1",))
     with pytest.raises(ValueError, match="duplicate assessment.*R1"):
         replace(linked_review, requirement_assessments=linked_review.requirement_assessments * 2)
     unknown = RequirementAssessment(requirement_id="missing", status="unverified")
@@ -178,7 +178,7 @@ def test_finding_links_and_unresolved_investigation_are_checked(linked_review):
     )
     with pytest.raises(ValueError, match="requires a confirmed investigation"):
         replace(linked_review, findings=[finding])
-    by_claim = linked_review.investigations[0].model_copy(update={"claim_ids": ("F1",)})
+    by_claim = linked_review.investigations[0].model_copy(update={"claim_refs": ("F1",)})
     with pytest.raises(ValueError, match="requires a confirmed investigation"):
         replace(linked_review, investigations=[by_claim], findings=[replace(finding, hypothesis_id=None)])
     with pytest.raises(ValueError, match="unknown evidence.*absent"):
@@ -195,10 +195,10 @@ def test_confirmed_investigation_can_link_a_verified_finding(linked_review):
         id="F1", title="Auth is retried", claim="Auth failure enters the retry loop",
         file="retry.py", line=17, verification_status="verified", hypothesis_id="I1", evidence_ids=["E1"],
     )
-    evidence = linked_review.evidence[0].model_copy(update={"supports_claim_ids": ("R1", "F1")})
+    evidence = linked_review.evidence[0].model_copy(update={"supports_claim_refs": ("R1", "F1")})
     investigation = InvestigationRecord(
         id="I1", hypothesis="Auth failures retry", status="confirmed",
-        claim_ids=("F1",), evidence_ids=("E1",),
+        claim_refs=("F1",), evidence_refs=("E1",),
     )
     result = replace(linked_review, findings=[finding], investigations=[investigation], evidence=[evidence])
     assert result.to_dict()["product_findings"][0]["evidence_ids"] == ["E1"]

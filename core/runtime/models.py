@@ -205,14 +205,17 @@ class ReviewResult:
         assessed = counts["verified"] + counts["violated"] + counts["unverified"]
         return RequirementCoverage(
             total=len(self.requirements), verified=counts["verified"], violated=counts["violated"],
-            unverified=counts["unverified"], not_assessed=len(self.requirements) - assessed,
+            unverified=counts["unverified"],
+            not_assessed=len(self.requirements) - assessed - counts["not_applicable"],
+            not_applicable=counts["not_applicable"],
         )
 
     def _validate_contract_links(self) -> None:
         source_ids = _unique_ids((source.id for source in self.intent_sources), "intent source ID")
         requirement_ids = _unique_ids((requirement.id for requirement in self.requirements), "requirement ID")
-        claim_ids = _unique_ids(
-            [*requirement_ids, *(finding.id for finding in self.findings)], "claim ID",
+        claim_refs = _unique_ids(
+            [*requirement_ids, *(finding.id for finding in self.findings),
+             *(investigation.id for investigation in self.investigations)], "claim ID",
         )
         evidence_ids = _unique_ids((item.id for item in self.evidence), "evidence ID")
         investigation_ids = _unique_ids((item.id for item in self.investigations), "investigation ID")
@@ -222,7 +225,7 @@ class ReviewResult:
         for requirement in self.requirements:
             _require_known(requirement.source_refs, source_ids, "intent source")
         for item in self.evidence:
-            _require_known((*item.supports_claim_ids, *item.contradicts_claim_ids), claim_ids, "claim")
+            _require_known((*item.supports_claim_refs, *item.contradicts_claim_refs), claim_refs, "claim")
             if item.revision_sha is not None:
                 expected = self.target.head_sha if item.revision_side == "head" else self.target.base_sha
                 if item.revision_sha.lower() != expected.lower():
@@ -230,15 +233,15 @@ class ReviewResult:
 
         for assessment in self.requirement_assessments:
             _require_known((assessment.requirement_id,), requirement_ids, "requirement")
-            _require_known(assessment.evidence_ids, evidence_ids, "evidence")
+            _require_known(assessment.evidence_refs, evidence_ids, "evidence")
             if assessment.status not in {"verified", "violated"}:
                 continue
-            witnesses = [evidence[ref] for ref in assessment.evidence_ids if evidence[ref].can_establish_head_behavior]
+            witnesses = [evidence[ref] for ref in assessment.evidence_refs if evidence[ref].is_head_behavior_evidence]
             if assessment.status == "verified":
-                establishing = {claim for item in witnesses for claim in item.supports_claim_ids}
+                establishing = {claim for item in witnesses for claim in item.supports_claim_refs}
                 direction = "supporting"
             else:
-                establishing = {claim for item in witnesses for claim in item.contradicts_claim_ids}
+                establishing = {claim for item in witnesses for claim in item.contradicts_claim_refs}
                 direction = "contradicting"
             if assessment.requirement_id not in establishing:
                 raise ValueError(f"requirement {assessment.requirement_id} requires {direction} evidence for HEAD")
@@ -248,11 +251,12 @@ class ReviewResult:
         verified_hypotheses = {finding.hypothesis_id for finding in verified}
         investigated_claims: set[str] = set()
         for investigation in self.investigations:
-            _require_known(investigation.claim_ids, claim_ids, "claim")
-            _require_known(investigation.evidence_ids, evidence_ids, "evidence")
-            investigated_claims.update(investigation.claim_ids)
+            _require_known(investigation.requirement_refs, requirement_ids, "requirement")
+            _require_known(investigation.claim_refs, claim_refs, "claim")
+            _require_known(investigation.evidence_refs, evidence_ids, "evidence")
+            investigated_claims.update(investigation.claim_refs)
             has_verified_finding = (
-                investigation.id in verified_hypotheses or bool(verified_claims.intersection(investigation.claim_ids))
+                investigation.id in verified_hypotheses or bool(verified_claims.intersection(investigation.claim_refs))
             )
             if has_verified_finding and investigation.status != "confirmed":
                 raise ValueError(f"a verified finding requires a confirmed investigation: {investigation.id}")
@@ -262,7 +266,7 @@ class ReviewResult:
         for finding in verified:
             typed_investigation = finding.id in investigated_claims or finding.hypothesis_id in investigation_ids
             if (typed_investigation or finding.evidence_ids) and not any(
-                evidence[ref].can_establish_head_behavior and finding.id in evidence[ref].supports_claim_ids
+                evidence[ref].is_head_behavior_evidence and finding.id in evidence[ref].supports_claim_refs
                 for ref in finding.evidence_ids
             ):
                 raise ValueError(f"verified finding {finding.id} requires supporting evidence for HEAD")
@@ -305,8 +309,13 @@ class ReviewResult:
             evidence=[EvidenceRecord.model_validate(item) for item in raw.get("evidence", [])],
         )
         result = cls(**data)
-        if "requirement_coverage" in raw and raw["requirement_coverage"] != result.requirement_coverage.model_dump():
-            raise ValueError("requirement_coverage does not match the recorded assessments")
+        if "requirement_coverage" in raw:
+            expected = result.requirement_coverage.model_dump()
+            recorded = raw["requirement_coverage"]
+            if not isinstance(recorded, Mapping) or any(
+                key not in expected or expected[key] != value for key, value in recorded.items()
+            ) or not all(key in recorded for key in ("total", "verified", "violated", "unverified", "not_assessed")):
+                raise ValueError("requirement_coverage does not match the recorded assessments")
         return result
 
     def to_dict(self) -> Dict[str, Any]:
