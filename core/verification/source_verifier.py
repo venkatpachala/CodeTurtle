@@ -106,10 +106,12 @@ Source-level analysis is fallible and is not execution-backed proof.
 class SourceFindingVerifier:
     def __init__(self, provider: GitSnapshotProvider | None, snapshot: ReviewSnapshot | None,
                  complete: Callable[[str], str], budget: ReviewBudget,
-                 context_paths: Callable[[Candidate, Bundle | None], tuple[str, ...]] | None = None):
+                 context_paths: Callable[[Candidate, Bundle | None], tuple[str, ...]] | None = None,
+                 generation_metadata: Callable[[], dict] = lambda: {}):
         self.provider, self.snapshot = provider, snapshot
         self.complete, self.budget = complete, budget
         self.context_paths = context_paths or (lambda candidate, bundle: (candidate.file,))
+        self.generation_metadata = generation_metadata
         self.records: list[FindingVerificationRecord] = []
         self.observations: dict[str, SourceObservation] = {}
 
@@ -150,6 +152,8 @@ class SourceFindingVerifier:
                 attempts.append(VerificationAttempt(prompt_sha256=hashlib.sha256(prompt.encode()).hexdigest(),
                                                      response=raw[:16_000], attempt=attempt))
                 try:
+                    if self.generation_metadata().get("output_truncated"):
+                        raise ValueError("provider ended verification at the output token limit")
                     if len(raw) > 16_000:
                         raise ValueError("verification response exceeds output cap")
                     decision = FindingDecision.model_validate(parse_agent_document(raw))

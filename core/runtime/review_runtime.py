@@ -606,15 +606,20 @@ class ReviewRuntime:
                 verification_inputs, verification_snapshot = None, None
                 self.stage_errors.append(StageOutcome(stage="verification_context", status="degraded", code="snapshot_unavailable"))
 
+        finding_generation_metadata: dict = {}
         def structured_completion(prompt: str) -> str:
+            finding_generation_metadata.clear()
             if static_only:
                 raise RuntimeError("model verification disabled in static-only mode")
             injected = self.finding_verification_llm or self.verification_llm or self.llm
             if injected is not None:
                 return str(injected(prompt))
             from core.gateway.gateway import AIGateway
+            from core.domain.finding_verification import FindingDecision
             response = AIGateway().generate(prompt=prompt, capability="correctness_review",
-                agent_name="FindingVerifier:structured", temperature=0.0, max_tokens=1400, retries=0)
+                agent_name="FindingVerifier:structured", temperature=0.0, max_tokens=1400, retries=0,
+                response_schema=FindingDecision)
+            finding_generation_metadata.update(response.telemetry.model_dump(mode="json"))
             self.verification_usage.append(response.telemetry.model_dump(mode="json"))
             return str(response.content or "")
 
@@ -627,7 +632,7 @@ class ReviewRuntime:
             return tuple(context_paths)
 
         source_verifier = SourceFindingVerifier(verification_inputs, verification_snapshot,
-            structured_completion, self.budget, finding_context_paths)
+            structured_completion, self.budget, finding_context_paths, lambda: finding_generation_metadata)
 
         def verify_completion(prompt: str) -> str:
             if static_only:

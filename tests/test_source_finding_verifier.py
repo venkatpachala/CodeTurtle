@@ -105,6 +105,17 @@ def test_active_head_guard_can_refute_specific_trigger(verification_case):
     assert verifier.records[0].decision.counter_citations
 
 
+def test_truncated_provider_response_cannot_become_a_conclusive_finding(verification_case):
+    provider, snapshot = verification_case()
+    verifier = SourceFindingVerifier(provider, snapshot,
+        lambda prompt: json.dumps(response_for(prompt)), ReviewBudget(),
+        generation_metadata=lambda: {"output_truncated": True})
+    assert verifier.verify(candidate(), None, []) == "UNCERTAIN"
+    assert verifier.records[0].status == "invalid_response"
+    assert len(verifier.records[0].attempts) == 2
+    assert "token limit" in verifier.records[0].reason
+
+
 @pytest.mark.parametrize("after", [
     "def size(items, other=None):\n    if other is None:\n        return 0\n    return len(items)\n",
     "def size(items, flag=False):\n    if flag:\n        if items is None:\n            return 0\n    return len(items)\n",

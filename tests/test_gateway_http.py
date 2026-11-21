@@ -27,6 +27,8 @@ def ollama_server(monkeypatch):
             request = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
             requests.append({"path": self.path, "body": request})
             failed = len(requests) <= state["failures"]
+            if "respond" in state:
+                state["content"] = state["respond"](request["messages"][-1]["content"])
             payload = {"error": "fixture service unavailable"} if failed else {
                 "model": request["model"], "created_at": "2026-11-21T00:00:00Z",
                 "message": {"role": "assistant", "content": state["contents"][len(requests)-1] if "contents" in state else state.get("content", "gateway-ok")},
@@ -138,3 +140,33 @@ def test_default_agent_sends_proof_schema_through_normal_gateway(ollama_server):
     assert requests[1]["body"]["format"]["properties"]["decisions"]
     assert agent.usage_records[1]["stage"] == "proof"
     assert result.proof_runs[0]["status"] == "completed"
+
+
+def test_runtime_final_gate_requests_schema_and_validates_citations(ollama_server, tmp_path):
+    from types import SimpleNamespace
+    from core.input.snapshot import GitSnapshotProvider
+    from core.runtime.review_runtime import ReviewRuntime
+    from core.domain.finding_verification import FindingDecision
+    from tests.test_input_snapshot import git
+    from tests.test_source_finding_verifier import candidate, response_for, PROTECTED, BROKEN
+    requests, state = ollama_server
+    git(tmp_path, "init")
+    git(tmp_path, "config", "user.name", "HTTP test")
+    git(tmp_path, "config", "user.email", "http@example.invalid")
+    (tmp_path / "app.py").write_text(PROTECTED)
+    git(tmp_path, "add", ".")
+    git(tmp_path, "commit", "-m", "base")
+    base = git(tmp_path, "rev-parse", "HEAD")
+    (tmp_path / "app.py").write_text(BROKEN)
+    git(tmp_path, "commit", "-am", "head")
+    provider = GitSnapshotProvider(tmp_path)
+    snapshot = provider.resolve(base)
+    state["respond"] = lambda prompt: json.dumps(response_for(prompt))
+    fixed_agent = SimpleNamespace(run=lambda *a, **k: [candidate()])
+    result = ReviewRuntime(agent=fixed_agent, rule_engine=lambda *a, **k: []).run(SimpleNamespace(
+        repo_dir=str(tmp_path), pr_base_sha=base, pr_head_sha=snapshot.head_sha,
+        files_changed=["app.py"], full_diff=provider.diff(snapshot)))
+    assert len(requests) == 1
+    assert requests[0]["body"]["format"] == FindingDecision.model_json_schema()
+    assert result.finding_verifications[0].verdict == "supported"
+    assert len(result.product_findings) == 1
