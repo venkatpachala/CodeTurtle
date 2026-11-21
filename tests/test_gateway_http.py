@@ -29,7 +29,7 @@ def ollama_server(monkeypatch):
             failed = len(requests) <= state["failures"]
             payload = {"error": "fixture service unavailable"} if failed else {
                 "model": request["model"], "created_at": "2026-11-21T00:00:00Z",
-                "message": {"role": "assistant", "content": state.get("content", "gateway-ok")},
+                "message": {"role": "assistant", "content": state["contents"][len(requests)-1] if "contents" in state else state.get("content", "gateway-ok")},
                 "done": True, "done_reason": state.get("done_reason", "stop"), "prompt_eval_count": 5, "eval_count": 2,
             }
             content = (json.dumps(payload) + "\n").encode()
@@ -120,3 +120,21 @@ def test_parsed_structured_calls_keep_usage(ollama_server):
     response = AIGateway().generate("JSON answer", structured_output=StructuredReply, retries=0)
     assert response.content.answer == "ok"
     assert response.usage["completion_tokens"] == 2
+
+
+def test_default_agent_sends_proof_schema_through_normal_gateway(ollama_server):
+    from core.agent.bundle_agent import BundleAgent
+    from core.runtime.models import Bundle
+    requests, state = ollama_server
+    discovery = {"hypotheses": [{"file": "app.py", "symbol": "size", "category": "correctness",
+        "observation": "guard changed", "hypothesis": "None may reach len", "required_evidence": ["source"]}]}
+    proof = {"decisions": [{"hypothesis_id": "H-001", "status": "unresolved", "candidate": None,
+        "reason": "Caller contract unavailable", "evidence_refs": [], "missing_evidence": ["caller contract"]}]}
+    state["contents"] = [json.dumps(discovery), json.dumps(proof)]
+    agent = BundleAgent()
+    result = agent.run_result(Bundle(id="B-001", paths=["app.py"]))
+    assert result.status == "VALID_EMPTY"
+    assert len(requests) == 2
+    assert requests[1]["body"]["format"]["properties"]["decisions"]
+    assert agent.usage_records[1]["stage"] == "proof"
+    assert result.proof_runs[0]["status"] == "completed"

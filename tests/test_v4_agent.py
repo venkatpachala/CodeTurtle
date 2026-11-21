@@ -154,7 +154,7 @@ class TestBundleAgentMocked(unittest.TestCase):
         responses = [json.dumps(discovery), json.dumps(proof)]
         unit = {"id": "CU-001", "path": LOADER, "excerpt": "+def load():\n+    return 1\n", "symbols": ["load"]}
         bundle = Bundle(id="B-001", paths=[LOADER], units=[unit], symbols=["load"], kind="source")
-        result = BundleAgent(llm=lambda _p: responses.pop(0)).run_result(
+        result = BundleAgent(llm=lambda _p: responses.pop(0), proof_mode="legacy").run_result(
             bundle, BundleTools(bundle, index=build_diff_index(DIFF), client=None)
         )
         self.assertEqual(result.status, "VALID_CANDIDATES")
@@ -190,7 +190,7 @@ class TestBundleAgentMocked(unittest.TestCase):
             }],
         )
         responses = ["[]", json.dumps(proof)]
-        result = BundleAgent(llm=lambda _prompt: responses.pop(0)).run_result(
+        result = BundleAgent(llm=lambda _prompt: responses.pop(0), proof_mode="legacy").run_result(
             bundle, BundleTools(bundle, index=build_diff_index(DIFF), client=None)
         )
         self.assertEqual(result.status, "VALID_CANDIDATES")

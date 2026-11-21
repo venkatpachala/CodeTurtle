@@ -14,7 +14,7 @@ from core.agent.tools import BundleTools
 from core.runtime.models import Bundle, Candidate
 
 MAX_STEPS = 4
-PROMPT_VERSION = "hypothesis-proof-v3-intent"
+PROMPT_VERSION = "hypothesis-proof-v4-schema-batches"
 
 
 @dataclass
@@ -39,6 +39,7 @@ class AgentRunResult:
     assessments: List[dict[str, Any]] = field(default_factory=list)
     hypothesis_outcomes: List[dict[str, Any]] = field(default_factory=list)
     protocol_errors: List[dict[str, Any]] = field(default_factory=list)
+    proof_runs: List[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -59,6 +60,7 @@ class AgentRunResult:
             "assessments": list(self.assessments),
             "hypothesis_outcomes": list(self.hypothesis_outcomes),
             "protocol_errors": list(self.protocol_errors),
+            "proof_runs": list(self.proof_runs),
             "estimated_completion_tokens": sum(max(1, len(x) // 4) for x in self.raw_outputs),
         }
 
@@ -143,13 +145,17 @@ class BundleAgent:
         llm: Optional[Callable[[str], str]] = None,
         *,
         max_steps: int = MAX_STEPS,
+        proof_mode: str = "structured",
     ):
         self.llm = llm
         self.max_steps = max(1, int(max_steps or MAX_STEPS))
         self.usage_records: List[dict[str, Any]] = []
         self.budget = None
+        if proof_mode not in {"structured", "legacy"}:
+            raise ValueError("unknown proof mode")
+        self.proof_mode = proof_mode
 
-    def _complete(self, prompt: str) -> str:
+    def _complete(self, prompt: str, response_schema=None, *, stage="discovery") -> str:
         if self.budget is not None:
             self.budget.reserve(prompt)
         if self.llm is not None:
@@ -163,9 +169,10 @@ class BundleAgent:
             agent_name="BundleAgent",
             temperature=0.0,
             max_tokens=1400,
-            retries=1,
+            retries=0,
+            response_schema=response_schema,
         )
-        self.usage_records.append(resp.telemetry.model_dump(mode="json"))
+        self.usage_records.append({**resp.telemetry.model_dump(mode="json"), "stage": stage})
         return str(getattr(resp, "content", None) or "")
 
     def _prompt(self, bundle: Bundle, history: List[str]) -> str:
@@ -320,7 +327,8 @@ class BundleAgent:
                     continue
                 seen.add(key)
                 result = tools.dispatch(request)
-                record = {"hypothesis_id": hyp.id, "request": request, "result": result}
+                record = {"id": f"EV-{tools.bundle.id}-{len(tool_calls) + 1:03d}",
+                          "hypothesis_id": hyp.id, "request": request, "result": result}
                 tool_calls.append(record)
                 if not (isinstance(result, dict) and result.get("error")):
                     evidence.append(record)
@@ -388,6 +396,19 @@ class BundleAgent:
                             latency_ms=(time.perf_counter() - started) * 1000,
                         )
                     evidence = self._collect_evidence(hypotheses, tools, tool_calls)
+                    if self.proof_mode == "structured":
+                        from core.agent.proof import run_proofs
+                        proofs = run_proofs(bundle, hypotheses, evidence,
+                            lambda prompt, schema: self._complete(prompt, schema, stage="proof"),
+                            raw_outputs, max_steps=self.max_steps,
+                            metadata=lambda: self.usage_records[-1] if self.usage_records else {})
+                        return AgentRunResult(status=proofs.status, candidates=proofs.candidates,
+                            raw_outputs=raw_outputs, tool_calls=tool_calls, hypotheses=hypotheses,
+                            evidence_items=evidence, assessments=assessments,
+                            hypothesis_outcomes=proofs.outcomes, protocol_errors=proofs.errors,
+                            proof_runs=proofs.records,
+                            stage_status={"discovery": "VALID_HYPOTHESES", "proof": proofs.status},
+                            latency_ms=(time.perf_counter() - started) * 1000)
                     if len(raw_outputs) >= self.max_steps:
                         return AgentRunResult(status="MAX_STEPS", hypotheses=hypotheses,
                             raw_outputs=raw_outputs, tool_calls=tool_calls, assessments=assessments)

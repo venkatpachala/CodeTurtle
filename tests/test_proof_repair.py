@@ -18,7 +18,7 @@ def run(responses, *, steps=4, budget=12):
     def complete(prompt):
         prompts.append(prompt)
         return next(source)
-    agent = BundleAgent(llm=complete, max_steps=steps)
+    agent = BundleAgent(llm=complete, max_steps=steps, proof_mode="legacy")
     agent.budget = ReviewBudget(max_model_calls=budget)
     bundle = Bundle(id="B-001", paths=["litellm/batches/main.py", "tests/unit/batches/test_main.py"])
     return agent.run_result(bundle), prompts, agent.budget
