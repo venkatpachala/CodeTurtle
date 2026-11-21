@@ -198,6 +198,40 @@ complete model attention to every captured observation in larger repositories.
 
 ## Learning walkthrough
 
+The phase's [recorded validation summary](validation/2026-11-21-requirement-first.json)
+includes the cancelled initial development attempt and both complete diagnostic
+runs. Full sealed artifacts are preserved under `validation/requirement-first-v2`
+and `validation/requirement-first-v3` so the result can be inspected and rescored.
+
+The full local suite passed 610 tests, including 36 additional tests in this phase;
+four stored offline evaluation snapshots also passed. These are implementation
+checks, not a measured real-PR accuracy score. Hosted matrix execution is not
+claimed from local validation alone.
+
+The complete v3 diagnostic used frozen clean reviewer commit `4109f2f`, two synthetic
+cases, and the same installed 7B model for both modes:
+
+| Measurement | Link | Investigate |
+| --- | --- | --- |
+| Completed reviews | 2/2 | 2/2 |
+| Requirement outcomes matching development labels | 0/2 | 1/2 |
+| Actual model calls | 2 | 7 |
+| Reported prompt tokens | 1,225 | 7,269 |
+| Reported completion tokens | 214 | 1,542 |
+
+The investigator produced a grounded candidate for the removed `None` guard,
+but the existing final finding verifier rejected it. The expected violation
+therefore stayed unverified. The preserved guard received bounded satisfaction
+support. This demonstrates the new path's mechanics and a specific false-negative
+bottleneck; it does not demonstrate improved defect recall. The protocol repair
+mechanism is tested separately; the v3 live responses did not need a repair.
+
+Rescore the preserved artifact without model calls:
+
+```bash
+uv run python -m benchmark.requirement_score docs/validation/requirement-first-v3
+```
+
 Read these files in order:
 
 1. `core/domain/observations.py`: distinguish observation identity from interpretation.

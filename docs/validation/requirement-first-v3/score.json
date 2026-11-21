@@ -1,0 +1,77 @@
+{
+  "scope": "synthetic contract and integration development; not real PR quality",
+  "eligible_for_headline_metrics": false,
+  "precision": null,
+  "recall": null,
+  "strategies": {
+    "link": {
+      "reviews": 2,
+      "completed": 2,
+      "requirement_outcomes": 2,
+      "matching_outcomes": 0,
+      "actual_model_calls": 2,
+      "reported_prompt_tokens": 1225,
+      "reported_completion_tokens": 214,
+      "calls_missing_usage": 0,
+      "model_call_errors": 0
+    },
+    "investigate": {
+      "reviews": 2,
+      "completed": 2,
+      "requirement_outcomes": 2,
+      "matching_outcomes": 1,
+      "actual_model_calls": 7,
+      "reported_prompt_tokens": 7269,
+      "reported_completion_tokens": 1542,
+      "calls_missing_usage": 0,
+      "model_call_errors": 0
+    }
+  },
+  "cases": [
+    {
+      "case_id": "none-guard-removed",
+      "strategy": "link",
+      "expected_status": "violated",
+      "actual_status": "unverified",
+      "matches_label": false,
+      "health": "completed",
+      "findings": 0,
+      "elapsed_seconds": 20.961
+    },
+    {
+      "case_id": "none-guard-removed",
+      "strategy": "investigate",
+      "expected_status": "violated",
+      "actual_status": "unverified",
+      "matches_label": false,
+      "health": "completed",
+      "findings": 0,
+      "elapsed_seconds": 103.971
+    },
+    {
+      "case_id": "none-guard-preserved",
+      "strategy": "investigate",
+      "expected_status": "verified",
+      "actual_status": "verified",
+      "matches_label": true,
+      "health": "completed",
+      "findings": 0,
+      "elapsed_seconds": 87.581
+    },
+    {
+      "case_id": "none-guard-preserved",
+      "strategy": "link",
+      "expected_status": "verified",
+      "actual_status": "unverified",
+      "matches_label": false,
+      "health": "completed",
+      "findings": 0,
+      "elapsed_seconds": 20.678
+    }
+  ],
+  "limitations": [
+    "Author-labelled synthetic development cases; not held-out or independent adjudication.",
+    "Requirement outcome matches do not establish general defect-detection accuracy.",
+    "Local model tags are recorded, not immutable model artifact digests."
+  ]
+}
