@@ -35,6 +35,8 @@ class RequirementDecision(DomainRecord):
     symbol: str = Field(default="", max_length=200)
     execution_path: tuple[str, ...] = Field(default=(), max_length=12)
     severity: Literal["low", "medium", "high", "critical"] = "medium"
+    anchor_observation_id: str = ""
+    anchor_line: int = Field(default=0, ge=0)
 
     @model_validator(mode="after")
     def conclusive_has_witnesses(self) -> RequirementDecision:
@@ -46,6 +48,8 @@ class RequirementDecision(DomainRecord):
             raise ValueError("violation requires a concrete trigger, consequence, and symbol")
         if self.outcome == "violated" and (self.expected == self.actual or not self.execution_path):
             raise ValueError("violation requires different outcomes and a reachable execution path")
+        if self.outcome == "violated" and (not self.anchor_observation_id or not self.anchor_line):
+            raise ValueError("violation requires a precise HEAD source anchor")
         return self
 
 
@@ -85,7 +89,8 @@ text preserving indentation. Include supporting citations and any counterevidenc
 Return one JSON object, not a verdict word, candidates list, or commentary. Required shape:
 {"requirement_id":"R1","outcome":"unresolved","rationale":"reason","checked_scope":"scope",
 "citations":[],"counterevidence":[],"missing_evidence":["what is unknown"],"title":"",
-"trigger":"","expected":"","actual":"","symbol":"","execution_path":[],"severity":"medium"}
+"trigger":"","expected":"","actual":"","symbol":"","execution_path":[],"severity":"medium",
+"anchor_observation_id":"","anchor_line":0}
 For a violation, cite HEAD source in a changed scoped path and BASE evidence where it exists.
 """
 
@@ -117,6 +122,12 @@ def validate_decision(decision: RequirementDecision, run: RequirementRun) -> Non
     if not any(item.revision_side == "head" and item.status == "success" for item in cited):
         raise ValueError("conclusive assessment requires complete HEAD source evidence")
     if decision.outcome == "violated":
+        anchor = observations.get(decision.anchor_observation_id)
+        if (anchor is None or anchor.revision_side != "head" or anchor.path not in run.requirement.paths
+                or not any(citation.observation_id == anchor.id
+                           and citation.start_line <= decision.anchor_line <= citation.end_line
+                           for citation in decision.citations)):
+            raise ValueError("violation anchor must lie in its cited scoped HEAD source")
         if not any(item.revision_side == "head" and item.path in run.requirement.paths for item in cited):
             raise ValueError("violation requires scoped HEAD source")
         base_exists = any(item.revision_side == "base" and item.path in run.requirement.paths
@@ -179,15 +190,19 @@ class RequirementInvestigator:
                 anchors = [citation for citation in run.verification.citations
                            if witnesses[citation.observation_id].revision_side == "head"
                            and witnesses[citation.observation_id].path in item.paths
-                           and witnesses[citation.observation_id].path in changed_paths]
+                           and witnesses[citation.observation_id].path in changed_paths
+                           and citation.observation_id == run.verification.anchor_observation_id
+                           and citation.start_line <= run.verification.anchor_line <= citation.end_line]
                 if not anchors:
                     run.status, run.reason = "unresolved", "violation has no changed scoped HEAD anchor"
                     continue
                 anchor, decision = anchors[0], run.verification
+                observed = witnesses[anchor.observation_id]
+                anchor_code = observed.text.splitlines()[decision.anchor_line - observed.start_line]
                 run.candidate = Candidate(
                     bundle_id="", file=witnesses[anchor.observation_id].path, symbol=decision.symbol,
-                    start_line=anchor.start_line, title=decision.title, claim=decision.rationale,
-                    existing_code=anchor.quote.strip(), invariant=item.acceptance_criterion,
+                    start_line=decision.anchor_line, title=decision.title, claim=decision.rationale,
+                    existing_code=anchor_code.strip(), invariant=item.acceptance_criterion,
                     violating_condition=decision.trigger, expected=decision.expected, actual=decision.actual,
                     execution_path=list(decision.execution_path), evidence=[witnesses[anchor.observation_id].path],
                     evidence_paths=[witnesses[anchor.observation_id].path], severity=decision.severity,

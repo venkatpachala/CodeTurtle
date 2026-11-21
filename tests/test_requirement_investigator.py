@@ -39,7 +39,9 @@ def decision_for(prompt, outcome="violated"):
             "checked_scope": "Direct invocation of size(None)", "citations": citations,
             "counterevidence": [], "missing_evidence": [], "title": "None input raises TypeError",
             "trigger": "items is None", "expected": "0", "actual": "TypeError", "symbol": "size",
-            "execution_path": ["size"], "severity": "medium"}
+            "execution_path": ["size"], "severity": "medium",
+            "anchor_observation_id": next(obs["id"] for obs in observations if obs["revision_side"] == "head"),
+            "anchor_line": 2}
 
 
 def test_planning_finds_a_candidate_without_any_discovery_findings(requirement_case):
