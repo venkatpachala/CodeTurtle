@@ -123,7 +123,7 @@ class IntentSource(DomainRecord):
 
     @model_validator(mode="before")
     @classmethod
-    def migrate_source_type(cls, value):
+    def migrate_source_type(cls, value: object) -> object:
         if isinstance(value, Mapping) and "source_type" in value and "kind" not in value:
             value = dict(value)
             raw = value.pop("source_type")
