@@ -1,5 +1,8 @@
 """Ground both acceptance and rejection using actual sealed Git observations."""
 import json
+import hashlib
+from dataclasses import fields
+from pathlib import Path
 
 import pytest
 
@@ -134,3 +137,33 @@ def test_one_protocol_repair_is_validated_again_and_budgeted(verification_case):
     assert verifier.verify(candidate(), None, []) == "VERIFIED"
     assert "protocol_repair" in calls[1]
     assert budget.calls == 2
+
+
+def test_removed_base_guard_cannot_be_relabelled_as_preexisting_failure(verification_case):
+    provider, snapshot = verification_case()
+    def complete(prompt):
+        decision = response_for(prompt, "refuted", basis="preexisting_failure")
+        baseline = response_for(prompt, "supported", side="base")
+        decision["supporting_citations"] = baseline["supporting_citations"]
+        return json.dumps(decision)
+    verifier = SourceFindingVerifier(provider, snapshot, complete, ReviewBudget())
+    assert verifier.verify(candidate(), None, []) == "UNCERTAIN"
+    assert "preexisting None failure" in verifier.records[0].reason
+
+
+def test_preserved_live_false_negative_replays_through_grounded_gate(verification_case):
+    """Reuse the exact stored candidate; scripted reasoning is a mechanism test."""
+    directory = Path(__file__).resolve().parents[1] / "docs/validation/requirement-first-v3"
+    payload = (directory / "predictions.json").read_bytes()
+    seal = json.loads((directory / "seal.json").read_text())
+    assert hashlib.sha256(payload).hexdigest() == seal["predictions_sha256"]
+    previous = next(item for item in json.loads(payload) if item["case_id"] == "none-guard-removed"
+                    and item["strategy"] == "investigate")["result"]
+    rejected = next(item for item in previous["dropped"] if item["drop_reason"] == "disproved")
+    claim = Candidate(**{item.name: rejected[item.name] for item in fields(Candidate) if item.name in rejected})
+    source = {obs["revision_side"]: obs["text"] for obs in previous["source_observations"] if obs["path"] == claim.file}
+    provider, snapshot = verification_case(after=source["head"] + "\n", before=source["base"] + "\n")
+    verifier = SourceFindingVerifier(provider, snapshot, lambda prompt: json.dumps(response_for(prompt)), ReviewBudget())
+    assert verifier.verify(claim, None, []) == "VERIFIED"
+    assert verifier.records[0].claim.violating_condition == "size(None)"
+    assert verifier.records[0].decision.supporting_citations
