@@ -60,8 +60,13 @@ def none_trigger_reaches_anchor(source: str, symbol: str, trigger: str, snippet:
     if function is None or function.decorator_list:
         return True, None
     arguments = {argument.arg for argument in function.args.args}
-    names = {name for name in re.findall(r"\b([A-Za-z_]\w*)\s+is\s+None\b", trigger) if name in arguments}
-    if not names and len(function.args.args) == 1 and re.search(rf"\b{re.escape(function.name)}\(\s*None\s*\)", trigger):
+    binding = re.fullmatch(r"\s*([A-Za-z_]\w*)\s+is\s+None\s*", trigger)
+    names = {binding.group(1)} if binding and binding.group(1) in arguments else set()
+    # Free text, negations, and compound triggers do not bind every possible
+    # execution to None. Refuting one branch cannot refute the entire trigger.
+    if not names and len(function.args.args) == 1 and re.fullmatch(
+        rf"\s*(?:[A-Za-z_]\w*\.)*{re.escape(function.name)}\(\s*None\s*\)\s*", trigger
+    ):
         names = {function.args.args[0].arg}
     if not names:
         return True, None
