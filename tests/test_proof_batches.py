@@ -125,3 +125,22 @@ def test_supported_candidate_retains_scoped_identity_and_proof_fields():
     assert result.candidates[0].bundle_id == "B-001"
     assert result.candidates[0].verify_status == "candidate"  # Final verification is still mandatory.
     assert result.candidates[0].source == "agent"
+
+
+def test_failed_provider_attempt_still_consumes_a_step_and_is_recorded():
+    calls = []
+    def complete(prompt, schema):
+        calls.append(prompt)
+        if len(calls) == 1:
+            return "invalid"
+        if len(calls) == 2:
+            raise RuntimeError("provider failed before returning content")
+        return json.dumps(response(prompt))
+    result = run_proofs(Bundle(id="B1"), [hypothesis(n) for n in range(1, 6)], [], complete,
+                        ["discovery"], max_steps=4)
+    assert len(calls) == 3  # Four steps include discovery and the failed repair request.
+    assert result.records[0]["status"] == "provider_error"
+    assert len(result.records[0]["attempts"]) == 2
+    assert result.records[0]["attempts"][1]["response_index"] is None
+    assert result.records[-1]["status"] == "not_assessed"
+    assert result.status == "PARTIAL"

@@ -131,6 +131,8 @@ class ProofRun:
 
     @property
     def status(self):
+        if not self.completed and any(record["status"] == "budget_exhausted" for record in self.records):
+            return "BUDGET_EXHAUSTED"
         if any(record["status"] != "completed" for record in self.records):
             return "PARTIAL" if self.completed else "INVALID_SCHEMA"
         return "VALID_CANDIDATES" if self.candidates else "VALID_EMPTY"
@@ -140,6 +142,7 @@ def run_proofs(bundle: Bundle, hypotheses: list[ReviewHypothesis], evidence: lis
                complete: Callable, raw_outputs: list[str], *, max_steps: int,
                metadata: Callable[[], dict] = lambda: {}) -> ProofRun:
     run, repairs_left, exhausted = ProofRun(), 1, False
+    issued_steps = len(raw_outputs)
     for offset in range(0, len(hypotheses), 2):
         batch = hypotheses[offset:offset + 2]
         schema = proof_schema(batch)
@@ -152,7 +155,7 @@ def run_proofs(bundle: Bundle, hypotheses: list[ReviewHypothesis], evidence: lis
         run.records.append(record)
         decisions = None
         for attempt in (1, 2):
-            if exhausted or len(raw_outputs) >= max_steps:
+            if exhausted or issued_steps >= max_steps:
                 if record["attempts"]:
                     record["repair_status"] = "not_admitted_step_limit"
                 else:
@@ -163,12 +166,14 @@ def run_proofs(bundle: Bundle, hypotheses: list[ReviewHypothesis], evidence: lis
                 record.update(status="context_unavailable", reason="proof prompt exceeds admission cap")
                 break
             try:
+                issued_steps += 1
+                trace = {"prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
+                         "response_index": None, "finish_reason": None}
+                record["attempts"].append(trace)
                 raw = complete(prompt, schema)
                 raw_outputs.append(raw)
                 info = metadata()
-                trace = {"prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
-                         "response_index": len(raw_outputs) - 1, "finish_reason": info.get("finish_reason")}
-                record["attempts"].append(trace)
+                trace.update(response_index=len(raw_outputs) - 1, finish_reason=info.get("finish_reason"))
                 if info.get("output_truncated"):
                     raise ValueError("provider ended proof generation at the output token limit")
                 decisions = validate_batch(raw, schema, batch, admitted)
