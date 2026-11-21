@@ -584,7 +584,15 @@ class ReviewRuntime:
         from core.runtime.verify_loop import verify_candidates
         from core.verification.source_verifier import SourceFindingVerifier, FINDING_PROMPT_VERSION
 
-        verification_inputs, verification_snapshot = input_provider, snapshot
+        verification_inputs = input_provider or getattr(ctx, "pr_input_provider", None)
+        verification_snapshot = snapshot or getattr(ctx, "pr_review_snapshot", None)
+        if snapshot is None and verification_snapshot is not None:
+            from core.input.snapshot import InputError
+            preparation = getattr(ctx, "source_preparation", None) or {}
+            if (verification_snapshot.base_sha != getattr(ctx, "pr_base_sha", "")
+                    or verification_snapshot.head_sha != getattr(ctx, "pr_head_sha", "")
+                    or preparation.get("review_diff_sha256") != hashlib.sha256(diff.encode()).hexdigest()):
+                raise InputError("prepared PR source differs from runtime review identity")
         if verification_snapshot is None and self.finding_verifier_mode == "structured" and repo_dir:
             try:
                 from core.input.snapshot import GitSnapshotProvider
@@ -890,6 +898,7 @@ class ReviewRuntime:
                         "requirement_strategy": requirement_strategy,
                         "requirement_runs": [run.to_dict() for run in requirement_runs],
                         "finding_verifier_mode": self.finding_verifier_mode,
+                        "source_preparation": getattr(ctx, "source_preparation", None),
                         **({"verification_snapshot_id": verification_snapshot.id,
                             "verification_snapshot": verification_snapshot.model_dump(mode="json")}
                            if verification_snapshot else {}),

@@ -78,6 +78,9 @@ class PipelineContext:
     repo_dir: str = ""
     show_uncertain: bool = False
     review_intent: Optional[object] = None
+    pr_input_provider: Optional[object] = None
+    pr_review_snapshot: Optional[object] = None
+    source_preparation: Optional[dict] = None
 
 
 def get_current_session() -> str:
@@ -276,6 +279,7 @@ class ReviewPipeline:
 
             self._load_knowledge_base()
             self._build_full_diff()
+            self._prepare_source_snapshot()
 
             runtime = str(
                 getattr(cfg, "runtime", None)
@@ -520,6 +524,24 @@ Description:
                 getattr(settings, "execute_allow_npm_scripts", False)
             ),
         }
+
+    def _prepare_source_snapshot(self):
+        """Resolve comparison source before inference; retain missing history explicitly."""
+        from core.input.preparation import prepare_pr_snapshot
+        from core.input.snapshot import InputError
+        self.context.pr_input_provider = None
+        self.context.pr_review_snapshot = None
+        try:
+            provider, snapshot, report = prepare_pr_snapshot(
+                self.context.repo_dir, self.context.pr_base_sha, self.context.pr_head_sha,
+                self.context.full_diff)
+            self.context.pr_input_provider = provider
+            self.context.pr_review_snapshot = snapshot
+            self.context.source_preparation = report
+            print(f"[Source] pinned comparison ready base={snapshot.revision('base')[:12]} head={snapshot.head_sha[:12]}")
+        except InputError as exc:
+            self.context.source_preparation = {"status": "unavailable", "reason": str(exc)}
+            print("[Source] pinned comparison unavailable; source-dependent conclusions remain unresolved")
 
     def _write_eval_snapshot(self):
         """Always write artifacts/last_review_snapshot.json for run_eval --live."""
