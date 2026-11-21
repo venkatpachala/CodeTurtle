@@ -17,7 +17,7 @@ from core.intent.service import ReviewIntent, ScopedRequirement
 from core.review.budget import BudgetExceeded, ReviewBudget
 from core.runtime.models import Candidate
 
-REQUIREMENT_PROMPT_VERSION = "requirement-first-v1"
+REQUIREMENT_PROMPT_VERSION = "requirement-first-v2-citations"
 
 
 class RequirementDecision(DomainRecord):
@@ -86,6 +86,12 @@ Return satisfied only for bounded source-level support in the declared checked_s
 this is not proof for all executions. Unavailable external behavior remains unresolved.
 Citations must name provided observation IDs, exact inclusive line numbers, and exact source
 text preserving indentation. Include supporting citations and any counterevidence inspected.
+Every citation has EXACTLY this shape (do not use id/line/text aliases):
+{"observation_id":"OBS-...","start_line":2,"end_line":2,"quote":"    return len(items)"}
+Use numbered_lines to choose real line numbers and copy exact text. Prefer concise single-line
+citations. A directly invoked public function with concrete input establishes reachability;
+missing external callers alone does not negate an explicit observable function contract.
+For violated, anchor_line points to the offending HEAD operation, not just its function header.
 Return one JSON object, not a verdict word, candidates list, or commentary. Required shape:
 {"requirement_id":"R1","outcome":"unresolved","rationale":"reason","checked_scope":"scope",
 "citations":[],"counterevidence":[],"missing_evidence":["what is unknown"],"title":"",
@@ -101,7 +107,10 @@ def _prompt(run: RequirementRun, stage: str) -> str:
         instruction += ("\nYou are a fresh verifier. Challenge the proposal, inspect counterevidence, and independently\n"
                         "return the same structured shape. Agreement alone is not evidence; source citations are mandatory.\n")
     package = {"stage": stage, "requirement": run.requirement.model_dump(mode="json"),
-               "observations": [item.model_dump(mode="json") for item in run.observations],
+               "observations": [{**item.model_dump(mode="json"),
+                                 "numbered_lines": [{"number": number, "text": line}
+                                                    for number, line in enumerate(item.text.splitlines(), item.start_line)]}
+                                for item in run.observations],
                "context_gaps": list(run.gaps)}
     if stage == "verify":
         package["proposal"] = run.proposal.model_dump(mode="json")
@@ -213,7 +222,7 @@ class RequirementInvestigator:
                 run.status = "unresolved" if run.attempted else "not_assessed"
                 run.reason = "shared review budget exhausted"
             except ValueError as exc:
-                run.status, run.reason = "error", f"invalid structured assessment: {exc}"
+                run.status, run.reason = "error", f"invalid structured assessment: {str(exc)[:1200]}"
             except Exception as exc:
                 run.status, run.reason = "error", f"model request failed: {type(exc).__name__}"
         return runs

@@ -27,5 +27,6 @@ jobs:
       - run: python -m pytest tests/test_production_contract.py tests/test_review_result_v21.py tests/test_phase72_change_units.py tests/test_v4_bundles.py tests/test_v4_reflector.py tests/test_v4_symbols.py tests/test_v4_url_parse.py tests/evaluation/test_scorer.py -q -p no:cacheprovider
       - run: python -m pytest tests/test_vnext_domain_contracts.py tests/test_contract_compatibility.py tests/test_input_snapshot.py tests/test_snapshot_runtime.py tests/test_semantic_changes.py tests/test_intent_runtime.py tests/test_verifier_response_contract.py -q -p no:cacheprovider
       - run: python -m pytest tests/test_agent_document_parsing.py tests/test_paired_analysis.py -q -p no:cacheprovider
+      - run: python -m pytest tests/test_source_observations.py tests/test_requirement_investigator.py tests/test_requirement_first_runtime.py tests/test_review_result_v22.py tests/test_requirement_corpus.py tests/test_requirement_experiment.py tests/test_dataset_registration.py -q -p no:cacheprovider
       - run: codeturtle review --help
       - run: codeturtle review-local --help

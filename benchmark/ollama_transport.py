@@ -37,6 +37,7 @@ class OllamaExperimentClient:
                 result = subprocess.run([executable, "-NoProfile", "-NonInteractive", "-Command", _WINDOWS_REQUEST],
                     input=body, text=True, encoding="utf-8", errors="replace", capture_output=True, timeout=130)
                 if result.returncode:
+                    call["error_detail"] = result.stderr.strip()[:500]
                     raise RuntimeError("Windows Ollama request failed")
                 response = json.loads(result.stdout.lstrip("\ufeff"))
             else:
