@@ -24,9 +24,12 @@ not have the v2 production contract guarantees.
 
 ## Canonical result
 
-`ReviewResult.to_dict()` is schema version `2.0`. It includes target, health,
+`ReviewResult.to_dict()` emits schema version `2.1`. It includes target, health,
 inspection, findings, product findings, execution, trace, model/config provenance,
-policy reasons, and bounded-work telemetry. `findings` is diagnostic; the
+policy reasons, and bounded-work telemetry. The additive requirement contracts
+record intent sources, requirements, assessments, investigations, and evidence.
+`ReviewResult.from_dict()` accepts a canonical result or its CLI envelope and
+upgrades stored `2.0` results to `2.1`. `findings` is diagnostic; the
 `product_findings` projection contains verified defects. No empty-list fallback
 reconstructs v4 findings from legacy comments.
 
@@ -43,6 +46,16 @@ delta, hypothesis outcome, and a valid unit evidence reference from a healthy ru
 Missing, truncated, or invalid assessments do not count as inspected. Zero eligible
 units produce a null ratio. These records establish process coverage, not semantic
 correctness or proof that all bugs were considered.
+
+Requirement coverage counts verified, violated, unverified, and unassessed
+requirements. A missing assessment counts as unassessed. Its ratio is assessed
+requirements divided by total requirements and is null for zero requirements.
+Conclusive requirement assessments cite directional evidence for the reviewed
+HEAD. BASE evidence can provide historical context. The existing verdict
+continues to use source-unit inspection. Findings linked to the new
+investigation records require a confirmed investigation and supporting HEAD
+evidence to enter product output. Stored v2.0 findings retain their existing
+verification status during migration.
 
 ## Policy
 

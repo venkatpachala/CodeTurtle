@@ -8,6 +8,8 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List
 
+from core.review.contract import SUPPORTED_REVIEW_RESULT_SCHEMA_VERSIONS
+
 _STOPWORDS = {
     "the", "and", "for", "that", "this", "with", "from", "when", "then",
     "than", "into", "after", "before", "will", "would", "could", "should",
@@ -38,8 +40,10 @@ def evaluate_pr(prediction: Dict[str, Any], golden_comments: List[Any]) -> Dict[
     """Match one prediction against one PR's goldens, one-to-one."""
     # An intentionally empty product list must not fall back to diagnostic
     # survivors or hypotheses.
-    if prediction.get("schema_version") == "2.0":
-        predicted = list(prediction.get("findings") or [])
+    if prediction.get("schema_version") in SUPPORTED_REVIEW_RESULT_SCHEMA_VERSIONS:
+        # The CLI envelope uses findings for the verified product projection.
+        # A standalone ReviewResult uses findings for diagnostics.
+        predicted = list(prediction.get("product_findings", prediction.get("findings")) or [])
     else:
         predicted = list(prediction["review_comments"] if "review_comments" in prediction else prediction.get("findings") or [])
     goldens = [g if isinstance(g, dict) else vars(g) for g in golden_comments]

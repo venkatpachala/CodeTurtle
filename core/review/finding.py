@@ -14,6 +14,7 @@ from __future__ import annotations
 import uuid
 import hashlib
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
@@ -117,6 +118,7 @@ class ReviewFinding:
     blocking: bool = False
     hypothesis_id: Optional[str] = None
     evidence_level: str = "structured"
+    evidence_ids: List[str] = field(default_factory=list)
 
     @property
     def fingerprint(self) -> str:
@@ -179,7 +181,7 @@ class ReviewFinding:
 
     def to_dict(self) -> Dict[str, Any]:
         """Full serialisation for JSON output / prediction schema."""
-        return {
+        data = {
             "id": self.id,
             "fingerprint": self.fingerprint,
             "kind": self.kind,
@@ -207,6 +209,16 @@ class ReviewFinding:
             "source": self.source,
             "related_tests": list(self.related_tests),
         }
+        if self.evidence_ids:
+            data["evidence_ids"] = list(self.evidence_ids)
+        return data
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> ReviewFinding:
+        data = dict(payload)
+        data.pop("fingerprint", None)  # Derived from the preserved proof.
+        execution = data.pop("execution", None)
+        return cls(**data, execution=ExecutionEvidence(**execution) if execution is not None else None)
 
     @classmethod
     def from_candidate_and_comment(

@@ -2,13 +2,30 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
 import uuid
-from core.review.contract import ReviewTarget, ReviewHealth, ReviewCoverage
+from collections import Counter
+from collections.abc import Iterable, Mapping
+from dataclasses import asdict, dataclass, field, fields
+from typing import Any, Dict, List, Optional
 
-if TYPE_CHECKING:
-    from core.review.finding import ReviewFinding
+from core.review.contract import (
+    REVIEW_RESULT_SCHEMA_VERSION,
+    SUPPORTED_REVIEW_RESULT_SCHEMA_VERSIONS,
+    ReviewCoverage,
+    ReviewHealth,
+    ReviewTarget,
+)
+from core.review.finding import ReviewFinding
+from core.review.requirements import (
+    EvidenceRecord,
+    IntentSource,
+    InvestigationRecord,
+    Requirement,
+    RequirementAssessment,
+    RequirementCoverage,
+)
+from core.review.timing import TimingRecord
+from core.review.trace import PipelineTrace
 
 
 @dataclass
@@ -132,6 +149,21 @@ def comment_from_candidate(cand: Candidate, line: int) -> Comment:
     )
 
 
+def _unique_ids(values: Iterable[str], label: str) -> set[str]:
+    ids: set[str] = set()
+    for value in values:
+        if value in ids:
+            raise ValueError(f"duplicate {label}: {value}")
+        ids.add(value)
+    return ids
+
+
+def _require_known(refs: Iterable[str], known: Iterable[str], label: str) -> None:
+    missing = set(refs).difference(known)
+    if missing:
+        raise ValueError(f"unknown {label}: {', '.join(sorted(missing))}")
+
+
 @dataclass
 class ReviewResult:
     decision: Optional[str] = "COMMENT"
@@ -149,7 +181,7 @@ class ReviewResult:
     timing: Optional[Any] = None
     agent_runs: List[Dict[str, Any]] = field(default_factory=list)
     pipeline_health: Dict[str, Any] = field(default_factory=dict)
-    schema_version: str = "2.0"
+    schema_version: str = REVIEW_RESULT_SCHEMA_VERSION
     run_id: str = field(default_factory=lambda: uuid.uuid4().hex)
     target: ReviewTarget = field(default_factory=ReviewTarget)
     health: ReviewHealth = field(default_factory=ReviewHealth)
@@ -158,10 +190,124 @@ class ReviewResult:
     unresolved: List[Dict[str, Any]] = field(default_factory=list)
     approval_eligible: bool = False
     provenance: Dict[str, Any] = field(default_factory=dict)
+    intent_sources: list[IntentSource] = field(default_factory=list)
+    requirements: list[Requirement] = field(default_factory=list)
+    requirement_assessments: list[RequirementAssessment] = field(default_factory=list)
+    investigations: list[InvestigationRecord] = field(default_factory=list)
+    evidence: list[EvidenceRecord] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        self._validate_contract_links()
 
     @property
-    def product_findings(self) -> List["ReviewFinding"]:
-        return [f for f in self.findings if f.kind == "defect" and f.verification_status == "verified"]
+    def requirement_coverage(self) -> RequirementCoverage:
+        counts = Counter(assessment.status for assessment in self.requirement_assessments)
+        assessed = counts["verified"] + counts["violated"] + counts["unverified"]
+        return RequirementCoverage(
+            total=len(self.requirements), verified=counts["verified"], violated=counts["violated"],
+            unverified=counts["unverified"], not_assessed=len(self.requirements) - assessed,
+        )
+
+    def _validate_contract_links(self) -> None:
+        source_ids = _unique_ids((source.id for source in self.intent_sources), "intent source ID")
+        requirement_ids = _unique_ids((requirement.id for requirement in self.requirements), "requirement ID")
+        claim_ids = _unique_ids(
+            [*requirement_ids, *(finding.id for finding in self.findings)], "claim ID",
+        )
+        evidence_ids = _unique_ids((item.id for item in self.evidence), "evidence ID")
+        investigation_ids = _unique_ids((item.id for item in self.investigations), "investigation ID")
+        evidence = {item.id: item for item in self.evidence}
+        _unique_ids((item.requirement_id for item in self.requirement_assessments), "assessment")
+
+        for requirement in self.requirements:
+            _require_known(requirement.source_refs, source_ids, "intent source")
+        for item in self.evidence:
+            _require_known((*item.supports_claim_ids, *item.contradicts_claim_ids), claim_ids, "claim")
+            if item.revision_sha is not None:
+                expected = self.target.head_sha if item.revision_side == "head" else self.target.base_sha
+                if item.revision_sha.lower() != expected.lower():
+                    raise ValueError(f"evidence {item.id} does not match the reviewed {item.revision_side} revision")
+
+        for assessment in self.requirement_assessments:
+            _require_known((assessment.requirement_id,), requirement_ids, "requirement")
+            _require_known(assessment.evidence_ids, evidence_ids, "evidence")
+            if assessment.status not in {"verified", "violated"}:
+                continue
+            witnesses = [evidence[ref] for ref in assessment.evidence_ids if evidence[ref].can_establish_head_behavior]
+            if assessment.status == "verified":
+                establishing = {claim for item in witnesses for claim in item.supports_claim_ids}
+                direction = "supporting"
+            else:
+                establishing = {claim for item in witnesses for claim in item.contradicts_claim_ids}
+                direction = "contradicting"
+            if assessment.requirement_id not in establishing:
+                raise ValueError(f"requirement {assessment.requirement_id} requires {direction} evidence for HEAD")
+
+        verified = [finding for finding in self.findings if self._is_product_finding(finding)]
+        verified_claims = {finding.id for finding in verified}
+        verified_hypotheses = {finding.hypothesis_id for finding in verified}
+        investigated_claims: set[str] = set()
+        for investigation in self.investigations:
+            _require_known(investigation.claim_ids, claim_ids, "claim")
+            _require_known(investigation.evidence_ids, evidence_ids, "evidence")
+            investigated_claims.update(investigation.claim_ids)
+            has_verified_finding = (
+                investigation.id in verified_hypotheses or bool(verified_claims.intersection(investigation.claim_ids))
+            )
+            if has_verified_finding and investigation.status != "confirmed":
+                raise ValueError(f"a verified finding requires a confirmed investigation: {investigation.id}")
+
+        for finding in self.findings:
+            _require_known(finding.evidence_ids, evidence_ids, "evidence")
+        for finding in verified:
+            typed_investigation = finding.id in investigated_claims or finding.hypothesis_id in investigation_ids
+            if (typed_investigation or finding.evidence_ids) and not any(
+                evidence[ref].can_establish_head_behavior and finding.id in evidence[ref].supports_claim_ids
+                for ref in finding.evidence_ids
+            ):
+                raise ValueError(f"verified finding {finding.id} requires supporting evidence for HEAD")
+
+    @staticmethod
+    def _is_product_finding(finding: ReviewFinding) -> bool:
+        return finding.kind == "defect" and finding.verification_status == "verified"
+
+    @property
+    def product_findings(self) -> List[ReviewFinding]:
+        self._validate_contract_links()
+        return [finding for finding in self.findings if self._is_product_finding(finding)]
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> ReviewResult:
+        """Load a canonical or CLI-wrapped v2 result and upgrade it to the current schema."""
+        raw = payload.get("result", payload)
+        if not isinstance(raw, Mapping) or raw.get("schema_version") not in SUPPORTED_REVIEW_RESULT_SCHEMA_VERSIONS:
+            raise ValueError("unsupported review result schema")
+        if "decision" not in raw:
+            raise ValueError("review result is missing decision")
+
+        data = {item.name: raw[item.name] for item in fields(cls) if item.name in raw}
+        data.update(
+            schema_version=REVIEW_RESULT_SCHEMA_VERSION,
+            target=ReviewTarget.model_validate(raw.get("target", {})),
+            health=ReviewHealth.model_validate(raw.get("health", {})),
+            inspection=ReviewCoverage.model_validate(raw.get("inspection", {})),
+            comments=[Comment(**item) for item in raw.get("comments", [])],
+            bundles=[Bundle(**item) for item in raw.get("bundles", [])],
+            findings=[ReviewFinding.from_dict(item) for item in raw.get("findings", [])],
+            pipeline_trace=PipelineTrace.from_list(raw["pipeline_trace"]) if raw.get("pipeline_trace") else None,
+            timing=TimingRecord.from_dict(raw["timing"]) if raw.get("timing") else None,
+            intent_sources=[IntentSource.model_validate(item) for item in raw.get("intent_sources", [])],
+            requirements=[Requirement.model_validate(item) for item in raw.get("requirements", [])],
+            requirement_assessments=[
+                RequirementAssessment.model_validate(item) for item in raw.get("requirement_assessments", [])
+            ],
+            investigations=[InvestigationRecord.model_validate(item) for item in raw.get("investigations", [])],
+            evidence=[EvidenceRecord.model_validate(item) for item in raw.get("evidence", [])],
+        )
+        result = cls(**data)
+        if "requirement_coverage" in raw and raw["requirement_coverage"] != result.requirement_coverage.model_dump():
+            raise ValueError("requirement_coverage does not match the recorded assessments")
+        return result
 
     def to_dict(self) -> Dict[str, Any]:
         trace = self.pipeline_trace
@@ -189,4 +335,12 @@ class ReviewResult:
             "timing": timing.to_dict() if timing is not None and hasattr(timing, "to_dict") else {},
             "agent_runs": list(self.agent_runs),
             "pipeline_health": dict(self.pipeline_health),
+            "intent_sources": [source.model_dump(mode="json") for source in self.intent_sources],
+            "requirements": [requirement.model_dump(mode="json") for requirement in self.requirements],
+            "requirement_assessments": [
+                assessment.model_dump(mode="json") for assessment in self.requirement_assessments
+            ],
+            "investigations": [item.model_dump(mode="json") for item in self.investigations],
+            "evidence": [item.model_dump(mode="json") for item in self.evidence],
+            "requirement_coverage": self.requirement_coverage.model_dump(mode="json"),
         }

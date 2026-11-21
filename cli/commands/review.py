@@ -989,13 +989,12 @@ Description:
         # Retain the established top-level review_comments schema while also
         # exposing canonical v4 findings and diagnostics for benchmark runs.
         if review_result is not None:
-            payload["diagnostic_findings"] = [f.to_dict() for f in review_result.findings]
-            payload["findings"] = [f.to_dict() for f in review_result.product_findings]
-            payload["result"] = review_result.to_dict()
-            payload["schema_version"] = review_result.schema_version
-            payload["target"] = review_result.target.model_dump()
-            payload["health"] = review_result.health.model_dump()
-            payload["decision"] = review_result.decision
+            canonical = review_result.to_dict()
+            payload["diagnostic_findings"] = canonical["findings"]
+            payload["findings"] = canonical["product_findings"]
+            payload["result"] = canonical
+            for key in ("schema_version", "target", "health", "decision"):
+                payload[key] = canonical[key]
             payload["publication_preview"] = self.context.publication_preview
             payload["publication"] = self.context.publication
             trace = getattr(review_result, "pipeline_trace", None)
