@@ -57,10 +57,14 @@ def materialize_case(root: Path, case: RequirementCase) -> tuple[str, Path]:
 
 def run_experiment(corpus: Path, output: Path, provider: ExperimentProvider, *, model: str,
                    strategies: tuple[str, ...] = ("link", "investigate"), limit: int | None = None,
-                   selected_cases: tuple[str, ...] = ()) -> dict:
+                   selected_cases: tuple[str, ...] = (), verifier_modes: tuple[str, ...] = ("structured",)) -> dict:
     manifest, cases = load_corpus(corpus)
     if not strategies or len(set(strategies)) != len(strategies) or not set(strategies) <= {"off", "link", "investigate"}:
         raise ValueError("strategies must be unique supported modes")
+    if not verifier_modes or len(set(verifier_modes)) != len(verifier_modes) or not set(verifier_modes) <= {"legacy", "structured"}:
+        raise ValueError("verifier modes must be unique supported modes")
+    variants = tuple((strategy, mode, f"{strategy}:{mode}" if len(verifier_modes) > 1 else strategy)
+                     for strategy in strategies for mode in verifier_modes)
     if selected_cases:
         known = {case.case_id for case in cases}
         if not set(selected_cases) <= known:
@@ -74,13 +78,16 @@ def run_experiment(corpus: Path, output: Path, provider: ExperimentProvider, *, 
     code_root = Path(__file__).resolve().parents[1]
     from core.agent.bundle_agent import PROMPT_VERSION
     from core.intent.investigator import REQUIREMENT_PROMPT_VERSION
+    from core.verification.source_verifier import FINDING_PROMPT_VERSION
     metadata = {"scope": manifest["scope"], "eligible_for_headline_metrics": False,
-                "corpus": manifest, "model": model, "strategies": list(strategies), "case_count": len(cases),
-                "baseline_type": "same-commit link/off ablation, not historical v4",
+                "corpus": manifest, "model": model, "strategies": [name for _, _, name in variants], "case_count": len(cases),
+                "intent_strategies": list(strategies), "finding_verifier_modes": list(verifier_modes),
+                "baseline_type": "same-commit intent/final-verifier ablation, not historical v4",
                 "reviewer_commit": _git(code_root, "rev-parse", "HEAD"),
                 "reviewer_dirty": bool(_git(code_root, "status", "--porcelain")),
                 "provider_profile": getattr(provider, "profile", {"transport": "injected"}),
-                "prompt_versions": {"bundle": PROMPT_VERSION, "requirement": REQUIREMENT_PROMPT_VERSION},
+                "prompt_versions": {"bundle": PROMPT_VERSION, "requirement": REQUIREMENT_PROMPT_VERSION,
+                                    "finding": FINDING_PROMPT_VERSION},
                 "budgets": {"model_calls": 12, "prompt_characters": 120000, "between_call_seconds": 300}}
     write_json_atomic(output / "manifest.json", metadata)
     predictions = []
@@ -91,9 +98,10 @@ def run_experiment(corpus: Path, output: Path, provider: ExperimentProvider, *, 
             intent = load_intent(intent_path)
             inputs = GitSnapshotProvider(root)
             # Alternate order to expose rather than systematically favor a warm model.
-            order = strategies if index % 2 == 0 else tuple(reversed(strategies))
-            for strategy in order:
+            order = variants if index % 2 == 0 else tuple(reversed(variants))
+            for strategy, mode, variant in order:
                 snapshot = inputs.resolve(base, config={"model": model, "strategy": strategy,
+                                                        "finding_verifier_mode": mode,
                                                         "intent_sha256": intent.source.content_hash})
                 diff = inputs.diff(snapshot)
                 first_call = len(provider.calls)
@@ -101,6 +109,8 @@ def run_experiment(corpus: Path, output: Path, provider: ExperimentProvider, *, 
                 result = ReviewRuntime(
                     llm=lambda prompt: provider.generate("discovery", prompt),
                     verification_llm=lambda prompt: provider.generate("finding_or_link_verifier", prompt, 96),
+                    finding_verification_llm=lambda prompt: provider.generate("final_verifier:structured", prompt, 1400),
+                    finding_verifier_mode=mode,
                     requirement_llm=lambda stage, prompt: provider.generate(f"requirement:{stage}", prompt),
                 ).run(SimpleNamespace(
                     review_snapshot=snapshot, input_provider=inputs, review_intent=intent,
@@ -109,11 +119,12 @@ def run_experiment(corpus: Path, output: Path, provider: ExperimentProvider, *, 
                 ))
                 result.provenance.update(model=model, provider="experiment_adapter",
                                          model_calls=list(provider.calls[first_call:]))
-                predictions.append({"case_id": case.case_id, "strategy": strategy,
+                predictions.append({"case_id": case.case_id, "strategy": variant,
+                    "intent_strategy": strategy, "finding_verifier_mode": mode,
                     "source_case_sha256": hashlib.sha256(json.dumps(case.model_dump(mode="json"), sort_keys=True).encode()).hexdigest(),
                     "elapsed_seconds": round(time.monotonic() - started, 3), "result": result.to_dict()})
                 write_json_atomic(output / "progress.json", predictions)
-                print(f"{case.case_id} [{strategy}]: health={result.health.status}, "
+                print(f"{case.case_id} [{variant}]: health={result.health.status}, "
                       f"findings={len(result.product_findings)}, "
                       f"requirements={[assessment.status for assessment in result.requirement_assessments]}", flush=True)
     path = output / "predictions.json"
@@ -134,9 +145,11 @@ def main() -> int:
     parser.add_argument("--limit", type=int)
     parser.add_argument("--case", action="append", default=[])
     parser.add_argument("--strategies", nargs="+", default=["link", "investigate"], choices=["off", "link", "investigate"])
+    parser.add_argument("--verifier-modes", nargs="+", default=["structured"], choices=["legacy", "structured"])
     args = parser.parse_args()
     run_experiment(args.corpus, args.output, OllamaExperimentClient(args.model, windows=args.windows_ollama),
-                   model=args.model, strategies=tuple(args.strategies), limit=args.limit, selected_cases=tuple(args.case))
+                   model=args.model, strategies=tuple(args.strategies), limit=args.limit, selected_cases=tuple(args.case),
+                   verifier_modes=tuple(args.verifier_modes))
     return 0
 
 

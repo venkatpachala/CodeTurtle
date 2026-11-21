@@ -47,9 +47,19 @@ def score_experiment(directory: Path, corpus: Path) -> dict:
         row = report["strategies"].setdefault(prediction["strategy"],
             {"reviews": 0, "completed": 0, "requirement_outcomes": 0, "matching_outcomes": 0,
              "actual_model_calls": 0, "reported_prompt_tokens": 0, "reported_completion_tokens": 0,
-             "calls_missing_usage": 0, "model_call_errors": 0})
+             "calls_missing_usage": 0, "model_call_errors": 0, "product_findings": 0,
+             "elapsed_seconds": 0, "finding_verifications": 0, "finding_verdicts": {},
+             "finding_verification_statuses": {}, "verification_repairs": 0})
         row["reviews"] += 1
         row["completed"] += int(result.health.status == "completed")
+        row["product_findings"] += len(result.product_findings)
+        row["elapsed_seconds"] = round(row["elapsed_seconds"] + prediction["elapsed_seconds"], 3)
+        for record in result.finding_verifications:
+            # Deserialization already validated citation identity; it does not prove semantic truth.
+            row["finding_verifications"] += 1
+            row["finding_verdicts"][record.verdict] = row["finding_verdicts"].get(record.verdict, 0) + 1
+            row["finding_verification_statuses"][record.status] = row["finding_verification_statuses"].get(record.status, 0) + 1
+            row["verification_repairs"] += max(0, len(record.attempts) - 1)
         for call in result.provenance["model_calls"]:
             row["actual_model_calls"] += 1
             row["model_call_errors"] += int(call.get("status") != "success")

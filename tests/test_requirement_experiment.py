@@ -70,3 +70,27 @@ def test_modified_predictions_or_annotations_are_rejected(experiment, tmp_path):
     (corpus / "labels.json").write_text("[]")
     with pytest.raises(ValueError, match="annotation integrity"):
         score_experiment(experiment, corpus)
+
+
+def test_final_verifier_ablation_keeps_paired_source_and_separate_configuration(tmp_path):
+    output = tmp_path / "paired"
+    run_experiment(CORPUS, output, ScriptedProvider(), model="scripted-test", strategies=("investigate",),
+                   verifier_modes=("legacy", "structured"), limit=2)
+    predictions = json.loads((output / "predictions.json").read_text())
+    assert [item["strategy"] for item in predictions] == ["investigate:legacy", "investigate:structured",
+                                                         "investigate:structured", "investigate:legacy"]
+    for offset in (0, 2):
+        left, right = predictions[offset:offset + 2]
+        assert left["result"]["provenance"]["source_input_id"] == right["result"]["provenance"]["source_input_id"]
+        assert left["result"]["provenance"]["snapshot_id"] != right["result"]["provenance"]["snapshot_id"]
+    report = score_experiment(output, CORPUS)
+    assert set(report["strategies"]) == {"investigate:legacy", "investigate:structured"}
+    assert report["strategies"]["investigate:structured"]["finding_verifications"] == 0
+
+
+@pytest.mark.parametrize("modes", [(), ("legacy", "legacy"), ("typo",)])
+def test_invalid_final_verifier_modes_are_rejected_before_output_creation(tmp_path, modes):
+    output = tmp_path / "invalid"
+    with pytest.raises(ValueError, match="verifier modes"):
+        run_experiment(CORPUS, output, ScriptedProvider(), model="scripted", verifier_modes=modes)
+    assert not output.exists()
