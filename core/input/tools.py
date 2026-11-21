@@ -10,12 +10,13 @@ from core.pr_facts import normalize_path
 
 
 class SnapshotBundleTools(BundleTools):
+    supports_scoped_source = True
     def __init__(self, bundle, *, index, provider: GitSnapshotProvider, snapshot: ReviewSnapshot):
         super().__init__(bundle, index=index)
         self.provider = provider
         self.snapshot = snapshot
 
-    def read_source(self, path: str) -> dict:
+    def read_source(self, path: str, *, symbol: str = "") -> dict:
         resolved = self._in_bundle(path)
         if not resolved:
             return {"error": "outside_bundle", "status": "denied"}
@@ -27,13 +28,18 @@ class SnapshotBundleTools(BundleTools):
         starts = [int(unit.get("start_line", 1) if isinstance(unit, dict) else getattr(unit, "start_line", 1))
                   for unit in self.bundle.units
                   if normalize_path(unit.get("path", "") if isinstance(unit, dict) else getattr(unit, "path", "")) == resolved]
-        start = max(0, min(starts or [1]) - 21)
-        selected = lines[start:start + 100]
-        text = "\n".join(f"{i}: {line}" for i, line in enumerate(selected, start=start + 1))
-        truncated = start > 0 or start + len(selected) < len(lines) or len(text) > 5000
+        from core.input.excerpts import capture_excerpt
+        excerpt = capture_excerpt("\n".join(lines), resolved, symbol=symbol,
+                                  anchor=max(1, min(starts or [1])), max_lines=100, max_chars=4000)
+        text = "\n".join(f"{i}: {line}" for i, line in enumerate(excerpt.text.splitlines(), start=excerpt.start_line))
+        truncated = not excerpt.complete or bool(excerpt.unresolved_dependencies) or len(text) > 5000
         return {"path": resolved, "text": text[:5000], "source": "git_snapshot",
                 "snapshot_id": self.snapshot.id, "revision_sha": source.revision_sha,
                 "content_sha256": source.content_sha256, "truncated": truncated,
+                "scope": excerpt.scope, "scope_symbol": excerpt.symbol,
+                "start_line": excerpt.start_line, "end_line": excerpt.start_line + len(excerpt.text.splitlines()) - 1,
+                "unresolved_dependencies": list(excerpt.unresolved_dependencies),
+                "limitations": ["Completeness refers only to the declared source scope; runtime contracts may require more context."],
                 "status": "truncated" if truncated else "success"}
 
     def graph_node(self, symbol: str) -> dict:

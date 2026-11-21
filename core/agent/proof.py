@@ -88,6 +88,8 @@ def compact_evidence(records: list[dict], hypotheses, *, max_chars: int = 10_000
     selected, omitted, size = [], [], 0
     for item in records:
         request = item.get("request", {})
+        if request.get("tool") == "read_source" and request.get("symbol") and request["symbol"] not in symbols:
+            continue
         if request.get("path") not in paths and request.get("symbol") not in symbols:
             continue
         entry = json.loads(json.dumps(item))

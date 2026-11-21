@@ -301,7 +301,7 @@ class BundleAgent:
             planned: List[dict[str, str]] = []
             if "source" in requests:
                 planned.append({"tool": "read_hunk", "path": hyp.file})
-                planned.append({"tool": "read_source", "path": hyp.file})
+                planned.append({"tool": "read_source", "path": hyp.file, "symbol": hyp.symbol})
             if hyp.symbol:
                 if "symbol" in requests:
                     planned.append({"tool": "graph_node", "symbol": hyp.symbol})
@@ -322,6 +322,8 @@ class BundleAgent:
                     planned.append({"tool": "callee_contract", "symbol": str(signal["symbol"])})
             for request in planned:
                 target = request.get("path") or request.get("symbol") or ""
+                if request["tool"] == "read_source":
+                    target += "#" + request.get("symbol", "")
                 key = (request["tool"], target)
                 if key in seen or len(tool_calls) >= 12:
                     continue

@@ -23,11 +23,18 @@ class SourceObservation(DomainRecord):
     file_sha256: ContentHash | None = None
     excerpt_sha256: ContentHash
     detail: str = ""
+    scope: Literal["file", "python_function", "window"] = "file"
+    scope_symbol: str = ""
+    unresolved_dependencies: tuple[str, ...] = ()
 
     @model_validator(mode="after")
     def check_excerpt(self) -> SourceObservation:
         if hashlib.sha256(self.text.encode()).hexdigest() != self.excerpt_sha256:
             raise ValueError("observation excerpt integrity mismatch")
+        if self.scope == "python_function" and not self.scope_symbol:
+            raise ValueError("function observation must identify its symbol")
+        if self.status == "success" and (self.scope == "window" or self.unresolved_dependencies):
+            raise ValueError("incomplete source scope cannot be successful")
         if self.status in {"success", "truncated"}:
             if self.file_sha256 is None or self.end_line != self.start_line + len(self.text.splitlines()) - 1:
                 raise ValueError("source observation requires a file digest and exact line range")
@@ -57,6 +64,10 @@ class SourceCitation(DomainRecord):
         return observation
 
 
-def observation_id(snapshot_id: str, side: str, path: str, text: str, status: str) -> str:
-    identity = json.dumps([snapshot_id, side, path, text, status], separators=(",", ":"))
+def observation_id(snapshot_id: str, side: str, path: str, text: str, status: str, *,
+                   start_line: int = 1, scope: str = "file", symbol: str = "") -> str:
+    parts = [snapshot_id, side, path, text, status]
+    if start_line != 1 or scope != "file" or symbol:
+        parts.append({"start_line": start_line, "scope": scope, "symbol": symbol})
+    identity = json.dumps(parts, separators=(",", ":"))
     return "OBS-" + hashlib.sha256(identity.encode()).hexdigest()[:24]

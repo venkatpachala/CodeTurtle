@@ -14,7 +14,7 @@ from core.review.budget import BudgetExceeded, ReviewBudget
 from core.runtime.models import Bundle, Candidate
 from core.verification.reachability import function_at, none_trigger_reaches_anchor
 
-FINDING_PROMPT_VERSION = "finding-source-v2"
+FINDING_PROMPT_VERSION = "finding-source-v3-scopes"
 
 
 def candidate_fingerprint(candidate: Candidate) -> str:
@@ -56,7 +56,7 @@ def validate_finding_decision(decision: FindingDecision, candidate: Candidate,
         raise ValueError("refutation requires active HEAD counterevidence; BASE and tests are insufficient")
     function = function_at(head.text, candidate.symbol) if candidate.file.endswith(".py") else None
     if function is not None and not any(
-        obs.path != candidate.file or function.lineno <= citation.start_line <= citation.end_line <= function.end_lineno
+        obs.path != candidate.file or function.lineno + head.start_line - 1 <= citation.start_line <= citation.end_line <= function.end_lineno + head.start_line - 1
         for citation, obs in head_counter
     ):
         raise ValueError("counterevidence belongs to an unrelated function")
@@ -84,6 +84,8 @@ semantics can establish behavior from source; execution is not mandatory. Distin
 facts from unknown external dependencies. Return supported only with a concrete HEAD failure; refuted only
 with active HEAD counterevidence explaining why that trigger cannot cause the claimed failure.
 Unknown external behavior, incomplete context, or insufficient evidence means unresolved.
+An observation's scope can be a whole file or a complete lexical Python function.
+Function-scoped observations omit other module source and do not establish external caller contracts.
 Return one JSON object with exactly these fields (do not echo field descriptions):
 verdict: supported, refuted, or unresolved.
 checked_trigger: the string supplied as PACKAGE.required_checked_trigger, copied verbatim.
@@ -129,7 +131,8 @@ class SourceFindingVerifier:
             if self.provider is None or self.snapshot is None:
                 return "UNCERTAIN"
             paths = tuple(dict.fromkeys((candidate.file, *self.context_paths(candidate, bundle))))
-            observations, gaps = collect_observations(self.provider, self.snapshot, paths, max_chars=10_000)
+            observations, gaps = collect_observations(self.provider, self.snapshot, paths, max_chars=10_000,
+                focus_symbols={candidate.file: candidate.symbol}, focus_lines={candidate.file: candidate.start_line})
             gaps += tuple(f"required HEAD context absent: {obs.path}" for obs in observations
                           if obs.revision_side == "head" and obs.status == "absent")
             self.observations.update({obs.id: obs for obs in observations})

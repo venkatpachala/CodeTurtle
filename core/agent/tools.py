@@ -216,6 +216,9 @@ class BundleTools:
         if name == "read_hunk":
             return self.read_hunk(str(payload.get("path") or payload.get("file") or ""))
         if name == "read_source":
+            if getattr(self, "supports_scoped_source", False):
+                return self.read_source(str(payload.get("path") or payload.get("file") or ""),
+                                        symbol=str(payload.get("symbol") or ""))
             return self.read_source(str(payload.get("path") or payload.get("file") or ""))
         if name == "graph_node":
             return self.graph_node(str(payload.get("symbol") or payload.get("label") or ""))
