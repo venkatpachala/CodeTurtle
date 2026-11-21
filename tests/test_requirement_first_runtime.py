@@ -56,11 +56,13 @@ def test_supported_requirement_is_bounded_and_does_not_imply_inspection(requirem
 
 
 def test_static_only_and_off_modes_never_claim_requirement_assessment(requirement_case):
-    for options in ({"static": True}, {"strategy": "off"}):
+    for options in ({"static": True}, {"static": True, "strategy": "link"}, {"strategy": "off"}):
         result = run_case(requirement_case, **options)
         assert result.requirement_assessments[0].status == "not_assessed"
-        assert result.provenance["requirement_runs"][0]["attempted"] is False
+        assert not result.provenance["requirement_runs"] or result.provenance["requirement_runs"][0]["attempted"] is False
         assert result.source_observations == []
+        if options.get("static"):
+            assert result.provenance["budget"]["calls"] == 0
 
 
 def test_link_ablation_cannot_find_this_defect_from_empty_discovery(requirement_case):

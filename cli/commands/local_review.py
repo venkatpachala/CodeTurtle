@@ -57,7 +57,7 @@ def review_local(
             requirement_strategy=requirement_strategy.value, max_requirements=max_requirements,
             analysis_mode=config["analysis_mode"],
         )
-        runtime = ReviewRuntime(llm=(lambda _: "[]") if static_only else None)
+        runtime = ReviewRuntime()
         result = runtime.run(context)
         result.provenance["analysis_mode"] = config["analysis_mode"]
         write_json_atomic(json_output, result.to_dict())

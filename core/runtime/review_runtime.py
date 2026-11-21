@@ -338,6 +338,7 @@ class ReviewRuntime:
         if self.agent is not None and hasattr(self.agent, "usage_records"):
             self.agent.usage_records = []
         ctx = context
+        static_only = getattr(ctx, "analysis_mode", "model") == "static_only"
         snapshot = getattr(ctx, "review_snapshot", None)
         input_provider = getattr(ctx, "input_provider", None)
         files = list(
@@ -487,7 +488,11 @@ class ReviewRuntime:
                 from core.input.tools import SnapshotBundleTools
                 tools = SnapshotBundleTools(bundle, index=index, provider=input_provider, snapshot=snapshot)
             with timed(timing, "bundle_agent"):
-                bundle_candidates, agent_record = self._agent_candidates(bundle, tools)
+                if static_only:
+                    bundle_candidates, agent_record = [], {"bundle_id": bundle.id, "status": "VALID_EMPTY",
+                        "assessments": [], "model_calls": 0, "stage_status": {"discovery": "SKIPPED_STATIC_ONLY"}}
+                else:
+                    bundle_candidates, agent_record = self._agent_candidates(bundle, tools)
                 candidates.extend(bundle_candidates)
                 agent_runs.append(agent_record)
 
@@ -573,6 +578,8 @@ class ReviewRuntime:
         from core.runtime.verify_loop import verify_candidates
 
         def verify_completion(prompt: str) -> str:
+            if static_only:
+                return "UNCERTAIN"
             injected = self.verification_llm or self.llm
             if injected is not None:
                 self.budget.reserve(prompt)
@@ -740,7 +747,7 @@ class ReviewRuntime:
                     health.stages.append(StageOutcome(stage=f"requirement:{run.requirement.id}", status="failed", code="invalid_or_failed_assessment"))
                     if health.status == "completed":
                         health.status = "partial"
-        elif intent is not None and requirement_strategy == "link":
+        elif intent is not None and requirement_strategy == "link" and not static_only:
             from core.intent.service import assess_verified_findings
             def complete_requirement(prompt: str) -> str:
                 self.budget.reserve(prompt)
@@ -755,6 +762,10 @@ class ReviewRuntime:
                 intent, review_findings,
                 ReviewTarget(head_sha=str(getattr(ctx, "pr_head_sha", "") or "")), complete_requirement,
             )
+        elif intent is not None:
+            from core.domain.review_contracts import RequirementAssessment
+            requirement_assessments = [RequirementAssessment(requirement_id=item.id, status="not_assessed",
+                reason="Requirement model assessment disabled") for item in intent.items]
         unresolved.extend({"requirement_id": item.requirement_id, "reason": item.reason}
                           for item in requirement_assessments if item.status in {"unverified", "not_assessed"})
         with timed(timing, "policy"):
