@@ -75,7 +75,8 @@ def verify_none_len(candidate: Candidate, observations: tuple[SourceObservation,
     # "Error" is the proposal protocol's generic raised-error description. A
     # proven TypeError entails it; a different named exception does not qualify.
     actual = candidate.actual.strip()
-    if (not candidate.file.endswith(".py") or candidate.expected.strip() != "0"
+    if (not candidate.file.endswith(".py") or tuple(candidate.execution_path) != (candidate.symbol,)
+            or candidate.expected.strip() != "0"
             or not (actual == "TypeError" or actual.casefold() == "error")):
         return None
     head = next((o for o in observations if o.path == candidate.file and o.revision_side == "head"), None)

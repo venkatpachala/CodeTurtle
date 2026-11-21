@@ -76,6 +76,7 @@ def test_runtime_default_source_rule_validates_a_discovered_candidate_and_roundt
 
 @pytest.mark.parametrize("field,value", [("expected","1"),("actual","ValueError"),
     ("violating_condition","items is None and flag"),("symbol","Other.size"),
+    ("execution_path",["unknown_caller","size"]),
     ("existing_code","some other operation")])
 def test_rule_never_rewrites_a_different_claim_to_fit_its_contract(verification_case, field, value):
     from core.verification.none_len_contract import verify_none_len
