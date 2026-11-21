@@ -23,6 +23,8 @@ class DatasetSplit:
 def load_split(path: str | Path) -> DatasetSplit:
     source = Path(path).resolve()
     raw = json.loads(source.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise ValueError("PR split manifest must be a JSON object")
     split = raw.get("split")
     if split not in {"development", "validation", "test"}:
         raise ValueError(f"Invalid dataset split: {split!r}")
@@ -53,7 +55,8 @@ def assert_disjoint(*splits: DatasetSplit) -> None:
 
 
 def load_registered_splits(root: Path) -> list[DatasetSplit]:
-    paths = sorted(root.glob("*/*.json"))
+    paths = sorted(path for name in ("development", "validation", "test")
+                   for path in (root / name).glob("*.json"))
     splits = [load_split(path) for path in paths]
     assert_disjoint(*splits)
     return splits
