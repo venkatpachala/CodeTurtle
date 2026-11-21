@@ -48,14 +48,37 @@ units produce a null ratio. These records establish process coverage, not semant
 correctness or proof that all bugs were considered.
 
 Requirement coverage counts verified, violated, unverified, and unassessed
-requirements. A missing assessment counts as unassessed. Its ratio is assessed
-requirements divided by total requirements and is null for zero requirements.
+requirements. A missing assessment counts as unassessed. Reasoned not-applicable
+requirements are excluded from the denominator. Its ratio is assessed divided by
+applicable requirements and is null when none apply.
 Conclusive requirement assessments cite directional evidence for the reviewed
 HEAD. BASE evidence can provide historical context. The existing verdict
 continues to use source-unit inspection. Findings linked to the new
 investigation records require a confirmed investigation and supporting HEAD
 evidence to enter product output. Stored v2.0 findings retain their existing
 verification status during migration.
+
+Intent/evidence classes are owned by `core/domain/review_contracts.py`; the previous
+`core/review/requirements.py` import path re-exports those same classes. Legacy
+`*_ids` record inputs remain accepted; canonical domain records serialize `*_refs`.
+An explicitly selected `--requirements` JSON file scopes acceptance criteria to paths.
+It informs discovery and proof construction. A separate source-level assessment can
+link verified defects to violated requirements; absence of a defect leaves a
+requirement unverified and cannot establish satisfaction.
+
+## Local committed snapshots
+
+`codeturtle review-local --base REF [--head REF]` compares exact committed trees
+without checkout, repository execution, or GitHub publication. Dirty and untracked
+files are excluded. `GitSnapshotProvider` reads regular Git blobs bound to sealed
+BASE/HEAD, diff, and supplied configuration hashes. Snapshot tools use bounded
+lexical retrieval and never fall back to mutable checkout reads. Checkout-based
+rules and graph evidence are not used on this path.
+
+For Python files, bounded AST comparison supplies changed symbols, signatures,
+and module statements. Parse failures and omissions remain explicit gaps. This
+is structural context, not resolved dataflow or behavioral proof. `--static-only`
+skips model calls and preserves incomplete inspection. See LEARNING_IMPLEMENTATION.md.
 
 ## Policy
 

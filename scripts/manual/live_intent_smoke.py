@@ -40,13 +40,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", default="qwen2.5-coder:3b-instruct")
     parser.add_argument("--windows-ollama", action="store_true")
+    parser.add_argument("--max-output-tokens", type=int, default=1400)
     parser.add_argument("--output", type=Path, default=Path(".validation/live-intent-smoke.json"))
     args = parser.parse_args()
     calls = []
 
     def complete(prompt: str) -> str:
         body = json.dumps({"model": args.model, "prompt": prompt, "stream": False,
-                           "options": {"temperature": 0, "num_ctx": 8192, "num_predict": 1000}})
+                           "options": {"temperature": 0, "num_ctx": 8192, "num_predict": args.max_output_tokens}})
         started = time.monotonic()
         if args.windows_ollama:
             powershell = shutil.which("powershell.exe")
@@ -66,6 +67,7 @@ def main() -> int:
                 data = json.load(response)
         calls.append({"model": args.model, "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
                       "prompt_tokens": data.get("prompt_eval_count"), "completion_tokens": data.get("eval_count"),
+                      "done_reason": data.get("done_reason"), "max_output_tokens": args.max_output_tokens,
                       "latency_seconds": round(time.monotonic() - started, 3)})
         return str(data.get("response") or "")
 
@@ -104,7 +106,8 @@ def main() -> int:
             ))
             report = result.to_dict()
             report["provenance"]["injected_provider_calls"] = calls[first_call:]
-            expectation_met = bool(result.product_findings) if name == "removed-zero-guard" else not result.product_findings
+            finding_outcome = bool(result.product_findings) if name == "removed-zero-guard" else not result.product_findings
+            expectation_met = finding_outcome and result.health.status == "completed"
             reports.append({"case_id": name, "result": report, "expected_finding_outcome": expectation_met})
             # Preserve completed case output even if a later model call fails.
             write_json_atomic(args.output, {"scope": "synthetic live integration smoke; not held-out quality",

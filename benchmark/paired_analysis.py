@@ -90,6 +90,7 @@ def paired_analysis(baseline: list[ScoredCase], candidate: list[ScoredCase], *,
         report[metric] = {"baseline": a, "candidate": b,
                           "delta": b - a if a is not None and b is not None else None,
                           "delta_95_percentile_interval": interval,
+                          "interval_scope": "replicates_where_both_metrics_are_defined",
                           "valid_bootstrap_samples": len(values)}
     return {"paired_cases": len(old), "independent_clusters": len(names), "bootstrap_samples": samples,
             "seed": seed, "metrics": report,
