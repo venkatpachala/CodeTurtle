@@ -16,6 +16,8 @@ from core.review.contract import (
     ReviewTarget,
 )
 from core.review.finding import ReviewFinding
+from core.domain.observations import SourceObservation
+from core.domain.review_contracts import validate_investigation_evidence
 from core.review.requirements import (
     EvidenceRecord,
     IntentSource,
@@ -199,6 +201,7 @@ class ReviewResult:
     requirement_assessments: list[RequirementAssessment] = field(default_factory=list)
     investigations: list[InvestigationRecord] = field(default_factory=list)
     evidence: list[EvidenceRecord] = field(default_factory=list)
+    source_observations: list[SourceObservation] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self._validate_contract_links()
@@ -224,11 +227,28 @@ class ReviewResult:
         evidence_ids = _unique_ids((item.id for item in self.evidence), "evidence ID")
         investigation_ids = _unique_ids((item.id for item in self.investigations), "investigation ID")
         evidence = {item.id: item for item in self.evidence}
+        _unique_ids((item.id for item in self.source_observations), "observation ID")
+        observations = {item.id: SourceObservation.model_validate(item) for item in self.source_observations}
+        for observation in observations.values():
+            expected = self.target.head_sha if observation.revision_side == "head" else self.target.base_sha
+            if observation.revision_sha != expected.lower():
+                raise ValueError("source observation does not match reviewed revision")
+            snapshot_id = self.provenance.get("snapshot_id")
+            if snapshot_id and observation.snapshot_id != snapshot_id:
+                raise ValueError("source observation does not match reviewed snapshot")
         _unique_ids((item.requirement_id for item in self.requirement_assessments), "assessment")
 
         for requirement in self.requirements:
             _require_known(requirement.source_refs, source_ids, "intent source")
         for item in self.evidence:
+            _require_known(item.observation_refs, observations, "source observation")
+            for ref in item.observation_refs:
+                observation = observations[ref]
+                if (observation.status not in {"success", "truncated"}
+                        or observation.revision_sha != item.revision_sha
+                        or observation.revision_side != item.revision_side
+                        or observation.excerpt_sha256 != item.content_hash):
+                    raise ValueError("evidence does not match its source observation")
             _require_known((*item.supports_claim_refs, *item.contradicts_claim_refs), claim_refs, "claim")
             if item.revision_sha is not None:
                 expected = self.target.head_sha if item.revision_side == "head" else self.target.base_sha
@@ -264,6 +284,7 @@ class ReviewResult:
             )
             if has_verified_finding and investigation.status != "confirmed":
                 raise ValueError(f"a verified finding requires a confirmed investigation: {investigation.id}")
+            validate_investigation_evidence(investigation, evidence)
 
         for finding in self.findings:
             _require_known(finding.evidence_ids, evidence_ids, "evidence")
@@ -311,6 +332,7 @@ class ReviewResult:
             ],
             investigations=[InvestigationRecord.model_validate(item) for item in raw.get("investigations", [])],
             evidence=[EvidenceRecord.model_validate(item) for item in raw.get("evidence", [])],
+            source_observations=[SourceObservation.model_validate(item) for item in raw.get("source_observations", [])],
         )
         result = cls(**data)
         if "requirement_coverage" in raw:
@@ -355,5 +377,6 @@ class ReviewResult:
             ],
             "investigations": [item.model_dump(mode="json") for item in self.investigations],
             "evidence": [item.model_dump(mode="json") for item in self.evidence],
+            "source_observations": [item.model_dump(mode="json") for item in self.source_observations],
             "requirement_coverage": self.requirement_coverage.model_dump(mode="json"),
         }
