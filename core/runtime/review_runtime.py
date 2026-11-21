@@ -333,6 +333,8 @@ class ReviewRuntime:
         if self.agent is not None and hasattr(self.agent, "usage_records"):
             self.agent.usage_records = []
         ctx = context
+        snapshot = getattr(ctx, "review_snapshot", None)
+        input_provider = getattr(ctx, "input_provider", None)
         files = list(
             files_changed
             or getattr(ctx, "files_changed", None)
@@ -340,6 +342,15 @@ class ReviewRuntime:
         )
         files = [normalize_path(p) for p in files if p]
         diff = full_diff or getattr(ctx, "full_diff", "") or ""
+        if snapshot is not None:
+            from core.input.snapshot import InputError
+            if input_provider is None or input_provider.diff(snapshot) != diff:
+                raise InputError("runtime input does not match the sealed snapshot")
+            if (getattr(ctx, "pr_head_sha", "") != snapshot.head_sha
+                    or getattr(ctx, "pr_base_sha", "") != snapshot.base_sha):
+                raise InputError("runtime revision identity does not match the sealed snapshot")
+            if getattr(ctx, "execute_tests", False):
+                raise InputError("snapshot review does not execute repository code")
         facts = dict(pr_facts or getattr(ctx, "pr_facts", None) or {})
         if not facts:
             facts = build_pr_facts(
@@ -400,6 +411,8 @@ class ReviewRuntime:
                 bundle.requirements = intent.for_paths(bundle.paths)
         repo_name = repo or getattr(ctx, "repo", "") or str(facts.get("repo") or "")
         client = self._client(repo_name)
+        if snapshot is not None:
+            client = None  # No graph may establish facts without matching snapshot provenance.
         repo_dir = str(getattr(ctx, "repo_dir", "") or "")
         if not repo_dir and repo_name:
             try:
@@ -412,7 +425,7 @@ class ReviewRuntime:
         from core.analysis.risk_signals import (
             analyze_risk_signals, attach_signals_to_bundles, attach_signals_to_candidates,
         )
-        risk_signals = analyze_risk_signals(
+        risk_signals = [] if snapshot is not None else analyze_risk_signals(
             repo_dir=repo_dir,
             files_changed=files,
             index=index,
@@ -436,7 +449,12 @@ class ReviewRuntime:
         agent_runs: List[Dict[str, Any]] = []
         from config import settings
         if settings.rules_enabled:
-            candidates.extend(self._rules(bundles, files, full_diff=diff, repo_dir=repo_dir))
+            if snapshot is not None and self.rule_engine is None:
+                from core.rules.engine import run_rule_engine
+                candidates.extend(run_rule_engine(bundles, files_changed=files, full_diff=diff,
+                                                 allow_checkout_tools=False))
+            else:
+                candidates.extend(self._rules(bundles, files, full_diff=diff, repo_dir=repo_dir))
         else:
             self.stage_errors.append(StageOutcome(stage="rules", status="skipped", code="ablation_disabled"))
         for bundle in bundles:
@@ -446,6 +464,9 @@ class ReviewRuntime:
                 if is_valid_symbol(s)
             ]
             tools = BundleTools(bundle, index=index, client=client, repo_dir=repo_dir or None)
+            if snapshot is not None:
+                from core.input.tools import SnapshotBundleTools
+                tools = SnapshotBundleTools(bundle, index=index, provider=input_provider, snapshot=snapshot)
             with timed(timing, "bundle_agent"):
                 bundle_candidates, agent_record = self._agent_candidates(bundle, tools)
                 candidates.extend(bundle_candidates)
@@ -705,7 +726,9 @@ class ReviewRuntime:
                 diff_sha256=hashlib.sha256(diff.encode()).hexdigest()),
             health=health, inspection=inspection, unresolved=unresolved,
             approval_eligible=outcome.approval_eligible, policy_reasons=outcome.reasons,
-            provenance={**_provenance(self.agent), "budget": self.budget.to_dict()},
+            provenance={**_provenance(self.agent), "budget": self.budget.to_dict(),
+                        **({"input_snapshot": snapshot.model_dump(), "snapshot_id": snapshot.id}
+                           if snapshot is not None else {})},
             intent_sources=[intent.source] if intent is not None else [],
             requirements=intent.requirements if intent is not None else [],
             requirement_assessments=requirement_assessments,
