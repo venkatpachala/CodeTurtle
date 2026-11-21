@@ -158,6 +158,7 @@ class ReviewPipeline:
             self.context.repo = repo
             self.context.number = number
             self.context.config_path = config_path or ""
+            self.context.review_intent = None
             if requirements_path:
                 from pathlib import Path
                 from core.intent.service import load_intent

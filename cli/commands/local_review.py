@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+import os
 
 import typer
 
@@ -25,8 +26,15 @@ def review_local(
     try:
         intent = load_intent(requirements) if requirements else None
         provider = GitSnapshotProvider(repo)
+        from config import settings
+        from core.agent.bundle_agent import PROMPT_VERSION
         config = {"analysis_mode": "static_only" if static_only else "model",
-                  "intent_hash": intent.source.content_hash if intent else None}
+                  "intent_hash": intent.source.content_hash if intent else None,
+                  "provider": settings.llm_backend,
+                  "model": os.environ.get("OPENAI_MODEL", "gpt-4o-mini") if settings.llm_backend == "openai"
+                           else settings.ollama_model,
+                  "prompt_version": PROMPT_VERSION, "rules_enabled": settings.rules_enabled,
+                  "verification_enabled": settings.verification_enabled}
         snapshot = provider.resolve(base, head, config=config)
         diff = provider.diff(snapshot)
         index = build_diff_index(diff)

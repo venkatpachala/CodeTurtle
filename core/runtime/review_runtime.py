@@ -751,7 +751,8 @@ class ReviewRuntime:
             approval_eligible=outcome.approval_eligible, policy_reasons=outcome.reasons,
             provenance={**_provenance(self.agent), "budget": self.budget.to_dict(),
                         "model_calls": [*getattr(self.agent, "usage_records", []), *self.verification_usage],
-                        **({"input_snapshot": snapshot.model_dump(), "snapshot_id": snapshot.id}
+                        **({"input_snapshot": snapshot.model_dump(), "snapshot_id": snapshot.id,
+                            "source_input_id": snapshot.source_id}
                            if snapshot is not None else {})},
             intent_sources=[intent.source] if intent is not None else [],
             requirements=intent.requirements if intent is not None else [],
