@@ -1,0 +1,11 @@
+{
+  "name": "requirement_development_v1",
+  "version": 1,
+  "split": "development",
+  "case_count": 12,
+  "used_for_system_design": true,
+  "eligible_for_headline_metrics": false,
+  "scope": "synthetic contract and integration development; not real PR quality",
+  "inputs_sha256": "5a5b400fd8fa84611963548eecf03eeb442d709562082bc8382504c6229412a9",
+  "labels_sha256": "1d2cfa19003464b96b5862c6ecba0c99f4a62367cc13a9af97e714280e90f2da"
+}

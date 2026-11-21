@@ -197,6 +197,7 @@ class EvidenceRecord(DomainRecord):
     supports_claim_refs: Refs = Field(default=(), validation_alias=AliasChoices("supports_claim_refs", "supports_claim_ids"))
     contradicts_claim_refs: Refs = Field(default=(), validation_alias=AliasChoices("contradicts_claim_refs", "contradicts_claim_ids"))
     limitations: tuple[NonBlank, ...] = ()
+    observation_refs: Refs = ()
 
     @model_validator(mode="after")
     def validate_provenance(self) -> Self:
@@ -273,6 +274,23 @@ def _require_directional_evidence(
     raise ValueError(f"{owner} requires {direction}{revision} evidence")
 
 
+def validate_investigation_evidence(
+    investigation: InvestigationRecord, evidence: Mapping[str, EvidenceRecord],
+) -> None:
+    """Shared resolution rule for both domain knowledge and canonical results."""
+    if investigation.status not in _RESOLVED_INVESTIGATIONS:
+        return
+    claims = {investigation.id, *investigation.claim_refs}
+    contradicts = investigation.status == InvestigationStatus.DISPROVED
+    for ref in investigation.evidence_refs:
+        item = evidence[ref]
+        direction = item.contradicts_claim_refs if contradicts else item.supports_claim_refs
+        if claims.intersection(direction):
+            return
+    direction_name = "contradicting" if contradicts else "supporting"
+    raise ValueError(f"investigation {investigation.id} requires {direction_name} evidence")
+
+
 class ReviewKnowledge(DomainRecord):
     """The revision-bound domain records for one review."""
 
@@ -310,11 +328,7 @@ class ReviewKnowledge(DomainRecord):
             _require_known(investigation.requirement_refs, requirement_ids, "requirement", owner)
             _require_known(investigation.claim_refs, claim_ids, "claim", owner)
             _require_known(investigation.evidence_refs, evidence, "evidence", owner)
-            if investigation.status in _RESOLVED_INVESTIGATIONS:
-                _require_directional_evidence(
-                    evidence, investigation.evidence_refs, investigation.id, owner,
-                    contradicts=investigation.status is InvestigationStatus.DISPROVED,
-                )
+            validate_investigation_evidence(investigation, evidence)
 
         for assessment in self.assessments:
             owner = f"assessment for {assessment.requirement_id}"

@@ -1,0 +1,29 @@
+{
+  "scope": "synthetic contract and integration development; not real PR quality",
+  "eligible_for_headline_metrics": false,
+  "corpus": {
+    "name": "requirement_development_v1",
+    "version": 1,
+    "split": "development",
+    "case_count": 12,
+    "used_for_system_design": true,
+    "eligible_for_headline_metrics": false,
+    "scope": "synthetic contract and integration development; not real PR quality",
+    "inputs_sha256": "5a5b400fd8fa84611963548eecf03eeb442d709562082bc8382504c6229412a9",
+    "labels_sha256": "1d2cfa19003464b96b5862c6ecba0c99f4a62367cc13a9af97e714280e90f2da"
+  },
+  "model": "qwen2.5-coder:7b",
+  "strategies": [
+    "link",
+    "investigate"
+  ],
+  "case_count": 2,
+  "baseline_type": "same-commit link/off ablation, not historical v4",
+  "reviewer_commit": "b23fc6c504f2c1c317f9b521ac87791409c09223",
+  "reviewer_dirty": false,
+  "budgets": {
+    "model_calls": 12,
+    "prompt_characters": 120000,
+    "between_call_seconds": 300
+  }
+}

@@ -1,5 +1,9 @@
 # CodeTurtle implementation and learning guide
 
+This guide records the foundation milestone. The subsequent requirement-first
+implementation, result schema 2.2, current limits, and new experiment commands
+are documented in [REQUIREMENT_FIRST_PHASE.md](REQUIREMENT_FIRST_PHASE.md).
+
 This project is an AI backend engineering portfolio project. Its claims must be
 supported by reproducible code, tests, adjudicated evaluation, and recorded limits.
 Commit count is not a quality metric. Each commit should explain one coherent change.

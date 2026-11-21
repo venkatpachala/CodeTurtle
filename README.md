@@ -8,6 +8,10 @@ Current references: [architecture](docs/CURRENT_ARCHITECTURE.md),
 [limitations](docs/LIMITATIONS.md), [release checklist](docs/RELEASE_CHECKLIST.md),
 and [implementation validation](docs/IMPLEMENTATION_VALIDATION.md).
 
+Local committed review now supports requirement-first investigation with exact
+source citations. See the [implementation and learning walkthrough](docs/REQUIREMENT_FIRST_PHASE.md)
+for scoped requirements, ablation modes, and the development experiment protocol.
+
 The preview is installed from this checkout or a locally built wheel. The
 historical v0.4.0 tag does not contain these changes.
 

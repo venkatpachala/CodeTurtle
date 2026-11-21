@@ -23,10 +23,11 @@ class ScopedRequirement(BaseModel):
     description: str = Field(min_length=1, max_length=500)
     acceptance_criterion: str = Field(min_length=1, max_length=1500)
     paths: tuple[str, ...] = Field(min_length=1, max_length=20)
+    context_paths: tuple[str, ...] = Field(default=(), max_length=20)
 
     @model_validator(mode="after")
     def validate_paths(self):
-        for path in self.paths:
+        for path in (*self.paths, *self.context_paths):
             GitSnapshotProvider._path(path)
         return self
 

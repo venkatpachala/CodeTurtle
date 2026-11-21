@@ -215,6 +215,7 @@ class ReviewRuntime:
         *,
         llm: Optional[Callable[[str], str]] = None,
         verification_llm: Optional[Callable[[str], str]] = None,
+        requirement_llm: Optional[Callable[[str, str], str]] = None,
         graphify_client: Any = None,
         rule_engine: Optional[Callable[..., List[Candidate]]] = None,
         agent: Any = None,
@@ -223,6 +224,7 @@ class ReviewRuntime:
         # Kept separate because verification uses a tiny classification call,
         # while BundleAgent requires a much larger completion budget.
         self.verification_llm = verification_llm
+        self.requirement_llm = requirement_llm
         self.graphify_client = graphify_client
         self.rule_engine = rule_engine
         self.agent = agent
@@ -336,6 +338,7 @@ class ReviewRuntime:
         if self.agent is not None and hasattr(self.agent, "usage_records"):
             self.agent.usage_records = []
         ctx = context
+        static_only = getattr(ctx, "analysis_mode", "model") == "static_only"
         snapshot = getattr(ctx, "review_snapshot", None)
         input_provider = getattr(ctx, "input_provider", None)
         files = list(
@@ -409,7 +412,10 @@ class ReviewRuntime:
             max_bundles=bundle_max,
         )
         intent = getattr(ctx, "review_intent", None)
-        if intent is not None:
+        requirement_strategy = getattr(ctx, "requirement_strategy", "investigate" if snapshot is not None else "link")
+        if requirement_strategy not in {"investigate", "link", "off"}:
+            raise ValueError("unknown requirement strategy")
+        if intent is not None and requirement_strategy != "off":
             for bundle in bundles:
                 bundle.requirements = intent.for_paths(bundle.paths)
         semantic_context = None
@@ -482,10 +488,40 @@ class ReviewRuntime:
                 from core.input.tools import SnapshotBundleTools
                 tools = SnapshotBundleTools(bundle, index=index, provider=input_provider, snapshot=snapshot)
             with timed(timing, "bundle_agent"):
-                bundle_candidates, agent_record = self._agent_candidates(bundle, tools)
+                if static_only:
+                    bundle_candidates, agent_record = [], {"bundle_id": bundle.id, "status": "VALID_EMPTY",
+                        "assessments": [], "model_calls": 0, "stage_status": {"discovery": "SKIPPED_STATIC_ONLY"}}
+                else:
+                    bundle_candidates, agent_record = self._agent_candidates(bundle, tools)
                 candidates.extend(bundle_candidates)
                 agent_runs.append(agent_record)
 
+        requirement_runs = []
+        if intent is not None and snapshot is not None and requirement_strategy != "link":
+            from core.intent.investigator import RequirementInvestigator
+            def complete_requirement_stage(stage: str, prompt: str) -> str:
+                if self.requirement_llm is not None:
+                    return str(self.requirement_llm(stage, prompt))
+                injected = (self.verification_llm or self.llm) if stage == "verify" else self.llm
+                if injected is not None:
+                    return str(injected(prompt))
+                from core.gateway.gateway import AIGateway
+                response = AIGateway().generate(prompt=prompt, capability="correctness_review",
+                    agent_name=f"Requirement:{stage}", temperature=0.0, max_tokens=1400, retries=0)
+                self.verification_usage.append(response.telemetry.model_dump(mode="json"))
+                return str(response.content or "")
+            requirement_runs = RequirementInvestigator(complete_requirement_stage, self.budget,
+                max_requirements=int(getattr(ctx, "max_requirements", 8))).run(
+                    intent, input_provider, snapshot, files,
+                    enabled=requirement_strategy == "investigate" and getattr(ctx, "analysis_mode", "model") != "static_only")
+            for run in requirement_runs:
+                if run.candidate is not None:
+                    owner = next((bundle for bundle in bundles if run.candidate.file in bundle.paths), None)
+                    if owner is not None:
+                        run.candidate.bundle_id = owner.id
+                        candidates.append(run.candidate)
+                    else:
+                        run.status, run.reason = "unresolved", "scoped candidate omitted from scheduled bundles"
         attach_signals_to_candidates(candidates, risk_signals, index)
 
         comments: List[Comment] = []
@@ -541,11 +577,20 @@ class ReviewRuntime:
 
         from core.runtime.verify_loop import verify_candidates
 
+        def verify_completion(prompt: str) -> str:
+            if static_only:
+                return "UNCERTAIN"
+            injected = self.verification_llm or self.llm
+            if injected is not None:
+                self.budget.reserve(prompt)
+                return str(injected(prompt))
+            return self._verify_completion(prompt)
+
         with timed(timing, "verify"):
             if settings.verification_enabled:
                 verified_cands, vdrop = verify_candidates(
                     [c for c, _ in survivors], index=index, bundles=bundles, client=client,
-                    llm=self.verification_llm or self.llm or self._verify_completion)
+                    llm=verify_completion)
             else:
                 verified_cands, vdrop = [], [{**c.to_dict(), "drop_reason": "verification_disabled"} for c, _ in survivors]
                 self.stage_errors.append(StageOutcome(stage="verification", status="skipped", code="ablation_disabled"))
@@ -689,7 +734,20 @@ class ReviewRuntime:
                     unresolved.append({"stage": "tool_context", "bundle_id": run.get("bundle_id"),
                                        "reason": "incomplete_tool_observation"})
         requirement_assessments, requirement_investigations, requirement_evidence = [], [], []
-        if intent is not None:
+        source_observations = []
+        if requirement_runs:
+            from core.intent.adjudication import adjudicate_requirements
+            requirement_outcome = adjudicate_requirements(requirement_runs, review_findings)
+            requirement_assessments = requirement_outcome.assessments
+            requirement_investigations = requirement_outcome.investigations
+            requirement_evidence = requirement_outcome.evidence
+            source_observations = requirement_outcome.observations
+            for run in requirement_runs:
+                if run.status == "error":
+                    health.stages.append(StageOutcome(stage=f"requirement:{run.requirement.id}", status="failed", code="invalid_or_failed_assessment"))
+                    if health.status == "completed":
+                        health.status = "partial"
+        elif intent is not None and requirement_strategy == "link" and not static_only:
             from core.intent.service import assess_verified_findings
             def complete_requirement(prompt: str) -> str:
                 self.budget.reserve(prompt)
@@ -704,8 +762,12 @@ class ReviewRuntime:
                 intent, review_findings,
                 ReviewTarget(head_sha=str(getattr(ctx, "pr_head_sha", "") or "")), complete_requirement,
             )
-            unresolved.extend({"requirement_id": item.requirement_id, "reason": item.reason}
-                              for item in requirement_assessments if item.status == "unverified")
+        elif intent is not None:
+            from core.domain.review_contracts import RequirementAssessment
+            requirement_assessments = [RequirementAssessment(requirement_id=item.id, status="not_assessed",
+                reason="Requirement model assessment disabled") for item in intent.items]
+        unresolved.extend({"requirement_id": item.requirement_id, "reason": item.reason}
+                          for item in requirement_assessments if item.status in {"unverified", "not_assessed"})
         with timed(timing, "policy"):
             outcome = evaluate_policy(health=health, coverage=inspection, findings=review_findings,
                 unresolved=unresolved, execution=execution, classification=classif)
@@ -751,6 +813,8 @@ class ReviewRuntime:
             approval_eligible=outcome.approval_eligible, policy_reasons=outcome.reasons,
             provenance={**_provenance(self.agent), "budget": self.budget.to_dict(),
                         "model_calls": [*getattr(self.agent, "usage_records", []), *self.verification_usage],
+                        "requirement_strategy": requirement_strategy,
+                        "requirement_runs": [run.to_dict() for run in requirement_runs],
                         **({"input_snapshot": snapshot.model_dump(), "snapshot_id": snapshot.id,
                             "source_input_id": snapshot.source_id}
                            if snapshot is not None else {})},
@@ -758,6 +822,7 @@ class ReviewRuntime:
             requirements=intent.requirements if intent is not None else [],
             requirement_assessments=requirement_assessments,
             investigations=requirement_investigations, evidence=requirement_evidence,
+            source_observations=source_observations,
         )
 
 

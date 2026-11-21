@@ -71,6 +71,7 @@ def test_local_cli_is_read_only_and_honest_about_static_coverage(repository):
     assert response.exit_code == 0, response.output
     data = json.loads(output.read_text())
     assert data["provenance"]["analysis_mode"] == "static_only"
+    assert data["provenance"]["budget"]["calls"] == 0
     assert data["inspection"]["inspected"] == 0
     assert data["decision"] == "COMMENT"
     assert data["target"]["head_sha"] == before

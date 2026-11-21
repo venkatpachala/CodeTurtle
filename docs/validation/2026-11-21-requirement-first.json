@@ -1,0 +1,176 @@
+{
+  "date": "2026-11-21",
+  "scope": "Requirement-first synthetic development diagnostics",
+  "eligible_for_headline_metrics": false,
+  "full_suite_tests_passed": 610,
+  "offline_snapshots_passed": 4,
+  "corpus": {
+    "used_for_system_design": true,
+    "annotation_provenance": "author-labelled synthetic fixtures",
+    "selected_cases_per_complete_run": 2,
+    "available_cases": 12
+  },
+  "interrupted_initial_attempt": {
+    "status": "cancelled_development_iteration",
+    "reason": "Citation shape was underspecified; progress retained; not sealed or scored",
+    "completed_reviews": 5
+  },
+  "runs": [
+    {
+      "artifact_directory": "requirement-first-v2",
+      "reviewer_commit": "b23fc6c504f2c1c317f9b521ac87791409c09223",
+      "reviewer_dirty": false,
+      "cases": 2,
+      "model": "qwen2.5-coder:7b",
+      "transport": "windows-powershell-stdin",
+      "statistics": {
+        "link": {
+          "reviews": 2,
+          "completed": 2,
+          "requirement_outcomes": 2,
+          "matching_outcomes": 0,
+          "actual_model_calls": 2,
+          "reported_prompt_tokens": 1225,
+          "reported_completion_tokens": 214,
+          "calls_missing_usage": 0,
+          "model_call_errors": 0
+        },
+        "investigate": {
+          "reviews": 2,
+          "completed": 1,
+          "requirement_outcomes": 2,
+          "matching_outcomes": 1,
+          "actual_model_calls": 5,
+          "reported_prompt_tokens": 5261,
+          "reported_completion_tokens": 1211,
+          "calls_missing_usage": 0,
+          "model_call_errors": 0
+        }
+      },
+      "outcomes": [
+        {
+          "case_id": "none-guard-removed",
+          "strategy": "link",
+          "expected_status": "violated",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 23.327
+        },
+        {
+          "case_id": "none-guard-removed",
+          "strategy": "investigate",
+          "expected_status": "violated",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "partial",
+          "findings": 0,
+          "elapsed_seconds": 60.568
+        },
+        {
+          "case_id": "none-guard-preserved",
+          "strategy": "investigate",
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "matches_label": true,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 94.351
+        },
+        {
+          "case_id": "none-guard-preserved",
+          "strategy": "link",
+          "expected_status": "verified",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 19.485
+        }
+      ]
+    },
+    {
+      "artifact_directory": "requirement-first-v3",
+      "reviewer_commit": "4109f2f095642cfab8741f7bc61f1ef712b575da",
+      "reviewer_dirty": false,
+      "cases": 2,
+      "model": "qwen2.5-coder:7b",
+      "transport": "windows-powershell-stdin",
+      "statistics": {
+        "link": {
+          "reviews": 2,
+          "completed": 2,
+          "requirement_outcomes": 2,
+          "matching_outcomes": 0,
+          "actual_model_calls": 2,
+          "reported_prompt_tokens": 1225,
+          "reported_completion_tokens": 214,
+          "calls_missing_usage": 0,
+          "model_call_errors": 0
+        },
+        "investigate": {
+          "reviews": 2,
+          "completed": 2,
+          "requirement_outcomes": 2,
+          "matching_outcomes": 1,
+          "actual_model_calls": 7,
+          "reported_prompt_tokens": 7269,
+          "reported_completion_tokens": 1542,
+          "calls_missing_usage": 0,
+          "model_call_errors": 0
+        }
+      },
+      "outcomes": [
+        {
+          "case_id": "none-guard-removed",
+          "strategy": "link",
+          "expected_status": "violated",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 20.961
+        },
+        {
+          "case_id": "none-guard-removed",
+          "strategy": "investigate",
+          "expected_status": "violated",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 103.971
+        },
+        {
+          "case_id": "none-guard-preserved",
+          "strategy": "investigate",
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "matches_label": true,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 87.581
+        },
+        {
+          "case_id": "none-guard-preserved",
+          "strategy": "link",
+          "expected_status": "verified",
+          "actual_status": "unverified",
+          "matches_label": false,
+          "health": "completed",
+          "findings": 0,
+          "elapsed_seconds": 20.678
+        }
+      ]
+    }
+  ],
+  "conclusions": [
+    "The new task path can investigate requirements without discovery candidates.",
+    "The complete v3 run produced a grounded defect candidate but the legacy finding verifier rejected it; the expected violation remained unverified.",
+    "The preserved-guard requirement received bounded satisfaction support in investigate mode.",
+    "No real-PR precision, recall, independent adjudication, or held-out release claim is supported.",
+    "The two complete runs used different development prompt versions and must not be presented as independent held-out trials."
+  ],
+  "next_priority": "Require source-bound structured counterevidence from the legacy finding verifier; then evaluate real development PRs."
+}
