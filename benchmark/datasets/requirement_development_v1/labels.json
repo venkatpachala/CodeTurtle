@@ -1,0 +1,86 @@
+[
+  {
+    "case_id": "none-guard-removed",
+    "requirement_id": "R1",
+    "expected_status": "violated",
+    "category": "defect",
+    "annotation_provenance": "author-labelled synthetic fixture"
+  },
+  {
+    "case_id": "none-guard-preserved",
+    "requirement_id": "R1",
+    "expected_status": "verified",
+    "category": "clean",
+    "annotation_provenance": "author-labelled synthetic fixture"
+  },
+  {
+    "case_id": "negative-withdrawal",
+    "requirement_id": "R1",
+    "expected_status": "violated",
+    "category": "defect",
+    "annotation_provenance": "author-labelled synthetic fixture"
+  },
+  {
+    "case_id": "equivalent-withdrawal-guard",
+    "requirement_id": "R1",
+    "expected_status": "verified",
+    "category": "clean",
+    "annotation_provenance": "author-labelled synthetic fixture"
+  },
+  {
+    "case_id": "retry-limit-increased",
+    "requirement_id": "R1",
+    "expected_status": "violated",
+    "category": "defect",
+    "annotation_provenance": "author-labelled synthetic fixture"
+  },
+  {
+    "case_id": "intentional-limit-change",
+    "requirement_id": "R1",
+    "expected_status": "verified",
+    "category": "clean",
+    "annotation_provenance": "author-labelled synthetic fixture"
+  },
+  {
+    "case_id": "tenant-filter-removed",
+    "requirement_id": "R1",
+    "expected_status": "violated",
+    "category": "defect",
+    "annotation_provenance": "author-labelled synthetic fixture"
+  },
+  {
+    "case_id": "tenant-guard-delegated",
+    "requirement_id": "R1",
+    "expected_status": "verified",
+    "category": "clean",
+    "annotation_provenance": "author-labelled synthetic fixture"
+  },
+  {
+    "case_id": "external-policy-unavailable",
+    "requirement_id": "R1",
+    "expected_status": "unverified",
+    "category": "unresolved",
+    "annotation_provenance": "author-labelled synthetic fixture"
+  },
+  {
+    "case_id": "required-field-removed",
+    "requirement_id": "R1",
+    "expected_status": "violated",
+    "category": "defect",
+    "annotation_provenance": "author-labelled synthetic fixture"
+  },
+  {
+    "case_id": "fee-policy-updated",
+    "requirement_id": "R1",
+    "expected_status": "verified",
+    "category": "clean",
+    "annotation_provenance": "author-labelled synthetic fixture"
+  },
+  {
+    "case_id": "shared-default-list",
+    "requirement_id": "R1",
+    "expected_status": "violated",
+    "category": "defect",
+    "annotation_provenance": "author-labelled synthetic fixture"
+  }
+]

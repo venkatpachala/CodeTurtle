@@ -1,0 +1,250 @@
+[
+  {
+    "case_id": "none-guard-removed",
+    "files": {
+      "app.py": {
+        "base": "def size(items):\n    if items is None:\n        return 0\n    return len(items)\n",
+        "head": "def size(items):\n    return len(items)\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "none guard removed",
+        "acceptance_criterion": "size(None) returns zero rather than raising.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "none-guard-preserved",
+    "files": {
+      "app.py": {
+        "base": "def size(items):\n    if items is None:\n        return 0\n    return len(items)\n",
+        "head": "def size(items):\n    if items is None:\n        return 0\n    return (len(items))\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "none guard preserved",
+        "acceptance_criterion": "size(None) returns zero rather than raising.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "negative-withdrawal",
+    "files": {
+      "app.py": {
+        "base": "def withdraw(balance, amount):\n    if amount < 0:\n        raise ValueError('negative amount')\n    return balance - amount\n",
+        "head": "def withdraw(balance, amount):\n    return balance - amount\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "negative withdrawal",
+        "acceptance_criterion": "A negative amount is rejected with ValueError before changing the balance.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "equivalent-withdrawal-guard",
+    "files": {
+      "app.py": {
+        "base": "def withdraw(balance, amount):\n    if amount < 0:\n        raise ValueError('negative amount')\n    return balance - amount\n",
+        "head": "def withdraw(balance, amount):\n    if not amount >= 0:\n        raise ValueError('negative amount')\n    return balance - amount\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "equivalent withdrawal guard",
+        "acceptance_criterion": "A negative amount is rejected with ValueError before changing the balance.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "retry-limit-increased",
+    "files": {
+      "app.py": {
+        "base": "def max_attempts():\n    return 3\n",
+        "head": "def max_attempts():\n    return 4\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "retry limit increased",
+        "acceptance_criterion": "max_attempts() returns at most three.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "intentional-limit-change",
+    "files": {
+      "app.py": {
+        "base": "def max_attempts():\n    return 3\n",
+        "head": "def max_attempts():\n    return 5\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "intentional limit change",
+        "acceptance_criterion": "The approved new policy requires max_attempts() to return five.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "tenant-filter-removed",
+    "files": {
+      "app.py": {
+        "base": "def document(doc, tenant):\n    if doc['tenant'] != tenant:\n        return None\n    return doc\n",
+        "head": "def document(doc, tenant):\n    return doc\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "tenant filter removed",
+        "acceptance_criterion": "document(doc, tenant) never returns a document owned by another tenant.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "tenant-guard-delegated",
+    "files": {
+      "app.py": {
+        "base": "def document(doc, tenant):\n    if doc['tenant'] != tenant:\n        return None\n    return doc\n",
+        "head": "from policy import visible_document\n\ndef document(doc, tenant):\n    return visible_document(doc, tenant)\n"
+      },
+      "policy.py": {
+        "base": null,
+        "head": "def visible_document(doc, tenant):\n    return doc if doc['tenant'] == tenant else None\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "tenant guard delegated",
+        "acceptance_criterion": "document(doc, tenant) never returns a document owned by another tenant.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": [
+          "policy.py"
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "external-policy-unavailable",
+    "files": {
+      "app.py": {
+        "base": "from external_sdk import fetch\n\ndef document(key, tenant):\n    return fetch(key, tenant=tenant)\n",
+        "head": "from external_sdk import fetch\n\ndef document(key, tenant):\n    return fetch(key)\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "external policy unavailable",
+        "acceptance_criterion": "Documents owned by another tenant cannot be returned; SDK and database policy behavior are unavailable.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": [
+          "database_policy.json"
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "required-field-removed",
+    "files": {
+      "app.py": {
+        "base": "def payload(name):\n    return {'name': name, 'active': True}\n",
+        "head": "def payload(name):\n    return {'active': True}\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "required field removed",
+        "acceptance_criterion": "payload(name) includes a name key equal to the supplied name.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "fee-policy-updated",
+    "files": {
+      "app.py": {
+        "base": "def fee(amount):\n    return amount * 0.02\n",
+        "head": "def fee(amount):\n    return amount * 0.025\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "fee policy updated",
+        "acceptance_criterion": "The approved new fee is 2.5 percent of amount.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "shared-default-list",
+    "files": {
+      "app.py": {
+        "base": "def append_item(item, items=None):\n    if items is None:\n        items = []\n    items.append(item)\n    return items\n",
+        "head": "def append_item(item, items=[]):\n    items.append(item)\n    return items\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "shared default list",
+        "acceptance_criterion": "Calls to append_item(item) without an items argument have independent lists and never retain prior items.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  }
+]
