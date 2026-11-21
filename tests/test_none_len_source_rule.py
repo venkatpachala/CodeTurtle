@@ -87,14 +87,15 @@ def test_rule_never_rewrites_a_different_claim_to_fit_its_contract(verification_
     assert verify_none_len(c,observations) is None
 
 
-def test_concrete_type_error_also_supports_generic_error_without_rewriting_claim(verification_case):
+@pytest.mark.parametrize("actual", ["Error", "error", " ERROR "])
+def test_concrete_type_error_also_supports_generic_error_without_rewriting_claim(verification_case, actual):
     provider,snapshot = verification_case()
     c = candidate()
-    c.actual = "Error"
+    c.actual = actual
     c.violating_condition = "size(None)"
     verifier = SourceFindingVerifier(provider,snapshot,lambda _:pytest.fail("unneeded call"),ReviewBudget(),source_rules=True)
     assert verifier.verify(c,None,[]) == "VERIFIED"
-    assert verifier.records[0].claim.actual == "Error"
+    assert verifier.records[0].claim.actual == actual
     verifier.records[0].validate_sources(verifier.observations)
 
 
