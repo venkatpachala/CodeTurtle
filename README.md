@@ -11,6 +11,8 @@ and [implementation validation](docs/IMPLEMENTATION_VALIDATION.md).
 Local committed review now supports requirement-first investigation with exact
 source citations. See the [implementation and learning walkthrough](docs/REQUIREMENT_FIRST_PHASE.md)
 for scoped requirements, ablation modes, and the development experiment protocol.
+The default final model gate now also requires structured source support or
+counterevidence; see the [verification learning guide](docs/SOURCE_FINDING_VERIFICATION.md).
 
 The preview is installed from this checkout or a locally built wheel. The
 historical v0.4.0 tag does not contain these changes.
@@ -78,7 +80,7 @@ Positioner          resolve exact diff line for each candidate
   ↓
 Reflector           path-jail, hunk-support, and lockfile guards
   ↓
-Verify Loop         cross-check claims against DiffIndex; Graphify MCP for uncertain ones
+Verify Loop         deterministic checks or structured source-bound model decisions
   ↓
 Sandbox (opt-in)    jailed pytest on PR worktree; evidence only, never disproves a finding
   ↓

@@ -24,12 +24,12 @@ not have the v2 production contract guarantees.
 
 ## Canonical result
 
-`ReviewResult.to_dict()` emits schema version `2.2`. It includes target, health,
+`ReviewResult.to_dict()` emits schema version `2.3`. It includes target, health,
 inspection, findings, product findings, execution, trace, model/config provenance,
 policy reasons, and bounded-work telemetry. The additive requirement contracts
 record intent sources, requirements, assessments, investigations, and evidence.
 `ReviewResult.from_dict()` accepts a canonical result or its CLI envelope and
-upgrades stored `2.0` and `2.1` results to `2.2`. `findings` is diagnostic; the
+upgrades stored `2.0`, `2.1`, and `2.2` results to `2.3`. `findings` is diagnostic; the
 `product_findings` projection contains verified defects. No empty-list fallback
 reconstructs v4 findings from legacy comments.
 
@@ -73,6 +73,15 @@ Typed `source_observations` record tool-produced revision-bound excerpts. Eviden
 can reference them, and the canonical result validates snapshot/revision identity
 and excerpt digests. Structured model decisions and per-requirement outcomes remain
 inspectable in provenance. See REQUIREMENT_FIRST_PHASE.md for the current protocol.
+
+Final model verification now uses structured source-bound decisions and records
+both support and counterevidence in `finding_verifications`. Graph keyword matches
+and related test names are hints rather than automatic refutations on this route.
+Malformed output, unavailable context, and exhausted budgets remain unresolved.
+PR source capture distinguishes the target tip (`base_sha`) from the historical
+comparison merge-base (`comparison_base_sha`). Existing deterministic verification
+routes remain separate. See SOURCE_FINDING_VERIFICATION.md for the contract,
+limits, tests, and paired verifier experiment.
 
 ## Local committed snapshots
 

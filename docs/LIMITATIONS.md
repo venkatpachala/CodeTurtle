@@ -4,6 +4,12 @@ This is a production-contract preview, not a demonstrated high-recall reviewer.
 
 - Local-model reasoning can miss simple defects. A completed assessment is not
   a guarantee of correct reasoning. The live diagnostic traces preserve misses.
+- Structured final citations establish source grounding, not semantic truth.
+  Final verification currently requires complete bounded context: six paths,
+  120 lines per file, and 10,000 shared source characters. Larger or unavailable
+  dependencies can leave claims unresolved. The narrow Python None-flow check
+  is not a general program analyzer. PR snapshot capture covers this final gate;
+  the entire PR pipeline has not migrated to the local immutable adapter.
 - Static verification is not BASE/HEAD execution attribution. Existing test
   failures block approval eligibility but do not automatically establish a regression.
 - Local `--execute-tests` uses a worktree, path restrictions, a timeout, and a

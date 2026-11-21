@@ -248,6 +248,10 @@ observable without becoming an unsupported conclusive assessment.
 
 ## Next work
 
+The following phase implemented structured final finding verification and pinned
+PR source capture for that gate. See [the implementation and learning guide](SOURCE_FINDING_VERIFICATION.md).
+The live diagnostics above remain historical measurements for their recorded commits.
+
 Inspect live diagnostic failures before enlarging the architecture. Improve
 structured-output reliability under matched model settings, then expand to
 adjudicated real development PRs. Complete the shared snapshot input adapter for
