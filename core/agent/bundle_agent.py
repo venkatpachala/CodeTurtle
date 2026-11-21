@@ -14,7 +14,7 @@ from core.agent.tools import BundleTools
 from core.runtime.models import Bundle, Candidate
 
 MAX_STEPS = 4
-PROMPT_VERSION = "hypothesis-proof-v4-schema-batches"
+PROMPT_VERSION = "hypothesis-proof-v5-partial-decisions"
 
 
 @dataclass

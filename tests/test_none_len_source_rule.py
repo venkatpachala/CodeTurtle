@@ -85,3 +85,31 @@ def test_rule_never_rewrites_a_different_claim_to_fit_its_contract(verification_
     c = candidate()
     setattr(c,field,value)
     assert verify_none_len(c,observations) is None
+
+
+def test_concrete_type_error_also_supports_generic_error_without_rewriting_claim(verification_case):
+    provider,snapshot = verification_case()
+    c = candidate()
+    c.actual = "Error"
+    c.violating_condition = "size(None)"
+    verifier = SourceFindingVerifier(provider,snapshot,lambda _:pytest.fail("unneeded call"),ReviewBudget(),source_rules=True)
+    assert verifier.verify(c,None,[]) == "VERIFIED"
+    assert verifier.records[0].claim.actual == "Error"
+    verifier.records[0].validate_sources(verifier.observations)
+
+
+def test_partial_bundle_retains_verified_blocker_without_claiming_complete_analysis(verification_case):
+    provider,snapshot = verification_case()
+    class PartialDiscovery:
+        def run_result(self,bundle,tools):
+            c = candidate()
+            c.bundle_id = bundle.id
+            return AgentRunResult(status="PARTIAL",candidates=[c],
+                protocol_errors=[{"stage":"proof","error":"invalid sibling"}])
+    result = ReviewRuntime(agent=PartialDiscovery(),rule_engine=lambda *a,**k:[]).run(SimpleNamespace(
+        review_snapshot=snapshot,input_provider=provider,repo_dir=str(provider.root),
+        pr_base_sha=snapshot.base_sha,pr_head_sha=snapshot.head_sha,
+        files_changed=["app.py"],full_diff=provider.diff(snapshot)))
+    assert result.health.status == "partial" and result.decision == "REQUEST_CHANGES"
+    assert len(result.product_findings) == 1 and not result.approval_eligible
+    assert result.inspection.inspected == 0

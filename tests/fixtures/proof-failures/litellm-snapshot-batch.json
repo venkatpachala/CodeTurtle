@@ -1,0 +1,45 @@
+{
+  "origin": "First native snapshot-context PR run at reviewer 4b16477; malformed sibling poisoned batch.",
+  "pr_url": "https://github.com/BerriAI/litellm/pull/53337",
+  "hypotheses": [
+    {
+      "id": "H-001",
+      "bundle_id": "B-001",
+      "file": "litellm/batches/main.py",
+      "observation": "The error message now correctly refers to 'list_batches' instead of 'list_batch'.",
+      "hypothesis": "The error message for unsupported providers now correctly refers to 'list_batches' instead of 'list_batch'.",
+      "symbol": "list_batches",
+      "category": "correctness",
+      "why_investigate": "The error message is a critical part of the API contract, and any change could affect how users interpret the error.",
+      "required_evidence": [
+        "source",
+        "callers",
+        "tests"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "id": "H-002",
+      "bundle_id": "B-001",
+      "file": "litellm/batches/main.py",
+      "observation": "The HTTP request method now correctly uses 'GET' instead of 'create_thread'.",
+      "hypothesis": "The HTTP request method for unsupported providers now correctly uses 'GET' instead of 'create_thread'.",
+      "symbol": "list_batches",
+      "category": "correctness",
+      "why_investigate": "The HTTP request method is part of the API contract, and any change could affect how users interact with the API.",
+      "required_evidence": [
+        "source",
+        "callers",
+        "tests"
+      ],
+      "confidence": 0.8
+    }
+  ],
+  "raw_proof": "{\n  \"decisions\": [\n    {\n      \"hypothesis_id\": \"H-001\",\n      \"status\": \"substantiated\",\n      \"candidate\": {\n        \"file\": \"litellm/batches/main.py\",\n        \"symbol\": \"list_batches\",\n        \"start_line\": 879,\n        \"title\": \"Error message for unsupported providers now correctly refers to 'list_batches'\",\n        \"claim\": \"The error message for unsupported providers now correctly refers to 'list_batches' instead of 'list_batch'.\",\n        \"existing_code\": \"@@ -879,7 +879,7 @@ def list_batches(\\n             )\\n         else:\\n             raise litellm.exceptions.BadRequestError(\\n-                message=\\\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\\\".format(\\n+                message=\\\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\\\".format(\\n                     custom_llm_provider,\\n                     \\\", \\\".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\\n                 ),\\n\\n@@ -888,7 +888,7 @@ def list_batches(\\n                 response=httpx.Response(\\n                     status_code=400,\\n                     content=\\\"Unsupported provider\\\",\\n-                    request=httpx.Request(method=\\\"create_thread\\\", url=\\\"https://github.com/BerriAI/litellm\\\"),\\n+                    request=httpx.Request(, \\\"\\\"\", \"invariant\": \"The error message for unsupported providers should correctly refer to 'list_batches'.\",\n        \"violating_condition\": \"The error message still refers to 'list_batch' instead of 'list_batches'.\",\n        \"expected\": \"The error message should correctly refer to 'list_batches'.\",\n        \"actual\": \"The error message still refers to 'list_batch'.\",\n        \"execution_path\": [\"litellm/batches/main.py:879\", \"tests/unit/batches/test_main.py:352\"],\n        \"severity\": \"medium\",\n        \"confidence\": 0.9\n      },\n      \"reason\": \"The error message now correctly refers to 'list_batches' instead of 'list_batch'. This change is substantiated by the evidence provided, which includes the modified source code and the test case that checks for the correct error message.\",\n      \"evidence_refs\": [\"EV-B-001-001\", \"EV-B-001-002\", \"EV-B-001-003\", \"EV-B-001-004\"],\n      \"missing_evidence\": []\n    },\n    {\n      \"hypothesis_id\": \"H-002\",\n      \"status\": \"disproved\",\n      \"candidate\": null,\n      \"reason\": \"The HTTP request method now correctly uses 'GET' instead of 'create_thread'. However, the evidence provided does not include any concrete evidence that the HTTP request method for unsupported providers now correctly uses 'GET' instead of 'create_thread'. The evidence only shows that the HTTP request method is 'GET' for the 'list_batches' function, but it does not show that it is 'GET' for unsupported providers.\",\n      \"evidence_refs\": [\"EV-B-001-001\", \"EV-B-001-002\", \"EV-B-001-003\", \"EV-B-001-004\"],\n      \"missing_evidence\": [\"Concrete evidence that the HTTP request method for unsupported providers now correctly uses 'GET' instead of 'create_thread'.\"]\n    }\n  ]\n}",
+  "evidence_ids": [
+    "EV-B-001-001",
+    "EV-B-001-002",
+    "EV-B-001-003",
+    "EV-B-001-004"
+  ]
+}

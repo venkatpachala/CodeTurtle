@@ -795,9 +795,9 @@ class ReviewRuntime:
         }
         inspection = collect_inspection(units, bundles, agent_runs)
         unresolved = unresolved_hypotheses(agent_runs, candidates, dropped)
-        all_failed = bool(agent_runs) and len(unhealthy) == len(agent_runs)
+        all_failed = bool(agent_runs) and all(r.get("status") not in healthy_statuses | {"PARTIAL"} for r in agent_runs)
         health = ReviewHealth(status="failed" if all_failed else "partial" if unhealthy else "completed",
-            stages=[StageOutcome(stage=f"bundle:{r['bundle_id']}", status="failed" if r in unhealthy else "succeeded",
+            stages=[StageOutcome(stage=f"bundle:{r['bundle_id']}", status="degraded" if r.get("status") == "PARTIAL" else "failed" if r in unhealthy else "succeeded",
                                  code=str(r.get("status"))) for r in agent_runs])
         health.stages.extend(self.stage_errors)
         if self.stage_errors and health.status == "completed":

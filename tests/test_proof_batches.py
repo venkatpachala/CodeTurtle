@@ -144,3 +144,34 @@ def test_failed_provider_attempt_still_consumes_a_step_and_is_recorded():
     assert result.records[0]["attempts"][1]["response_index"] is None
     assert result.records[-1]["status"] == "not_assessed"
     assert result.status == "PARTIAL"
+
+
+def test_live_snapshot_response_preserves_valid_sibling_and_repairs_only_invalid_id():
+    from pathlib import Path
+    fixture = json.loads((Path(__file__).parent/'fixtures/proof-failures/litellm-snapshot-batch.json').read_text())
+    hyps = [ReviewHypothesis(**item) for item in fixture['hypotheses']]
+    evidence = [{"id":item,"request":{"path":hyps[0].file},"result":{}} for item in fixture['evidence_ids']]
+    calls = []
+    def complete(prompt,schema):
+        calls.append(prompt)
+        if len(calls) == 1:
+            return fixture['raw_proof']
+        package = json.loads(prompt.split('\nPACKAGE\n',1)[1])
+        assert [item['id'] for item in package['hypotheses']] == ['H-002']
+        return json.dumps(response(prompt))
+    run = run_proofs(Bundle(id='B-001',paths=[hyps[0].file]),hyps,evidence,complete,['discovery'],max_steps=4)
+    assert run.completed == 2 and len(run.candidates) == 1
+    assert run.candidates[0].hypothesis_id == 'H-001'
+    assert run.status == 'VALID_CANDIDATES' and len(calls) == 2
+    assert run.errors[0]['hypothesis_ids'] == ['H-002']
+
+
+def test_unrepaired_invalid_sibling_is_partial_not_a_clean_empty_batch():
+    from pathlib import Path
+    fixture = json.loads((Path(__file__).parent/'fixtures/proof-failures/litellm-snapshot-batch.json').read_text())
+    hyps = [ReviewHypothesis(**item) for item in fixture['hypotheses']]
+    evidence = [{"id":item,"request":{"path":hyps[0].file},"result":{}} for item in fixture['evidence_ids']]
+    run = run_proofs(Bundle(id='B-001'),hyps,evidence,lambda *a:fixture['raw_proof'],['discovery'],max_steps=2)
+    assert run.status == 'PARTIAL' and run.completed == 1
+    assert len(run.candidates) == 1 and run.records[0]['status'] == 'partial_response'
+    assert run.outcomes[1]['status'] == 'unresolved'

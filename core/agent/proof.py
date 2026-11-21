@@ -64,22 +64,43 @@ def proof_schema(hypotheses: list[ReviewHypothesis]):
 
 
 def validate_batch(raw: str, schema, hypotheses, evidence: list[dict]) -> list[ProofDecision]:
+    decisions, errors = validate_partial_batch(raw, schema, hypotheses, evidence)
+    if errors:
+        raise ValueError(json.dumps(errors))
+    return decisions
+
+
+def validate_partial_batch(raw: str, schema, hypotheses, evidence: list[dict]):
+    """Validate the shared identity envelope first, then each decision separately.
+
+    No fields, verdicts or references are corrected. Invalid decisions remain
+    invalid; independently valid siblings survive for downstream verification.
+    """
     from core.agent.parse import parse_agent_document
-    result = schema.model_validate(parse_agent_document(raw))
+    document = parse_agent_document(raw)
     expected = {item.id: item for item in hypotheses}
-    seen = set()
+    if not isinstance(document, dict) or set(document) != {"decisions"} or not isinstance(document["decisions"], list):
+        raise ValueError("proof batch must contain only a decisions list")
+    values = document["decisions"]
+    if len(values) != len(expected) or not all(isinstance(item, dict) for item in values):
+        raise ValueError("proof batch membership is incomplete")
+    identities = [item.get("hypothesis_id") for item in values]
+    if not all(isinstance(item, str) for item in identities) or len(set(identities)) != len(identities) or set(identities) != set(expected):
+        raise ValueError("proof batch contains duplicate, missing, or foreign hypothesis identities")
+    decision_schema = schema.model_fields["decisions"].annotation.__args__[0]
     refs = {item["id"] for item in evidence}
-    for decision in result.decisions:
-        if decision.hypothesis_id in seen:
-            raise ValueError("duplicate hypothesis decision")
-        seen.add(decision.hypothesis_id)
-        if set(decision.evidence_refs) - refs:
-            raise ValueError("proof references evidence outside its admitted package")
-        if decision.candidate and decision.candidate.file != expected[decision.hypothesis_id].file:
-            raise ValueError("candidate targets a different file than its hypothesis")
-    if seen != set(expected):
-        raise ValueError("proof did not assess every admitted hypothesis")
-    return result.decisions
+    accepted, errors = [], {}
+    for value in values:
+        try:
+            decision = decision_schema.model_validate(value)
+            if set(decision.evidence_refs) - refs:
+                raise ValueError("proof references evidence outside its admitted package")
+            if decision.candidate and decision.candidate.file != expected[decision.hypothesis_id].file:
+                raise ValueError("candidate targets a different file than its hypothesis")
+            accepted.append(decision)
+        except ValueError as error:
+            errors[value["hypothesis_id"]] = str(error)[:1200]
+    return accepted, errors
 
 
 def compact_evidence(records: list[dict], hypotheses, *, max_chars: int = 10_000):
@@ -147,7 +168,7 @@ def run_proofs(bundle: Bundle, hypotheses: list[ReviewHypothesis], evidence: lis
     issued_steps = len(raw_outputs)
     for offset in range(0, len(hypotheses), 2):
         batch = hypotheses[offset:offset + 2]
-        schema = proof_schema(batch)
+        pending = batch
         admitted, omitted = compact_evidence(evidence, batch)
         package = {"bundle_id": bundle.id, "hypotheses": [item.to_dict() for item in batch],
                    "evidence": admitted, "omitted_evidence_ids": omitted,
@@ -155,7 +176,7 @@ def run_proofs(bundle: Bundle, hypotheses: list[ReviewHypothesis], evidence: lis
         record = {"hypothesis_ids": [item.id for item in batch], "status": "not_assessed",
                   "attempts": [], "evidence_refs": [item["id"] for item in admitted]}
         run.records.append(record)
-        decisions = None
+        accepted = {}
         for attempt in (1, 2):
             if exhausted or issued_steps >= max_steps:
                 if record["attempts"]:
@@ -163,6 +184,8 @@ def run_proofs(bundle: Bundle, hypotheses: list[ReviewHypothesis], evidence: lis
                 else:
                     record.update(status="not_assessed", reason="request_or_step_budget_exhausted")
                 break
+            schema = proof_schema(pending)
+            package["hypotheses"] = [item.to_dict() for item in pending]
             prompt = SYSTEM + "\nRESPONSE_SCHEMA\n" + json.dumps(schema.model_json_schema()) + "\nPACKAGE\n" + json.dumps(package)
             if len(prompt) > 24_000:
                 record.update(status="context_unavailable", reason="proof prompt exceeds admission cap")
@@ -170,7 +193,8 @@ def run_proofs(bundle: Bundle, hypotheses: list[ReviewHypothesis], evidence: lis
             try:
                 issued_steps += 1
                 trace = {"prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
-                         "response_index": None, "finish_reason": None}
+                         "response_index": None, "finish_reason": None,
+                         "hypothesis_ids": [item.id for item in pending]}
                 record["attempts"].append(trace)
                 raw = complete(prompt, schema)
                 raw_outputs.append(raw)
@@ -178,9 +202,14 @@ def run_proofs(bundle: Bundle, hypotheses: list[ReviewHypothesis], evidence: lis
                 trace.update(response_index=len(raw_outputs) - 1, finish_reason=info.get("finish_reason"))
                 if info.get("output_truncated"):
                     raise ValueError("provider ended proof generation at the output token limit")
-                decisions = validate_batch(raw, schema, batch, admitted)
-                record["status"] = "completed"
+                decisions, invalid = validate_partial_batch(raw, schema, pending, admitted)
+                for decision in decisions:
+                    accepted[decision.hypothesis_id] = decision
                 run.completed += len(decisions)
+                if invalid:
+                    pending = [item for item in pending if item.id in invalid]
+                    raise ValueError(json.dumps(invalid))
+                record["status"] = "completed"
                 break
             except BudgetExceeded:
                 exhausted = True
@@ -190,7 +219,7 @@ def run_proofs(bundle: Bundle, hypotheses: list[ReviewHypothesis], evidence: lis
                 message = str(error)[:1200]
                 record.update(status="invalid_response", reason=message)
                 run.errors.append({"stage": "proof", "attempt": attempt, "error": message,
-                                   "hypothesis_ids": record["hypothesis_ids"]})
+                                   "hypothesis_ids": [item.id for item in pending]})
                 if attempt == 2 or not repairs_left:
                     break
                 repairs_left -= 1
@@ -198,11 +227,16 @@ def run_proofs(bundle: Bundle, hypotheses: list[ReviewHypothesis], evidence: lis
             except Exception as error:
                 record.update(status="provider_error", reason=f"proof request failed: {type(error).__name__}")
                 break
-        if decisions is None:
-            run.outcomes.extend({"hypothesis_id": item.id, "status": "unresolved",
-                                 "reason": record.get("reason", "proof unavailable"), "evidence_refs": []} for item in batch)
-            continue
-        for decision in decisions:
+        record["validated_hypothesis_ids"] = list(accepted)
+        if accepted and len(accepted) < len(batch):
+            record["failure_status"] = record["status"]
+            record["status"] = "partial_response"
+        for item in batch:
+            decision = accepted.get(item.id)
+            if decision is None:
+                run.outcomes.append({"hypothesis_id": item.id, "status": "unresolved",
+                    "reason": record.get("reason", "proof unavailable"), "evidence_refs": []})
+                continue
             run.outcomes.append({"hypothesis_id": decision.hypothesis_id, "status": decision.status,
                                  "reason": decision.reason, "evidence_refs": list(decision.evidence_refs)})
             if decision.candidate is not None:
