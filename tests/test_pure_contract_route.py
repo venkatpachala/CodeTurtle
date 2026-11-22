@@ -18,8 +18,13 @@ def bundle():
 
 @pytest.mark.parametrize("side,count,status",[("base",1,"VALID_CANDIDATES"),("head",0,"VALID_EMPTY"),("unknown",0,"PARTIAL")])
 def test_contract_choice_uses_backend_operation_and_outcomes_without_self_verification(side,count,status):
-    response={"example_id":"BX-1","requirement_id":"R1","expected_side":side,"reason":"Contract interpretation"}
-    agent=BundleAgent(llm=lambda _:json.dumps(response),discovery_protocol="semantic")
+    def respond(prompt):
+        package=json.loads(prompt.split("\nPACKAGE\n")[1])
+        fact=bundle().change_context["behavioral_examples"][0]["examples"][0]
+        selected="unknown" if side=="unknown" else next(key for key,value in package["options"].items() if value==fact[side]["value"])
+        assert "base" not in package and "head" not in package
+        return json.dumps({"requirement_id":"R1","selected":selected,"reason":"Contract interpretation"})
+    agent=BundleAgent(llm=respond,discovery_protocol="semantic")
     result=agent.run_result(bundle())
     assert result.status==status and len(result.candidates)==count
     assert result.request_attempts==1
@@ -30,6 +35,6 @@ def test_contract_choice_uses_backend_operation_and_outcomes_without_self_verifi
 
 
 def test_foreign_example_or_requirement_cannot_create_candidate():
-    agent=BundleAgent(llm=lambda _:json.dumps({"example_id":"foreign","requirement_id":"R1","expected_side":"base","reason":"bad"}),discovery_protocol="semantic")
+    agent=BundleAgent(llm=lambda _:json.dumps({"requirement_id":"R1","selected":"foreign","reason":"bad"}),discovery_protocol="semantic")
     result=agent.run_result(bundle())
     assert result.status=="INVALID_SCHEMA" and not result.candidates
