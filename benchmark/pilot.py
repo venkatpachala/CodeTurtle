@@ -33,13 +33,38 @@ class PilotCase(DomainRecord):
     previously_exposed: bool = False
 
 
+def related_families(candidates: list[PilotCase]) -> list[list[PilotCase]]:
+    """Connect URL aliases and equivalent patches, including transitive links."""
+    parents: dict[str, str] = {}
+
+    def root(key: str) -> str:
+        parents.setdefault(key, key)
+        while parents[key] != key:
+            parents[key] = parents[parents[key]]
+            key = parents[key]
+        return key
+
+    def url_key(url: str) -> str:
+        return "url:" + url.rstrip("/").casefold()
+
+    for case in candidates:
+        leader = root(url_key(case.pr_url))
+        for key in (url_key(case.original_url), "patch:" + case.family_id):
+            parents[root(key)] = leader
+    groups: dict[str, list[PilotCase]] = {}
+    for case in candidates:
+        groups.setdefault(root(url_key(case.pr_url)), []).append(case)
+    return list(groups.values())
+
+
 def register(candidates: list[PilotCase], destination: Path, *, seed="pilot-v1") -> dict:
-    # One representative per underlying URL or equivalent canonical patch.
-    selected, origins, families = [], set(), set()
-    for case in sorted(candidates, key=lambda c: digest([seed,c.pr_url])):
-        if case.original_url in origins or case.family_id in families:
-            continue
-        origins.add(case.original_url); families.add(case.family_id); selected.append(case)
+    selected = []
+    for family in related_families(candidates):
+        representative = min(family, key=lambda case: digest([seed, case.pr_url]))
+        selected.append(representative.model_copy(update={
+            "previously_exposed": any(case.previously_exposed for case in family)
+        }))
+    selected.sort(key=lambda case: digest([seed, case.pr_url]))
     issue = [c for c in selected if c.stratum=="source_issue_candidate"]
     control = [c for c in selected if c.stratum=="unreviewed_control"]
     if len(issue)<40 or len(control)<20:
@@ -111,7 +136,11 @@ def seal(root: Path, predictions: list[dict], output: Path, *, split="test"):
         provenance=result.get("provenance") or {}
         if not provenance.get("reviewer_commit") or provenance.get("dirty") is not False:
             raise ValueError("pilot predictions require a frozen clean reviewer")
-        profiles.add(digest({k:provenance.get(k) for k in ("reviewer_commit","provider","model","prompt_version")}))
+        profile = {k: provenance.get(k) for k in ("reviewer_commit","provider","model","prompt_version",
+                   "analysis_mode","finding_verifier_mode","finding_source_rules","discovery_protocol","requirement_strategy")}
+        profile["limits"] = {key: value for key, value in (provenance.get("budget") or {}).items()
+                             if key.startswith("max_")}
+        profiles.add(digest(profile))
     if len(profiles)!=1:
         raise ValueError("pilot predictions mix reviewer/model profiles")
     seal_predictions(output,predictions)

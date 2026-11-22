@@ -9,6 +9,27 @@ from core.review.contract import ReviewTarget, ReviewHealth
 from core.runtime.models import ReviewResult
 
 
+def test_related_families_follow_transitive_aliases_and_patch_identity(tmp_path):
+    from benchmark.pilot import related_families
+
+    _, rows = make_pilot(tmp_path / "pilot")
+    samples = [PilotCase.model_validate({k: v for k, v in row.items() if k != "split"}) for row in rows[:3]]
+    samples[1] = samples[1].model_copy(update={"original_url": samples[0].pr_url.upper() + "/"})
+    samples[2] = samples[2].model_copy(update={"family_id": samples[1].family_id, "previously_exposed": True})
+    for ordered in (samples, list(reversed(samples))):
+        groups = related_families(ordered)
+        assert len(groups) == 1 and len(groups[0]) == 3
+
+
+def test_static_and_native_predictions_cannot_share_a_pilot_seal(tmp_path):
+    root = tmp_path / "pilot"
+    _, cases = make_pilot(root)
+    rows = predictions(cases)
+    rows[0]["result"]["provenance"]["analysis_mode"] = "static_only"
+    with pytest.raises(ValueError, match="mix reviewer/model profiles"):
+        seal(root, rows, tmp_path / "mixed.json")
+
+
 def make_pilot(root):
     patch=b"frozen public patch\n"
     cases=[PilotCase(case_id=f"case-{i}",pr_url=f"https://github.com/a/b/pull/{i+1}",
