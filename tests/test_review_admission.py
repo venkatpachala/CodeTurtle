@@ -1,4 +1,5 @@
-from core.review.admission import plan_admission
+from core.review.admission import plan_admission, touches_persistence
+from core.review.contract import ReviewCoverage, ReviewHealth, evaluate_policy
 from core.input.impact import SnapshotImpactIndex
 from core.change_units import unit_kind
 from tests.test_input_snapshot import repository
@@ -43,3 +44,18 @@ def test_impact_cache_reads_once_and_ignores_dirty_worktree(repository, monkeypa
 def test_cross_language_test_paths_are_not_ranked_as_production_source():
     for path in ["crates/gateway/tests/auth.rs", "auth_test.go", "spec/auth_spec.rb"]:
         assert unit_kind(path) == "test"
+
+
+def test_persistence_argument_change_gets_priority_and_requires_human_review():
+    unit = {"id": "persistence", "kind": "source", "excerpt":
+            "   await prisma.reminder.deleteMany({\n-    attempts: 3\n+    attempts: 1"}
+    other = {"id": "value", "kind": "source", "excerpt": "-limit = 3\n+limit = 1"}
+    selected, plan = plan_admission([other, unit], max_units=1)
+    assert selected == [unit] and "persistence_mutation" in plan[0]["reasons"]
+    assert not touches_persistence(unit | {"kind": "test"})
+    assert not touches_persistence({"kind": "source", "excerpt": "+params.update(values)"})
+    outcome = evaluate_policy(health=ReviewHealth(status="completed"),
+        coverage=ReviewCoverage(eligible=1, packed=1, inspected=1), findings=[],
+        unresolved=[], execution={}, persistence_changed=touches_persistence(unit))
+    assert outcome.decision == "COMMENT" and not outcome.approval_eligible
+    assert outcome.reasons == ["persistence_change_requires_review"]

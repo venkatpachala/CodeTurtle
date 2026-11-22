@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, List, Optional
 import hashlib
 import subprocess
 from core.review.contract import ReviewTarget, ReviewHealth, StageOutcome, evaluate_policy
+from core.review.admission import touches_persistence
 from core.review.inspection import collect_inspection, unresolved_hypotheses
 from core.review.budget import ReviewBudget
 
@@ -935,7 +936,8 @@ class ReviewRuntime:
                           for item in requirement_assessments if item.status in {"unverified", "not_assessed"})
         with timed(timing, "policy"):
             outcome = evaluate_policy(health=health, coverage=inspection, findings=review_findings,
-                unresolved=unresolved, execution=execution, classification=classif)
+                unresolved=unresolved, execution=execution, classification=classif,
+                persistence_changed=any(touches_persistence(unit) for unit in units))
         decision, policy_reason = outcome.decision, outcome.reasons[0]
         pipeline_health.update(healthy=health.status == "completed", status=health.status, inspection_ratio=inspection.inspection_ratio)
         timing.total_s = sum(

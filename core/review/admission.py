@@ -5,6 +5,12 @@ import re
 from dataclasses import asdict, dataclass
 from typing import Any
 
+_PERSISTENCE_CALL = re.compile(
+    r"\b(?:prisma|db|database|repository|session|store|tx)(?:\.[A-Za-z_]\w*)*"
+    r"\.(?:create|insert|update|upsert|delete|remove|replace)(?:Many|One)?\s*\("
+    r"|\.(?:deleteMany|updateMany|upsertMany|insertMany)\s*\("
+)
+
 
 def get(unit: Any, key: str, default: Any = "") -> Any:
     return unit.get(key, default) if isinstance(unit, dict) else getattr(unit, key, default)
@@ -14,6 +20,11 @@ def get(unit: Any, key: str, default: Any = "") -> Any:
 class Priority:
     score: int
     reasons: tuple[str, ...]
+
+
+def touches_persistence(unit: Any) -> bool:
+    """Detect visible storage mutation context, including edits to call arguments."""
+    return get(unit, "kind") == "source" and bool(_PERSISTENCE_CALL.search(str(get(unit, "excerpt"))))
 
 
 def priority(unit: Any) -> Priority:
@@ -35,6 +46,9 @@ def priority(unit: Any) -> Priority:
     if any(controls.search(line) for line in bodies):
         score += 4
         reasons.append("control_or_effect_change")
+    if touches_persistence(unit):
+        score += 8
+        reasons.append("persistence_mutation")
     hint = get(unit, "risk_hint", "none")
     if hint in {"mutation", "io"}:
         score += 8 if hint == "mutation" else 4
