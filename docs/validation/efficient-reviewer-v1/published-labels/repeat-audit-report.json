@@ -1,0 +1,14 @@
+{
+  "source": "https://raw.githubusercontent.com/withmartian/code-review-benchmark/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/results/benchmark_data.json",
+  "publisher_revision": "23a35d0d64f7de5a68e5679da08414e0edacea9b",
+  "source_sha256": "60fe361f1430ce3d55bf85d2ceba30205c6a207eb2c49447a2b527e23718d5ed",
+  "inputs_sha256": "db8b0e427f471084975469e261f98b32a9d2f699c15ce637c6b7f63ef8a60875",
+  "reference_status": {
+    "exact_base_and_head_trees": 39,
+    "pr_url_only": 1,
+    "no_published_case_match": 20
+  },
+  "published_issue_count": 141,
+  "externally_labeled_defective": 37,
+  "scope": "Source attribution and replay-tree comparison. Categories are publisher annotations. Controls without matched reference remain unlabeled."
+}

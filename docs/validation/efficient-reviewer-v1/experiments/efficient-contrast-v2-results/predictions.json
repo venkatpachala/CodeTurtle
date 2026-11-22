@@ -1,0 +1,2300 @@
+[
+  {
+    "case_id": "utf8-regression",
+    "elapsed_seconds": 35.06984940500115,
+    "result": {
+      "schema_version": "2.3",
+      "run_id": "450266ff6d594825ad19f1d13d91b285",
+      "target": {
+        "repo": "",
+        "number": 0,
+        "base_sha": "83155b1338a934bd224beb09b7cfb5b3f4b9c587",
+        "head_sha": "f8b032c6d69286b2c3539df5fd69c36469f658f3",
+        "diff_sha256": "82e172c0640c82ef8f0d5148e1f6c1d7490417efe62f5768ef07161ff778b1ff",
+        "comparison_base_sha": ""
+      },
+      "health": {
+        "status": "failed",
+        "stages": [
+          {
+            "stage": "bundle:B-001",
+            "status": "failed",
+            "code": "INVALID_SCHEMA",
+            "detail": "",
+            "retryable": false
+          },
+          {
+            "stage": "graph",
+            "status": "degraded",
+            "code": "graph_unavailable",
+            "detail": "",
+            "retryable": false
+          }
+        ]
+      },
+      "inspection": {
+        "eligible": 1,
+        "packed": 1,
+        "inspected": 0,
+        "assessments": [
+          {
+            "unit_id": "CU-001",
+            "path": "app.py",
+            "status": "unknown",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": [],
+            "reason": "assessment_unavailable"
+          }
+        ],
+        "ratio": 0.0
+      },
+      "policy_reasons": [
+        "analysis_failed"
+      ],
+      "unresolved": [
+        {
+          "requirement_id": "R1",
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "approval_eligible": false,
+      "provenance": {
+        "reviewer_commit": "6dd7459c92ef98756b408f87c6ba92f7aad01781",
+        "dirty": false,
+        "prompt_version": "semantic-contract-v6-contrast-facts",
+        "discovery_protocol": "semantic",
+        "provider": "ollama",
+        "model": "qwen2.5-coder:7b",
+        "model_calls": [
+          {
+            "timestamp": "2026-11-22T08:34:16.296509",
+            "agent_name": "BundleAgent",
+            "capability": "correctness_review",
+            "provider": "ollama_provider",
+            "model": "qwen2.5-coder:7b",
+            "prompt_tokens": 1094,
+            "completion_tokens": 226,
+            "total_tokens": 1320,
+            "latency": 21.777810096740723,
+            "retries": 0,
+            "estimated_cost": 0.0,
+            "success": true,
+            "error": null,
+            "finish_reason": "stop",
+            "output_truncated": false,
+            "max_output_tokens": 1100,
+            "context_tokens": 8192,
+            "response_format": "json_schema",
+            "schema_sha256": "99e9d8edb231a5d885a73cd4af4f1ae6aae4215cc5da937b6afb22290403313a",
+            "prompt_characters": 3651,
+            "stage": "semantic_discovery"
+          },
+          {
+            "timestamp": "2026-11-22T08:34:29.204459",
+            "agent_name": "BundleAgent",
+            "capability": "correctness_review",
+            "provider": "ollama_provider",
+            "model": "qwen2.5-coder:7b",
+            "prompt_tokens": 1123,
+            "completion_tokens": 230,
+            "total_tokens": 1353,
+            "latency": 12.897644758224487,
+            "retries": 0,
+            "estimated_cost": 0.0,
+            "success": true,
+            "error": null,
+            "finish_reason": "stop",
+            "output_truncated": false,
+            "max_output_tokens": 1100,
+            "context_tokens": 8192,
+            "response_format": "json_schema",
+            "schema_sha256": "99e9d8edb231a5d885a73cd4af4f1ae6aae4215cc5da937b6afb22290403313a",
+            "prompt_characters": 3764,
+            "stage": "assessment_repair"
+          }
+        ],
+        "budget": {
+          "calls": 2,
+          "prompt_chars": 7415,
+          "elapsed_seconds": 35.06965318600123,
+          "max_model_calls": 12,
+          "max_prompt_chars": 120000,
+          "max_wall_seconds": 300.0
+        },
+        "investigation_source": "git_snapshot",
+        "requirement_strategy": "link",
+        "requirement_runs": [],
+        "finding_verifier_mode": "structured",
+        "finding_source_rules": true,
+        "source_preparation": null,
+        "verification_snapshot_id": "58e42288e9330ed8a4d7cf8c8525e9dc2e8e2cb1a909afc67d80b2c1505250d4",
+        "verification_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-km9gmqal",
+          "base_sha": "83155b1338a934bd224beb09b7cfb5b3f4b9c587",
+          "head_sha": "f8b032c6d69286b2c3539df5fd69c36469f658f3",
+          "diff_sha256": "82e172c0640c82ef8f0d5148e1f6c1d7490417efe62f5768ef07161ff778b1ff",
+          "config_sha256": "3b690e8130801e96dd54539ae31f6ef00b4ac8866dfd59ed68520147ad352119",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "input_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-km9gmqal",
+          "base_sha": "83155b1338a934bd224beb09b7cfb5b3f4b9c587",
+          "head_sha": "f8b032c6d69286b2c3539df5fd69c36469f658f3",
+          "diff_sha256": "82e172c0640c82ef8f0d5148e1f6c1d7490417efe62f5768ef07161ff778b1ff",
+          "config_sha256": "3b690e8130801e96dd54539ae31f6ef00b4ac8866dfd59ed68520147ad352119",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "snapshot_id": "58e42288e9330ed8a4d7cf8c8525e9dc2e8e2cb1a909afc67d80b2c1505250d4",
+        "source_input_id": "3ce4d4119f0b0938027c0eb101f5b499377444432631beea91ffc6a078512976"
+      },
+      "product_findings": [],
+      "decision": null,
+      "policy_reason": "analysis_failed",
+      "comments": [],
+      "dropped": [],
+      "bundles": [
+        {
+          "id": "B-001",
+          "paths": [
+            "app.py"
+          ],
+          "units": [
+            {
+              "id": "CU-001",
+              "path": "app.py",
+              "start_line": 1,
+              "end_line": 3,
+              "symbols": [],
+              "excerpt": "@@ -1,3 +1,3 @@\n def permits(text, limit):\n     \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n-    return len(text.encode(\"utf-8\")) <= limit\n+    return len(text) <= limit",
+              "n_added": 1,
+              "n_removed": 1,
+              "kind": "source",
+              "risk_hint": "none"
+            }
+          ],
+          "symbols": [
+            "permits"
+          ],
+          "kind": "source",
+          "risk_signals": [],
+          "requirements": [
+            {
+              "id": "R1",
+              "description": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+              "acceptance_criterion": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+              "paths": [
+                "app.py"
+              ],
+              "context_paths": []
+            }
+          ],
+          "change_context": {
+            "snapshot_id": "58e42288e9330ed8a4d7cf8c8525e9dc2e8e2cb1a909afc67d80b2c1505250d4",
+            "changes": [
+              {
+                "path": "app.py",
+                "symbol": "permits",
+                "kind": "function",
+                "status": "modified",
+                "base_line": 1,
+                "head_line": 1,
+                "signature_changed": false
+              }
+            ],
+            "limitations": [
+              "Structural changes guide investigation; they do not prove changed runtime behavior.",
+              "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+            ],
+            "unresolved_context": [],
+            "behavioral_examples": [
+              {
+                "path": "app.py",
+                "snapshot_id": "58e42288e9330ed8a4d7cf8c8525e9dc2e8e2cb1a909afc67d80b2c1505250d4",
+                "source": "bounded_python_ast",
+                "base_sha256": "c52b0e22387b6d383a7da620cf99ef1bb6a7b765d488375b05e3af1893fc1b91",
+                "head_sha256": "353e94f2bf407c53ac8d58425a8f8a4b9e6917ff5bc5205c7015f1346e074cc2",
+                "examples": [
+                  {
+                    "symbol": "permits",
+                    "inputs": {
+                      "text": "é",
+                      "limit": 1
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "False"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "True"
+                    },
+                    "base_line": 1,
+                    "head_line": 1
+                  },
+                  {
+                    "symbol": "permits",
+                    "inputs": {
+                      "text": "🙂",
+                      "limit": 1
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "False"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "True"
+                    },
+                    "base_line": 1,
+                    "head_line": 1
+                  }
+                ],
+                "limitations": [
+                  "Sampled pure-expression differences, not executed tests, input-validity proof or defect verdict."
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "coverage": {
+        "units_total": 1,
+        "units_packed": 1,
+        "units_omitted": 0,
+        "source_units": 1
+      },
+      "execution": {
+        "enabled": false,
+        "skipped": true,
+        "skip_reason": "flag_off",
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "python_env": "",
+        "python": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        },
+        "js": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        }
+      },
+      "findings": [],
+      "pipeline_trace": [],
+      "timing": {
+        "workspace_s": 0.0,
+        "graphify_s": 0.0,
+        "pr_facts_s": 0.0,
+        "change_units_s": 0.0,
+        "bundling_s": 0.0,
+        "bundle_agent_s": 35.023,
+        "reflect_s": 0.0,
+        "verify_s": 0.0,
+        "sandbox_s": 0.0,
+        "policy_s": 0.0,
+        "total_s": 35.023
+      },
+      "agent_runs": [
+        {
+          "status": "INVALID_SCHEMA",
+          "candidate_count": 0,
+          "raw_outputs": [
+            "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"Changed from UTF-8 byte length to Unicode character count.\",\n      \"contract\": \"permits(text, limit) enforces UTF-8 byte length, not Unicode character count.\",\n      \"contract_basis\": \"explicit_requirement\",\n      \"contract_reference\": \"R1\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-001\"],\n      \"missing_evidence\": [\"test cases for new behavior\"],\n      \"hypothesis\": {\n        \"symbol\": \"permits\",\n        \"trigger\": \"text = 'é'; limit = 1\",\n        \"expected\": {\n          \"kind\": \"return_value\",\n          \"property\": \"True\",\n          \"value\": \"True\"\n        },\n        \"suspected\": {\n          \"kind\": \"return_value\",\n          \"property\": \"False\",\n          \"value\": \"False\"\n        }\n      }\n    }\n  ]\n}",
+            "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"Changed from UTF-8 byte length to Unicode character count.\",\n      \"contract\": \"permits(text, limit) enforces UTF-8 byte length, not Unicode character count.\",\n      \"contract_basis\": \"explicit_requirement\",\n      \"contract_reference\": \"R1\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-001\"],\n      \"missing_evidence\": [\"test_proving_new_behavior\"],\n      \"hypothesis\": {\n        \"symbol\": \"permits\",\n        \"trigger\": \"text = \\\"\\u00e9\\\", limit = 1\",\n        \"expected\": {\n          \"kind\": \"return_value\",\n          \"property\": \"True\",\n          \"value\": \"True\"\n        },\n        \"suspected\": {\n          \"kind\": \"return_value\",\n          \"property\": \"False\",\n          \"value\": \"False\"\n        }\n      }\n    }\n  ]\n}"
+          ],
+          "tool_calls": [],
+          "hypotheses": [],
+          "hypothesis_count": 0,
+          "evidence_items": [],
+          "evidence_count": 0,
+          "stage_status": {
+            "discovery": "SEMANTIC_CONTRACT",
+            "proof": "INVALID_SCHEMA"
+          },
+          "parse_error": null,
+          "exception": null,
+          "latency_ms": 35017.15,
+          "prompt_version": "semantic-contract-v6-contrast-facts",
+          "model_calls": 2,
+          "assessments": [
+            {
+              "unit_id": "CU-001",
+              "status": "unknown",
+              "reason": "assessment_unavailable",
+              "behavioral_delta": "",
+              "hypothesis_outcome": "",
+              "evidence_refs": []
+            }
+          ],
+          "hypothesis_outcomes": [],
+          "protocol_errors": [
+            {
+              "stage": "assessment",
+              "unit_id": "CU-001",
+              "error": "1 validation error for ChangeAssessment\nhypothesis\n  Value error, expected and suspected outcomes must concern the same property [type=value_error, input_value={'symbol': 'permits', 'tr...lse', 'value': 'False'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+            },
+            {
+              "stage": "assessment",
+              "missing_unit_ids": [
+                "CU-001"
+              ],
+              "error": "repair only these incomplete unit assessments"
+            },
+            {
+              "stage": "assessment",
+              "unit_id": "CU-001",
+              "error": "1 validation error for ChangeAssessment\nhypothesis\n  Value error, expected and suspected outcomes must concern the same property [type=value_error, input_value={'symbol': 'permits', 'tr...lse', 'value': 'False'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+            },
+            {
+              "stage": "assessment",
+              "missing_unit_ids": [
+                "CU-001"
+              ],
+              "error": "repair only these incomplete unit assessments"
+            }
+          ],
+          "proof_runs": [],
+          "discovery_protocol": "semantic-v1",
+          "contract_assessments": [],
+          "semantic_rejections": [],
+          "request_attempts": 2,
+          "admission": [
+            {
+              "unit_id": "CU-001",
+              "path": "app.py",
+              "score": 26,
+              "reasons": [
+                "source_behavior",
+                "removed_control_or_effect",
+                "control_or_effect_change"
+              ],
+              "selected": true,
+              "reason": "selected"
+            }
+          ],
+          "estimated_completion_tokens": 411,
+          "bundle_id": "B-001"
+        }
+      ],
+      "pipeline_health": {
+        "healthy": false,
+        "agent_runs": 1,
+        "unhealthy_runs": 1,
+        "unhealthy_statuses": [
+          "INVALID_SCHEMA"
+        ],
+        "coverage_ratio": 1.0,
+        "coverage_adequate": true,
+        "status": "failed",
+        "inspection_ratio": 0.0
+      },
+      "intent_sources": [
+        {
+          "id": "intent-edff003dcb0381ee",
+          "kind": "task",
+          "source_ref": "/tmp/ct-contrast-km9gmqal/.review-requirements.json",
+          "content_hash": "edff003dcb0381ee2d96e1c873ca49ca15e281b9f7c1d801fafc025b17b23831",
+          "revision": null,
+          "captured_at": "2026-11-22T08:33:54.148376Z",
+          "authority_level": "authoritative",
+          "trusted_for": [
+            "R1"
+          ]
+        }
+      ],
+      "requirements": [
+        {
+          "id": "R1",
+          "description": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+          "acceptance_criterion": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+          "source_refs": [
+            "intent-edff003dcb0381ee"
+          ],
+          "kind": "functional",
+          "inferred": false
+        }
+      ],
+      "requirement_assessments": [
+        {
+          "requirement_id": "R1",
+          "status": "unverified",
+          "evidence_refs": [],
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "investigations": [],
+      "evidence": [],
+      "source_observations": [],
+      "finding_verifications": [],
+      "requirement_coverage": {
+        "total": 1,
+        "verified": 0,
+        "violated": 0,
+        "unverified": 1,
+        "not_assessed": 0,
+        "not_applicable": 0,
+        "assessed": 1,
+        "applicable": 1,
+        "ratio": 1.0
+      }
+    }
+  },
+  {
+    "case_id": "utf8-repair",
+    "elapsed_seconds": 26.489975479998975,
+    "result": {
+      "schema_version": "2.3",
+      "run_id": "1050b1c737834fa8a81e3dc2be9b0b0f",
+      "target": {
+        "repo": "",
+        "number": 0,
+        "base_sha": "4917922ee3c57fc5485fe6dc5fd7414c8a18e5ab",
+        "head_sha": "29bed0112955ec344b3ffc69ccd422f43c328432",
+        "diff_sha256": "2cd382840489b9b755d4fc245645364d968e147ec3a82f94daa25187d2115f82",
+        "comparison_base_sha": ""
+      },
+      "health": {
+        "status": "completed",
+        "stages": [
+          {
+            "stage": "bundle:B-001",
+            "status": "succeeded",
+            "code": "VALID_EMPTY",
+            "detail": "",
+            "retryable": false
+          },
+          {
+            "stage": "graph",
+            "status": "degraded",
+            "code": "graph_unavailable",
+            "detail": "",
+            "retryable": false
+          }
+        ]
+      },
+      "inspection": {
+        "eligible": 1,
+        "packed": 1,
+        "inspected": 1,
+        "assessments": [
+          {
+            "unit_id": "CU-001",
+            "path": "app.py",
+            "status": "inspected",
+            "behavioral_delta": "Changed from checking Unicode character count to UTF-8 byte length.",
+            "hypothesis_outcome": "potential_regression",
+            "evidence_refs": [
+              "CU-001"
+            ],
+            "reason": ""
+          }
+        ],
+        "ratio": 1.0
+      },
+      "policy_reasons": [
+        "unresolved_hypotheses"
+      ],
+      "unresolved": [
+        {
+          "bundle_id": "B-001",
+          "hypothesis_id": "H-001",
+          "file": "app.py",
+          "reason": "The edit introduced a change in behavior that contradicts the expected outcome. In the base version, the function `permits` returns `True` for strings that, when encoded in UTF-8, have a byte length less than or equal to the limit. In the `"
+        },
+        {
+          "stage": "contract_assessment",
+          "bundle_id": "B-001",
+          "unit_id": "CU-001",
+          "reason": "related_tests"
+        },
+        {
+          "stage": "contract_assessment",
+          "bundle_id": "B-001",
+          "unit_id": "CU-001",
+          "reason": "behavioral_examples"
+        },
+        {
+          "requirement_id": "R1",
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "approval_eligible": false,
+      "provenance": {
+        "reviewer_commit": "6dd7459c92ef98756b408f87c6ba92f7aad01781",
+        "dirty": false,
+        "prompt_version": "semantic-contract-v6-contrast-facts",
+        "discovery_protocol": "semantic",
+        "provider": "ollama",
+        "model": "qwen2.5-coder:7b",
+        "model_calls": [
+          {
+            "timestamp": "2026-11-22T08:34:42.954843",
+            "agent_name": "BundleAgent",
+            "capability": "correctness_review",
+            "provider": "ollama_provider",
+            "model": "qwen2.5-coder:7b",
+            "prompt_tokens": 1520,
+            "completion_tokens": 233,
+            "total_tokens": 1753,
+            "latency": 13.671776533126831,
+            "retries": 0,
+            "estimated_cost": 0.0,
+            "success": true,
+            "error": null,
+            "finish_reason": "stop",
+            "output_truncated": false,
+            "max_output_tokens": 1100,
+            "context_tokens": 8192,
+            "response_format": "json_schema",
+            "schema_sha256": "99e9d8edb231a5d885a73cd4af4f1ae6aae4215cc5da937b6afb22290403313a",
+            "prompt_characters": 4631,
+            "stage": "semantic_discovery"
+          },
+          {
+            "timestamp": "2026-11-22T08:34:55.723676",
+            "agent_name": "BundleAgent",
+            "capability": "correctness_review",
+            "provider": "ollama_provider",
+            "model": "qwen2.5-coder:7b",
+            "prompt_tokens": 1485,
+            "completion_tokens": 206,
+            "total_tokens": 1691,
+            "latency": 12.74473786354065,
+            "retries": 0,
+            "estimated_cost": 0.0,
+            "success": true,
+            "error": null,
+            "finish_reason": "stop",
+            "output_truncated": false,
+            "max_output_tokens": 1400,
+            "context_tokens": 8192,
+            "response_format": "json_schema",
+            "schema_sha256": "9f1189cc2d4a1e5e169a593c548b9a2a3952ade26f59f98e95d39264727ab394",
+            "prompt_characters": 3877,
+            "stage": "semantic_proof"
+          }
+        ],
+        "budget": {
+          "calls": 2,
+          "prompt_chars": 8508,
+          "elapsed_seconds": 26.489693841998815,
+          "max_model_calls": 12,
+          "max_prompt_chars": 120000,
+          "max_wall_seconds": 300.0
+        },
+        "investigation_source": "git_snapshot",
+        "requirement_strategy": "link",
+        "requirement_runs": [],
+        "finding_verifier_mode": "structured",
+        "finding_source_rules": true,
+        "source_preparation": null,
+        "verification_snapshot_id": "fdf45dab1080b572ed5a44a2bc33a5c6004f1e35da3971eca6c076c7588476b3",
+        "verification_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-m9wrnooy",
+          "base_sha": "4917922ee3c57fc5485fe6dc5fd7414c8a18e5ab",
+          "head_sha": "29bed0112955ec344b3ffc69ccd422f43c328432",
+          "diff_sha256": "2cd382840489b9b755d4fc245645364d968e147ec3a82f94daa25187d2115f82",
+          "config_sha256": "3b690e8130801e96dd54539ae31f6ef00b4ac8866dfd59ed68520147ad352119",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "input_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-m9wrnooy",
+          "base_sha": "4917922ee3c57fc5485fe6dc5fd7414c8a18e5ab",
+          "head_sha": "29bed0112955ec344b3ffc69ccd422f43c328432",
+          "diff_sha256": "2cd382840489b9b755d4fc245645364d968e147ec3a82f94daa25187d2115f82",
+          "config_sha256": "3b690e8130801e96dd54539ae31f6ef00b4ac8866dfd59ed68520147ad352119",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "snapshot_id": "fdf45dab1080b572ed5a44a2bc33a5c6004f1e35da3971eca6c076c7588476b3",
+        "source_input_id": "203ec72d47ad5a269214234229e52101d77c1806025bc064c347caeca7e8f448"
+      },
+      "product_findings": [],
+      "decision": "COMMENT",
+      "policy_reason": "unresolved_hypotheses",
+      "comments": [],
+      "dropped": [],
+      "bundles": [
+        {
+          "id": "B-001",
+          "paths": [
+            "app.py"
+          ],
+          "units": [
+            {
+              "id": "CU-001",
+              "path": "app.py",
+              "start_line": 1,
+              "end_line": 3,
+              "symbols": [
+                "text.encode",
+                "encode"
+              ],
+              "excerpt": "@@ -1,3 +1,3 @@\n def permits(text, limit):\n     \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n-    return len(text) <= limit\n+    return len(text.encode(\"utf-8\")) <= limit",
+              "n_added": 1,
+              "n_removed": 1,
+              "kind": "source",
+              "risk_hint": "none"
+            }
+          ],
+          "symbols": [
+            "permits",
+            "text.encode",
+            "encode"
+          ],
+          "kind": "source",
+          "risk_signals": [],
+          "requirements": [
+            {
+              "id": "R1",
+              "description": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+              "acceptance_criterion": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+              "paths": [
+                "app.py"
+              ],
+              "context_paths": []
+            }
+          ],
+          "change_context": {
+            "snapshot_id": "fdf45dab1080b572ed5a44a2bc33a5c6004f1e35da3971eca6c076c7588476b3",
+            "changes": [
+              {
+                "path": "app.py",
+                "symbol": "permits",
+                "kind": "function",
+                "status": "modified",
+                "base_line": 1,
+                "head_line": 1,
+                "signature_changed": false
+              }
+            ],
+            "limitations": [
+              "Structural changes guide investigation; they do not prove changed runtime behavior.",
+              "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+            ],
+            "unresolved_context": [],
+            "behavioral_examples": [
+              {
+                "path": "app.py",
+                "snapshot_id": "fdf45dab1080b572ed5a44a2bc33a5c6004f1e35da3971eca6c076c7588476b3",
+                "source": "bounded_python_ast",
+                "base_sha256": "353e94f2bf407c53ac8d58425a8f8a4b9e6917ff5bc5205c7015f1346e074cc2",
+                "head_sha256": "c52b0e22387b6d383a7da620cf99ef1bb6a7b765d488375b05e3af1893fc1b91",
+                "examples": [
+                  {
+                    "symbol": "permits",
+                    "inputs": {
+                      "text": "é",
+                      "limit": 1
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "True"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "False"
+                    },
+                    "base_line": 1,
+                    "head_line": 1
+                  },
+                  {
+                    "symbol": "permits",
+                    "inputs": {
+                      "text": "🙂",
+                      "limit": 1
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "True"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "False"
+                    },
+                    "base_line": 1,
+                    "head_line": 1
+                  }
+                ],
+                "limitations": [
+                  "Sampled pure-expression differences, not executed tests, input-validity proof or defect verdict."
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "coverage": {
+        "units_total": 1,
+        "units_packed": 1,
+        "units_omitted": 0,
+        "source_units": 1
+      },
+      "execution": {
+        "enabled": false,
+        "skipped": true,
+        "skip_reason": "flag_off",
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "python_env": "",
+        "python": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        },
+        "js": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        }
+      },
+      "findings": [],
+      "pipeline_trace": [],
+      "timing": {
+        "workspace_s": 0.0,
+        "graphify_s": 0.0,
+        "pr_facts_s": 0.0,
+        "change_units_s": 0.0,
+        "bundling_s": 0.0,
+        "bundle_agent_s": 26.457,
+        "reflect_s": 0.0,
+        "verify_s": 0.0,
+        "sandbox_s": 0.0,
+        "policy_s": 0.0,
+        "total_s": 26.457
+      },
+      "agent_runs": [
+        {
+          "status": "VALID_EMPTY",
+          "candidate_count": 0,
+          "raw_outputs": [
+            "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"Changed from checking Unicode character count to UTF-8 byte length.\",\n      \"contract\": \"permits(text, limit) enforces UTF-8 byte length, not Unicode character count.\",\n      \"contract_basis\": \"explicit_requirement\",\n      \"contract_reference\": \"R1\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-001\"],\n      \"missing_evidence\": [\"related_tests\", \"behavioral_examples\"],\n      \"hypothesis\": {\n        \"symbol\": \"permits\",\n        \"trigger\": \"text.encode('utf-8')\",\n        \"expected\": {\n          \"kind\": \"return_value\",\n          \"property\": \"UTF-8 byte length\",\n          \"value\": \"False\"\n        },\n        \"suspected\": {\n          \"kind\": \"return_value\",\n          \"property\": \"UTF-8 byte length\",\n          \"value\": \"True\"\n        }\n      }\n    }\n  ]\n}",
+            "{\n  \"conclusion\": \"violation_refuted\",\n  \"reason\": \"The edit introduced a change in behavior that contradicts the expected outcome. In the base version, the function `permits` returns `True` for strings that, when encoded in UTF-8, have a byte length less than or equal to the limit. In the `\",\"base\": {\"kind\": \"return_value\", \"property\": \"UTF-8 byte length\", \"value\": \"True\",\"source\": {\"evidence_id\": \"EV-B-001-003\", \"start_line\": 1, \"end_line\": 3}},\"head\": {\"kind\": \"return_value\", \"property\": \"UTF-8 byte length\", \"value\": \"False\",\"source\": {\"evidence_id\": \"EV-B-001-002\", \"start_line\": 1, \"end_line\": 3}},\"missing_evidence\": []}"
+          ],
+          "tool_calls": [
+            {
+              "id": "EV-B-001-001",
+              "hypothesis_id": "H-001",
+              "request": {
+                "tool": "read_hunk",
+                "path": "app.py"
+              },
+              "result": {
+                "path": "app.py",
+                "text": "@@ -1,3 +1,3 @@\n def permits(text, limit):\n     \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n-    return len(text) <= limit\n+    return len(text.encode(\"utf-8\")) <= limit"
+              }
+            },
+            {
+              "id": "EV-B-001-002",
+              "hypothesis_id": "H-001",
+              "request": {
+                "tool": "read_source",
+                "path": "app.py",
+                "symbol": "permits"
+              },
+              "result": {
+                "path": "app.py",
+                "text": "1: def permits(text, limit):\n2:     \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n3:     return len(text.encode(\"utf-8\")) <= limit",
+                "source": "git_snapshot",
+                "side": "head",
+                "snapshot_id": "fdf45dab1080b572ed5a44a2bc33a5c6004f1e35da3971eca6c076c7588476b3",
+                "revision_sha": "29bed0112955ec344b3ffc69ccd422f43c328432",
+                "content_sha256": "c52b0e22387b6d383a7da620cf99ef1bb6a7b765d488375b05e3af1893fc1b91",
+                "truncated": false,
+                "scope": "file",
+                "scope_symbol": "",
+                "start_line": 1,
+                "end_line": 3,
+                "unresolved_dependencies": [],
+                "limitations": [
+                  "Completeness refers only to the declared source scope; runtime contracts may require more context."
+                ],
+                "status": "success"
+              }
+            },
+            {
+              "id": "EV-B-001-003",
+              "hypothesis_id": "H-001",
+              "request": {
+                "tool": "read_source",
+                "path": "app.py",
+                "symbol": "permits",
+                "side": "base"
+              },
+              "result": {
+                "path": "app.py",
+                "text": "1: def permits(text, limit):\n2:     \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n3:     return len(text) <= limit",
+                "source": "git_snapshot",
+                "side": "base",
+                "snapshot_id": "fdf45dab1080b572ed5a44a2bc33a5c6004f1e35da3971eca6c076c7588476b3",
+                "revision_sha": "4917922ee3c57fc5485fe6dc5fd7414c8a18e5ab",
+                "content_sha256": "353e94f2bf407c53ac8d58425a8f8a4b9e6917ff5bc5205c7015f1346e074cc2",
+                "truncated": false,
+                "scope": "file",
+                "scope_symbol": "",
+                "start_line": 1,
+                "end_line": 3,
+                "unresolved_dependencies": [],
+                "limitations": [
+                  "Completeness refers only to the declared source scope; runtime contracts may require more context."
+                ],
+                "status": "success"
+              }
+            }
+          ],
+          "hypotheses": [
+            {
+              "id": "H-001",
+              "bundle_id": "B-001",
+              "file": "app.py",
+              "observation": "Changed from checking Unicode character count to UTF-8 byte length.",
+              "hypothesis": "For text.encode('utf-8'), HEAD may return_value UTF-8 byte length=True, violating permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+              "symbol": "permits",
+              "category": "correctness",
+              "why_investigate": "Typed suspected violation, not confirmation that an edit occurred",
+              "required_evidence": [
+                "source"
+              ],
+              "confidence": 0.5
+            }
+          ],
+          "hypothesis_count": 1,
+          "evidence_items": [
+            {
+              "id": "EV-B-001-001",
+              "hypothesis_id": "H-001",
+              "request": {
+                "tool": "read_hunk",
+                "path": "app.py"
+              },
+              "result": {
+                "path": "app.py",
+                "text": "@@ -1,3 +1,3 @@\n def permits(text, limit):\n     \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n-    return len(text) <= limit\n+    return len(text.encode(\"utf-8\")) <= limit"
+              }
+            },
+            {
+              "id": "EV-B-001-002",
+              "hypothesis_id": "H-001",
+              "request": {
+                "tool": "read_source",
+                "path": "app.py",
+                "symbol": "permits"
+              },
+              "result": {
+                "path": "app.py",
+                "text": "1: def permits(text, limit):\n2:     \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n3:     return len(text.encode(\"utf-8\")) <= limit",
+                "source": "git_snapshot",
+                "side": "head",
+                "snapshot_id": "fdf45dab1080b572ed5a44a2bc33a5c6004f1e35da3971eca6c076c7588476b3",
+                "revision_sha": "29bed0112955ec344b3ffc69ccd422f43c328432",
+                "content_sha256": "c52b0e22387b6d383a7da620cf99ef1bb6a7b765d488375b05e3af1893fc1b91",
+                "truncated": false,
+                "scope": "file",
+                "scope_symbol": "",
+                "start_line": 1,
+                "end_line": 3,
+                "unresolved_dependencies": [],
+                "limitations": [
+                  "Completeness refers only to the declared source scope; runtime contracts may require more context."
+                ],
+                "status": "success"
+              }
+            },
+            {
+              "id": "EV-B-001-003",
+              "hypothesis_id": "H-001",
+              "request": {
+                "tool": "read_source",
+                "path": "app.py",
+                "symbol": "permits",
+                "side": "base"
+              },
+              "result": {
+                "path": "app.py",
+                "text": "1: def permits(text, limit):\n2:     \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n3:     return len(text) <= limit",
+                "source": "git_snapshot",
+                "side": "base",
+                "snapshot_id": "fdf45dab1080b572ed5a44a2bc33a5c6004f1e35da3971eca6c076c7588476b3",
+                "revision_sha": "4917922ee3c57fc5485fe6dc5fd7414c8a18e5ab",
+                "content_sha256": "353e94f2bf407c53ac8d58425a8f8a4b9e6917ff5bc5205c7015f1346e074cc2",
+                "truncated": false,
+                "scope": "file",
+                "scope_symbol": "",
+                "start_line": 1,
+                "end_line": 3,
+                "unresolved_dependencies": [],
+                "limitations": [
+                  "Completeness refers only to the declared source scope; runtime contracts may require more context."
+                ],
+                "status": "success"
+              }
+            }
+          ],
+          "evidence_count": 3,
+          "stage_status": {
+            "discovery": "SEMANTIC_CONTRACT",
+            "proof": "VALID_EMPTY"
+          },
+          "parse_error": null,
+          "exception": null,
+          "latency_ms": 26457.2,
+          "prompt_version": "semantic-contract-v6-contrast-facts",
+          "model_calls": 2,
+          "assessments": [
+            {
+              "unit_id": "CU-001",
+              "status": "inspected",
+              "behavioral_delta": "Changed from checking Unicode character count to UTF-8 byte length.",
+              "hypothesis_outcome": "potential_regression",
+              "evidence_refs": [
+                "CU-001"
+              ],
+              "reason": "related_tests; behavioral_examples"
+            }
+          ],
+          "hypothesis_outcomes": [
+            {
+              "hypothesis_id": "H-001",
+              "status": "unresolved",
+              "reason": "The edit introduced a change in behavior that contradicts the expected outcome. In the base version, the function `permits` returns `True` for strings that, when encoded in UTF-8, have a byte length less than or equal to the limit. In the `",
+              "evidence_refs": [
+                "EV-B-001-002"
+              ]
+            }
+          ],
+          "protocol_errors": [],
+          "proof_runs": [
+            {
+              "hypothesis_ids": [
+                "H-001"
+              ],
+              "status": "completed",
+              "conclusion": "violation_refuted"
+            }
+          ],
+          "discovery_protocol": "semantic-v1",
+          "contract_assessments": [
+            {
+              "unit_id": "CU-001",
+              "behavioral_delta": "Changed from checking Unicode character count to UTF-8 byte length.",
+              "contract": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+              "contract_basis": "explicit_requirement",
+              "contract_reference": "R1",
+              "outcome": "potential_regression",
+              "evidence_refs": [
+                "CU-001"
+              ],
+              "missing_evidence": [
+                "related_tests",
+                "behavioral_examples"
+              ],
+              "hypothesis": {
+                "symbol": "permits",
+                "trigger": "text.encode('utf-8')",
+                "expected": {
+                  "kind": "return_value",
+                  "property": "UTF-8 byte length",
+                  "value": "False"
+                },
+                "suspected": {
+                  "kind": "return_value",
+                  "property": "UTF-8 byte length",
+                  "value": "True"
+                }
+              },
+              "verification_level": "source_assessment_not_execution"
+            }
+          ],
+          "semantic_rejections": [],
+          "request_attempts": 2,
+          "admission": [
+            {
+              "unit_id": "CU-001",
+              "path": "app.py",
+              "score": 26,
+              "reasons": [
+                "source_behavior",
+                "removed_control_or_effect",
+                "control_or_effect_change"
+              ],
+              "selected": true,
+              "reason": "selected"
+            }
+          ],
+          "estimated_completion_tokens": 373,
+          "bundle_id": "B-001"
+        }
+      ],
+      "pipeline_health": {
+        "healthy": true,
+        "agent_runs": 1,
+        "unhealthy_runs": 0,
+        "unhealthy_statuses": [],
+        "coverage_ratio": 1.0,
+        "coverage_adequate": true,
+        "status": "completed",
+        "inspection_ratio": 1.0
+      },
+      "intent_sources": [
+        {
+          "id": "intent-edff003dcb0381ee",
+          "kind": "task",
+          "source_ref": "/tmp/ct-contrast-m9wrnooy/.review-requirements.json",
+          "content_hash": "edff003dcb0381ee2d96e1c873ca49ca15e281b9f7c1d801fafc025b17b23831",
+          "revision": null,
+          "captured_at": "2026-11-22T08:34:29.240935Z",
+          "authority_level": "authoritative",
+          "trusted_for": [
+            "R1"
+          ]
+        }
+      ],
+      "requirements": [
+        {
+          "id": "R1",
+          "description": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+          "acceptance_criterion": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+          "source_refs": [
+            "intent-edff003dcb0381ee"
+          ],
+          "kind": "functional",
+          "inferred": false
+        }
+      ],
+      "requirement_assessments": [
+        {
+          "requirement_id": "R1",
+          "status": "unverified",
+          "evidence_refs": [],
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "investigations": [],
+      "evidence": [],
+      "source_observations": [],
+      "finding_verifications": [],
+      "requirement_coverage": {
+        "total": 1,
+        "verified": 0,
+        "violated": 0,
+        "unverified": 1,
+        "not_assessed": 0,
+        "not_applicable": 0,
+        "assessed": 1,
+        "applicable": 1,
+        "ratio": 1.0
+      }
+    }
+  },
+  {
+    "case_id": "pagination-regression",
+    "elapsed_seconds": 30.52375248399767,
+    "result": {
+      "schema_version": "2.3",
+      "run_id": "fc483009ae144555b6b013f0633deccb",
+      "target": {
+        "repo": "",
+        "number": 0,
+        "base_sha": "516eca60d09a0d4dda905b5d144f318384d56870",
+        "head_sha": "8aa5130f3494b4421202304715a7363bd101a9d2",
+        "diff_sha256": "624445e236639f54a07392d7400499565f0fa715b3f4163cb417a60180f2520e",
+        "comparison_base_sha": ""
+      },
+      "health": {
+        "status": "completed",
+        "stages": [
+          {
+            "stage": "bundle:B-001",
+            "status": "succeeded",
+            "code": "VALID_EMPTY",
+            "detail": "",
+            "retryable": false
+          },
+          {
+            "stage": "graph",
+            "status": "degraded",
+            "code": "graph_unavailable",
+            "detail": "",
+            "retryable": false
+          }
+        ]
+      },
+      "inspection": {
+        "eligible": 1,
+        "packed": 1,
+        "inspected": 1,
+        "assessments": [
+          {
+            "unit_id": "CU-001",
+            "path": "app.py",
+            "status": "inspected",
+            "behavioral_delta": "The change in the 'page' function may lead to an unexpected result when 'count' is less than the number of items from 'start' to the end of the list. The function now returns an empty list when 'count' is less than the number of items from",
+            "hypothesis_outcome": "potential_regression",
+            "evidence_refs": [
+              "CU-001"
+            ],
+            "reason": ""
+          }
+        ],
+        "ratio": 1.0
+      },
+      "policy_reasons": [
+        "unresolved_hypotheses"
+      ],
+      "unresolved": [
+        {
+          "bundle_id": "B-001",
+          "hypothesis_id": "H-001",
+          "file": "app.py",
+          "reason": "The HEAD commit introduces a change that alters the behavior of the function `page` by modifying the slicing operation. In the BASE commit, the function returns `items[start:start + count]`, which correctly returns the expected number of `n"
+        },
+        {
+          "stage": "contract_assessment",
+          "bundle_id": "B-001",
+          "unit_id": "CU-001",
+          "reason": "A test case demonstrating the expected behavior when 'count' is less than the number of items from 'start' to the end of the list."
+        },
+        {
+          "requirement_id": "R1",
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "approval_eligible": false,
+      "provenance": {
+        "reviewer_commit": "6dd7459c92ef98756b408f87c6ba92f7aad01781",
+        "dirty": false,
+        "prompt_version": "semantic-contract-v6-contrast-facts",
+        "discovery_protocol": "semantic",
+        "provider": "ollama",
+        "model": "qwen2.5-coder:7b",
+        "model_calls": [
+          {
+            "timestamp": "2026-11-22T08:35:13.007731",
+            "agent_name": "BundleAgent",
+            "capability": "correctness_review",
+            "provider": "ollama_provider",
+            "model": "qwen2.5-coder:7b",
+            "prompt_tokens": 1098,
+            "completion_tokens": 303,
+            "total_tokens": 1401,
+            "latency": 17.196460485458374,
+            "retries": 0,
+            "estimated_cost": 0.0,
+            "success": true,
+            "error": null,
+            "finish_reason": "stop",
+            "output_truncated": false,
+            "max_output_tokens": 1100,
+            "context_tokens": 8192,
+            "response_format": "json_schema",
+            "schema_sha256": "99e9d8edb231a5d885a73cd4af4f1ae6aae4215cc5da937b6afb22290403313a",
+            "prompt_characters": 3680,
+            "stage": "semantic_discovery"
+          },
+          {
+            "timestamp": "2026-11-22T08:35:26.288420",
+            "agent_name": "BundleAgent",
+            "capability": "correctness_review",
+            "provider": "ollama_provider",
+            "model": "qwen2.5-coder:7b",
+            "prompt_tokens": 1501,
+            "completion_tokens": 226,
+            "total_tokens": 1727,
+            "latency": 13.2655611038208,
+            "retries": 0,
+            "estimated_cost": 0.0,
+            "success": true,
+            "error": null,
+            "finish_reason": "stop",
+            "output_truncated": false,
+            "max_output_tokens": 1400,
+            "context_tokens": 8192,
+            "response_format": "json_schema",
+            "schema_sha256": "9f1189cc2d4a1e5e169a593c548b9a2a3952ade26f59f98e95d39264727ab394",
+            "prompt_characters": 3924,
+            "stage": "semantic_proof"
+          }
+        ],
+        "budget": {
+          "calls": 2,
+          "prompt_chars": 7604,
+          "elapsed_seconds": 30.523417522999807,
+          "max_model_calls": 12,
+          "max_prompt_chars": 120000,
+          "max_wall_seconds": 300.0
+        },
+        "investigation_source": "git_snapshot",
+        "requirement_strategy": "link",
+        "requirement_runs": [],
+        "finding_verifier_mode": "structured",
+        "finding_source_rules": true,
+        "source_preparation": null,
+        "verification_snapshot_id": "12c028c5a0ae4498a59f99df27fa1f30600a81cc2b2ee55a6b5bd7d74afdebde",
+        "verification_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-u5w5dsdu",
+          "base_sha": "516eca60d09a0d4dda905b5d144f318384d56870",
+          "head_sha": "8aa5130f3494b4421202304715a7363bd101a9d2",
+          "diff_sha256": "624445e236639f54a07392d7400499565f0fa715b3f4163cb417a60180f2520e",
+          "config_sha256": "8aad8a7647d3c3268f245d005505a947947c2a6c0c3cab10bd8bb59ea074bb05",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "input_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-u5w5dsdu",
+          "base_sha": "516eca60d09a0d4dda905b5d144f318384d56870",
+          "head_sha": "8aa5130f3494b4421202304715a7363bd101a9d2",
+          "diff_sha256": "624445e236639f54a07392d7400499565f0fa715b3f4163cb417a60180f2520e",
+          "config_sha256": "8aad8a7647d3c3268f245d005505a947947c2a6c0c3cab10bd8bb59ea074bb05",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "snapshot_id": "12c028c5a0ae4498a59f99df27fa1f30600a81cc2b2ee55a6b5bd7d74afdebde",
+        "source_input_id": "f365c4df1dca4e19f93e2868901451255046bdf950bc0601c854cdf32956ec7b"
+      },
+      "product_findings": [],
+      "decision": "COMMENT",
+      "policy_reason": "unresolved_hypotheses",
+      "comments": [],
+      "dropped": [],
+      "bundles": [
+        {
+          "id": "B-001",
+          "paths": [
+            "app.py"
+          ],
+          "units": [
+            {
+              "id": "CU-001",
+              "path": "app.py",
+              "start_line": 1,
+              "end_line": 3,
+              "symbols": [],
+              "excerpt": "@@ -1,3 +1,3 @@\n def page(items, start, count):\n     \"\"\"start is an offset; count is the number of requested items.\"\"\"\n-    return items[start:start + count]\n+    return items[start:count]",
+              "n_added": 1,
+              "n_removed": 1,
+              "kind": "source",
+              "risk_hint": "none"
+            }
+          ],
+          "symbols": [
+            "page"
+          ],
+          "kind": "source",
+          "risk_signals": [],
+          "requirements": [
+            {
+              "id": "R1",
+              "description": "page(items, start, count) returns up to count items beginning at start.",
+              "acceptance_criterion": "page(items, start, count) returns up to count items beginning at start.",
+              "paths": [
+                "app.py"
+              ],
+              "context_paths": []
+            }
+          ],
+          "change_context": {
+            "snapshot_id": "12c028c5a0ae4498a59f99df27fa1f30600a81cc2b2ee55a6b5bd7d74afdebde",
+            "changes": [
+              {
+                "path": "app.py",
+                "symbol": "page",
+                "kind": "function",
+                "status": "modified",
+                "base_line": 1,
+                "head_line": 1,
+                "signature_changed": false
+              }
+            ],
+            "limitations": [
+              "Structural changes guide investigation; they do not prove changed runtime behavior.",
+              "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+            ],
+            "unresolved_context": [],
+            "behavioral_examples": [
+              {
+                "path": "app.py",
+                "snapshot_id": "12c028c5a0ae4498a59f99df27fa1f30600a81cc2b2ee55a6b5bd7d74afdebde",
+                "source": "bounded_python_ast",
+                "base_sha256": "7e77bdb4f617910cc81e60e6d8db3b5665a5d7d5ec7397302a8fe1ae32c134f2",
+                "head_sha256": "f7c69ce453907372070cc97d6eb3f1a88cee2cd2ac9174f5b5b294bb7780b39c",
+                "examples": [
+                  {
+                    "symbol": "page",
+                    "inputs": {
+                      "items": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ],
+                      "start": 1,
+                      "count": 1
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "['b']"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "[]"
+                    },
+                    "base_line": 1,
+                    "head_line": 1
+                  },
+                  {
+                    "symbol": "page",
+                    "inputs": {
+                      "items": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ],
+                      "start": 1,
+                      "count": 2
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "['b', 'c']"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "['b']"
+                    },
+                    "base_line": 1,
+                    "head_line": 1
+                  }
+                ],
+                "limitations": [
+                  "Sampled pure-expression differences, not executed tests, input-validity proof or defect verdict."
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "coverage": {
+        "units_total": 1,
+        "units_packed": 1,
+        "units_omitted": 0,
+        "source_units": 1
+      },
+      "execution": {
+        "enabled": false,
+        "skipped": true,
+        "skip_reason": "flag_off",
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "python_env": "",
+        "python": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        },
+        "js": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        }
+      },
+      "findings": [],
+      "pipeline_trace": [],
+      "timing": {
+        "workspace_s": 0.0,
+        "graphify_s": 0.0,
+        "pr_facts_s": 0.0,
+        "change_units_s": 0.0,
+        "bundling_s": 0.0,
+        "bundle_agent_s": 30.488,
+        "reflect_s": 0.0,
+        "verify_s": 0.0,
+        "sandbox_s": 0.0,
+        "policy_s": 0.0,
+        "total_s": 30.488
+      },
+      "agent_runs": [
+        {
+          "status": "VALID_EMPTY",
+          "candidate_count": 0,
+          "raw_outputs": [
+            "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"The change in the 'page' function may lead to an unexpected result when 'count' is less than the number of items from 'start' to the end of the list. The function now returns an empty list when 'count' is less than the number of items from \",\n      \"contract\": \"page(items, start, count) returns up to count items beginning at start.\",\n      \"contract_basis\": \"explicit_requirement\",\n      \"contract_reference\": \"R1\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-001\"],\n      \"missing_evidence\": [\"A test case demonstrating the expected behavior when 'count' is less than the number of items from 'start' to the end of the list.\"],\n      \"hypothesis\": {\n        \"symbol\": \"page\",\n        \"trigger\": \"items=['a', 'b', 'c', 'd'], start=1, count=1\",\n        \"expected\": {\n          \"kind\": \"return_value\",\n          \"property\": \"length\",\n          \"value\": \"1\"\n        },\n        \"suspected\": {\n          \"kind\": \"return_value\",\n          \"property\": \"length\",\n          \"value\": \"0\"\n        }\n      }\n    }\n  ]\n}",
+            "{\n  \"conclusion\": \"violation_refuted\",\n  \"reason\": \"The HEAD commit introduces a change that alters the behavior of the function `page` by modifying the slicing operation. In the BASE commit, the function returns `items[start:start + count]`, which correctly returns the expected number of `n\", \"base\": {\"kind\": \"return_value\", \"property\": \"length\", \"value\": \"1\", \"source\": {\"evidence_id\": \"EV-B-001-003\", \"start_line\": 1, \"end_line\": 3}}, \"head\": {\"kind\": \"return_value\", \"property\": \"length\", \"value\": \"0\", \"source\": {\"evidence_id\": \"EV-B-001-002\", \"start_line\": 1, \"end_line\": 3}},\"missing_evidence\": [\"The provided evidence does not include the actual behavior of the function in both the BASE and HEAD commits. Without this information, it is impossible to determine if the HEAD commit introduces a regression or not.\"]}"
+          ],
+          "tool_calls": [
+            {
+              "id": "EV-B-001-001",
+              "hypothesis_id": "H-001",
+              "request": {
+                "tool": "read_hunk",
+                "path": "app.py"
+              },
+              "result": {
+                "path": "app.py",
+                "text": "@@ -1,3 +1,3 @@\n def page(items, start, count):\n     \"\"\"start is an offset; count is the number of requested items.\"\"\"\n-    return items[start:start + count]\n+    return items[start:count]"
+              }
+            },
+            {
+              "id": "EV-B-001-002",
+              "hypothesis_id": "H-001",
+              "request": {
+                "tool": "read_source",
+                "path": "app.py",
+                "symbol": "page"
+              },
+              "result": {
+                "path": "app.py",
+                "text": "1: def page(items, start, count):\n2:     \"\"\"start is an offset; count is the number of requested items.\"\"\"\n3:     return items[start:count]",
+                "source": "git_snapshot",
+                "side": "head",
+                "snapshot_id": "12c028c5a0ae4498a59f99df27fa1f30600a81cc2b2ee55a6b5bd7d74afdebde",
+                "revision_sha": "8aa5130f3494b4421202304715a7363bd101a9d2",
+                "content_sha256": "f7c69ce453907372070cc97d6eb3f1a88cee2cd2ac9174f5b5b294bb7780b39c",
+                "truncated": false,
+                "scope": "file",
+                "scope_symbol": "",
+                "start_line": 1,
+                "end_line": 3,
+                "unresolved_dependencies": [],
+                "limitations": [
+                  "Completeness refers only to the declared source scope; runtime contracts may require more context."
+                ],
+                "status": "success"
+              }
+            },
+            {
+              "id": "EV-B-001-003",
+              "hypothesis_id": "H-001",
+              "request": {
+                "tool": "read_source",
+                "path": "app.py",
+                "symbol": "page",
+                "side": "base"
+              },
+              "result": {
+                "path": "app.py",
+                "text": "1: def page(items, start, count):\n2:     \"\"\"start is an offset; count is the number of requested items.\"\"\"\n3:     return items[start:start + count]",
+                "source": "git_snapshot",
+                "side": "base",
+                "snapshot_id": "12c028c5a0ae4498a59f99df27fa1f30600a81cc2b2ee55a6b5bd7d74afdebde",
+                "revision_sha": "516eca60d09a0d4dda905b5d144f318384d56870",
+                "content_sha256": "7e77bdb4f617910cc81e60e6d8db3b5665a5d7d5ec7397302a8fe1ae32c134f2",
+                "truncated": false,
+                "scope": "file",
+                "scope_symbol": "",
+                "start_line": 1,
+                "end_line": 3,
+                "unresolved_dependencies": [],
+                "limitations": [
+                  "Completeness refers only to the declared source scope; runtime contracts may require more context."
+                ],
+                "status": "success"
+              }
+            }
+          ],
+          "hypotheses": [
+            {
+              "id": "H-001",
+              "bundle_id": "B-001",
+              "file": "app.py",
+              "observation": "The change in the 'page' function may lead to an unexpected result when 'count' is less than the number of items from 'start' to the end of the list. The function now returns an empty list when 'count' is less than the number of items from",
+              "hypothesis": "For items=['a', 'b', 'c', 'd'], start=1, count=1, HEAD may return_value length=0, violating page(items, start, count) returns up to count items beginning at start.",
+              "symbol": "page",
+              "category": "correctness",
+              "why_investigate": "Typed suspected violation, not confirmation that an edit occurred",
+              "required_evidence": [
+                "source"
+              ],
+              "confidence": 0.5
+            }
+          ],
+          "hypothesis_count": 1,
+          "evidence_items": [
+            {
+              "id": "EV-B-001-001",
+              "hypothesis_id": "H-001",
+              "request": {
+                "tool": "read_hunk",
+                "path": "app.py"
+              },
+              "result": {
+                "path": "app.py",
+                "text": "@@ -1,3 +1,3 @@\n def page(items, start, count):\n     \"\"\"start is an offset; count is the number of requested items.\"\"\"\n-    return items[start:start + count]\n+    return items[start:count]"
+              }
+            },
+            {
+              "id": "EV-B-001-002",
+              "hypothesis_id": "H-001",
+              "request": {
+                "tool": "read_source",
+                "path": "app.py",
+                "symbol": "page"
+              },
+              "result": {
+                "path": "app.py",
+                "text": "1: def page(items, start, count):\n2:     \"\"\"start is an offset; count is the number of requested items.\"\"\"\n3:     return items[start:count]",
+                "source": "git_snapshot",
+                "side": "head",
+                "snapshot_id": "12c028c5a0ae4498a59f99df27fa1f30600a81cc2b2ee55a6b5bd7d74afdebde",
+                "revision_sha": "8aa5130f3494b4421202304715a7363bd101a9d2",
+                "content_sha256": "f7c69ce453907372070cc97d6eb3f1a88cee2cd2ac9174f5b5b294bb7780b39c",
+                "truncated": false,
+                "scope": "file",
+                "scope_symbol": "",
+                "start_line": 1,
+                "end_line": 3,
+                "unresolved_dependencies": [],
+                "limitations": [
+                  "Completeness refers only to the declared source scope; runtime contracts may require more context."
+                ],
+                "status": "success"
+              }
+            },
+            {
+              "id": "EV-B-001-003",
+              "hypothesis_id": "H-001",
+              "request": {
+                "tool": "read_source",
+                "path": "app.py",
+                "symbol": "page",
+                "side": "base"
+              },
+              "result": {
+                "path": "app.py",
+                "text": "1: def page(items, start, count):\n2:     \"\"\"start is an offset; count is the number of requested items.\"\"\"\n3:     return items[start:start + count]",
+                "source": "git_snapshot",
+                "side": "base",
+                "snapshot_id": "12c028c5a0ae4498a59f99df27fa1f30600a81cc2b2ee55a6b5bd7d74afdebde",
+                "revision_sha": "516eca60d09a0d4dda905b5d144f318384d56870",
+                "content_sha256": "7e77bdb4f617910cc81e60e6d8db3b5665a5d7d5ec7397302a8fe1ae32c134f2",
+                "truncated": false,
+                "scope": "file",
+                "scope_symbol": "",
+                "start_line": 1,
+                "end_line": 3,
+                "unresolved_dependencies": [],
+                "limitations": [
+                  "Completeness refers only to the declared source scope; runtime contracts may require more context."
+                ],
+                "status": "success"
+              }
+            }
+          ],
+          "evidence_count": 3,
+          "stage_status": {
+            "discovery": "SEMANTIC_CONTRACT",
+            "proof": "VALID_EMPTY"
+          },
+          "parse_error": null,
+          "exception": null,
+          "latency_ms": 30487.53,
+          "prompt_version": "semantic-contract-v6-contrast-facts",
+          "model_calls": 2,
+          "assessments": [
+            {
+              "unit_id": "CU-001",
+              "status": "inspected",
+              "behavioral_delta": "The change in the 'page' function may lead to an unexpected result when 'count' is less than the number of items from 'start' to the end of the list. The function now returns an empty list when 'count' is less than the number of items from",
+              "hypothesis_outcome": "potential_regression",
+              "evidence_refs": [
+                "CU-001"
+              ],
+              "reason": "A test case demonstrating the expected behavior when 'count' is less than the number of items from 'start' to the end of the list."
+            }
+          ],
+          "hypothesis_outcomes": [
+            {
+              "hypothesis_id": "H-001",
+              "status": "unresolved",
+              "reason": "The HEAD commit introduces a change that alters the behavior of the function `page` by modifying the slicing operation. In the BASE commit, the function returns `items[start:start + count]`, which correctly returns the expected number of `n",
+              "evidence_refs": [
+                "EV-B-001-002"
+              ]
+            }
+          ],
+          "protocol_errors": [],
+          "proof_runs": [
+            {
+              "hypothesis_ids": [
+                "H-001"
+              ],
+              "status": "completed",
+              "conclusion": "violation_refuted"
+            }
+          ],
+          "discovery_protocol": "semantic-v1",
+          "contract_assessments": [
+            {
+              "unit_id": "CU-001",
+              "behavioral_delta": "The change in the 'page' function may lead to an unexpected result when 'count' is less than the number of items from 'start' to the end of the list. The function now returns an empty list when 'count' is less than the number of items from",
+              "contract": "page(items, start, count) returns up to count items beginning at start.",
+              "contract_basis": "explicit_requirement",
+              "contract_reference": "R1",
+              "outcome": "potential_regression",
+              "evidence_refs": [
+                "CU-001"
+              ],
+              "missing_evidence": [
+                "A test case demonstrating the expected behavior when 'count' is less than the number of items from 'start' to the end of the list."
+              ],
+              "hypothesis": {
+                "symbol": "page",
+                "trigger": "items=['a', 'b', 'c', 'd'], start=1, count=1",
+                "expected": {
+                  "kind": "return_value",
+                  "property": "length",
+                  "value": "1"
+                },
+                "suspected": {
+                  "kind": "return_value",
+                  "property": "length",
+                  "value": "0"
+                }
+              },
+              "verification_level": "source_assessment_not_execution"
+            }
+          ],
+          "semantic_rejections": [],
+          "request_attempts": 2,
+          "admission": [
+            {
+              "unit_id": "CU-001",
+              "path": "app.py",
+              "score": 26,
+              "reasons": [
+                "source_behavior",
+                "removed_control_or_effect",
+                "control_or_effect_change"
+              ],
+              "selected": true,
+              "reason": "selected"
+            }
+          ],
+          "estimated_completion_tokens": 484,
+          "bundle_id": "B-001"
+        }
+      ],
+      "pipeline_health": {
+        "healthy": true,
+        "agent_runs": 1,
+        "unhealthy_runs": 0,
+        "unhealthy_statuses": [],
+        "coverage_ratio": 1.0,
+        "coverage_adequate": true,
+        "status": "completed",
+        "inspection_ratio": 1.0
+      },
+      "intent_sources": [
+        {
+          "id": "intent-97c05701f11876d0",
+          "kind": "task",
+          "source_ref": "/tmp/ct-contrast-u5w5dsdu/.review-requirements.json",
+          "content_hash": "97c05701f11876d0557badbe446b98a7341f4a4920e3622b32b85102017e2873",
+          "revision": null,
+          "captured_at": "2026-11-22T08:34:55.764069Z",
+          "authority_level": "authoritative",
+          "trusted_for": [
+            "R1"
+          ]
+        }
+      ],
+      "requirements": [
+        {
+          "id": "R1",
+          "description": "page(items, start, count) returns up to count items beginning at start.",
+          "acceptance_criterion": "page(items, start, count) returns up to count items beginning at start.",
+          "source_refs": [
+            "intent-97c05701f11876d0"
+          ],
+          "kind": "functional",
+          "inferred": false
+        }
+      ],
+      "requirement_assessments": [
+        {
+          "requirement_id": "R1",
+          "status": "unverified",
+          "evidence_refs": [],
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "investigations": [],
+      "evidence": [],
+      "source_observations": [],
+      "finding_verifications": [],
+      "requirement_coverage": {
+        "total": 1,
+        "verified": 0,
+        "violated": 0,
+        "unverified": 1,
+        "not_assessed": 0,
+        "not_applicable": 0,
+        "assessed": 1,
+        "applicable": 1,
+        "ratio": 1.0
+      }
+    }
+  },
+  {
+    "case_id": "pagination-repair",
+    "elapsed_seconds": 7.5963684970047325,
+    "result": {
+      "schema_version": "2.3",
+      "run_id": "bcf533d1d75247bcbccba82968ce4188",
+      "target": {
+        "repo": "",
+        "number": 0,
+        "base_sha": "6891cfd27dd1ac9a7735f073a4faf2c59b35e280",
+        "head_sha": "138501d991184256d912258f4a264792081c17b5",
+        "diff_sha256": "b7c21564cd2359e951ccff4145d55cc5ab30cffbe39efbb8f5ef59ee966c0486",
+        "comparison_base_sha": ""
+      },
+      "health": {
+        "status": "completed",
+        "stages": [
+          {
+            "stage": "bundle:B-001",
+            "status": "succeeded",
+            "code": "VALID_EMPTY",
+            "detail": "",
+            "retryable": false
+          },
+          {
+            "stage": "graph",
+            "status": "degraded",
+            "code": "graph_unavailable",
+            "detail": "",
+            "retryable": false
+          }
+        ]
+      },
+      "inspection": {
+        "eligible": 1,
+        "packed": 1,
+        "inspected": 1,
+        "assessments": [
+          {
+            "unit_id": "CU-001",
+            "path": "app.py",
+            "status": "inspected",
+            "behavioral_delta": "fixed",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-001"
+            ],
+            "reason": ""
+          }
+        ],
+        "ratio": 1.0
+      },
+      "policy_reasons": [
+        "unresolved_hypotheses"
+      ],
+      "unresolved": [
+        {
+          "requirement_id": "R1",
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "approval_eligible": false,
+      "provenance": {
+        "reviewer_commit": "6dd7459c92ef98756b408f87c6ba92f7aad01781",
+        "dirty": false,
+        "prompt_version": "semantic-contract-v6-contrast-facts",
+        "discovery_protocol": "semantic",
+        "provider": "ollama",
+        "model": "qwen2.5-coder:7b",
+        "model_calls": [
+          {
+            "timestamp": "2026-11-22T08:35:33.912189",
+            "agent_name": "BundleAgent",
+            "capability": "correctness_review",
+            "provider": "ollama_provider",
+            "model": "qwen2.5-coder:7b",
+            "prompt_tokens": 1110,
+            "completion_tokens": 123,
+            "total_tokens": 1233,
+            "latency": 7.55584454536438,
+            "retries": 0,
+            "estimated_cost": 0.0,
+            "success": true,
+            "error": null,
+            "finish_reason": "stop",
+            "output_truncated": false,
+            "max_output_tokens": 1100,
+            "context_tokens": 8192,
+            "response_format": "json_schema",
+            "schema_sha256": "99e9d8edb231a5d885a73cd4af4f1ae6aae4215cc5da937b6afb22290403313a",
+            "prompt_characters": 3680,
+            "stage": "semantic_discovery"
+          }
+        ],
+        "budget": {
+          "calls": 1,
+          "prompt_chars": 3680,
+          "elapsed_seconds": 7.596111516999372,
+          "max_model_calls": 12,
+          "max_prompt_chars": 120000,
+          "max_wall_seconds": 300.0
+        },
+        "investigation_source": "git_snapshot",
+        "requirement_strategy": "link",
+        "requirement_runs": [],
+        "finding_verifier_mode": "structured",
+        "finding_source_rules": true,
+        "source_preparation": null,
+        "verification_snapshot_id": "b8c00a3a7a87b2e2a17f673e6700999d9d8a332767e8eff13811b8d58fa0be52",
+        "verification_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-gdg_l6g3",
+          "base_sha": "6891cfd27dd1ac9a7735f073a4faf2c59b35e280",
+          "head_sha": "138501d991184256d912258f4a264792081c17b5",
+          "diff_sha256": "b7c21564cd2359e951ccff4145d55cc5ab30cffbe39efbb8f5ef59ee966c0486",
+          "config_sha256": "8aad8a7647d3c3268f245d005505a947947c2a6c0c3cab10bd8bb59ea074bb05",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "input_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-gdg_l6g3",
+          "base_sha": "6891cfd27dd1ac9a7735f073a4faf2c59b35e280",
+          "head_sha": "138501d991184256d912258f4a264792081c17b5",
+          "diff_sha256": "b7c21564cd2359e951ccff4145d55cc5ab30cffbe39efbb8f5ef59ee966c0486",
+          "config_sha256": "8aad8a7647d3c3268f245d005505a947947c2a6c0c3cab10bd8bb59ea074bb05",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "snapshot_id": "b8c00a3a7a87b2e2a17f673e6700999d9d8a332767e8eff13811b8d58fa0be52",
+        "source_input_id": "390a9979f388347d2ef06fa7ca34ac8efbee7d94b30d84f4d8e49767a4462a30"
+      },
+      "product_findings": [],
+      "decision": "COMMENT",
+      "policy_reason": "unresolved_hypotheses",
+      "comments": [],
+      "dropped": [],
+      "bundles": [
+        {
+          "id": "B-001",
+          "paths": [
+            "app.py"
+          ],
+          "units": [
+            {
+              "id": "CU-001",
+              "path": "app.py",
+              "start_line": 1,
+              "end_line": 3,
+              "symbols": [],
+              "excerpt": "@@ -1,3 +1,3 @@\n def page(items, start, count):\n     \"\"\"start is an offset; count is the number of requested items.\"\"\"\n-    return items[start:count]\n+    return items[start:start + count]",
+              "n_added": 1,
+              "n_removed": 1,
+              "kind": "source",
+              "risk_hint": "none"
+            }
+          ],
+          "symbols": [
+            "page"
+          ],
+          "kind": "source",
+          "risk_signals": [],
+          "requirements": [
+            {
+              "id": "R1",
+              "description": "page(items, start, count) returns up to count items beginning at start.",
+              "acceptance_criterion": "page(items, start, count) returns up to count items beginning at start.",
+              "paths": [
+                "app.py"
+              ],
+              "context_paths": []
+            }
+          ],
+          "change_context": {
+            "snapshot_id": "b8c00a3a7a87b2e2a17f673e6700999d9d8a332767e8eff13811b8d58fa0be52",
+            "changes": [
+              {
+                "path": "app.py",
+                "symbol": "page",
+                "kind": "function",
+                "status": "modified",
+                "base_line": 1,
+                "head_line": 1,
+                "signature_changed": false
+              }
+            ],
+            "limitations": [
+              "Structural changes guide investigation; they do not prove changed runtime behavior.",
+              "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+            ],
+            "unresolved_context": [],
+            "behavioral_examples": [
+              {
+                "path": "app.py",
+                "snapshot_id": "b8c00a3a7a87b2e2a17f673e6700999d9d8a332767e8eff13811b8d58fa0be52",
+                "source": "bounded_python_ast",
+                "base_sha256": "f7c69ce453907372070cc97d6eb3f1a88cee2cd2ac9174f5b5b294bb7780b39c",
+                "head_sha256": "7e77bdb4f617910cc81e60e6d8db3b5665a5d7d5ec7397302a8fe1ae32c134f2",
+                "examples": [
+                  {
+                    "symbol": "page",
+                    "inputs": {
+                      "items": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ],
+                      "start": 1,
+                      "count": 1
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "[]"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "['b']"
+                    },
+                    "base_line": 1,
+                    "head_line": 1
+                  },
+                  {
+                    "symbol": "page",
+                    "inputs": {
+                      "items": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ],
+                      "start": 1,
+                      "count": 2
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "['b']"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "['b', 'c']"
+                    },
+                    "base_line": 1,
+                    "head_line": 1
+                  }
+                ],
+                "limitations": [
+                  "Sampled pure-expression differences, not executed tests, input-validity proof or defect verdict."
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "coverage": {
+        "units_total": 1,
+        "units_packed": 1,
+        "units_omitted": 0,
+        "source_units": 1
+      },
+      "execution": {
+        "enabled": false,
+        "skipped": true,
+        "skip_reason": "flag_off",
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "python_env": "",
+        "python": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        },
+        "js": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        }
+      },
+      "findings": [],
+      "pipeline_trace": [],
+      "timing": {
+        "workspace_s": 0.0,
+        "graphify_s": 0.0,
+        "pr_facts_s": 0.0,
+        "change_units_s": 0.0,
+        "bundling_s": 0.0,
+        "bundle_agent_s": 7.565,
+        "reflect_s": 0.0,
+        "verify_s": 0.0,
+        "sandbox_s": 0.0,
+        "policy_s": 0.0,
+        "total_s": 7.565
+      },
+      "agent_runs": [
+        {
+          "status": "VALID_EMPTY",
+          "candidate_count": 0,
+          "raw_outputs": [
+            "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"fixed\",\n      \"contract\": \"page(items, start, count) returns up to count items beginning at start.\",\n      \"contract_basis\": \"explicit_requirement\",\n      \"contract_reference\": \"R1\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-001\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}"
+          ],
+          "tool_calls": [],
+          "hypotheses": [],
+          "hypothesis_count": 0,
+          "evidence_items": [],
+          "evidence_count": 0,
+          "stage_status": {
+            "discovery": "SEMANTIC_CONTRACT",
+            "proof": "VALID_EMPTY"
+          },
+          "parse_error": null,
+          "exception": null,
+          "latency_ms": 7565.35,
+          "prompt_version": "semantic-contract-v6-contrast-facts",
+          "model_calls": 1,
+          "assessments": [
+            {
+              "unit_id": "CU-001",
+              "status": "inspected",
+              "behavioral_delta": "fixed",
+              "hypothesis_outcome": "fix_consistent",
+              "evidence_refs": [
+                "CU-001"
+              ],
+              "reason": ""
+            }
+          ],
+          "hypothesis_outcomes": [],
+          "protocol_errors": [],
+          "proof_runs": [],
+          "discovery_protocol": "semantic-v1",
+          "contract_assessments": [
+            {
+              "unit_id": "CU-001",
+              "behavioral_delta": "fixed",
+              "contract": "page(items, start, count) returns up to count items beginning at start.",
+              "contract_basis": "explicit_requirement",
+              "contract_reference": "R1",
+              "outcome": "fix_consistent",
+              "evidence_refs": [
+                "CU-001"
+              ],
+              "missing_evidence": [],
+              "hypothesis": null,
+              "verification_level": "source_assessment_not_execution"
+            }
+          ],
+          "semantic_rejections": [],
+          "request_attempts": 1,
+          "admission": [
+            {
+              "unit_id": "CU-001",
+              "path": "app.py",
+              "score": 26,
+              "reasons": [
+                "source_behavior",
+                "removed_control_or_effect",
+                "control_or_effect_change"
+              ],
+              "selected": true,
+              "reason": "selected"
+            }
+          ],
+          "estimated_completion_tokens": 100,
+          "bundle_id": "B-001"
+        }
+      ],
+      "pipeline_health": {
+        "healthy": true,
+        "agent_runs": 1,
+        "unhealthy_runs": 0,
+        "unhealthy_statuses": [],
+        "coverage_ratio": 1.0,
+        "coverage_adequate": true,
+        "status": "completed",
+        "inspection_ratio": 1.0
+      },
+      "intent_sources": [
+        {
+          "id": "intent-97c05701f11876d0",
+          "kind": "task",
+          "source_ref": "/tmp/ct-contrast-gdg_l6g3/.review-requirements.json",
+          "content_hash": "97c05701f11876d0557badbe446b98a7341f4a4920e3622b32b85102017e2873",
+          "revision": null,
+          "captured_at": "2026-11-22T08:35:26.318809Z",
+          "authority_level": "authoritative",
+          "trusted_for": [
+            "R1"
+          ]
+        }
+      ],
+      "requirements": [
+        {
+          "id": "R1",
+          "description": "page(items, start, count) returns up to count items beginning at start.",
+          "acceptance_criterion": "page(items, start, count) returns up to count items beginning at start.",
+          "source_refs": [
+            "intent-97c05701f11876d0"
+          ],
+          "kind": "functional",
+          "inferred": false
+        }
+      ],
+      "requirement_assessments": [
+        {
+          "requirement_id": "R1",
+          "status": "unverified",
+          "evidence_refs": [],
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "investigations": [],
+      "evidence": [],
+      "source_observations": [],
+      "finding_verifications": [],
+      "requirement_coverage": {
+        "total": 1,
+        "verified": 0,
+        "violated": 0,
+        "unverified": 1,
+        "not_assessed": 0,
+        "not_applicable": 0,
+        "assessed": 1,
+        "applicable": 1,
+        "ratio": 1.0
+      }
+    }
+  }
+]

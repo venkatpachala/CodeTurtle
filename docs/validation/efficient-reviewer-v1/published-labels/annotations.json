@@ -1,0 +1,2666 @@
+{
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/1": {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/1",
+    "case_id": "pr-d38f2a3a726363610b84",
+    "split": "development",
+    "base_sha": "3f71fa15c93bb0b751bb92abae1b5dc9a21bd4ca",
+    "head_sha": "ffbaf8c54269df2ce510de91245760fddce09896",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "351c8d4af075518021bb4324ca120b40cd0632712815e6172e7a2061e0d99b2d"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "Low",
+        "comment_sha256": "d260efff528a60fe99bd47f6e2e0e6d8c64d12187a98126a1988a6a3f050fc51"
+      },
+      {
+        "ordinal": 2,
+        "category": "data",
+        "severity": "Medium",
+        "comment_sha256": "30728695bf14f0bb0cf7b0abb8d59dd8d9e5a9a924a92e5c571a17811ce752ab"
+      },
+      {
+        "ordinal": 3,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "7196ca28f231666e52dbd4b37388b4e9e6fa56958060c20c5f330720cd24b654"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "3f71fa15c93bb0b751bb92abae1b5dc9a21bd4ca",
+      "head_sha": "ffbaf8c54269df2ce510de91245760fddce09896",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+        "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR1__20260122/pull/1",
+        "Git trees BASE 7a4a58d7234a4dd967db85f2e2e09d8f23bf3f5a HEAD e868d00a008bd67479b9e26a2079f2fa600a0373"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR1__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "ffbaf8c54269df2ce510de91245760fddce09896",
+        "comparison_base": "3f71fa15c93bb0b751bb92abae1b5dc9a21bd4ca",
+        "trees": {
+          "base": "7a4a58d7234a4dd967db85f2e2e09d8f23bf3f5a",
+          "head": "e868d00a008bd67479b9e26a2079f2fa600a0373"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/10": {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/10",
+    "case_id": "pr-429ee35af503c9d0a185",
+    "split": "development",
+    "base_sha": "913c3d6f636d02b3dd6c2c022ca1af2bec95d752",
+    "head_sha": "d1c69189f3c90ecf56013a8da904da9bff9a8e19",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "Critical",
+        "comment_sha256": "aec6b7348fb17062c3878b11c1600ed22ff15839b45355528bcd678e6bcc5064"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "7355d31b8aac4951dd9ae27bd589cb159c93c13289c2ee47dc49735fba6d0845"
+      },
+      {
+        "ordinal": 2,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "7a469ec202b7ff5aeb99fed08cb913869fd4b17b80b69b7bb6422254215ea3d0"
+      },
+      {
+        "ordinal": 3,
+        "category": "data",
+        "severity": "High",
+        "comment_sha256": "13675a5ad9623f71eb92f9015ad19bb3e66118fe9dc0cbf74834180a51895c6e"
+      },
+      {
+        "ordinal": 4,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "de851b21b379019b0deb8742b1ae2ad7ab0c257f0cecf59788374cdf954155d4"
+      },
+      {
+        "ordinal": 5,
+        "category": "security",
+        "severity": "Critical",
+        "comment_sha256": "e2926ad6f27edbd0ea59704bdc7e71b4aba899d8b354f34cf054b06c3ff4f540"
+      },
+      {
+        "ordinal": 6,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "5e9e36dfbcbcfc1102084305c4643cc33efc0bf062ae51650279b0f399c14200"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "913c3d6f636d02b3dd6c2c022ca1af2bec95d752",
+      "head_sha": "d1c69189f3c90ecf56013a8da904da9bff9a8e19",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+        "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR10__20260122/pull/1",
+        "Git trees BASE c3d37bb40494fbdefd2d9c545f12c636fc4d4945 HEAD a2573445ec59ada78b7d741e19a9f16336f8bb4e"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR10__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "d1c69189f3c90ecf56013a8da904da9bff9a8e19",
+        "comparison_base": "913c3d6f636d02b3dd6c2c022ca1af2bec95d752",
+        "trees": {
+          "base": "c3d37bb40494fbdefd2d9c545f12c636fc4d4945",
+          "head": "a2573445ec59ada78b7d741e19a9f16336f8bb4e"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/9": {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/9",
+    "case_id": "pr-2bdd6452b36d60e38679",
+    "split": "development",
+    "base_sha": "728845d008f06828630a632e5c7d67e11bf15deb",
+    "head_sha": "ecfa17b5a79dfdc91e7a4d50b42ae78a35d0a293",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "concurrency",
+        "severity": "Low",
+        "comment_sha256": "c818b58313fffa118d71413ff69df98b002b4c1972c8f386a38e5e79b10b2d65"
+      },
+      {
+        "ordinal": 1,
+        "category": "perf",
+        "severity": "Low",
+        "comment_sha256": "2bd28219bf6fd33c734d2840338a87d61b4c15c22334df6a38392a4e65f9fef5"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "728845d008f06828630a632e5c7d67e11bf15deb",
+      "head_sha": "ecfa17b5a79dfdc91e7a4d50b42ae78a35d0a293",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+        "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR9__20260122/pull/1",
+        "Git trees BASE 5191ea35df5eae027d783d906c8c6747a15c41b9 HEAD e661c65f2d15ad1f207004b9281a87b81f7ffa35"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR9__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "ecfa17b5a79dfdc91e7a4d50b42ae78a35d0a293",
+        "comparison_base": "728845d008f06828630a632e5c7d67e11bf15deb",
+        "trees": {
+          "base": "5191ea35df5eae027d783d906c8c6747a15c41b9",
+          "head": "e661c65f2d15ad1f207004b9281a87b81f7ffa35"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/3": {
+    "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/3",
+    "case_id": "pr-1232dd904b26a67b2a75",
+    "split": "development",
+    "base_sha": "a5d290951def84afdcc4c88d2f1f20023fc36e2a",
+    "head_sha": "6ad6fe3899f630ccf922ce7ac681147dc7987435",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "Low",
+        "comment_sha256": "10f399e839369232125bec3bc73d5e415643d875659c4301c27ca46adbc933eb"
+      },
+      {
+        "ordinal": 1,
+        "category": "data",
+        "severity": "Low",
+        "comment_sha256": "46ed4f2e917b07a1530aca1acce6c89d8341a74823938193359e6dc0132e4504"
+      },
+      {
+        "ordinal": 2,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "56b746ca5db919bf7cc31d0510e76f307ee2436fa458408b68c1ab6e5812ae6f"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "a5d290951def84afdcc4c88d2f1f20023fc36e2a",
+      "head_sha": "6ad6fe3899f630ccf922ce7ac681147dc7987435",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+        "https://github.com/code-review-benchmark/sentry__sentry-greptile__augment__PR3__20260122/pull/1",
+        "Git trees BASE fd4892b3c0b350656cc4c4b443b01f9504db8658 HEAD 34dabbc0c78956d0458ae9f6b53c7e5bdbb2fc16"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/sentry__sentry-greptile__augment__PR3__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "6ad6fe3899f630ccf922ce7ac681147dc7987435",
+        "comparison_base": "83f40559985e1365a43f35ba3febb7ea4fabb5d5",
+        "trees": {
+          "base": "fd4892b3c0b350656cc4c4b443b01f9504db8658",
+          "head": "34dabbc0c78956d0458ae9f6b53c7e5bdbb2fc16"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/4": {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/4",
+    "case_id": "pr-fc3517910f88fc85392d",
+    "split": "development",
+    "base_sha": "62db063e1e1abe691313ab42682a68f796d63769",
+    "head_sha": "4f8aed295a29954023b2849c060ef4fb299d1b5d",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "security",
+        "severity": "Critical",
+        "comment_sha256": "02924162ddb9b4d3d6a3ed0275678d55b2b5b60ea1699249979c3dfb044774d0"
+      },
+      {
+        "ordinal": 1,
+        "category": "security",
+        "severity": "Medium",
+        "comment_sha256": "1aa7126122a9694f72edf179c366be188243e7b9b89bc3eb8406c4838a72aec1"
+      },
+      {
+        "ordinal": 2,
+        "category": "security",
+        "severity": "Medium",
+        "comment_sha256": "8549a4ecff5f68d64a38693e0e8f04e8ea74ab3b738944b5b3997bcba248975e"
+      },
+      {
+        "ordinal": 3,
+        "category": "security",
+        "severity": "Medium",
+        "comment_sha256": "663b77d70ead1ee3da1baf9e06846de69e7a1fcf776055c11f15be8e7a7b6d11"
+      },
+      {
+        "ordinal": 4,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "e9173f3c2ea5f8473e3f0ad8a344583cc21f5857c2fe36d292e09d6bc3237542"
+      },
+      {
+        "ordinal": 5,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "576d8e38da212ef63be641ae4ad3e4c6d7b3161c91102fc314ea1689ae35af17"
+      },
+      {
+        "ordinal": 6,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "5a62ba78226a061dc22a3485439c8dec2e169b62b4c470dd33af9e74da835be6"
+      },
+      {
+        "ordinal": 7,
+        "category": "security",
+        "severity": "Critical",
+        "comment_sha256": "e0022d196feff279f6a68a7c02807f925c3765f38a66e68af020cefc3af47bf2"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "62db063e1e1abe691313ab42682a68f796d63769",
+      "head_sha": "4f8aed295a29954023b2849c060ef4fb299d1b5d",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+        "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR4__20260122/pull/1",
+        "Git trees BASE 23535c67c58311bb2d1ec135d36cbb4e62a39fdb HEAD 74a9c75f43361ad18cfea0f939aff087e61f7008"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR4__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "4f8aed295a29954023b2849c060ef4fb299d1b5d",
+        "comparison_base": "62db063e1e1abe691313ab42682a68f796d63769",
+        "trees": {
+          "base": "23535c67c58311bb2d1ec135d36cbb4e62a39fdb",
+          "head": "74a9c75f43361ad18cfea0f939aff087e61f7008"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/2": {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/2",
+    "case_id": "pr-a20235e4b4b6cf1ebfc7",
+    "split": "development",
+    "base_sha": "56abd247e1829cb6de82dfcc8ce04deb5f0d1e91",
+    "head_sha": "6669a2d94d76eea3b99b8c476d12b1eb66726b07",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "162d9fde837ba76ce2e884838b9e8bfe67fee822dc90fb8d0761073e5f92154a"
+      },
+      {
+        "ordinal": 1,
+        "category": "style",
+        "severity": "Low",
+        "comment_sha256": "e388ad4b1a31dd4d0d73da9cf245e081374f44d1566ac47f56212979af5c8da8"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "56abd247e1829cb6de82dfcc8ce04deb5f0d1e91",
+      "head_sha": "6669a2d94d76eea3b99b8c476d12b1eb66726b07",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+        "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR2__20260122/pull/1",
+        "Git trees BASE f645d318bcbb84b202b333b8dcafc141cc18f4b2 HEAD 77648e03b98c11a8128a0ce115db957740d57438"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR2__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "6669a2d94d76eea3b99b8c476d12b1eb66726b07",
+        "comparison_base": "56abd247e1829cb6de82dfcc8ce04deb5f0d1e91",
+        "trees": {
+          "base": "f645d318bcbb84b202b333b8dcafc141cc18f4b2",
+          "head": "77648e03b98c11a8128a0ce115db957740d57438"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/1": {
+    "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/1",
+    "case_id": "pr-b44c6798b3e3af2244ad",
+    "split": "development",
+    "base_sha": "a5d290951def84afdcc4c88d2f1f20023fc36e2a",
+    "head_sha": "8ab88145113dd23a930e23b9cbbcf8b30e4c0b17",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "c948bc75675411b5b60a6274d807487d2314a50a77696fa2db19a34820e3ea12"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "d655ede5c66cb9baa03e978aed483ad1880db5284549e5eb4984006ad59e3ccb"
+      },
+      {
+        "ordinal": 2,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "4fe06f00d12f9d90d3de177cb07fe3b5a9926b6cebe05ead3c2fe0fc0788956f"
+      },
+      {
+        "ordinal": 3,
+        "category": "bug",
+        "severity": "Low",
+        "comment_sha256": "024973044e62e0b833cd048f907385bb44ff7ea063fa5d493762a52f05820828"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "a5d290951def84afdcc4c88d2f1f20023fc36e2a",
+      "head_sha": "8ab88145113dd23a930e23b9cbbcf8b30e4c0b17",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+        "https://github.com/code-review-benchmark/sentry__sentry-greptile__augment__PR1__20260122/pull/1",
+        "Git trees BASE eb704f5fe1368211221dde7782dad6e5536989fd HEAD b6d8e31c98a00599d8d1c87ea7faf98bdb3ee3ec"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/sentry__sentry-greptile__augment__PR1__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "8ab88145113dd23a930e23b9cbbcf8b30e4c0b17",
+        "comparison_base": "74618671bff8114fcec8fe77c6260c9a2bc2864a",
+        "trees": {
+          "base": "eb704f5fe1368211221dde7782dad6e5536989fd",
+          "head": "b6d8e31c98a00599d8d1c87ea7faf98bdb3ee3ec"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/8": {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/8",
+    "case_id": "pr-aa1332bcfff4c920bcd3",
+    "split": "development",
+    "base_sha": "4975fc28903a84418f546b2809370f19abf10e08",
+    "head_sha": "060cda77729cb1c4a827560e09e89a7b22078ba9",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "concurrency",
+        "severity": "High",
+        "comment_sha256": "5953419695a5c2052550298a6580a607dac6990b8dfd61e181abceb1e20aa620"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "bc652301d461db05bfbc9b2281623f5841cfa9880e22472f1b16d676117f845b"
+      },
+      {
+        "ordinal": 2,
+        "category": "api",
+        "severity": "Medium",
+        "comment_sha256": "9f2f2d2108de54112d9a21525485967419da5e7d834c3ae74773770eced965e6"
+      },
+      {
+        "ordinal": 3,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "46a8f45aecf00a123ea8ed4030eb774b64fafda646d63da140b8e37f11520a43"
+      },
+      {
+        "ordinal": 4,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "fbffa826581aeb6500070b909a76e413a2606b068c955e6b89a0b115ed1c323a"
+      },
+      {
+        "ordinal": 5,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "67ea1d650e4eb0c86745f9b13aa1b50ef0e068b4372f1463a47e5e1397f2d26d"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "4975fc28903a84418f546b2809370f19abf10e08",
+      "head_sha": "060cda77729cb1c4a827560e09e89a7b22078ba9",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+        "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR8__20260122/pull/1",
+        "Git trees BASE f4a65ea1adf48ee669a4bf755bb9670d87daee5c HEAD 537024eac0e35bb9fc35be0dad9115e1412e6c5d"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR8__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "060cda77729cb1c4a827560e09e89a7b22078ba9",
+        "comparison_base": "4975fc28903a84418f546b2809370f19abf10e08",
+        "trees": {
+          "base": "f4a65ea1adf48ee669a4bf755bb9670d87daee5c",
+          "head": "537024eac0e35bb9fc35be0dad9115e1412e6c5d"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/6": {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/6",
+    "case_id": "pr-1ac858707336528af793",
+    "split": "development",
+    "base_sha": "7a5fbae060bd0d3e29f3a4b5c6f2bfd8b2914dc7",
+    "head_sha": "267d8be1f556ed59639ced396c885bb44586da19",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "api",
+        "severity": "Medium",
+        "comment_sha256": "5d2cbb0d279727fc8dcbdb07ccb009932c0d399b976c2dffb33ec1bbad3efd45"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "7a5fbae060bd0d3e29f3a4b5c6f2bfd8b2914dc7",
+      "head_sha": "267d8be1f556ed59639ced396c885bb44586da19",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+        "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR6__20260122/pull/1",
+        "Git trees BASE 4aadc5df760928cf0d67848ee7d85339ec6d3b72 HEAD 5ad05624bca8b009d120e0b6749d1a1ddc8b668b"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR6__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "267d8be1f556ed59639ced396c885bb44586da19",
+        "comparison_base": "7a5fbae060bd0d3e29f3a4b5c6f2bfd8b2914dc7",
+        "trees": {
+          "base": "4aadc5df760928cf0d67848ee7d85339ec6d3b72",
+          "head": "5ad05624bca8b009d120e0b6749d1a1ddc8b668b"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/3": {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/3",
+    "case_id": "pr-fc032fdd1aa122b3577f",
+    "split": "development",
+    "base_sha": "e25638dab0d4b98f99c8fe8976ccaae8f4fb9db3",
+    "head_sha": "5f8a130277dbddc95d133cd2832be639baf89213",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "concurrency",
+        "severity": "Medium",
+        "comment_sha256": "90b8f887bb5c8afa3f9509311bb3bace2883cfcb5e80a3fd690ff383d1f9a293"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "dc3af81af72c8bdea266f8b7c31f389f783ad3e50c4223f549f60ef39a5bed7d"
+      },
+      {
+        "ordinal": 2,
+        "category": "security",
+        "severity": "Critical",
+        "comment_sha256": "27dac96c3f2bd23b9357a4271a394ca34acd632a4774d6f2b127dcc5be95d580"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "e25638dab0d4b98f99c8fe8976ccaae8f4fb9db3",
+      "head_sha": "5f8a130277dbddc95d133cd2832be639baf89213",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+        "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR3__20260122/pull/1",
+        "Git trees BASE 320b0c2b78288db7976ff682aeaffbf36e06d637 HEAD 018ea7829120cecde84c3c3151542732c7b55693"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/discourse__discourse-graphite__augment__PR3__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "5f8a130277dbddc95d133cd2832be639baf89213",
+        "comparison_base": "e25638dab0d4b98f99c8fe8976ccaae8f4fb9db3",
+        "trees": {
+          "base": "320b0c2b78288db7976ff682aeaffbf36e06d637",
+          "head": "018ea7829120cecde84c3c3151542732c7b55693"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/discourse.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/2": {
+    "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/2",
+    "case_id": "pr-5c4a3586c6f78cbc29e5",
+    "split": "development",
+    "base_sha": "28e3db2520d4ea28c57b08da57b83917ba7b2e15",
+    "head_sha": "8ab88145113dd23a930e23b9cbbcf8b30e4c0b17",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "Critical",
+        "comment_sha256": "953a7e07e1919f2dcbab53dd76501a4115cefe0ca7f47a9b1d7b566e3bd5710d"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "d7f3b703c3103849ffe7f609283762ae91dae699183a16d3046b1302e9067444"
+      },
+      {
+        "ordinal": 2,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "644f282a69345bf913240db361d05a6a5ea90e7a7af2181fbc6cf4705e7c0bcd"
+      },
+      {
+        "ordinal": 3,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "700a3cd5be8f647638adcd73d1cfbac741b6e21ac0f09c2f8651d3232b406511"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "28e3db2520d4ea28c57b08da57b83917ba7b2e15",
+      "head_sha": "8ab88145113dd23a930e23b9cbbcf8b30e4c0b17",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+        "https://github.com/code-review-benchmark/sentry__sentry-greptile__augment__PR2__20260122/pull/1",
+        "Git trees BASE 2396c90f07d15c70991fddd587bcd15f247f7e85 HEAD b6d8e31c98a00599d8d1c87ea7faf98bdb3ee3ec"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/sentry__sentry-greptile__augment__PR2__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "8ab88145113dd23a930e23b9cbbcf8b30e4c0b17",
+        "comparison_base": "28e3db2520d4ea28c57b08da57b83917ba7b2e15",
+        "trees": {
+          "base": "2396c90f07d15c70991fddd587bcd15f247f7e85",
+          "head": "b6d8e31c98a00599d8d1c87ea7faf98bdb3ee3ec"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/keycloak/keycloak/pull/37634": {
+    "pr_url": "https://github.com/keycloak/keycloak/pull/37634",
+    "case_id": "pr-5a2266452d59a9372c20",
+    "split": "development",
+    "base_sha": "c22f76867f595f0f7c327376a66a08dca01949e8",
+    "head_sha": "daffb05b5ad091d3ec09933c3c99c2b54f448696",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "Critical",
+        "comment_sha256": "9e6e2d63ec92939badb2607df40abaadcfe3963d9c860c98b921bda86bfaa9c5"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "b81f92d549f5df68b775c9708d87a23561c5266d3e7f8244365e61e3476ac111"
+      },
+      {
+        "ordinal": 2,
+        "category": "doc_defect",
+        "severity": "Low",
+        "comment_sha256": "95f7a0aebfb65664b50b1187ee5f3cf14088200aa43dfee643402897f2ed982d"
+      },
+      {
+        "ordinal": 3,
+        "category": "bug",
+        "severity": "Low",
+        "comment_sha256": "5e64b33b1a97f7a19465ac49928bc91516272555af16164bbf8addaa0b98c7ec"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "c22f76867f595f0f7c327376a66a08dca01949e8",
+      "head_sha": "daffb05b5ad091d3ec09933c3c99c2b54f448696",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+        "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR37634__20260122/pull/1",
+        "Git trees BASE 09083fc5c2de5650259e495d5cb436f4d949deaf HEAD a01de397b15dd338fb713afa0a0e46e457def233"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR37634__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "daffb05b5ad091d3ec09933c3c99c2b54f448696",
+        "comparison_base": "c22f76867f595f0f7c327376a66a08dca01949e8",
+        "trees": {
+          "base": "09083fc5c2de5650259e495d5cb436f4d949deaf",
+          "head": "a01de397b15dd338fb713afa0a0e46e457def233"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/calcom/cal.com/pull/8087": {
+    "pr_url": "https://github.com/calcom/cal.com/pull/8087",
+    "case_id": "pr-d54344f73b1b132c8780",
+    "split": "development",
+    "base_sha": "ba9688a04a8398c9a8332ee7061bfae2f2efd524",
+    "head_sha": "820d7fa87e0c824c5dee8082a33efadb1a2566f7",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "speculative",
+        "severity": "Low",
+        "comment_sha256": "e7d77840e1af135e0618f2e120713734d5319b65fd60194847b9be31e3c62e12"
+      },
+      {
+        "ordinal": 1,
+        "category": "concurrency",
+        "severity": "Critical",
+        "comment_sha256": "f431163c66dc5bd81a2c9d6ab1ad31453874b1b5fa087e0a160709b13b5f7902"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "ba9688a04a8398c9a8332ee7061bfae2f2efd524",
+      "head_sha": "820d7fa87e0c824c5dee8082a33efadb1a2566f7",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+        "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR8087__20260122/pull/1",
+        "Git trees BASE 538e44157abad15963ea56ab84b2d02eb07e8698 HEAD 9809dc3fac6244ce782fd2189c777b3544fffd52"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR8087__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "820d7fa87e0c824c5dee8082a33efadb1a2566f7",
+        "comparison_base": "ba9688a04a8398c9a8332ee7061bfae2f2efd524",
+        "trees": {
+          "base": "538e44157abad15963ea56ab84b2d02eb07e8698",
+          "head": "9809dc3fac6244ce782fd2189c777b3544fffd52"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/ai-code-review-evaluation/keycloak-greptile/pull/1": {
+    "pr_url": "https://github.com/ai-code-review-evaluation/keycloak-greptile/pull/1",
+    "case_id": "pr-e61b6d249eaead6dc739",
+    "split": "development",
+    "base_sha": "30f804af450dec523909a52f2a4b97302d27f5cc",
+    "head_sha": "3214b188de808fdb0fff335556b686f1b0a63218",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "api",
+        "severity": "Medium",
+        "comment_sha256": "fb1ed7270c122af08fa5fbb294061ba0ca833b8d61ed772afbd79d89aa8b90ad"
+      },
+      {
+        "ordinal": 1,
+        "category": "speculative",
+        "severity": "Medium",
+        "comment_sha256": "7300eac3b76c0b02855000fd9b557073a921ad71c17f8fa562bfa7b6a15838c9"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "30f804af450dec523909a52f2a4b97302d27f5cc",
+      "head_sha": "3214b188de808fdb0fff335556b686f1b0a63218",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+        "https://github.com/code-review-benchmark/keycloak__keycloak-greptile__augment__PR1__20260122/pull/1",
+        "Git trees BASE 34350b540603cfcfad9e9aef760ece266d74d240 HEAD c8328490c8899f7f60d9280713c11ffd2dc9c53d"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/keycloak__keycloak-greptile__augment__PR1__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "3214b188de808fdb0fff335556b686f1b0a63218",
+        "comparison_base": "30f804af450dec523909a52f2a4b97302d27f5cc",
+        "trees": {
+          "base": "34350b540603cfcfad9e9aef760ece266d74d240",
+          "head": "c8328490c8899f7f60d9280713c11ffd2dc9c53d"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/fastapi/typer/pull/2021": {
+    "pr_url": "https://github.com/fastapi/typer/pull/2021",
+    "case_id": "pr-d50f324147e13cb2f525",
+    "split": "development",
+    "base_sha": "695d84504ab52fcb1a8145949ff10accee1e97b5",
+    "head_sha": "2597618c577c9df2c3e0433d305d75bb0394c80a",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/fastapi/fastapi/pull/16782": {
+    "pr_url": "https://github.com/fastapi/fastapi/pull/16782",
+    "case_id": "pr-90bf8a295b4d1965a1e6",
+    "split": "development",
+    "base_sha": "74038ff79ff01f902480392926ef1b7c63041724",
+    "head_sha": "983a6e87c00249b018ef7d0215b7b932a2146a87",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/Kludex/starlette/pull/3783": {
+    "pr_url": "https://github.com/Kludex/starlette/pull/3783",
+    "case_id": "pr-a69c2d0b09f33f15f588",
+    "split": "development",
+    "base_sha": "9b403a0c33f0e2eebba099e9e6aa1c1e9535daec",
+    "head_sha": "e64576b4af16aa4f6037049547adeb4adeae487a",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/fastapi/fastapi/pull/16779": {
+    "pr_url": "https://github.com/fastapi/fastapi/pull/16779",
+    "case_id": "pr-42d4f5e3e21f397644d2",
+    "split": "development",
+    "base_sha": "a1b3be01aadc61c67edc09eed4f6cc1fcc3d3b8f",
+    "head_sha": "05f1dd0d97ab054790701ed8909aff6243e1f191",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/fastapi/typer/pull/2022": {
+    "pr_url": "https://github.com/fastapi/typer/pull/2022",
+    "case_id": "pr-accc1d7076f99f4ede0b",
+    "split": "development",
+    "base_sha": "25be7ec4fdf09979f4a878bf19b22bce1960826a",
+    "head_sha": "b06b3d42fbf7acf7856379e98953924fd13b6d20",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/pydantic/pydantic/pull/14325": {
+    "pr_url": "https://github.com/pydantic/pydantic/pull/14325",
+    "case_id": "pr-a1f14dbc9d5ce0d078f4",
+    "split": "development",
+    "base_sha": "fbd35416d17eae59806f003f7c2017aed131a248",
+    "head_sha": "b66b2c5d2f3b2aa8d2ab9c69fcc9e1e16e1f9696",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/grafana/grafana/pull/90939": {
+    "pr_url": "https://github.com/grafana/grafana/pull/90939",
+    "case_id": "pr-da9fae2167561c55fb15",
+    "split": "validation",
+    "base_sha": "3ce1a5b0caab215346a51629b0344b90d67e9478",
+    "head_sha": "b1613e320acff00623e6efc59f00ee68c7684a97",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "concurrency",
+        "severity": "Medium",
+        "comment_sha256": "5bbd72d69a1b39fc01f5c2bc484b5b78b08d2fab4f05e21c7767f7b73291313f"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "b037ec1c10b68b634a3024752018fa22c2ddb1b438f54186122ef367d113f24a"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "3ce1a5b0caab215346a51629b0344b90d67e9478",
+      "head_sha": "b1613e320acff00623e6efc59f00ee68c7684a97",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+        "https://github.com/code-review-benchmark/grafana__grafana__augment__PR90939__20260122/pull/1",
+        "Git trees BASE 3d7ea0cb3eb597e2665a795cc14d000cfa9ca25f HEAD 1cb63845b60385fb9101050e0f2c38fbb4eedead"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/grafana__grafana__augment__PR90939__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "b1613e320acff00623e6efc59f00ee68c7684a97",
+        "comparison_base": "cca9dee702ac4338ddc38aa56257273b8143e32e",
+        "trees": {
+          "base": "3d7ea0cb3eb597e2665a795cc14d000cfa9ca25f",
+          "head": "1cb63845b60385fb9101050e0f2c38fbb4eedead"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/grafana/grafana/pull/79265": {
+    "pr_url": "https://github.com/grafana/grafana/pull/79265",
+    "case_id": "pr-742629d32dfcd1b2dfce",
+    "split": "validation",
+    "base_sha": "50f4e78a39914711d0d231a501ba215becf17ebc",
+    "head_sha": "bbd8c507cdf56f6b884373809e0b24abd4a2353d",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "concurrency",
+        "severity": "High",
+        "comment_sha256": "1a62ffbb5bf6e14dae976eba3e70bad985f233050c2058873fd91be06560dcaf"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "170f02cfb83c795039e133748b70d2f46373f18db0a1ad4fef72d58e110c8bdd"
+      },
+      {
+        "ordinal": 2,
+        "category": "doc_defect",
+        "severity": "Low",
+        "comment_sha256": "f56c17b4b26bbe2e2fb89c08336c3f2958b659ed6363cde1f03efa6df9be2864"
+      },
+      {
+        "ordinal": 3,
+        "category": "bug",
+        "severity": "Low",
+        "comment_sha256": "9460e02a2f3166b439819aa0170b860a1bb961e2e1da55bd98a86ff1fea4dd28"
+      },
+      {
+        "ordinal": 4,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "d5a3dba09cbf69e82bfd4b07b1eefe0820bc6513fc6269b64d9bf61003e3c5e5"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "50f4e78a39914711d0d231a501ba215becf17ebc",
+      "head_sha": "bbd8c507cdf56f6b884373809e0b24abd4a2353d",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+        "https://github.com/code-review-benchmark/grafana__grafana__augment__PR79265__20260122/pull/1",
+        "Git trees BASE dacf0a72e514d59b60b69cc81bc3a760144e3bf1 HEAD 75a707df7fb7d8cf3419a0791717aa1576d0103c"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/grafana__grafana__augment__PR79265__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "bbd8c507cdf56f6b884373809e0b24abd4a2353d",
+        "comparison_base": "7ddcd0c9611882858701f4f876fb8e449fe73980",
+        "trees": {
+          "base": "dacf0a72e514d59b60b69cc81bc3a760144e3bf1",
+          "head": "75a707df7fb7d8cf3419a0791717aa1576d0103c"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/keycloak/keycloak/pull/36882": {
+    "pr_url": "https://github.com/keycloak/keycloak/pull/36882",
+    "case_id": "pr-261abfbfed1918bc41ab",
+    "split": "validation",
+    "base_sha": "8671f860469d6d95e54df3e13f77ebc401249489",
+    "head_sha": "62bf98939eda58f0d0a1a41a58aa6d4ecdc24dba",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "a7eeb1479a40ebf14de25203e8fb41b6fc5e88b2eb4e93e47d55d50197978974"
+      },
+      {
+        "ordinal": 1,
+        "category": "doc_defect",
+        "severity": "Low",
+        "comment_sha256": "adce8b85650db700a693575c4ddc5f7a0b671a8b970c39a56a25527dadb2165f"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "8671f860469d6d95e54df3e13f77ebc401249489",
+      "head_sha": "62bf98939eda58f0d0a1a41a58aa6d4ecdc24dba",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+        "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR36882__20260122/pull/1",
+        "Git trees BASE a8e23aa1408a0dd9b36e64b2753c4d4e5098826e HEAD 31615d20e5739c33f90ca927028aba5995c84af2"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR36882__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "62bf98939eda58f0d0a1a41a58aa6d4ecdc24dba",
+        "comparison_base": "1b28ac610dc16e0de14199f9ca5d2acdf7f3cc16",
+        "trees": {
+          "base": "a8e23aa1408a0dd9b36e64b2753c4d4e5098826e",
+          "head": "31615d20e5739c33f90ca927028aba5995c84af2"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/calcom/cal.com/pull/11059": {
+    "pr_url": "https://github.com/calcom/cal.com/pull/11059",
+    "case_id": "pr-511610aff73a49e3090d",
+    "split": "validation",
+    "base_sha": "bc89fe00ea84d20bedcec782f0701b9711dc8201",
+    "head_sha": "9fde0e906897cc0f4f71793f647dd629faba3317",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "2e3cba81f15f425e82c2c1e061e6d1f1636f5037e71dc2a55f6cb4d62fa177f1"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "00951e4cbfc94cfd89d1db4eb71d1d7abb1cb511c17b268d619e57fe510c0e2d"
+      },
+      {
+        "ordinal": 2,
+        "category": "data",
+        "severity": "High",
+        "comment_sha256": "04ec070935deae28988b0160c9a0e9156ee94fea0147832bab7804f492f0958d"
+      },
+      {
+        "ordinal": 3,
+        "category": "api",
+        "severity": "High",
+        "comment_sha256": "3ff3fe2607f1bd88dd4d60bc786517c100be9ae981ca4f293b972f8521d8a887"
+      },
+      {
+        "ordinal": 4,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "4054a09994d6af56c92502467f46e6b4718fc9a82c48a9d3d97a7fc0fed02c29"
+      },
+      {
+        "ordinal": 5,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "ed4746868352147c116fb20c10a15f5c61a93cdcf0585504cbf60f0b59b96e6a"
+      },
+      {
+        "ordinal": 6,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "35407eb717a068aa9ff98871376f32fc18fc7a64d1a3826c0d384d3e2e9b4193"
+      },
+      {
+        "ordinal": 7,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "aeb0de6be80dd9314f8d5e63ff49e3b34072610d8f87265da6905dbf3190149f"
+      },
+      {
+        "ordinal": 8,
+        "category": "api",
+        "severity": "Medium",
+        "comment_sha256": "2c64994c786f981ee26484cea0b8b811c040c9d3956002f8e354d3360772d4bf"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "bc89fe00ea84d20bedcec782f0701b9711dc8201",
+      "head_sha": "9fde0e906897cc0f4f71793f647dd629faba3317",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+        "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR11059__20260122/pull/1",
+        "Git trees BASE 87ff5fd9ee28aa402d4e36914cb8aece37b1dada HEAD 2fc0275369612430ea6d6304fd01fdc3866ad58a"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR11059__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "9fde0e906897cc0f4f71793f647dd629faba3317",
+        "comparison_base": "bc89fe00ea84d20bedcec782f0701b9711dc8201",
+        "trees": {
+          "base": "87ff5fd9ee28aa402d4e36914cb8aece37b1dada",
+          "head": "2fc0275369612430ea6d6304fd01fdc3866ad58a"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/getsentry/sentry/pull/80528": {
+    "pr_url": "https://github.com/getsentry/sentry/pull/80528",
+    "case_id": "pr-937b5d12bab5edf24be2",
+    "split": "validation",
+    "base_sha": "0cfc28e76ddc986d2d89dd9b9f63ee916a18a5f9",
+    "head_sha": "dcdcadb771128e79259cc9eff9c70c38fc597976",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "6f1f4065035f248396bb1c1c25be7a101081be662769c5fd7a038aabf29ce332"
+      },
+      {
+        "ordinal": 1,
+        "category": "perf",
+        "severity": "Low",
+        "comment_sha256": "ca961d62014404abb6adf846995605cf687610b2bd88a35c97b8988fdedfd5e6"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "0cfc28e76ddc986d2d89dd9b9f63ee916a18a5f9",
+      "head_sha": "dcdcadb771128e79259cc9eff9c70c38fc597976",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+        "https://github.com/code-review-benchmark/sentry__sentry__augment__PR80528__20260122/pull/1",
+        "Git trees BASE 906cb29cef50c3277094b5f7d5388974dc620aa9 HEAD c4553f51530c8d2c2b8baefbfaf4f0b28697cacc"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/sentry__sentry__augment__PR80528__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "dcdcadb771128e79259cc9eff9c70c38fc597976",
+        "comparison_base": "0cfc28e76ddc986d2d89dd9b9f63ee916a18a5f9",
+        "trees": {
+          "base": "906cb29cef50c3277094b5f7d5388974dc620aa9",
+          "head": "c4553f51530c8d2c2b8baefbfaf4f0b28697cacc"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/grafana/grafana/pull/80329": {
+    "pr_url": "https://github.com/grafana/grafana/pull/80329",
+    "case_id": "pr-c0f669a3dbe8d2465db0",
+    "split": "validation",
+    "base_sha": "a886bd3c79a417a70b51509384d1f1ec3e87e96b",
+    "head_sha": "04cfa3bfd469c035ff8b35f9a66867c4e8d5dcf4",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "perf",
+        "severity": "Low",
+        "comment_sha256": "4bfd6a58fa81af89cf9aed2da332f38ee9d38d7d39c467fda85fe62f17f14032"
+      },
+      {
+        "ordinal": 1,
+        "category": "perf",
+        "severity": "Low",
+        "comment_sha256": "59342b48757eb3157983b1fa55ec578209a2f29101d705bc3cbe4cb109a45e80"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/grafana__grafana__augment__PR80329__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "04cfa3bfd469c035ff8b35f9a66867c4e8d5dcf4",
+        "comparison_base": "a886bd3c79a417a70b51509384d1f1ec3e87e96b",
+        "trees": {
+          "base": "1c1f04deba08a66209a5335a307dd84248e3de61",
+          "head": "382f71f542b46ff36a1d81a692ad39b2b91751a2"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/Kludex/starlette/pull/3768": {
+    "pr_url": "https://github.com/Kludex/starlette/pull/3768",
+    "case_id": "pr-a7aa98158e43be7a64d0",
+    "split": "validation",
+    "base_sha": "2745bbc5afa2f8ce900d290bedca2bc5d3f3cfe8",
+    "head_sha": "1ed0f99439cea6f056a9f615b74a2030cd5a85eb",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/fastapi/typer/pull/2015": {
+    "pr_url": "https://github.com/fastapi/typer/pull/2015",
+    "case_id": "pr-bbb09f5dbac06201cd1f",
+    "split": "validation",
+    "base_sha": "cfa13cccba98e9c1486f857f4e15b631820817e7",
+    "head_sha": "074bf7ca2f5018990f96ac9ad293583c3920e5f8",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/fastapi/fastapi/pull/16781": {
+    "pr_url": "https://github.com/fastapi/fastapi/pull/16781",
+    "case_id": "pr-e38a9b9875e373cb4dce",
+    "split": "validation",
+    "base_sha": "b2831196bfee3eb9ce303a3c6440f2a104832954",
+    "head_sha": "3dd050f70a899a2ecf404de0e65a9cd10fc300bc",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/fastapi/typer/pull/2011": {
+    "pr_url": "https://github.com/fastapi/typer/pull/2011",
+    "case_id": "pr-c92c537a8c4fdd0b95c2",
+    "split": "validation",
+    "base_sha": "96895197d4916f6645cf711be5d5edd7050d5f1a",
+    "head_sha": "97765b38cf90f74d5316d394aa9bcf879e427627",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/calcom/cal.com/pull/7232": {
+    "pr_url": "https://github.com/calcom/cal.com/pull/7232",
+    "case_id": "pr-9af98cef2e55ec92c8f3",
+    "split": "test",
+    "base_sha": "d1440bb5d2f2190ad7ae1d26c165f970055b5370",
+    "head_sha": "6048e2a86b50e81e1e3b1b467dfea5a895add3dc",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "concurrency",
+        "severity": "Medium",
+        "comment_sha256": "3496b45e68715f78f53384fd80f6e258c0538efae19524be48003824772ef3a3"
+      },
+      {
+        "ordinal": 1,
+        "category": "data",
+        "severity": "High",
+        "comment_sha256": "b6c2b128105ce262654dacc0dac68c2ab6d595f3cfcdd76f4c20319d870a5398"
+      },
+      {
+        "ordinal": 2,
+        "category": "data",
+        "severity": "Medium",
+        "comment_sha256": "24f0628c705c9b1f09db55012acda89a168b79aaf72a96850e3265b04d2e0c28"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "d1440bb5d2f2190ad7ae1d26c165f970055b5370",
+      "head_sha": "6048e2a86b50e81e1e3b1b467dfea5a895add3dc",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+        "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR7232__20260122/pull/1",
+        "Git trees BASE 8efae164def843085b13042e5b748ce77d05487d HEAD e9ff7dccecb2b958ed9b266234ed5c1e0cc32d5a"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR7232__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "6048e2a86b50e81e1e3b1b467dfea5a895add3dc",
+        "comparison_base": "d1440bb5d2f2190ad7ae1d26c165f970055b5370",
+        "trees": {
+          "base": "8efae164def843085b13042e5b748ce77d05487d",
+          "head": "e9ff7dccecb2b958ed9b266234ed5c1e0cc32d5a"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/calcom/cal.com/pull/22532": {
+    "pr_url": "https://github.com/calcom/cal.com/pull/22532",
+    "case_id": "pr-cd8133fd72cce4e06c4b",
+    "split": "test",
+    "base_sha": "30a92a4d66b417f7c19dee2b343099adc6e88aa6",
+    "head_sha": "5fd11f9faa79c4aefd39975d1b0e963e5034f793",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "8e70e0ff46b58866e06fbd41b4173eb2d4ac2ea4f36a3c2e20ad39b960361d9a"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "Low",
+        "comment_sha256": "728085341bf76ead87e65b6bea399e4bec4b8e67f95ffc2a210dddd35a698e0f"
+      },
+      {
+        "ordinal": 2,
+        "category": "api",
+        "severity": "High",
+        "comment_sha256": "03cac30c11d2f9caaf4a4f7a8522ef5f917305c793c62fdeda5c579229a17b8a"
+      },
+      {
+        "ordinal": 3,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "9d414a44d5b7eb267238430cdac8524e28509bc19cfc786a570af26fbeafd3d6"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "30a92a4d66b417f7c19dee2b343099adc6e88aa6",
+      "head_sha": "5fd11f9faa79c4aefd39975d1b0e963e5034f793",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+        "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR22532__20260122/pull/1",
+        "Git trees BASE 52dab81ab0196821566de6ccc6928be7362e3e7f HEAD 80d63044b0296d0fb84d9a80d0fb9a74fcdf80e6"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR22532__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "5fd11f9faa79c4aefd39975d1b0e963e5034f793",
+        "comparison_base": "30a92a4d66b417f7c19dee2b343099adc6e88aa6",
+        "trees": {
+          "base": "52dab81ab0196821566de6ccc6928be7362e3e7f",
+          "head": "80d63044b0296d0fb84d9a80d0fb9a74fcdf80e6"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/keycloak/keycloak/pull/36880": {
+    "pr_url": "https://github.com/keycloak/keycloak/pull/36880",
+    "case_id": "pr-f1ac23d8e3fc368dd2fd",
+    "split": "test",
+    "base_sha": "b8c1cd410f4499c77a8b372decfe1718b80ccfd2",
+    "head_sha": "1950a511026d520a7329c7b6b9ee60a4af8f8b55",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "f5915e306094861ec6bfac2888bb0940b078ce9bcc776275dd7d36d1d2ae2c05"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "a7fa6fc55a314d462128001c29d9a46706d930c0e02e0f4320912c07391a45bb"
+      },
+      {
+        "ordinal": 2,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "83fd334c57af4a024765d3b3e314bf1b1394e28b61f0a109e35a56eae6b6a7fd"
+      },
+      {
+        "ordinal": 3,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "b3c2c283f64422ece27a1d21d1e98a5fdf5bdb091740a3d4a9cdfb14413921b0"
+      },
+      {
+        "ordinal": 4,
+        "category": "style",
+        "severity": "Low",
+        "comment_sha256": "6f1e05fd40757e159c37b286d7aecbeffec275e9dab60443a97cbde4060e24d6"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "b8c1cd410f4499c77a8b372decfe1718b80ccfd2",
+      "head_sha": "1950a511026d520a7329c7b6b9ee60a4af8f8b55",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+        "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR36880__20260122/pull/1",
+        "Git trees BASE 942fe4fc48471029ae6da5d78fd1e4b4540b94e6 HEAD f99e51371374ca2b925457db96b6b9469545d346"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR36880__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "1950a511026d520a7329c7b6b9ee60a4af8f8b55",
+        "comparison_base": "b7b84d75d16e91d3f56ec527a260c53c5dd4396c",
+        "trees": {
+          "base": "942fe4fc48471029ae6da5d78fd1e4b4540b94e6",
+          "head": "f99e51371374ca2b925457db96b6b9469545d346"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/grafana/grafana/pull/76186": {
+    "pr_url": "https://github.com/grafana/grafana/pull/76186",
+    "case_id": "pr-3ca0586463f0faed77fa",
+    "split": "test",
+    "base_sha": "58ba11ecbd60863e2bfc6e32f0399ed4feb3927a",
+    "head_sha": "303cdc2caf256aa5df660611120c2e3f7392365d",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "1ed58203705f757c63a4a132da7b38b1fa915620677e765bb6a285f948e924fe"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "Low",
+        "comment_sha256": "b484b1696e21a1571408afb546366bae9389435a44474a5a2d0287cd9a277e30"
+      },
+      {
+        "ordinal": 2,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "5573cb3e627cc7e2632c1dd183ed0a9ca383efe129de2783049561c8d3257813"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "58ba11ecbd60863e2bfc6e32f0399ed4feb3927a",
+      "head_sha": "303cdc2caf256aa5df660611120c2e3f7392365d",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+        "https://github.com/code-review-benchmark/grafana__grafana__augment__PR76186__20260122/pull/1",
+        "Git trees BASE ded42d336658bb42692260b8be1b351d19aae6b4 HEAD 666c373df18cc978e3535148ac5e9c9d3b02d336"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/grafana__grafana__augment__PR76186__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "303cdc2caf256aa5df660611120c2e3f7392365d",
+        "comparison_base": "58ba11ecbd60863e2bfc6e32f0399ed4feb3927a",
+        "trees": {
+          "base": "ded42d336658bb42692260b8be1b351d19aae6b4",
+          "head": "666c373df18cc978e3535148ac5e9c9d3b02d336"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/keycloak/keycloak/pull/33832": {
+    "pr_url": "https://github.com/keycloak/keycloak/pull/33832",
+    "case_id": "pr-2fab9d1cdae455be6624",
+    "split": "test",
+    "base_sha": "10aca5552314d6e5c9226f3c6d0107861c38c693",
+    "head_sha": "79d11c4890cc4792e3dc3535af59e4e5f7a2739d",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "49b2bdce2f921d3e02270dbab2e817a3b681cdea2a22fc44a191c1dc272d5ef9"
+      },
+      {
+        "ordinal": 1,
+        "category": "perf",
+        "severity": "Low",
+        "comment_sha256": "f8ed4ed6219e9c9bcd1bf9f0c0a3c8ead9029fb9086371fbe126b0fd77892c5b"
+      },
+      {
+        "ordinal": 2,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "2fd30019b9810c138d5be3a383ffde64d16930c88490f5968611f866852deb27"
+      },
+      {
+        "ordinal": 3,
+        "category": "speculative",
+        "severity": "Low",
+        "comment_sha256": "4aed169229beec26e13430c0f3acb550536a977042f53a18ec645d042b5ffde2"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "10aca5552314d6e5c9226f3c6d0107861c38c693",
+      "head_sha": "79d11c4890cc4792e3dc3535af59e4e5f7a2739d",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+        "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR33832__20260122/pull/1",
+        "Git trees BASE 25d559f8545db386ab7e51ef025cc7d58f329263 HEAD 0e89fa11ceeaf1ada31229f4a322af97bb77a568"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR33832__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "79d11c4890cc4792e3dc3535af59e4e5f7a2739d",
+        "comparison_base": "10aca5552314d6e5c9226f3c6d0107861c38c693",
+        "trees": {
+          "base": "25d559f8545db386ab7e51ef025cc7d58f329263",
+          "head": "0e89fa11ceeaf1ada31229f4a322af97bb77a568"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/grafana/grafana/pull/107534": {
+    "pr_url": "https://github.com/grafana/grafana/pull/107534",
+    "case_id": "pr-777f8a5a84e5f1e957d9",
+    "split": "test",
+    "base_sha": "d9a8253640464014aa3662c91131278990cfb828",
+    "head_sha": "1cab4143d443c33079566f6ca36931eb8468159f",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "test_gap",
+        "severity": "Low",
+        "comment_sha256": "0e35b7444dec4907b68f9b053a1c86c1d494d8b7157f17088ba193d678023914"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/grafana__grafana__augment__PR107534__20260122/pull/1",
+        "status": "no_archived_inline_comment_anchor"
+      },
+      {
+        "pr_url": "https://github.com/code-review-benchmark/grafana__grafana__baz__PR107534__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "1cab4143d443c33079566f6ca36931eb8468159f",
+        "comparison_base": "d9a8253640464014aa3662c91131278990cfb828",
+        "trees": {
+          "base": "c485589069e19a63b2289aaae3addf54732a5754",
+          "head": "18593902d070bef6388a5f1aac959a24f3774c61"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/keycloak/keycloak/pull/40940": {
+    "pr_url": "https://github.com/keycloak/keycloak/pull/40940",
+    "case_id": "pr-4d177960be2906d10148",
+    "split": "test",
+    "base_sha": "c834e7473c02f11451216b3fbf355f953cfd95e9",
+    "head_sha": "4def149a50c4b9b2c24fbb753ac60fe4f4df0cac",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "api",
+        "severity": "Critical",
+        "comment_sha256": "b3240fe81e9c4eec6367e2253e0adf7dd992fe38ed25c35555d375e4f056b022"
+      },
+      {
+        "ordinal": 1,
+        "category": "concurrency",
+        "severity": "Medium",
+        "comment_sha256": "5169fe465b5e2a346627f142cd8e38786c9cde135f053cd62de415a388b2f6fe"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "c834e7473c02f11451216b3fbf355f953cfd95e9",
+      "head_sha": "4def149a50c4b9b2c24fbb753ac60fe4f4df0cac",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+        "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR40940__20260122/pull/1",
+        "Git trees BASE 60c7cc92dedbde1c581644edf92e0e62ac7f85d6 HEAD 83bd24bdc41dcb7082e80100245e69cd682b15fb"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR40940__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "4def149a50c4b9b2c24fbb753ac60fe4f4df0cac",
+        "comparison_base": "7fd37690c44c7068cb19ecee3aa6ff99c46a821d",
+        "trees": {
+          "base": "60c7cc92dedbde1c581644edf92e0e62ac7f85d6",
+          "head": "83bd24bdc41dcb7082e80100245e69cd682b15fb"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/getsentry/sentry/pull/80168": {
+    "pr_url": "https://github.com/getsentry/sentry/pull/80168",
+    "case_id": "pr-b3fe12218dedbef22e4d",
+    "split": "test",
+    "base_sha": "bdd229e3f22e307fe40b30ef99e92ff3f6723da4",
+    "head_sha": "8422030ef456e3a898415e96475b4d8ddfc7640f",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "api",
+        "severity": "High",
+        "comment_sha256": "f0eae03fe6ac0915f2407d62d1a2e4eba1841141bd332beb7eb96ee7da7df8d8"
+      },
+      {
+        "ordinal": 1,
+        "category": "doc_defect",
+        "severity": "Low",
+        "comment_sha256": "44da09d2fb9b01cd345fe2ae40619e18996aa975e5709ec7a26acea4d6d16c90"
+      },
+      {
+        "ordinal": 2,
+        "category": "test_gap",
+        "severity": "Medium",
+        "comment_sha256": "ca5d498ae76737f5b1c258f24a5c2bc9d1300aeb060e4b1718726127db66a521"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "bdd229e3f22e307fe40b30ef99e92ff3f6723da4",
+      "head_sha": "8422030ef456e3a898415e96475b4d8ddfc7640f",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+        "https://github.com/code-review-benchmark/sentry__sentry__augment__PR80168__20260122/pull/1",
+        "Git trees BASE e864b67fe131b72b92d321a4f25ba9376f39538b HEAD d556441b89323b29e127d0ef32aabb393692cebf"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/sentry__sentry__augment__PR80168__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "8422030ef456e3a898415e96475b4d8ddfc7640f",
+        "comparison_base": "bdd229e3f22e307fe40b30ef99e92ff3f6723da4",
+        "trees": {
+          "base": "e864b67fe131b72b92d321a4f25ba9376f39538b",
+          "head": "d556441b89323b29e127d0ef32aabb393692cebf"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/getsentry/sentry/pull/93824": {
+    "pr_url": "https://github.com/getsentry/sentry/pull/93824",
+    "case_id": "pr-32dd6b640867ec5b4d0f",
+    "split": "test",
+    "base_sha": "de11fb0166a7244115bb066edd65ec0d6b7e365c",
+    "head_sha": "3162ad68a5c87666788b27a44eb31235025091a9",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "0ac4c347b0905e2b7c437c8ecf7324c4a499b82d9229320a0297a57db4ae6c9f"
+      },
+      {
+        "ordinal": 1,
+        "category": "test_gap",
+        "severity": "Low",
+        "comment_sha256": "6b7b47f7f740e15a150da270fc4926d3e5eae6721953b20a1c5fc5715bca6600"
+      },
+      {
+        "ordinal": 2,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "b9625cabd5818a1c7e3d97de4a7685615e2c84c70ea7abbac4a7a632c461fd35"
+      },
+      {
+        "ordinal": 3,
+        "category": "test_gap",
+        "severity": "Medium",
+        "comment_sha256": "5693f23804551eef8717ae2e55195b3714531155ca4c48e87d85489d15045546"
+      },
+      {
+        "ordinal": 4,
+        "category": "concurrency",
+        "severity": "Medium",
+        "comment_sha256": "f3c4c45da96deab9963051be90a6ed69ffc669d3386d97a3acd15f52ad4a06b4"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "de11fb0166a7244115bb066edd65ec0d6b7e365c",
+      "head_sha": "3162ad68a5c87666788b27a44eb31235025091a9",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+        "https://github.com/code-review-benchmark/sentry__sentry__augment__PR93824__20260122/pull/1",
+        "Git trees BASE 8a2644d1810feae40c125cbd7065c0a35fa2e1fb HEAD e4d8170271b048f4b23921b0ce3f8be3bbdb0a8f"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/sentry__sentry__augment__PR93824__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "3162ad68a5c87666788b27a44eb31235025091a9",
+        "comparison_base": "de11fb0166a7244115bb066edd65ec0d6b7e365c",
+        "trees": {
+          "base": "8a2644d1810feae40c125cbd7065c0a35fa2e1fb",
+          "head": "e4d8170271b048f4b23921b0ce3f8be3bbdb0a8f"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/calcom/cal.com/pull/8330": {
+    "pr_url": "https://github.com/calcom/cal.com/pull/8330",
+    "case_id": "pr-44712457e74d8f797195",
+    "split": "test",
+    "base_sha": "93cb21f55a2a40d9116c014741f5679fbeff5fd9",
+    "head_sha": "ee38fd295fd294b9fc787eba482bde24bbfea69b",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "03978efa7c8730fa6d2e715787a8240ea7d6111118837850220303246f71e911"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "b8c920ffe47b6229291b0c9a9759ad6b2a1123b427cfb51e571ade320c876b13"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "93cb21f55a2a40d9116c014741f5679fbeff5fd9",
+      "head_sha": "ee38fd295fd294b9fc787eba482bde24bbfea69b",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+        "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR8330__20260122/pull/1",
+        "Git trees BASE 03017e7c18415135fc471fc9db389acced1e98d9 HEAD d5da0fd7e6dd05126a3abe539329fc51891c81ea"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR8330__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "ee38fd295fd294b9fc787eba482bde24bbfea69b",
+        "comparison_base": "93cb21f55a2a40d9116c014741f5679fbeff5fd9",
+        "trees": {
+          "base": "03017e7c18415135fc471fc9db389acced1e98d9",
+          "head": "d5da0fd7e6dd05126a3abe539329fc51891c81ea"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/getsentry/sentry/pull/77754": {
+    "pr_url": "https://github.com/getsentry/sentry/pull/77754",
+    "case_id": "pr-29595a360a7ac6544ebe",
+    "split": "test",
+    "base_sha": "bb5a6837cb5b3d8d3b174e17d42ec14486ef8738",
+    "head_sha": "9501091c52ae94e8d916f79b35d21975b3f9cadb",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "concurrency",
+        "severity": "Medium",
+        "comment_sha256": "b6e35db16ec7a22ae21f6933aa0ba5ca47da00f11567a47753dc70ed487e88a5"
+      },
+      {
+        "ordinal": 1,
+        "category": "style",
+        "severity": "Low",
+        "comment_sha256": "d90145eb559f62cbacb7ed50de20e07e8eb8a1caa3025b404c29ab6e469599e8"
+      },
+      {
+        "ordinal": 2,
+        "category": "style",
+        "severity": "Low",
+        "comment_sha256": "b476c9e8b0829eae04557e90f0b38a9f61d0dd5e780b514b66832bcadeed756b"
+      },
+      {
+        "ordinal": 3,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "129cfefa5c1bb217b1d4a91ab84931554c09a494f60fb8587d7b26dbb22bd2fa"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "bb5a6837cb5b3d8d3b174e17d42ec14486ef8738",
+      "head_sha": "9501091c52ae94e8d916f79b35d21975b3f9cadb",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+        "https://github.com/code-review-benchmark/sentry__sentry__augment__PR77754__20260122/pull/1",
+        "Git trees BASE 77de5f6c5a3af89caf8211c6a0c0ec0c8367beb7 HEAD d3142f42b86f500e625bcc990570074fdc5c9bad"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/sentry__sentry__augment__PR77754__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "9501091c52ae94e8d916f79b35d21975b3f9cadb",
+        "comparison_base": "bb5a6837cb5b3d8d3b174e17d42ec14486ef8738",
+        "trees": {
+          "base": "77de5f6c5a3af89caf8211c6a0c0ec0c8367beb7",
+          "head": "d3142f42b86f500e625bcc990570074fdc5c9bad"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/grafana/grafana/pull/90045": {
+    "pr_url": "https://github.com/grafana/grafana/pull/90045",
+    "case_id": "pr-824135eafef4f07bbe1d",
+    "split": "test",
+    "base_sha": "66c4dff17e9147b11fb9b14c6ed63089a599da65",
+    "head_sha": "e369f24665ec70e1e3700f457d25ef83301d931a",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "437b8a50efae61b43bbc8592a2a4f2bb79a77f1216be1772a9da486ba9f3737f"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "4033b04ae8f6389bfc2c069f385a58d6a7f10b0573d70c3e2f76d403a60e76ae"
+      },
+      {
+        "ordinal": 2,
+        "category": "api",
+        "severity": "Medium",
+        "comment_sha256": "d9610066960f6f3b5af9dd842a9054bb8384aa17af7ee3f8e38c692763a208e3"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "66c4dff17e9147b11fb9b14c6ed63089a599da65",
+      "head_sha": "e369f24665ec70e1e3700f457d25ef83301d931a",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+        "https://github.com/code-review-benchmark/grafana__grafana__augment__PR90045__20260122/pull/1",
+        "Git trees BASE c32b7dc3982ecd260199da6623e5151a892cfc83 HEAD a1de10db850775a8578dfddb596bdd850cd05446"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/grafana__grafana__augment__PR90045__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "e369f24665ec70e1e3700f457d25ef83301d931a",
+        "comparison_base": "66c4dff17e9147b11fb9b14c6ed63089a599da65",
+        "trees": {
+          "base": "c32b7dc3982ecd260199da6623e5151a892cfc83",
+          "head": "a1de10db850775a8578dfddb596bdd850cd05446"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/calcom/cal.com/pull/14740": {
+    "pr_url": "https://github.com/calcom/cal.com/pull/14740",
+    "case_id": "pr-374f52b2ca4d891ea50a",
+    "split": "test",
+    "base_sha": "b004587262e8221083bafbe9a0c515e7becaa7b3",
+    "head_sha": "92f44dcea7ff19e9123a30c63c167a2938df5a55",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "security",
+        "severity": "High",
+        "comment_sha256": "2a8125bf2b2d5090284873dbf9aef6df5bf852434936f6abd6b40378cd81dc5c"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "Critical",
+        "comment_sha256": "e4067c2babd3da2469ce628874636dcf509b84d6995f7196df917a3cdf55de48"
+      },
+      {
+        "ordinal": 2,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "31eccd128d84a0cd181dbeb060fd2d2bb81c626b9bbf2e812067efbe68b09f1a"
+      },
+      {
+        "ordinal": 3,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "cf422c6b8f64816483ae5e687bf2df85dfebafab0ae537c7d67ecc629313e9f3"
+      },
+      {
+        "ordinal": 4,
+        "category": "bug",
+        "severity": "Low",
+        "comment_sha256": "6142f1e6dcd2d7efd5f109efc43f9694701277aa6ee43878d3b1ea03ac3e8b42"
+      },
+      {
+        "ordinal": 5,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "4c509752f1b233c597fe52bb3290989f0de481352d8c443feef24cd6de3bf915"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "b004587262e8221083bafbe9a0c515e7becaa7b3",
+      "head_sha": "92f44dcea7ff19e9123a30c63c167a2938df5a55",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+        "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR14740__20260122/pull/1",
+        "Git trees BASE 58d30f10167aaeadf9e0c8aec1d39c5910fbca93 HEAD f28533146b579472e75aa39d893fe428f5aa16c4"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR14740__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "92f44dcea7ff19e9123a30c63c167a2938df5a55",
+        "comparison_base": "b004587262e8221083bafbe9a0c515e7becaa7b3",
+        "trees": {
+          "base": "58d30f10167aaeadf9e0c8aec1d39c5910fbca93",
+          "head": "f28533146b579472e75aa39d893fe428f5aa16c4"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/getsentry/sentry/pull/67876": {
+    "pr_url": "https://github.com/getsentry/sentry/pull/67876",
+    "case_id": "pr-85ed413d2f648cb53d21",
+    "split": "test",
+    "base_sha": "344aa102e7818606e29426ebe69d5a680d8727c6",
+    "head_sha": "bb75657fc8f13923c1d7983f422290908a1e7310",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "fe252ffd95eea1de1c4bf58cba4e1318b07dd261c1b9c7720f8894b8d1df72d8"
+      },
+      {
+        "ordinal": 1,
+        "category": "security",
+        "severity": "Medium",
+        "comment_sha256": "04f73870e69b2a38fbde0aac4503350c80013a743abcdd946acfb8a57dc00363"
+      },
+      {
+        "ordinal": 2,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "ab1291c80b2f082136a1530931002d432bd5c8ace3f1977be3cc58243fcc305c"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "344aa102e7818606e29426ebe69d5a680d8727c6",
+      "head_sha": "bb75657fc8f13923c1d7983f422290908a1e7310",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+        "https://github.com/code-review-benchmark/sentry__sentry__augment__PR67876__20260122/pull/1",
+        "Git trees BASE 5e31372d0b84d75109fe4ea0e0600bfb45614b81 HEAD c6e49295ef5b3c590ba09ce0afe5141f59a8be53"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/sentry__sentry__augment__PR67876__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "bb75657fc8f13923c1d7983f422290908a1e7310",
+        "comparison_base": "f3b740199ef0b8057c2c68a377fd3b4d42346deb",
+        "trees": {
+          "base": "5e31372d0b84d75109fe4ea0e0600bfb45614b81",
+          "head": "c6e49295ef5b3c590ba09ce0afe5141f59a8be53"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/sentry.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/calcom/cal.com/pull/10967": {
+    "pr_url": "https://github.com/calcom/cal.com/pull/10967",
+    "case_id": "pr-79f0acefe9cdd053c669",
+    "split": "test",
+    "base_sha": "a308075bc39b77ed7059b0cae9d443d669a7bf98",
+    "head_sha": "de628295646d0848226618108a52f2f1e5d04ac0",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "3b771acf9877b485b7c16d2ed30c00bd14f469841bf376e9d1735576e3e11834"
+      },
+      {
+        "ordinal": 1,
+        "category": "style",
+        "severity": "Low",
+        "comment_sha256": "5662c14c78e4ce6e81dc6bcda439ab5050bb30e93cb5e895e2679ecf5983010e"
+      },
+      {
+        "ordinal": 2,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "4c8e92f5d87e73b582b1767d0c3956c2bcd9a3ba9a2ec5b8f12b42c2d533b797"
+      },
+      {
+        "ordinal": 3,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "e77fdffe4b3e32d9cd5fd0bbb35823d0d4b11eea1c40a426a1a9f136e10cc414"
+      },
+      {
+        "ordinal": 4,
+        "category": "api",
+        "severity": "Low",
+        "comment_sha256": "45ecc83737a3970243b6d4bd1bd8fab3391c8c802f1fb67a6719fc33af737ce3"
+      },
+      {
+        "ordinal": 5,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "73bc058265ea9bcdf0218848dc9822f9c71dac254aa3a09a911b2e368eb5cc2f"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "a308075bc39b77ed7059b0cae9d443d669a7bf98",
+      "head_sha": "de628295646d0848226618108a52f2f1e5d04ac0",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+        "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR10967__20260122/pull/1",
+        "Git trees BASE cf288f1c9ab2fce8e8e0d2b7823322b8cfae69cf HEAD 159bff1daf83184d42b7c3ebc02a04321e576d41"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR10967__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "de628295646d0848226618108a52f2f1e5d04ac0",
+        "comparison_base": "a308075bc39b77ed7059b0cae9d443d669a7bf98",
+        "trees": {
+          "base": "cf288f1c9ab2fce8e8e0d2b7823322b8cfae69cf",
+          "head": "159bff1daf83184d42b7c3ebc02a04321e576d41"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/grafana/grafana/pull/94942": {
+    "pr_url": "https://github.com/grafana/grafana/pull/94942",
+    "case_id": "pr-29518a3aa43da66c6519",
+    "split": "test",
+    "base_sha": "cbe1e7d63f098e306058c0fbcab2f5c30602fa7d",
+    "head_sha": "f3317b329b4eb8fd96f99dd86525bc4a22d20248",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "Critical",
+        "comment_sha256": "8b848e3d6784c5fb8675dc47d169a40423d6bc4739564ceab66841ea963f2d4c"
+      },
+      {
+        "ordinal": 1,
+        "category": "api",
+        "severity": "High",
+        "comment_sha256": "f21a1c990a078bb59e4ae85853bb6c2d5c2b33756962f928a9a6976521d5b7a6"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "cbe1e7d63f098e306058c0fbcab2f5c30602fa7d",
+      "head_sha": "f3317b329b4eb8fd96f99dd86525bc4a22d20248",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+        "https://github.com/code-review-benchmark/grafana__grafana__augment__PR94942__20260122/pull/1",
+        "Git trees BASE 4a6bd270e6a861caf49c5b8d7d95f5d3b296051d HEAD 18337e0b7d32e57a53941e61c7310a83c99edfff"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/grafana__grafana__augment__PR94942__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "f3317b329b4eb8fd96f99dd86525bc4a22d20248",
+        "comparison_base": "cbe1e7d63f098e306058c0fbcab2f5c30602fa7d",
+        "trees": {
+          "base": "4a6bd270e6a861caf49c5b8d7d95f5d3b296051d",
+          "head": "18337e0b7d32e57a53941e61c7310a83c99edfff"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/keycloak/keycloak/pull/32918": {
+    "pr_url": "https://github.com/keycloak/keycloak/pull/32918",
+    "case_id": "pr-45a1c0281f89098eb667",
+    "split": "test",
+    "base_sha": "272cfc68dcc88615396ae62ed1571918e9c58ad3",
+    "head_sha": "e944e2acf1e64421860a8e827f93ad06c169621b",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "bug",
+        "severity": "Critical",
+        "comment_sha256": "b5e2b6486ac8166bea52b94c692a48e4c433f411c0d195c628a0b3417368aec3"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "Medium",
+        "comment_sha256": "8501f1405f5d687d4b8ff9470645dd349eee5864eb592aaca4296910eb4ac89e"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "272cfc68dcc88615396ae62ed1571918e9c58ad3",
+      "head_sha": "e944e2acf1e64421860a8e827f93ad06c169621b",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+        "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR32918__20260122/pull/1",
+        "Git trees BASE 90570aca4e85f0e43b24d0f16bb1846463b3fe2f HEAD 0743fc7d734aac0fe5f478b165d1cea141885abd"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR32918__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "e944e2acf1e64421860a8e827f93ad06c169621b",
+        "comparison_base": "272cfc68dcc88615396ae62ed1571918e9c58ad3",
+        "trees": {
+          "base": "90570aca4e85f0e43b24d0f16bb1846463b3fe2f",
+          "head": "0743fc7d734aac0fe5f478b165d1cea141885abd"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/keycloak/keycloak/pull/37429": {
+    "pr_url": "https://github.com/keycloak/keycloak/pull/37429",
+    "case_id": "pr-6d0220a9b1ac01ebca38",
+    "split": "test",
+    "base_sha": "f3c8e8f3487112f2c99aa78400430cce2d30be39",
+    "head_sha": "02f48f776f43734d1ac8914d3ad6a7115acdcb33",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "doc_defect",
+        "severity": "Medium",
+        "comment_sha256": "95075d878f6a3ea729c7ca3e4128b9d1396a935790b812c05ad55ab770c45e36"
+      },
+      {
+        "ordinal": 1,
+        "category": "doc_defect",
+        "severity": "Medium",
+        "comment_sha256": "5611d2aafcea40aaf244f8d2b7a0cb8ddd143518b6856ba99c50faa4b887f374"
+      },
+      {
+        "ordinal": 2,
+        "category": "security",
+        "severity": "Low",
+        "comment_sha256": "72abb594beb403e910b9b5405cc86aaa6e039904f3e2db68ca738b14425f0821"
+      },
+      {
+        "ordinal": 3,
+        "category": "style",
+        "severity": "Low",
+        "comment_sha256": "042f1be0c6b98ff410da524661bfc1136a40f2568f7e1bc5e72c9b410017b7a6"
+      },
+      {
+        "ordinal": 4,
+        "category": "style",
+        "severity": "Low",
+        "comment_sha256": "4f001530a590e1cc57f2fba0d2e8788ae5932edcca4022d4c9da5193d1cd6fcb"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "f3c8e8f3487112f2c99aa78400430cce2d30be39",
+      "head_sha": "02f48f776f43734d1ac8914d3ad6a7115acdcb33",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+        "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR37429__20260122/pull/1",
+        "Git trees BASE 5dac07fb375d24fdb702b362371ae36d55d14848 HEAD 532cfa9c91d5c6d50cbf1a3bee84a7633240a34d"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/keycloak__keycloak__augment__PR37429__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "02f48f776f43734d1ac8914d3ad6a7115acdcb33",
+        "comparison_base": "f3c8e8f3487112f2c99aa78400430cce2d30be39",
+        "trees": {
+          "base": "5dac07fb375d24fdb702b362371ae36d55d14848",
+          "head": "532cfa9c91d5c6d50cbf1a3bee84a7633240a34d"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/keycloak.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/calcom/cal.com/pull/14943": {
+    "pr_url": "https://github.com/calcom/cal.com/pull/14943",
+    "case_id": "pr-01817745251e5aa59499",
+    "split": "test",
+    "base_sha": "917c7b0764f4c6bfdca95db2c5f73dbfdbe11757",
+    "head_sha": "c790227e0cda780e6fea9bb03af27948d9e286b9",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "concurrency",
+        "severity": "High",
+        "comment_sha256": "3bf8946d49943883b8a6e7c214fb60bf4e7454b65877f8a7e1390b518486a328"
+      },
+      {
+        "ordinal": 1,
+        "category": "bug",
+        "severity": "High",
+        "comment_sha256": "748185ed125bd1ace3e808f6fcf457c9694180ee451d73a5ced506053826c4a6"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "917c7b0764f4c6bfdca95db2c5f73dbfdbe11757",
+      "head_sha": "c790227e0cda780e6fea9bb03af27948d9e286b9",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+        "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR14943__20260122/pull/1",
+        "Git trees BASE 340ad4d16dac92a5b309a2144d371d2bfd3014b7 HEAD 0b255098e0fb2dcb77590b6cc87001d03ed0cc2e"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/cal_dot_com__cal.com__augment__PR14943__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "c790227e0cda780e6fea9bb03af27948d9e286b9",
+        "comparison_base": "917c7b0764f4c6bfdca95db2c5f73dbfdbe11757",
+        "trees": {
+          "base": "340ad4d16dac92a5b309a2144d371d2bfd3014b7",
+          "head": "0b255098e0fb2dcb77590b6cc87001d03ed0cc2e"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/cal_dot_com.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/grafana/grafana/pull/97529": {
+    "pr_url": "https://github.com/grafana/grafana/pull/97529",
+    "case_id": "pr-0e81023e9467d5dcb71a",
+    "split": "test",
+    "base_sha": "871af07203177ce59a24e742107119409274f48a",
+    "head_sha": "26fed312840cd76b766cbd2158e17a7e6c0ec548",
+    "issue_labels": [
+      {
+        "ordinal": 0,
+        "category": "concurrency",
+        "severity": "High",
+        "comment_sha256": "76dc5afc72c657c7ce462a9714b1264efe3d599ea5c4fd61186b67cfbeb957b6"
+      },
+      {
+        "ordinal": 1,
+        "category": "concurrency",
+        "severity": "High",
+        "comment_sha256": "8d51b9d26aef8f3604e73ebdcf8aa68f807392cc69dd23af42bbe26197ff4837"
+      }
+    ],
+    "exposure_audit": "pending",
+    "status": "adjudicated",
+    "truth": {
+      "label": "defective",
+      "base_sha": "871af07203177ce59a24e742107119409274f48a",
+      "head_sha": "26fed312840cd76b766cbd2158e17a7e6c0ec548",
+      "labelers": [
+        "Martian offline benchmark published human-verified references (individual identities unspecified)"
+      ],
+      "evidence": [
+        "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+        "https://github.com/code-review-benchmark/grafana__grafana__augment__PR97529__20260122/pull/1",
+        "Git trees BASE 65c754ed717e7feae4d6144bd0feea058d1dcf51 HEAD a7daea264abe7dbd43432a6965bfb0eb8895bfa8"
+      ],
+      "rationale": "At least one published functional issue, with both Git trees matching an archived benchmark review. External reference label; independent CodeTurtle adjudication pending."
+    },
+    "replica_checks": [
+      {
+        "pr_url": "https://github.com/code-review-benchmark/grafana__grafana__augment__PR97529__20260122/pull/1",
+        "status": "exact_base_and_head_trees",
+        "reviewed_commit": "26fed312840cd76b766cbd2158e17a7e6c0ec548",
+        "comparison_base": "871af07203177ce59a24e742107119409274f48a",
+        "trees": {
+          "base": "65c754ed717e7feae4d6144bd0feea058d1dcf51",
+          "head": "a7daea264abe7dbd43432a6965bfb0eb8895bfa8"
+        }
+      }
+    ],
+    "source_document": "https://github.com/withmartian/code-review-benchmark/blob/23a35d0d64f7de5a68e5679da08414e0edacea9b/offline/golden_comments/grafana.json",
+    "reference_status": "exact_base_and_head_trees"
+  },
+  "https://github.com/Kludex/starlette/pull/3772": {
+    "pr_url": "https://github.com/Kludex/starlette/pull/3772",
+    "case_id": "pr-c24ebf05668e162601b1",
+    "split": "test",
+    "base_sha": "1ce60e7157d5c7d1c4e48e1cfe2f5f255235a2cc",
+    "head_sha": "91aa0cb83f8cab2dd0b714eccfe8762dff08c761",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/fastapi/typer/pull/2012": {
+    "pr_url": "https://github.com/fastapi/typer/pull/2012",
+    "case_id": "pr-127c3072a8c582e5e7b1",
+    "split": "test",
+    "base_sha": "f7c8478cfc592b64d172db41871910a97ae01abd",
+    "head_sha": "84df7e3f810eb742033a6f5f0f24ff23a1a100a1",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/fastapi/fastapi/pull/16780": {
+    "pr_url": "https://github.com/fastapi/fastapi/pull/16780",
+    "case_id": "pr-50d2bfda5e52f844060e",
+    "split": "test",
+    "base_sha": "a978e511ebea7fe813900a07169a99cb39dce4f3",
+    "head_sha": "671ab83a5d79c7bfe6c4dd5ec75bb8d669a43c98",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/encode/httpx/pull/3699": {
+    "pr_url": "https://github.com/encode/httpx/pull/3699",
+    "case_id": "pr-8ed30116f98ee3622652",
+    "split": "test",
+    "base_sha": "ca097c96f97d8d2a5da09b8ca736c7e78a2467f6",
+    "head_sha": "4b9f63e507c4ea75fa59f6bbdfb103e2f014a6f9",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 1,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/fastapi/fastapi/pull/16775": {
+    "pr_url": "https://github.com/fastapi/fastapi/pull/16775",
+    "case_id": "pr-b3ad64a168e39e1d939a",
+    "split": "test",
+    "base_sha": "b11137461f382d65cfd8bb3ef51606001bbc237a",
+    "head_sha": "5a053d270c1f37e5bfd1ca95cbda2d3b7717c591",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/pydantic/pydantic/pull/14338": {
+    "pr_url": "https://github.com/pydantic/pydantic/pull/14338",
+    "case_id": "pr-08cf1e186a502a8f1301",
+    "split": "test",
+    "base_sha": "45e208ee48b62c47dd92507ec6a4bcd71cfdb0d8",
+    "head_sha": "a626d8afc4f1d2ec5bf21313e110045b142705ec",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/encode/httpx/pull/3773": {
+    "pr_url": "https://github.com/encode/httpx/pull/3773",
+    "case_id": "pr-1d9c7cd626248bd74491",
+    "split": "test",
+    "base_sha": "ae1b9f66238f75ced3ced5e4485408435de10768",
+    "head_sha": "63e885394a629d194b0aa867e8fbf475cdec6521",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 1,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/fastapi/fastapi/pull/16785": {
+    "pr_url": "https://github.com/fastapi/fastapi/pull/16785",
+    "case_id": "pr-5a1f3a8ed1ea890ca36a",
+    "split": "test",
+    "base_sha": "57be707b5b5e8f9db625607917f43776119d2574",
+    "head_sha": "3fafd27eb92b3f64205e7196f6801a74f3395e72",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/pydantic/pydantic/pull/14324": {
+    "pr_url": "https://github.com/pydantic/pydantic/pull/14324",
+    "case_id": "pr-794b33b3005191536ae6",
+    "split": "test",
+    "base_sha": "fbd35416d17eae59806f003f7c2017aed131a248",
+    "head_sha": "dbfa539495d50a2953ba55e16f0cdac4c82d51a5",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 0,
+    "reference_status": "no_published_case_match"
+  },
+  "https://github.com/encode/httpx/pull/3832": {
+    "pr_url": "https://github.com/encode/httpx/pull/3832",
+    "case_id": "pr-e14673b8fca117fbc160",
+    "split": "test",
+    "base_sha": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
+    "head_sha": "aa6d8bb0ba7e457010fe0b392fe59876a9b9f2cb",
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "status": "pending",
+    "truth": null,
+    "replica_checks": [],
+    "approved_reviews_at_head_first_page": 1,
+    "reference_status": "no_published_case_match"
+  }
+}

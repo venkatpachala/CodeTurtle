@@ -1,0 +1,8 @@
+{
+  "endpoint_matches_freeze": true,
+  "running_models": {
+    "models": []
+  },
+  "model_digest_matches_freeze": true,
+  "scope": "Ollama-reported resident model sizes after trials on the frozen endpoint; not a peak measurement."
+}

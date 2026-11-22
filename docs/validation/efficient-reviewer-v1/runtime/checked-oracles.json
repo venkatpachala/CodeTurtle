@@ -1,0 +1,464 @@
+{
+  "scope": "Synthetic development cases. Detection counts any finding on a case; issue identity needs a separate audit.",
+  "predictions_sha256": "3e85cc888344e4d9eaba576120df815d7c24b3f87a8be56fe2a216a99fa1e0da",
+  "all_oracles_passed": true,
+  "defect_cases_detected": 2,
+  "defect_cases": 2,
+  "repair_cases_with_findings": 0,
+  "repair_cases": 2,
+  "monetary_cost_usd": null,
+  "cases": [
+    {
+      "case_id": "utf8-regression",
+      "family_id": "utf8",
+      "introduced_defect": true,
+      "oracle_matches_label": true,
+      "runs": {
+        "base": {
+          "status": "passed",
+          "tests_executed": true,
+          "side": "base",
+          "snapshot_id": "f3117b1e933dff9150f1c0b5e7fc4744153112fd6b1bd7a86bdf0e71671a0535",
+          "revision_sha": "82c34a36c198d3441c5f635eacd8b7e8411ed4f7",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import permits; assert permits(\"é\", 1) is False"
+          ],
+          "output": "",
+          "exit_code": 0,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 135,
+            "revision_sha": "82c34a36c198d3441c5f635eacd8b7e8411ed4f7"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.5491376550053246,
+          "container_removed": true,
+          "elapsed_seconds": 2.498675490001915
+        },
+        "head": {
+          "status": "failed",
+          "tests_executed": true,
+          "side": "head",
+          "snapshot_id": "f3117b1e933dff9150f1c0b5e7fc4744153112fd6b1bd7a86bdf0e71671a0535",
+          "revision_sha": "5fe4210365ea7a626046165fdf0f7fd87270540f",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import permits; assert permits(\"é\", 1) is False"
+          ],
+          "output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAssertionError\n",
+          "exit_code": 1,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 119,
+            "revision_sha": "5fe4210365ea7a626046165fdf0f7fd87270540f"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.5982579689880367,
+          "container_removed": true,
+          "elapsed_seconds": 2.1462027240049792
+        }
+      },
+      "product_findings": 1,
+      "decision": "REQUEST_CHANGES",
+      "latency_seconds": 18.447348245994363,
+      "model_calls": 3,
+      "completion_tokens": 169,
+      "source_file_digests": {
+        "app.py": {
+          "base": "c52b0e22387b6d383a7da620cf99ef1bb6a7b765d488375b05e3af1893fc1b91",
+          "head": "353e94f2bf407c53ac8d58425a8f8a4b9e6917ff5bc5205c7015f1346e074cc2"
+        }
+      }
+    },
+    {
+      "case_id": "utf8-repair",
+      "family_id": "utf8",
+      "introduced_defect": false,
+      "oracle_matches_label": true,
+      "runs": {
+        "base": {
+          "status": "failed",
+          "tests_executed": true,
+          "side": "base",
+          "snapshot_id": "2bc54a95f9f374106aa50d7ac13da65dfbb3600772b8adcadc9425f92a89931c",
+          "revision_sha": "5cb43a46018ef5147374f1bb8f00004a0870ff70",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import permits; assert permits(\"é\", 1) is False"
+          ],
+          "output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAssertionError\n",
+          "exit_code": 1,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 119,
+            "revision_sha": "5cb43a46018ef5147374f1bb8f00004a0870ff70"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.6182851719931932,
+          "container_removed": true,
+          "elapsed_seconds": 1.9926920809957664
+        },
+        "head": {
+          "status": "passed",
+          "tests_executed": true,
+          "side": "head",
+          "snapshot_id": "2bc54a95f9f374106aa50d7ac13da65dfbb3600772b8adcadc9425f92a89931c",
+          "revision_sha": "2b4c02e70385f3269d758f8953bb758bebb85028",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import permits; assert permits(\"é\", 1) is False"
+          ],
+          "output": "",
+          "exit_code": 0,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 135,
+            "revision_sha": "2b4c02e70385f3269d758f8953bb758bebb85028"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.5691566610039445,
+          "container_removed": true,
+          "elapsed_seconds": 2.672397825997905
+        }
+      },
+      "product_findings": 0,
+      "decision": "COMMENT",
+      "latency_seconds": 4.567996124998899,
+      "model_calls": 1,
+      "completion_tokens": 87,
+      "source_file_digests": {
+        "app.py": {
+          "base": "353e94f2bf407c53ac8d58425a8f8a4b9e6917ff5bc5205c7015f1346e074cc2",
+          "head": "c52b0e22387b6d383a7da620cf99ef1bb6a7b765d488375b05e3af1893fc1b91"
+        }
+      }
+    },
+    {
+      "case_id": "pagination-regression",
+      "family_id": "pagination",
+      "introduced_defect": true,
+      "oracle_matches_label": true,
+      "runs": {
+        "base": {
+          "status": "passed",
+          "tests_executed": true,
+          "side": "base",
+          "snapshot_id": "1fbd9d8ef62b7e998f22865f3a28237973055734e3693d1243c9d35f3413ec24",
+          "revision_sha": "17aa3bcac3becd0fb04ed30edc445b81756a8e35",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import page; assert page([\"a\",\"b\",\"c\",\"d\"], 2, 2) == [\"c\",\"d\"]"
+          ],
+          "output": "",
+          "exit_code": 0,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 139,
+            "revision_sha": "17aa3bcac3becd0fb04ed30edc445b81756a8e35"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.7835023420047946,
+          "container_removed": true,
+          "elapsed_seconds": 2.4045442060014466
+        },
+        "head": {
+          "status": "failed",
+          "tests_executed": true,
+          "side": "head",
+          "snapshot_id": "1fbd9d8ef62b7e998f22865f3a28237973055734e3693d1243c9d35f3413ec24",
+          "revision_sha": "b9cb42b55192d70f578b149871015c67d5da3171",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import page; assert page([\"a\",\"b\",\"c\",\"d\"], 2, 2) == [\"c\",\"d\"]"
+          ],
+          "output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAssertionError\n",
+          "exit_code": 1,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 131,
+            "revision_sha": "b9cb42b55192d70f578b149871015c67d5da3171"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.5498351569985971,
+          "container_removed": true,
+          "elapsed_seconds": 2.423556935013039
+        }
+      },
+      "product_findings": 1,
+      "decision": "REQUEST_CHANGES",
+      "latency_seconds": 11.60127769799874,
+      "model_calls": 3,
+      "completion_tokens": 206,
+      "source_file_digests": {
+        "app.py": {
+          "base": "7e77bdb4f617910cc81e60e6d8db3b5665a5d7d5ec7397302a8fe1ae32c134f2",
+          "head": "f7c69ce453907372070cc97d6eb3f1a88cee2cd2ac9174f5b5b294bb7780b39c"
+        }
+      }
+    },
+    {
+      "case_id": "pagination-repair",
+      "family_id": "pagination",
+      "introduced_defect": false,
+      "oracle_matches_label": true,
+      "runs": {
+        "base": {
+          "status": "failed",
+          "tests_executed": true,
+          "side": "base",
+          "snapshot_id": "d1d951faa1552e49ef9f8c075b34685edc5b57597051e280a85e3d0c0d9e679a",
+          "revision_sha": "af88a368a4baf4fabbb44f0058c0dc9e8d7e0eba",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import page; assert page([\"a\",\"b\",\"c\",\"d\"], 2, 2) == [\"c\",\"d\"]"
+          ],
+          "output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAssertionError\n",
+          "exit_code": 1,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 131,
+            "revision_sha": "af88a368a4baf4fabbb44f0058c0dc9e8d7e0eba"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.563690647992189,
+          "container_removed": true,
+          "elapsed_seconds": 1.8320768420089735
+        },
+        "head": {
+          "status": "passed",
+          "tests_executed": true,
+          "side": "head",
+          "snapshot_id": "d1d951faa1552e49ef9f8c075b34685edc5b57597051e280a85e3d0c0d9e679a",
+          "revision_sha": "74b1ef6c2ed4f5916837c309ac9cf455104043f9",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import page; assert page([\"a\",\"b\",\"c\",\"d\"], 2, 2) == [\"c\",\"d\"]"
+          ],
+          "output": "",
+          "exit_code": 0,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 139,
+            "revision_sha": "74b1ef6c2ed4f5916837c309ac9cf455104043f9"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.5211556099966401,
+          "container_removed": true,
+          "elapsed_seconds": 2.2104561799933435
+        }
+      },
+      "product_findings": 0,
+      "decision": "COMMENT",
+      "latency_seconds": 5.634518509999907,
+      "model_calls": 1,
+      "completion_tokens": 106,
+      "source_file_digests": {
+        "app.py": {
+          "base": "f7c69ce453907372070cc97d6eb3f1a88cee2cd2ac9174f5b5b294bb7780b39c",
+          "head": "7e77bdb4f617910cc81e60e6d8db3b5665a5d7d5ec7397302a8fe1ae32c134f2"
+        }
+      }
+    }
+  ]
+}

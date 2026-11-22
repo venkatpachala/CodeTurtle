@@ -1,5 +1,10 @@
 # Semantic review controls and honest merge-safety metrics
 
+**Historical measurement correction.** The large-PR unit inventory in this
+report predates exact-path hunk lookup. Duplicate basenames could attach hunks
+to the wrong file. Use the later pinned trial for complex-PR inspection counts.
+[Efficient reviewer report](EFFICIENT_REVIEWER_PHASE.md)
+
 Validated on 2026-11-22 at reviewer `cd857b0c5f38c70e330101473006bb85e6c06240`.
 This is a development milestone, not completion of CodeTurtle 2.0 or evidence
 of arbitrary-PR accuracy. The default local model remains `qwen2.5-coder:7b`.

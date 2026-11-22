@@ -16,8 +16,10 @@ captured public patches; source URLs are recorded per case. Original project
 licensing continues to apply to source excerpts. No review comments or source
 gold annotations are passed to prediction through this registry.
 
-All 60 entries in `annotations.pending.json` are pending. Venkat is the available
-human reviewer; no independent human audit is claimed. Complete an annotation only
+All 60 entries in `annotations.pending.json` remain a blank template. A separate
+external reference import records published issue evidence and matching Git trees.
+This is separate from project-level clean-PR adjudication and exposure auditing.
+Complete an independent annotation only
 after checking the pinned source, reachable trigger and BASE/HEAD attribution:
 
 1. Audit prior exposure and aliases. Known exposed cases are development-only;
@@ -60,5 +62,7 @@ profile consistency, complete case accounting and checksums. They do not certify
 human label correctness. The safety report does not substitute for issue-level
 precision/recall, independent label audit, or a qualified release.
 
-Actual held-out predictions have not been generated while exposure and annotation
-audits remain pending. This prevents treating an unfinished experiment as a result.
+The blind predictor reads frozen patches and source objects with no annotation
+access. Predictions on the public test split measure a specific reviewer profile.
+Exposure audits and clean-control labels govern interpretation of that result.
+[Engineering report](../../../docs/EFFICIENT_REVIEWER_PHASE.md)

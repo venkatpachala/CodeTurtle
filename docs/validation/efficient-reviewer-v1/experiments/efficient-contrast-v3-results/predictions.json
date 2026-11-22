@@ -1,0 +1,1819 @@
+[
+  {
+    "case_id": "utf8-regression",
+    "elapsed_seconds": 6.550352040001599,
+    "result": {
+      "schema_version": "2.3",
+      "run_id": "de6ea39d1ce9440089eecfc157ee6126",
+      "target": {
+        "repo": "",
+        "number": 0,
+        "base_sha": "ed150d071bbd6cc57f8a0b42de4533fe6d3d31c2",
+        "head_sha": "29825d050315fb788a7ce8b26e605053075a2f7a",
+        "diff_sha256": "82e172c0640c82ef8f0d5148e1f6c1d7490417efe62f5768ef07161ff778b1ff",
+        "comparison_base_sha": ""
+      },
+      "health": {
+        "status": "completed",
+        "stages": [
+          {
+            "stage": "bundle:B-001",
+            "status": "succeeded",
+            "code": "VALID_EMPTY",
+            "detail": "",
+            "retryable": false
+          },
+          {
+            "stage": "graph",
+            "status": "degraded",
+            "code": "graph_unavailable",
+            "detail": "",
+            "retryable": false
+          }
+        ]
+      },
+      "inspection": {
+        "eligible": 1,
+        "packed": 1,
+        "inspected": 1,
+        "assessments": [
+          {
+            "unit_id": "CU-001",
+            "path": "app.py",
+            "status": "inspected",
+            "behavioral_delta": "BX-5da7de4d7f067567: BASE False -> HEAD True",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-001"
+            ],
+            "reason": ""
+          }
+        ],
+        "ratio": 1.0
+      },
+      "policy_reasons": [
+        "unresolved_hypotheses"
+      ],
+      "unresolved": [
+        {
+          "requirement_id": "R1",
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "approval_eligible": false,
+      "provenance": {
+        "reviewer_commit": "691ff32d4fbcf28dd461581297e7b2edf78dcf16",
+        "dirty": false,
+        "prompt_version": "semantic-contract-v7-pure-contract-route",
+        "discovery_protocol": "semantic",
+        "provider": "ollama",
+        "model": "qwen2.5-coder:7b",
+        "model_calls": [
+          {
+            "timestamp": "2026-11-22T08:39:57.104995",
+            "agent_name": "BundleAgent",
+            "capability": "correctness_review",
+            "provider": "ollama_provider",
+            "model": "qwen2.5-coder:7b",
+            "prompt_tokens": 774,
+            "completion_tokens": 94,
+            "total_tokens": 868,
+            "latency": 6.08717155456543,
+            "retries": 0,
+            "estimated_cost": 0.0,
+            "success": true,
+            "error": null,
+            "finish_reason": "stop",
+            "output_truncated": false,
+            "max_output_tokens": 400,
+            "context_tokens": 8192,
+            "response_format": "json_schema",
+            "schema_sha256": "f5caabad4b9591d6bb3865ad8475b7a09b4a59086d00aa3f5c652a8d39746385",
+            "prompt_characters": 2193,
+            "stage": "contract_interpretation"
+          }
+        ],
+        "budget": {
+          "calls": 1,
+          "prompt_chars": 2193,
+          "elapsed_seconds": 6.5496224950038595,
+          "max_model_calls": 12,
+          "max_prompt_chars": 120000,
+          "max_wall_seconds": 300.0
+        },
+        "investigation_source": "git_snapshot",
+        "requirement_strategy": "link",
+        "requirement_runs": [],
+        "finding_verifier_mode": "structured",
+        "finding_source_rules": true,
+        "source_preparation": null,
+        "verification_snapshot_id": "d3a421ed4fe06933ad84e56a1218abd0d4db4a801097d476230b331b6fe55574",
+        "verification_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-1rv0xu4s",
+          "base_sha": "ed150d071bbd6cc57f8a0b42de4533fe6d3d31c2",
+          "head_sha": "29825d050315fb788a7ce8b26e605053075a2f7a",
+          "diff_sha256": "82e172c0640c82ef8f0d5148e1f6c1d7490417efe62f5768ef07161ff778b1ff",
+          "config_sha256": "202b87b6df4452a9a1e0f6d28dd479a066d6793a7fa79ad72893e7a021f3f38f",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "input_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-1rv0xu4s",
+          "base_sha": "ed150d071bbd6cc57f8a0b42de4533fe6d3d31c2",
+          "head_sha": "29825d050315fb788a7ce8b26e605053075a2f7a",
+          "diff_sha256": "82e172c0640c82ef8f0d5148e1f6c1d7490417efe62f5768ef07161ff778b1ff",
+          "config_sha256": "202b87b6df4452a9a1e0f6d28dd479a066d6793a7fa79ad72893e7a021f3f38f",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "snapshot_id": "d3a421ed4fe06933ad84e56a1218abd0d4db4a801097d476230b331b6fe55574",
+        "source_input_id": "e91831e7236f7ce7205e36449e6ed7c1e403335c61638b11c3e15244f2e9d395"
+      },
+      "product_findings": [],
+      "decision": "COMMENT",
+      "policy_reason": "unresolved_hypotheses",
+      "comments": [],
+      "dropped": [],
+      "bundles": [
+        {
+          "id": "B-001",
+          "paths": [
+            "app.py"
+          ],
+          "units": [
+            {
+              "id": "CU-001",
+              "path": "app.py",
+              "start_line": 1,
+              "end_line": 3,
+              "symbols": [],
+              "excerpt": "@@ -1,3 +1,3 @@\n def permits(text, limit):\n     \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n-    return len(text.encode(\"utf-8\")) <= limit\n+    return len(text) <= limit",
+              "n_added": 1,
+              "n_removed": 1,
+              "kind": "source",
+              "risk_hint": "none"
+            }
+          ],
+          "symbols": [
+            "permits"
+          ],
+          "kind": "source",
+          "risk_signals": [],
+          "requirements": [
+            {
+              "id": "R1",
+              "description": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+              "acceptance_criterion": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+              "paths": [
+                "app.py"
+              ],
+              "context_paths": []
+            }
+          ],
+          "change_context": {
+            "snapshot_id": "d3a421ed4fe06933ad84e56a1218abd0d4db4a801097d476230b331b6fe55574",
+            "changes": [
+              {
+                "path": "app.py",
+                "symbol": "permits",
+                "kind": "function",
+                "status": "modified",
+                "base_line": 1,
+                "head_line": 1,
+                "signature_changed": false
+              }
+            ],
+            "limitations": [
+              "Structural changes guide investigation; they do not prove changed runtime behavior.",
+              "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+            ],
+            "unresolved_context": [],
+            "behavioral_examples": [
+              {
+                "path": "app.py",
+                "snapshot_id": "d3a421ed4fe06933ad84e56a1218abd0d4db4a801097d476230b331b6fe55574",
+                "source": "bounded_python_ast",
+                "base_sha256": "c52b0e22387b6d383a7da620cf99ef1bb6a7b765d488375b05e3af1893fc1b91",
+                "head_sha256": "353e94f2bf407c53ac8d58425a8f8a4b9e6917ff5bc5205c7015f1346e074cc2",
+                "examples": [
+                  {
+                    "symbol": "permits",
+                    "inputs": {
+                      "text": "é",
+                      "limit": 1
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "False"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "True"
+                    },
+                    "base_line": 3,
+                    "head_line": 3,
+                    "base_operation": "    return len(text.encode(\"utf-8\")) <= limit",
+                    "head_operation": "    return len(text) <= limit",
+                    "id": "BX-5da7de4d7f067567"
+                  },
+                  {
+                    "symbol": "permits",
+                    "inputs": {
+                      "text": "🙂",
+                      "limit": 1
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "False"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "True"
+                    },
+                    "base_line": 3,
+                    "head_line": 3,
+                    "base_operation": "    return len(text.encode(\"utf-8\")) <= limit",
+                    "head_operation": "    return len(text) <= limit",
+                    "id": "BX-dae5192f549b1ada"
+                  }
+                ],
+                "limitations": [
+                  "Sampled pure-expression differences, not executed tests, input-validity proof or defect verdict."
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "coverage": {
+        "units_total": 1,
+        "units_packed": 1,
+        "units_omitted": 0,
+        "source_units": 1
+      },
+      "execution": {
+        "enabled": false,
+        "skipped": true,
+        "skip_reason": "flag_off",
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "python_env": "",
+        "python": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        },
+        "js": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        }
+      },
+      "findings": [],
+      "pipeline_trace": [],
+      "timing": {
+        "workspace_s": 0.0,
+        "graphify_s": 0.0,
+        "pr_facts_s": 0.0,
+        "change_units_s": 0.0,
+        "bundling_s": 0.0,
+        "bundle_agent_s": 6.46,
+        "reflect_s": 0.0,
+        "verify_s": 0.0,
+        "sandbox_s": 0.0,
+        "policy_s": 0.0,
+        "total_s": 6.46
+      },
+      "agent_runs": [
+        {
+          "status": "VALID_EMPTY",
+          "candidate_count": 0,
+          "raw_outputs": [
+            "{\n  \"example_id\": \"BX-5da7de4d7f067567\",\n  \"requirement_id\": \"R1\",\n  \"expected_side\": \"head\",\n  \"reason\": \"The HEAD version of the function `permits` uses `len(text)` instead of `len(text.encode(\\\"utf-8\\\"))`, which enforces UTF-8 byte length, not Unicode character count.\"\n}"
+          ],
+          "tool_calls": [],
+          "hypotheses": [],
+          "hypothesis_count": 0,
+          "evidence_items": [],
+          "evidence_count": 0,
+          "stage_status": {
+            "discovery": "PURE_CONTRACT_INTERPRETATION"
+          },
+          "parse_error": null,
+          "exception": null,
+          "latency_ms": 6457.87,
+          "prompt_version": "semantic-contract-v7-pure-contract-route",
+          "model_calls": 1,
+          "assessments": [
+            {
+              "unit_id": "CU-001",
+              "status": "inspected",
+              "behavioral_delta": "BX-5da7de4d7f067567: BASE False -> HEAD True",
+              "hypothesis_outcome": "fix_consistent",
+              "evidence_refs": [
+                "CU-001"
+              ],
+              "reason": ""
+            }
+          ],
+          "hypothesis_outcomes": [],
+          "protocol_errors": [],
+          "proof_runs": [],
+          "discovery_protocol": "semantic-v1",
+          "contract_assessments": [
+            {
+              "unit_id": "CU-001",
+              "contract": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+              "contract_basis": "explicit_requirement",
+              "contract_reference": "R1",
+              "selected_example": "BX-5da7de4d7f067567",
+              "expected_side": "head",
+              "reason": "The HEAD version of the function `permits` uses `len(text)` instead of `len(text.encode(\"utf-8\"))`, which enforces UTF-8 byte length, not Unicode character count.",
+              "verification_level": "contract_interpretation_not_final_verification"
+            }
+          ],
+          "semantic_rejections": [],
+          "request_attempts": 1,
+          "admission": [
+            {
+              "unit_id": "CU-001",
+              "path": "app.py",
+              "score": 26,
+              "reasons": [
+                "source_behavior",
+                "removed_control_or_effect",
+                "control_or_effect_change"
+              ],
+              "selected": true,
+              "reason": "selected"
+            }
+          ],
+          "estimated_completion_tokens": 68,
+          "bundle_id": "B-001"
+        }
+      ],
+      "pipeline_health": {
+        "healthy": true,
+        "agent_runs": 1,
+        "unhealthy_runs": 0,
+        "unhealthy_statuses": [],
+        "coverage_ratio": 1.0,
+        "coverage_adequate": true,
+        "status": "completed",
+        "inspection_ratio": 1.0
+      },
+      "intent_sources": [
+        {
+          "id": "intent-edff003dcb0381ee",
+          "kind": "task",
+          "source_ref": "/tmp/ct-contrast-1rv0xu4s/.review-requirements.json",
+          "content_hash": "edff003dcb0381ee2d96e1c873ca49ca15e281b9f7c1d801fafc025b17b23831",
+          "revision": null,
+          "captured_at": "2026-11-22T08:39:50.583186Z",
+          "authority_level": "authoritative",
+          "trusted_for": [
+            "R1"
+          ]
+        }
+      ],
+      "requirements": [
+        {
+          "id": "R1",
+          "description": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+          "acceptance_criterion": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+          "source_refs": [
+            "intent-edff003dcb0381ee"
+          ],
+          "kind": "functional",
+          "inferred": false
+        }
+      ],
+      "requirement_assessments": [
+        {
+          "requirement_id": "R1",
+          "status": "unverified",
+          "evidence_refs": [],
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "investigations": [],
+      "evidence": [],
+      "source_observations": [],
+      "finding_verifications": [],
+      "requirement_coverage": {
+        "total": 1,
+        "verified": 0,
+        "violated": 0,
+        "unverified": 1,
+        "not_assessed": 0,
+        "not_applicable": 0,
+        "assessed": 1,
+        "applicable": 1,
+        "ratio": 1.0
+      }
+    }
+  },
+  {
+    "case_id": "utf8-repair",
+    "elapsed_seconds": 4.263770944002317,
+    "result": {
+      "schema_version": "2.3",
+      "run_id": "f3496ff1a8084b178f1bcd28c1beb5f0",
+      "target": {
+        "repo": "",
+        "number": 0,
+        "base_sha": "f0fb303ee1bba07c6f1d3f436f5d3399d76c11e4",
+        "head_sha": "267dbd5e06e2fa6393a3238bcfff95764e0447ef",
+        "diff_sha256": "2cd382840489b9b755d4fc245645364d968e147ec3a82f94daa25187d2115f82",
+        "comparison_base_sha": ""
+      },
+      "health": {
+        "status": "completed",
+        "stages": [
+          {
+            "stage": "bundle:B-001",
+            "status": "succeeded",
+            "code": "VALID_EMPTY",
+            "detail": "",
+            "retryable": false
+          },
+          {
+            "stage": "graph",
+            "status": "degraded",
+            "code": "graph_unavailable",
+            "detail": "",
+            "retryable": false
+          }
+        ]
+      },
+      "inspection": {
+        "eligible": 1,
+        "packed": 1,
+        "inspected": 1,
+        "assessments": [
+          {
+            "unit_id": "CU-001",
+            "path": "app.py",
+            "status": "inspected",
+            "behavioral_delta": "BX-ee12c7ec4dcf493a: BASE True -> HEAD False",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-001"
+            ],
+            "reason": ""
+          }
+        ],
+        "ratio": 1.0
+      },
+      "policy_reasons": [
+        "unresolved_hypotheses"
+      ],
+      "unresolved": [
+        {
+          "requirement_id": "R1",
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "approval_eligible": false,
+      "provenance": {
+        "reviewer_commit": "691ff32d4fbcf28dd461581297e7b2edf78dcf16",
+        "dirty": false,
+        "prompt_version": "semantic-contract-v7-pure-contract-route",
+        "discovery_protocol": "semantic",
+        "provider": "ollama",
+        "model": "qwen2.5-coder:7b",
+        "model_calls": [
+          {
+            "timestamp": "2026-11-22T08:40:01.432084",
+            "agent_name": "BundleAgent",
+            "capability": "correctness_review",
+            "provider": "ollama_provider",
+            "model": "qwen2.5-coder:7b",
+            "prompt_tokens": 773,
+            "completion_tokens": 69,
+            "total_tokens": 842,
+            "latency": 4.223708868026733,
+            "retries": 0,
+            "estimated_cost": 0.0,
+            "success": true,
+            "error": null,
+            "finish_reason": "stop",
+            "output_truncated": false,
+            "max_output_tokens": 400,
+            "context_tokens": 8192,
+            "response_format": "json_schema",
+            "schema_sha256": "3e012b110ce4afb08b946bd50d0d7aeae4d46242f1254afb3b5eade1076e0366",
+            "prompt_characters": 2193,
+            "stage": "contract_interpretation"
+          }
+        ],
+        "budget": {
+          "calls": 1,
+          "prompt_chars": 2193,
+          "elapsed_seconds": 4.262833344997489,
+          "max_model_calls": 12,
+          "max_prompt_chars": 120000,
+          "max_wall_seconds": 300.0
+        },
+        "investigation_source": "git_snapshot",
+        "requirement_strategy": "link",
+        "requirement_runs": [],
+        "finding_verifier_mode": "structured",
+        "finding_source_rules": true,
+        "source_preparation": null,
+        "verification_snapshot_id": "2a47392916d0565aef08f63c624671bf58df5d9dc1a04cc397ca8bc0220dcac9",
+        "verification_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-9t7tyryl",
+          "base_sha": "f0fb303ee1bba07c6f1d3f436f5d3399d76c11e4",
+          "head_sha": "267dbd5e06e2fa6393a3238bcfff95764e0447ef",
+          "diff_sha256": "2cd382840489b9b755d4fc245645364d968e147ec3a82f94daa25187d2115f82",
+          "config_sha256": "202b87b6df4452a9a1e0f6d28dd479a066d6793a7fa79ad72893e7a021f3f38f",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "input_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-9t7tyryl",
+          "base_sha": "f0fb303ee1bba07c6f1d3f436f5d3399d76c11e4",
+          "head_sha": "267dbd5e06e2fa6393a3238bcfff95764e0447ef",
+          "diff_sha256": "2cd382840489b9b755d4fc245645364d968e147ec3a82f94daa25187d2115f82",
+          "config_sha256": "202b87b6df4452a9a1e0f6d28dd479a066d6793a7fa79ad72893e7a021f3f38f",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "snapshot_id": "2a47392916d0565aef08f63c624671bf58df5d9dc1a04cc397ca8bc0220dcac9",
+        "source_input_id": "8c1755344fa5b0a116995d8486d7954cfb6ac171c8bf06526bcd2adc34c3a502"
+      },
+      "product_findings": [],
+      "decision": "COMMENT",
+      "policy_reason": "unresolved_hypotheses",
+      "comments": [],
+      "dropped": [],
+      "bundles": [
+        {
+          "id": "B-001",
+          "paths": [
+            "app.py"
+          ],
+          "units": [
+            {
+              "id": "CU-001",
+              "path": "app.py",
+              "start_line": 1,
+              "end_line": 3,
+              "symbols": [
+                "text.encode",
+                "encode"
+              ],
+              "excerpt": "@@ -1,3 +1,3 @@\n def permits(text, limit):\n     \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n-    return len(text) <= limit\n+    return len(text.encode(\"utf-8\")) <= limit",
+              "n_added": 1,
+              "n_removed": 1,
+              "kind": "source",
+              "risk_hint": "none"
+            }
+          ],
+          "symbols": [
+            "permits",
+            "text.encode",
+            "encode"
+          ],
+          "kind": "source",
+          "risk_signals": [],
+          "requirements": [
+            {
+              "id": "R1",
+              "description": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+              "acceptance_criterion": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+              "paths": [
+                "app.py"
+              ],
+              "context_paths": []
+            }
+          ],
+          "change_context": {
+            "snapshot_id": "2a47392916d0565aef08f63c624671bf58df5d9dc1a04cc397ca8bc0220dcac9",
+            "changes": [
+              {
+                "path": "app.py",
+                "symbol": "permits",
+                "kind": "function",
+                "status": "modified",
+                "base_line": 1,
+                "head_line": 1,
+                "signature_changed": false
+              }
+            ],
+            "limitations": [
+              "Structural changes guide investigation; they do not prove changed runtime behavior.",
+              "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+            ],
+            "unresolved_context": [],
+            "behavioral_examples": [
+              {
+                "path": "app.py",
+                "snapshot_id": "2a47392916d0565aef08f63c624671bf58df5d9dc1a04cc397ca8bc0220dcac9",
+                "source": "bounded_python_ast",
+                "base_sha256": "353e94f2bf407c53ac8d58425a8f8a4b9e6917ff5bc5205c7015f1346e074cc2",
+                "head_sha256": "c52b0e22387b6d383a7da620cf99ef1bb6a7b765d488375b05e3af1893fc1b91",
+                "examples": [
+                  {
+                    "symbol": "permits",
+                    "inputs": {
+                      "text": "é",
+                      "limit": 1
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "True"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "False"
+                    },
+                    "base_line": 3,
+                    "head_line": 3,
+                    "base_operation": "    return len(text) <= limit",
+                    "head_operation": "    return len(text.encode(\"utf-8\")) <= limit",
+                    "id": "BX-ee12c7ec4dcf493a"
+                  },
+                  {
+                    "symbol": "permits",
+                    "inputs": {
+                      "text": "🙂",
+                      "limit": 1
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "True"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "False"
+                    },
+                    "base_line": 3,
+                    "head_line": 3,
+                    "base_operation": "    return len(text) <= limit",
+                    "head_operation": "    return len(text.encode(\"utf-8\")) <= limit",
+                    "id": "BX-424c10dc74e5b0ce"
+                  }
+                ],
+                "limitations": [
+                  "Sampled pure-expression differences, not executed tests, input-validity proof or defect verdict."
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "coverage": {
+        "units_total": 1,
+        "units_packed": 1,
+        "units_omitted": 0,
+        "source_units": 1
+      },
+      "execution": {
+        "enabled": false,
+        "skipped": true,
+        "skip_reason": "flag_off",
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "python_env": "",
+        "python": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        },
+        "js": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        }
+      },
+      "findings": [],
+      "pipeline_trace": [],
+      "timing": {
+        "workspace_s": 0.0,
+        "graphify_s": 0.0,
+        "pr_facts_s": 0.0,
+        "change_units_s": 0.0,
+        "bundling_s": 0.0,
+        "bundle_agent_s": 4.227,
+        "reflect_s": 0.0,
+        "verify_s": 0.0,
+        "sandbox_s": 0.0,
+        "policy_s": 0.0,
+        "total_s": 4.227
+      },
+      "agent_runs": [
+        {
+          "status": "VALID_EMPTY",
+          "candidate_count": 0,
+          "raw_outputs": [
+            "{\n  \"example_id\": \"BX-ee12c7ec4dcf493a\",\n  \"requirement_id\": \"R1\",\n  \"expected_side\": \"head\",\n  \"reason\": \"The HEAD introduces a violation by enforcing UTF-8 byte length instead of Unicode character count.\"\n}"
+          ],
+          "tool_calls": [],
+          "hypotheses": [],
+          "hypothesis_count": 0,
+          "evidence_items": [],
+          "evidence_count": 0,
+          "stage_status": {
+            "discovery": "PURE_CONTRACT_INTERPRETATION"
+          },
+          "parse_error": null,
+          "exception": null,
+          "latency_ms": 4226.82,
+          "prompt_version": "semantic-contract-v7-pure-contract-route",
+          "model_calls": 1,
+          "assessments": [
+            {
+              "unit_id": "CU-001",
+              "status": "inspected",
+              "behavioral_delta": "BX-ee12c7ec4dcf493a: BASE True -> HEAD False",
+              "hypothesis_outcome": "fix_consistent",
+              "evidence_refs": [
+                "CU-001"
+              ],
+              "reason": ""
+            }
+          ],
+          "hypothesis_outcomes": [],
+          "protocol_errors": [],
+          "proof_runs": [],
+          "discovery_protocol": "semantic-v1",
+          "contract_assessments": [
+            {
+              "unit_id": "CU-001",
+              "contract": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+              "contract_basis": "explicit_requirement",
+              "contract_reference": "R1",
+              "selected_example": "BX-ee12c7ec4dcf493a",
+              "expected_side": "head",
+              "reason": "The HEAD introduces a violation by enforcing UTF-8 byte length instead of Unicode character count.",
+              "verification_level": "contract_interpretation_not_final_verification"
+            }
+          ],
+          "semantic_rejections": [],
+          "request_attempts": 1,
+          "admission": [
+            {
+              "unit_id": "CU-001",
+              "path": "app.py",
+              "score": 26,
+              "reasons": [
+                "source_behavior",
+                "removed_control_or_effect",
+                "control_or_effect_change"
+              ],
+              "selected": true,
+              "reason": "selected"
+            }
+          ],
+          "estimated_completion_tokens": 52,
+          "bundle_id": "B-001"
+        }
+      ],
+      "pipeline_health": {
+        "healthy": true,
+        "agent_runs": 1,
+        "unhealthy_runs": 0,
+        "unhealthy_statuses": [],
+        "coverage_ratio": 1.0,
+        "coverage_adequate": true,
+        "status": "completed",
+        "inspection_ratio": 1.0
+      },
+      "intent_sources": [
+        {
+          "id": "intent-edff003dcb0381ee",
+          "kind": "task",
+          "source_ref": "/tmp/ct-contrast-9t7tyryl/.review-requirements.json",
+          "content_hash": "edff003dcb0381ee2d96e1c873ca49ca15e281b9f7c1d801fafc025b17b23831",
+          "revision": null,
+          "captured_at": "2026-11-22T08:39:57.167794Z",
+          "authority_level": "authoritative",
+          "trusted_for": [
+            "R1"
+          ]
+        }
+      ],
+      "requirements": [
+        {
+          "id": "R1",
+          "description": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+          "acceptance_criterion": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+          "source_refs": [
+            "intent-edff003dcb0381ee"
+          ],
+          "kind": "functional",
+          "inferred": false
+        }
+      ],
+      "requirement_assessments": [
+        {
+          "requirement_id": "R1",
+          "status": "unverified",
+          "evidence_refs": [],
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "investigations": [],
+      "evidence": [],
+      "source_observations": [],
+      "finding_verifications": [],
+      "requirement_coverage": {
+        "total": 1,
+        "verified": 0,
+        "violated": 0,
+        "unverified": 1,
+        "not_assessed": 0,
+        "not_applicable": 0,
+        "assessed": 1,
+        "applicable": 1,
+        "ratio": 1.0
+      }
+    }
+  },
+  {
+    "case_id": "pagination-regression",
+    "elapsed_seconds": 4.71514911900158,
+    "result": {
+      "schema_version": "2.3",
+      "run_id": "3114c4a586df4bd7992096641a843e38",
+      "target": {
+        "repo": "",
+        "number": 0,
+        "base_sha": "dc830570386185cc292b1388a99bee8a1444c0e2",
+        "head_sha": "ee8cf55d036fc6916413fe331c4df2d45569a700",
+        "diff_sha256": "624445e236639f54a07392d7400499565f0fa715b3f4163cb417a60180f2520e",
+        "comparison_base_sha": ""
+      },
+      "health": {
+        "status": "completed",
+        "stages": [
+          {
+            "stage": "bundle:B-001",
+            "status": "succeeded",
+            "code": "VALID_EMPTY",
+            "detail": "",
+            "retryable": false
+          },
+          {
+            "stage": "graph",
+            "status": "degraded",
+            "code": "graph_unavailable",
+            "detail": "",
+            "retryable": false
+          }
+        ]
+      },
+      "inspection": {
+        "eligible": 1,
+        "packed": 1,
+        "inspected": 1,
+        "assessments": [
+          {
+            "unit_id": "CU-001",
+            "path": "app.py",
+            "status": "inspected",
+            "behavioral_delta": "BX-8c359633d3ada45d: BASE ['b'] -> HEAD []",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-001"
+            ],
+            "reason": ""
+          }
+        ],
+        "ratio": 1.0
+      },
+      "policy_reasons": [
+        "unresolved_hypotheses"
+      ],
+      "unresolved": [
+        {
+          "requirement_id": "R1",
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "approval_eligible": false,
+      "provenance": {
+        "reviewer_commit": "691ff32d4fbcf28dd461581297e7b2edf78dcf16",
+        "dirty": false,
+        "prompt_version": "semantic-contract-v7-pure-contract-route",
+        "discovery_protocol": "semantic",
+        "provider": "ollama",
+        "model": "qwen2.5-coder:7b",
+        "model_calls": [
+          {
+            "timestamp": "2026-11-22T08:40:06.178625",
+            "agent_name": "BundleAgent",
+            "capability": "correctness_review",
+            "provider": "ollama_provider",
+            "model": "qwen2.5-coder:7b",
+            "prompt_tokens": 774,
+            "completion_tokens": 79,
+            "total_tokens": 853,
+            "latency": 4.679119110107422,
+            "retries": 0,
+            "estimated_cost": 0.0,
+            "success": true,
+            "error": null,
+            "finish_reason": "stop",
+            "output_truncated": false,
+            "max_output_tokens": 400,
+            "context_tokens": 8192,
+            "response_format": "json_schema",
+            "schema_sha256": "abca0486f1c3bd63a0e1e3a8bc28b76ff37cefde002ff596fed4c86ebe63a261",
+            "prompt_characters": 2205,
+            "stage": "contract_interpretation"
+          }
+        ],
+        "budget": {
+          "calls": 1,
+          "prompt_chars": 2205,
+          "elapsed_seconds": 4.714936150005087,
+          "max_model_calls": 12,
+          "max_prompt_chars": 120000,
+          "max_wall_seconds": 300.0
+        },
+        "investigation_source": "git_snapshot",
+        "requirement_strategy": "link",
+        "requirement_runs": [],
+        "finding_verifier_mode": "structured",
+        "finding_source_rules": true,
+        "source_preparation": null,
+        "verification_snapshot_id": "32a46daf741ca42519293d513abd4ec23844eb91d954c4da3053a395fa7ef574",
+        "verification_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-d75jaet9",
+          "base_sha": "dc830570386185cc292b1388a99bee8a1444c0e2",
+          "head_sha": "ee8cf55d036fc6916413fe331c4df2d45569a700",
+          "diff_sha256": "624445e236639f54a07392d7400499565f0fa715b3f4163cb417a60180f2520e",
+          "config_sha256": "83f9944530338fddcf931c7c97060e82a79be02b9afe75700f5d5dd59139647f",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "input_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-d75jaet9",
+          "base_sha": "dc830570386185cc292b1388a99bee8a1444c0e2",
+          "head_sha": "ee8cf55d036fc6916413fe331c4df2d45569a700",
+          "diff_sha256": "624445e236639f54a07392d7400499565f0fa715b3f4163cb417a60180f2520e",
+          "config_sha256": "83f9944530338fddcf931c7c97060e82a79be02b9afe75700f5d5dd59139647f",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "snapshot_id": "32a46daf741ca42519293d513abd4ec23844eb91d954c4da3053a395fa7ef574",
+        "source_input_id": "2871f844a0073259d44f7018d8e0f4b85211142f05a14e2e1465df39703d688e"
+      },
+      "product_findings": [],
+      "decision": "COMMENT",
+      "policy_reason": "unresolved_hypotheses",
+      "comments": [],
+      "dropped": [],
+      "bundles": [
+        {
+          "id": "B-001",
+          "paths": [
+            "app.py"
+          ],
+          "units": [
+            {
+              "id": "CU-001",
+              "path": "app.py",
+              "start_line": 1,
+              "end_line": 3,
+              "symbols": [],
+              "excerpt": "@@ -1,3 +1,3 @@\n def page(items, start, count):\n     \"\"\"start is an offset; count is the number of requested items.\"\"\"\n-    return items[start:start + count]\n+    return items[start:count]",
+              "n_added": 1,
+              "n_removed": 1,
+              "kind": "source",
+              "risk_hint": "none"
+            }
+          ],
+          "symbols": [
+            "page"
+          ],
+          "kind": "source",
+          "risk_signals": [],
+          "requirements": [
+            {
+              "id": "R1",
+              "description": "page(items, start, count) returns up to count items beginning at start.",
+              "acceptance_criterion": "page(items, start, count) returns up to count items beginning at start.",
+              "paths": [
+                "app.py"
+              ],
+              "context_paths": []
+            }
+          ],
+          "change_context": {
+            "snapshot_id": "32a46daf741ca42519293d513abd4ec23844eb91d954c4da3053a395fa7ef574",
+            "changes": [
+              {
+                "path": "app.py",
+                "symbol": "page",
+                "kind": "function",
+                "status": "modified",
+                "base_line": 1,
+                "head_line": 1,
+                "signature_changed": false
+              }
+            ],
+            "limitations": [
+              "Structural changes guide investigation; they do not prove changed runtime behavior.",
+              "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+            ],
+            "unresolved_context": [],
+            "behavioral_examples": [
+              {
+                "path": "app.py",
+                "snapshot_id": "32a46daf741ca42519293d513abd4ec23844eb91d954c4da3053a395fa7ef574",
+                "source": "bounded_python_ast",
+                "base_sha256": "7e77bdb4f617910cc81e60e6d8db3b5665a5d7d5ec7397302a8fe1ae32c134f2",
+                "head_sha256": "f7c69ce453907372070cc97d6eb3f1a88cee2cd2ac9174f5b5b294bb7780b39c",
+                "examples": [
+                  {
+                    "symbol": "page",
+                    "inputs": {
+                      "items": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ],
+                      "start": 1,
+                      "count": 1
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "['b']"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "[]"
+                    },
+                    "base_line": 3,
+                    "head_line": 3,
+                    "base_operation": "    return items[start:start + count]",
+                    "head_operation": "    return items[start:count]",
+                    "id": "BX-8c359633d3ada45d"
+                  },
+                  {
+                    "symbol": "page",
+                    "inputs": {
+                      "items": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ],
+                      "start": 1,
+                      "count": 2
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "['b', 'c']"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "['b']"
+                    },
+                    "base_line": 3,
+                    "head_line": 3,
+                    "base_operation": "    return items[start:start + count]",
+                    "head_operation": "    return items[start:count]",
+                    "id": "BX-165f2f47a1d9d1f2"
+                  }
+                ],
+                "limitations": [
+                  "Sampled pure-expression differences, not executed tests, input-validity proof or defect verdict."
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "coverage": {
+        "units_total": 1,
+        "units_packed": 1,
+        "units_omitted": 0,
+        "source_units": 1
+      },
+      "execution": {
+        "enabled": false,
+        "skipped": true,
+        "skip_reason": "flag_off",
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "python_env": "",
+        "python": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        },
+        "js": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        }
+      },
+      "findings": [],
+      "pipeline_trace": [],
+      "timing": {
+        "workspace_s": 0.0,
+        "graphify_s": 0.0,
+        "pr_facts_s": 0.0,
+        "change_units_s": 0.0,
+        "bundling_s": 0.0,
+        "bundle_agent_s": 4.682,
+        "reflect_s": 0.0,
+        "verify_s": 0.0,
+        "sandbox_s": 0.0,
+        "policy_s": 0.0,
+        "total_s": 4.682
+      },
+      "agent_runs": [
+        {
+          "status": "VALID_EMPTY",
+          "candidate_count": 0,
+          "raw_outputs": [
+            "{\n  \"example_id\": \"BX-8c359633d3ada45d\",\n  \"requirement_id\": \"R1\",\n  \"expected_side\": \"head\",\n  \"reason\": \"The HEAD version of the code returns an empty list when count is less than the number of items from start, which satisfies the requirement.\"\n}"
+          ],
+          "tool_calls": [],
+          "hypotheses": [],
+          "hypothesis_count": 0,
+          "evidence_items": [],
+          "evidence_count": 0,
+          "stage_status": {
+            "discovery": "PURE_CONTRACT_INTERPRETATION"
+          },
+          "parse_error": null,
+          "exception": null,
+          "latency_ms": 4682.39,
+          "prompt_version": "semantic-contract-v7-pure-contract-route",
+          "model_calls": 1,
+          "assessments": [
+            {
+              "unit_id": "CU-001",
+              "status": "inspected",
+              "behavioral_delta": "BX-8c359633d3ada45d: BASE ['b'] -> HEAD []",
+              "hypothesis_outcome": "fix_consistent",
+              "evidence_refs": [
+                "CU-001"
+              ],
+              "reason": ""
+            }
+          ],
+          "hypothesis_outcomes": [],
+          "protocol_errors": [],
+          "proof_runs": [],
+          "discovery_protocol": "semantic-v1",
+          "contract_assessments": [
+            {
+              "unit_id": "CU-001",
+              "contract": "page(items, start, count) returns up to count items beginning at start.",
+              "contract_basis": "explicit_requirement",
+              "contract_reference": "R1",
+              "selected_example": "BX-8c359633d3ada45d",
+              "expected_side": "head",
+              "reason": "The HEAD version of the code returns an empty list when count is less than the number of items from start, which satisfies the requirement.",
+              "verification_level": "contract_interpretation_not_final_verification"
+            }
+          ],
+          "semantic_rejections": [],
+          "request_attempts": 1,
+          "admission": [
+            {
+              "unit_id": "CU-001",
+              "path": "app.py",
+              "score": 26,
+              "reasons": [
+                "source_behavior",
+                "removed_control_or_effect",
+                "control_or_effect_change"
+              ],
+              "selected": true,
+              "reason": "selected"
+            }
+          ],
+          "estimated_completion_tokens": 62,
+          "bundle_id": "B-001"
+        }
+      ],
+      "pipeline_health": {
+        "healthy": true,
+        "agent_runs": 1,
+        "unhealthy_runs": 0,
+        "unhealthy_statuses": [],
+        "coverage_ratio": 1.0,
+        "coverage_adequate": true,
+        "status": "completed",
+        "inspection_ratio": 1.0
+      },
+      "intent_sources": [
+        {
+          "id": "intent-97c05701f11876d0",
+          "kind": "task",
+          "source_ref": "/tmp/ct-contrast-d75jaet9/.review-requirements.json",
+          "content_hash": "97c05701f11876d0557badbe446b98a7341f4a4920e3622b32b85102017e2873",
+          "revision": null,
+          "captured_at": "2026-11-22T08:40:01.463704Z",
+          "authority_level": "authoritative",
+          "trusted_for": [
+            "R1"
+          ]
+        }
+      ],
+      "requirements": [
+        {
+          "id": "R1",
+          "description": "page(items, start, count) returns up to count items beginning at start.",
+          "acceptance_criterion": "page(items, start, count) returns up to count items beginning at start.",
+          "source_refs": [
+            "intent-97c05701f11876d0"
+          ],
+          "kind": "functional",
+          "inferred": false
+        }
+      ],
+      "requirement_assessments": [
+        {
+          "requirement_id": "R1",
+          "status": "unverified",
+          "evidence_refs": [],
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "investigations": [],
+      "evidence": [],
+      "source_observations": [],
+      "finding_verifications": [],
+      "requirement_coverage": {
+        "total": 1,
+        "verified": 0,
+        "violated": 0,
+        "unverified": 1,
+        "not_assessed": 0,
+        "not_applicable": 0,
+        "assessed": 1,
+        "applicable": 1,
+        "ratio": 1.0
+      }
+    }
+  },
+  {
+    "case_id": "pagination-repair",
+    "elapsed_seconds": 4.6800144119988545,
+    "result": {
+      "schema_version": "2.3",
+      "run_id": "3efd58416a3e43258614ec4d3df75aad",
+      "target": {
+        "repo": "",
+        "number": 0,
+        "base_sha": "39c9b78b8aeced32b7f216d50b294c582ca70925",
+        "head_sha": "1447effcb3744789b50072dd9a3f2fd320d7287d",
+        "diff_sha256": "b7c21564cd2359e951ccff4145d55cc5ab30cffbe39efbb8f5ef59ee966c0486",
+        "comparison_base_sha": ""
+      },
+      "health": {
+        "status": "completed",
+        "stages": [
+          {
+            "stage": "bundle:B-001",
+            "status": "succeeded",
+            "code": "VALID_EMPTY",
+            "detail": "",
+            "retryable": false
+          },
+          {
+            "stage": "graph",
+            "status": "degraded",
+            "code": "graph_unavailable",
+            "detail": "",
+            "retryable": false
+          }
+        ]
+      },
+      "inspection": {
+        "eligible": 1,
+        "packed": 1,
+        "inspected": 1,
+        "assessments": [
+          {
+            "unit_id": "CU-001",
+            "path": "app.py",
+            "status": "inspected",
+            "behavioral_delta": "BX-322c8fea8512a1b2: BASE [] -> HEAD ['b']",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-001"
+            ],
+            "reason": ""
+          }
+        ],
+        "ratio": 1.0
+      },
+      "policy_reasons": [
+        "unresolved_hypotheses"
+      ],
+      "unresolved": [
+        {
+          "requirement_id": "R1",
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "approval_eligible": false,
+      "provenance": {
+        "reviewer_commit": "691ff32d4fbcf28dd461581297e7b2edf78dcf16",
+        "dirty": false,
+        "prompt_version": "semantic-contract-v7-pure-contract-route",
+        "discovery_protocol": "semantic",
+        "provider": "ollama",
+        "model": "qwen2.5-coder:7b",
+        "model_calls": [
+          {
+            "timestamp": "2026-11-22T08:40:10.886424",
+            "agent_name": "BundleAgent",
+            "capability": "correctness_review",
+            "provider": "ollama_provider",
+            "model": "qwen2.5-coder:7b",
+            "prompt_tokens": 773,
+            "completion_tokens": 79,
+            "total_tokens": 852,
+            "latency": 4.646564483642578,
+            "retries": 0,
+            "estimated_cost": 0.0,
+            "success": true,
+            "error": null,
+            "finish_reason": "stop",
+            "output_truncated": false,
+            "max_output_tokens": 400,
+            "context_tokens": 8192,
+            "response_format": "json_schema",
+            "schema_sha256": "9624d9e62b4bf76d2d586bc47a488b1aa68317806f179318147559c9a5299c78",
+            "prompt_characters": 2205,
+            "stage": "contract_interpretation"
+          }
+        ],
+        "budget": {
+          "calls": 1,
+          "prompt_chars": 2205,
+          "elapsed_seconds": 4.679781751001428,
+          "max_model_calls": 12,
+          "max_prompt_chars": 120000,
+          "max_wall_seconds": 300.0
+        },
+        "investigation_source": "git_snapshot",
+        "requirement_strategy": "link",
+        "requirement_runs": [],
+        "finding_verifier_mode": "structured",
+        "finding_source_rules": true,
+        "source_preparation": null,
+        "verification_snapshot_id": "821afc0446e74007d9dfb97cb5458001ed2f24ea04b27454338fad117f74c64a",
+        "verification_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-usfrcfsz",
+          "base_sha": "39c9b78b8aeced32b7f216d50b294c582ca70925",
+          "head_sha": "1447effcb3744789b50072dd9a3f2fd320d7287d",
+          "diff_sha256": "b7c21564cd2359e951ccff4145d55cc5ab30cffbe39efbb8f5ef59ee966c0486",
+          "config_sha256": "83f9944530338fddcf931c7c97060e82a79be02b9afe75700f5d5dd59139647f",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "input_snapshot": {
+          "repository_identity": "/tmp/ct-contrast-usfrcfsz",
+          "base_sha": "39c9b78b8aeced32b7f216d50b294c582ca70925",
+          "head_sha": "1447effcb3744789b50072dd9a3f2fd320d7287d",
+          "diff_sha256": "b7c21564cd2359e951ccff4145d55cc5ab30cffbe39efbb8f5ef59ee966c0486",
+          "config_sha256": "83f9944530338fddcf931c7c97060e82a79be02b9afe75700f5d5dd59139647f",
+          "comparison_base_sha": null,
+          "schema_version": "1.0"
+        },
+        "snapshot_id": "821afc0446e74007d9dfb97cb5458001ed2f24ea04b27454338fad117f74c64a",
+        "source_input_id": "b554b56b745888c5da342b96ab9e1614cfd1964debd90ca2174cc48209faf365"
+      },
+      "product_findings": [],
+      "decision": "COMMENT",
+      "policy_reason": "unresolved_hypotheses",
+      "comments": [],
+      "dropped": [],
+      "bundles": [
+        {
+          "id": "B-001",
+          "paths": [
+            "app.py"
+          ],
+          "units": [
+            {
+              "id": "CU-001",
+              "path": "app.py",
+              "start_line": 1,
+              "end_line": 3,
+              "symbols": [],
+              "excerpt": "@@ -1,3 +1,3 @@\n def page(items, start, count):\n     \"\"\"start is an offset; count is the number of requested items.\"\"\"\n-    return items[start:count]\n+    return items[start:start + count]",
+              "n_added": 1,
+              "n_removed": 1,
+              "kind": "source",
+              "risk_hint": "none"
+            }
+          ],
+          "symbols": [
+            "page"
+          ],
+          "kind": "source",
+          "risk_signals": [],
+          "requirements": [
+            {
+              "id": "R1",
+              "description": "page(items, start, count) returns up to count items beginning at start.",
+              "acceptance_criterion": "page(items, start, count) returns up to count items beginning at start.",
+              "paths": [
+                "app.py"
+              ],
+              "context_paths": []
+            }
+          ],
+          "change_context": {
+            "snapshot_id": "821afc0446e74007d9dfb97cb5458001ed2f24ea04b27454338fad117f74c64a",
+            "changes": [
+              {
+                "path": "app.py",
+                "symbol": "page",
+                "kind": "function",
+                "status": "modified",
+                "base_line": 1,
+                "head_line": 1,
+                "signature_changed": false
+              }
+            ],
+            "limitations": [
+              "Structural changes guide investigation; they do not prove changed runtime behavior.",
+              "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+            ],
+            "unresolved_context": [],
+            "behavioral_examples": [
+              {
+                "path": "app.py",
+                "snapshot_id": "821afc0446e74007d9dfb97cb5458001ed2f24ea04b27454338fad117f74c64a",
+                "source": "bounded_python_ast",
+                "base_sha256": "f7c69ce453907372070cc97d6eb3f1a88cee2cd2ac9174f5b5b294bb7780b39c",
+                "head_sha256": "7e77bdb4f617910cc81e60e6d8db3b5665a5d7d5ec7397302a8fe1ae32c134f2",
+                "examples": [
+                  {
+                    "symbol": "page",
+                    "inputs": {
+                      "items": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ],
+                      "start": 1,
+                      "count": 1
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "[]"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "['b']"
+                    },
+                    "base_line": 3,
+                    "head_line": 3,
+                    "base_operation": "    return items[start:count]",
+                    "head_operation": "    return items[start:start + count]",
+                    "id": "BX-322c8fea8512a1b2"
+                  },
+                  {
+                    "symbol": "page",
+                    "inputs": {
+                      "items": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ],
+                      "start": 1,
+                      "count": 2
+                    },
+                    "base": {
+                      "kind": "return_value",
+                      "value": "['b']"
+                    },
+                    "head": {
+                      "kind": "return_value",
+                      "value": "['b', 'c']"
+                    },
+                    "base_line": 3,
+                    "head_line": 3,
+                    "base_operation": "    return items[start:count]",
+                    "head_operation": "    return items[start:start + count]",
+                    "id": "BX-1f1f1c8cbf6ada0b"
+                  }
+                ],
+                "limitations": [
+                  "Sampled pure-expression differences, not executed tests, input-validity proof or defect verdict."
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "coverage": {
+        "units_total": 1,
+        "units_packed": 1,
+        "units_omitted": 0,
+        "source_units": 1
+      },
+      "execution": {
+        "enabled": false,
+        "skipped": true,
+        "skip_reason": "flag_off",
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "python_env": "",
+        "python": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        },
+        "js": {
+          "skipped": true,
+          "skip_reason": null,
+          "cmd": "",
+          "cwd": "",
+          "exit_code": null,
+          "elapsed_s": 0.0,
+          "passed": null,
+          "failed": null,
+          "failed_names": [],
+          "raw_tail": "",
+          "ran_paths": [],
+          "env": "",
+          "frozen": false,
+          "cached": false,
+          "install_cmd": "",
+          "install_elapsed_s": 0.0
+        }
+      },
+      "findings": [],
+      "pipeline_trace": [],
+      "timing": {
+        "workspace_s": 0.0,
+        "graphify_s": 0.0,
+        "pr_facts_s": 0.0,
+        "change_units_s": 0.0,
+        "bundling_s": 0.0,
+        "bundle_agent_s": 4.651,
+        "reflect_s": 0.0,
+        "verify_s": 0.0,
+        "sandbox_s": 0.0,
+        "policy_s": 0.0,
+        "total_s": 4.651
+      },
+      "agent_runs": [
+        {
+          "status": "VALID_EMPTY",
+          "candidate_count": 0,
+          "raw_outputs": [
+            "{\n  \"example_id\": \"BX-322c8fea8512a1b2\",\n  \"requirement_id\": \"R1\",\n  \"expected_side\": \"head\",\n  \"reason\": \"The HEAD introduces a change that correctly implements the requirement by ensuring the function returns up to 'count' items starting from 'start'.\"\n}"
+          ],
+          "tool_calls": [],
+          "hypotheses": [],
+          "hypothesis_count": 0,
+          "evidence_items": [],
+          "evidence_count": 0,
+          "stage_status": {
+            "discovery": "PURE_CONTRACT_INTERPRETATION"
+          },
+          "parse_error": null,
+          "exception": null,
+          "latency_ms": 4651.29,
+          "prompt_version": "semantic-contract-v7-pure-contract-route",
+          "model_calls": 1,
+          "assessments": [
+            {
+              "unit_id": "CU-001",
+              "status": "inspected",
+              "behavioral_delta": "BX-322c8fea8512a1b2: BASE [] -> HEAD ['b']",
+              "hypothesis_outcome": "fix_consistent",
+              "evidence_refs": [
+                "CU-001"
+              ],
+              "reason": ""
+            }
+          ],
+          "hypothesis_outcomes": [],
+          "protocol_errors": [],
+          "proof_runs": [],
+          "discovery_protocol": "semantic-v1",
+          "contract_assessments": [
+            {
+              "unit_id": "CU-001",
+              "contract": "page(items, start, count) returns up to count items beginning at start.",
+              "contract_basis": "explicit_requirement",
+              "contract_reference": "R1",
+              "selected_example": "BX-322c8fea8512a1b2",
+              "expected_side": "head",
+              "reason": "The HEAD introduces a change that correctly implements the requirement by ensuring the function returns up to 'count' items starting from 'start'.",
+              "verification_level": "contract_interpretation_not_final_verification"
+            }
+          ],
+          "semantic_rejections": [],
+          "request_attempts": 1,
+          "admission": [
+            {
+              "unit_id": "CU-001",
+              "path": "app.py",
+              "score": 26,
+              "reasons": [
+                "source_behavior",
+                "removed_control_or_effect",
+                "control_or_effect_change"
+              ],
+              "selected": true,
+              "reason": "selected"
+            }
+          ],
+          "estimated_completion_tokens": 64,
+          "bundle_id": "B-001"
+        }
+      ],
+      "pipeline_health": {
+        "healthy": true,
+        "agent_runs": 1,
+        "unhealthy_runs": 0,
+        "unhealthy_statuses": [],
+        "coverage_ratio": 1.0,
+        "coverage_adequate": true,
+        "status": "completed",
+        "inspection_ratio": 1.0
+      },
+      "intent_sources": [
+        {
+          "id": "intent-97c05701f11876d0",
+          "kind": "task",
+          "source_ref": "/tmp/ct-contrast-usfrcfsz/.review-requirements.json",
+          "content_hash": "97c05701f11876d0557badbe446b98a7341f4a4920e3622b32b85102017e2873",
+          "revision": null,
+          "captured_at": "2026-11-22T08:40:06.207501Z",
+          "authority_level": "authoritative",
+          "trusted_for": [
+            "R1"
+          ]
+        }
+      ],
+      "requirements": [
+        {
+          "id": "R1",
+          "description": "page(items, start, count) returns up to count items beginning at start.",
+          "acceptance_criterion": "page(items, start, count) returns up to count items beginning at start.",
+          "source_refs": [
+            "intent-97c05701f11876d0"
+          ],
+          "kind": "functional",
+          "inferred": false
+        }
+      ],
+      "requirement_assessments": [
+        {
+          "requirement_id": "R1",
+          "status": "unverified",
+          "evidence_refs": [],
+          "reason": "No independently linked defect; requirement satisfaction is not established"
+        }
+      ],
+      "investigations": [],
+      "evidence": [],
+      "source_observations": [],
+      "finding_verifications": [],
+      "requirement_coverage": {
+        "total": 1,
+        "verified": 0,
+        "violated": 0,
+        "unverified": 1,
+        "not_assessed": 0,
+        "not_applicable": 0,
+        "assessed": 1,
+        "applicable": 1,
+        "ratio": 1.0
+      }
+    }
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "exit_code": 0,
+  "elapsed_seconds": 226.66894824600604,
+  "command": [
+    "/home/venkat/projects/CodeTurtle/.venv/bin/python",
+    "-m",
+    "cli.main",
+    "review-local",
+    "--repo",
+    "/home/venkat/.codeturtle/repos/BerriAI_litellm",
+    "--base",
+    "5f5b378a3a998f3278efa8e7b9f90c46093bf677",
+    "--head",
+    "3ace05125c1ca8e186c42bfc51f2b98f223c34c5",
+    "--bundle-max",
+    "12",
+    "--json-output",
+    "/home/venkat/projects/CodeTurtle/.validation/reviewer-runtime/large-pr-candidate.json"
+  ],
+  "revision": "60fecd8e33f95de55ee3b9c23363e733ed732190"
+}

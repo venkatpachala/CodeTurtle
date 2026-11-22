@@ -1,0 +1,1 @@
+{"exit_code": 0, "elapsed_seconds": 28.558880976997898, "argv": ["benchmark.native_contrasts", "--corpus", "benchmark/datasets/contrast_transfer_v1", "--output", "/home/venkat/projects/CodeTurtle/.validation/direct-transfer"]}

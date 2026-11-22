@@ -1,0 +1,101 @@
+{
+  "protocol": "Codex CLI read-only, no tools requested, captured discovery prompt and JSON schema, separate opaque calls. First corpus one call per case, transfer one per unique prompt, reused identical inputs. Engineering reference only.",
+  "responses": [
+    {
+      "case_id": "utf8-regression",
+      "alias": "task-2017d7d6bd6a",
+      "native_prompt_sha256": "228ab5357f3f468d77403ad83e33855893e2387f50f50fdc0ecfe817302d8a66",
+      "model": "gpt-6-astra",
+      "experiment": "efficient-final-contrasts",
+      "response": {
+        "requirement_id": "R1",
+        "selected": "option_2",
+        "reason": "The text occupies 2 UTF-8 bytes, exceeding the limit of 1, so permits returns False."
+      }
+    },
+    {
+      "case_id": "utf8-repair",
+      "alias": "task-59afa6bd342b",
+      "native_prompt_sha256": "228ab5357f3f468d77403ad83e33855893e2387f50f50fdc0ecfe817302d8a66",
+      "model": "gpt-6-astra",
+      "experiment": "efficient-final-contrasts",
+      "response": {
+        "requirement_id": "R1",
+        "selected": "option_2",
+        "reason": "The text occupies 2 UTF-8 bytes, exceeding the limit of 1, so permits returns False."
+      }
+    },
+    {
+      "case_id": "pagination-regression",
+      "alias": "task-778fd258d99d",
+      "native_prompt_sha256": "0b843313b4f1f512f88068fcd73e9193ee07809467c9a083d49c3d8f1a21d558",
+      "model": "gpt-6-astra",
+      "experiment": "efficient-final-contrasts",
+      "response": {
+        "requirement_id": "R1",
+        "selected": "option_1",
+        "reason": "Starting at index 1 selects 'b'; count 1 requests one available item, so the result is ['b']."
+      }
+    },
+    {
+      "case_id": "pagination-repair",
+      "alias": "task-44fcedd520c9",
+      "native_prompt_sha256": "0b843313b4f1f512f88068fcd73e9193ee07809467c9a083d49c3d8f1a21d558",
+      "model": "gpt-6-astra",
+      "experiment": "efficient-final-contrasts",
+      "response": {
+        "requirement_id": "R1",
+        "selected": "option_1",
+        "reason": "Starting at index 1 selects 'b'; count 1 requires returning that available item."
+      }
+    },
+    {
+      "case_id": "expiry-regression",
+      "model": "gpt-6-astra",
+      "experiment": "transfer-contrasts",
+      "native_prompt_sha256": "a42553eaef7216dea5e34c69c0f446ed360813a288235e91e3769f4a510d9fbc",
+      "shared_response_key": "a42553eaef7216dea5e34c69c0f446ed360813a288235e91e3769f4a510d9fbc",
+      "response": {
+        "requirement_id": "R1",
+        "selected": "unknown",
+        "reason": "The requirement specifies integer ticks, but now is boolean false. It does not define boolean coercion or behavior for non-integer inputs."
+      }
+    },
+    {
+      "case_id": "expiry-repair",
+      "model": "gpt-6-astra",
+      "experiment": "transfer-contrasts",
+      "native_prompt_sha256": "a42553eaef7216dea5e34c69c0f446ed360813a288235e91e3769f4a510d9fbc",
+      "shared_response_key": "a42553eaef7216dea5e34c69c0f446ed360813a288235e91e3769f4a510d9fbc",
+      "response": {
+        "requirement_id": "R1",
+        "selected": "unknown",
+        "reason": "The requirement specifies integer ticks, but now is boolean false. It does not define boolean coercion or behavior for non-integer inputs."
+      }
+    },
+    {
+      "case_id": "delta-regression",
+      "model": "gpt-6-astra",
+      "experiment": "transfer-contrasts",
+      "native_prompt_sha256": "6003a7b0123c7cfe50b722090ad87af1d14dded2bbbddde976601112b51261d5",
+      "shared_response_key": "6003a7b0123c7cfe50b722090ad87af1d14dded2bbbddde976601112b51261d5",
+      "response": {
+        "requirement_id": "R1",
+        "selected": "option_1",
+        "reason": "The signed increase is end - start = 1 - 0 = 1."
+      }
+    },
+    {
+      "case_id": "delta-repair",
+      "model": "gpt-6-astra",
+      "experiment": "transfer-contrasts",
+      "native_prompt_sha256": "6003a7b0123c7cfe50b722090ad87af1d14dded2bbbddde976601112b51261d5",
+      "shared_response_key": "6003a7b0123c7cfe50b722090ad87af1d14dded2bbbddde976601112b51261d5",
+      "response": {
+        "requirement_id": "R1",
+        "selected": "option_1",
+        "reason": "The signed increase is end - start = 1 - 0 = 1."
+      }
+    }
+  ]
+}

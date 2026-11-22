@@ -1,0 +1,15 @@
+{
+  "selected_processes": [
+    {
+      "ProcessName": "ollama",
+      "WorkingSet64": 21585920
+    },
+    {
+      "ProcessName": "ollama app",
+      "WorkingSet64": 14131200
+    }
+  ],
+  "timestamp_utc": "2026-11-22T09:20:15.7890548Z",
+  "scope": "Point-in-time shared GPU and selected process working sets after trials; not peak use or isolated model attribution.",
+  "gpu_csv": "NVIDIA GeForce RTX 4050 Laptop GPU, 6141, 0, 0"
+}

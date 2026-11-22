@@ -1,0 +1,14 @@
+{
+  "exit_code": 0,
+  "elapsed_seconds": 40.72671548699873,
+  "command": [
+    "/home/venkat/projects/CodeTurtle/.venv/bin/python",
+    "-m",
+    "benchmark.native_contrasts",
+    "--corpus",
+    "/home/venkat/projects/CodeTurtle/benchmark/datasets/contrast_development_v1",
+    "--output",
+    "/home/venkat/projects/CodeTurtle/.validation/qualified-contrasts"
+  ],
+  "revision": "2727ce2f17201243ea854c791e1bc717dff8d888"
+}

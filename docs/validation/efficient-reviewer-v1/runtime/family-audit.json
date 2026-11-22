@@ -1,0 +1,11 @@
+{
+  "captured_pins": 66,
+  "connected_families": 66,
+  "selected_prs": 60,
+  "selected_duplicate_groups": [],
+  "cross_split_groups": [],
+  "known_exposure_outside_development": [],
+  "reconstructed_inputs_sha256": "db8b0e427f471084975469e261f98b32a9d2f699c15ce637c6b7f63ef8a60875",
+  "frozen_inputs_sha256": "db8b0e427f471084975469e261f98b32a9d2f699c15ce637c6b7f63ef8a60875",
+  "scope": "Transitive exact source URL and changed-line fingerprints only. Human prior-exposure and semantic patch-family audit pending."
+}

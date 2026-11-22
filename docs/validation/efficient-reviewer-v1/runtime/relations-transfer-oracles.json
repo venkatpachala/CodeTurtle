@@ -1,0 +1,464 @@
+{
+  "scope": "Synthetic development cases. Detection counts any finding on a case; issue identity needs a separate audit.",
+  "predictions_sha256": "a94af8c1d6dad60680c3b9c16f8b6c1539b5572ccbd6a3af348ea6ec715e4f66",
+  "all_oracles_passed": true,
+  "defect_cases_detected": 1,
+  "defect_cases": 2,
+  "repair_cases_with_findings": 1,
+  "repair_cases": 2,
+  "monetary_cost_usd": null,
+  "cases": [
+    {
+      "case_id": "expiry-regression",
+      "family_id": "expiry",
+      "introduced_defect": true,
+      "oracle_matches_label": true,
+      "runs": {
+        "base": {
+          "status": "passed",
+          "tests_executed": true,
+          "side": "base",
+          "snapshot_id": "14d087b0989ee0bdaf85a2cef51ecc257af325936c0bf69e5071da993d00270b",
+          "revision_sha": "164d00fb2d8c293011f2db22fb143d10fbab1828",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import is_expired; assert is_expired(4, 4) is True"
+          ],
+          "output": "",
+          "exit_code": 0,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 58,
+            "revision_sha": "164d00fb2d8c293011f2db22fb143d10fbab1828"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.8257367390033323,
+          "container_removed": true,
+          "elapsed_seconds": 3.3413105350045953
+        },
+        "head": {
+          "status": "failed",
+          "tests_executed": true,
+          "side": "head",
+          "snapshot_id": "14d087b0989ee0bdaf85a2cef51ecc257af325936c0bf69e5071da993d00270b",
+          "revision_sha": "6acf327083b0317fc5afb2d79dbff3b38e2edb13",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import is_expired; assert is_expired(4, 4) is True"
+          ],
+          "output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAssertionError\n",
+          "exit_code": 1,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 57,
+            "revision_sha": "6acf327083b0317fc5afb2d79dbff3b38e2edb13"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.5961050199985038,
+          "container_removed": true,
+          "elapsed_seconds": 2.2239925469912123
+        }
+      },
+      "product_findings": 1,
+      "decision": "REQUEST_CHANGES",
+      "latency_seconds": 8.86500694800634,
+      "model_calls": 3,
+      "completion_tokens": 138,
+      "source_file_digests": {
+        "app.py": {
+          "base": "49c21090a2c1a64ab4f6bb954af71b3b6ff2515969d706d7725b47acbf08d0f9",
+          "head": "537b03a18bbc3e1f5229481954bdb23029b87848ec77c1f1f9315fc6f640af8c"
+        }
+      }
+    },
+    {
+      "case_id": "expiry-repair",
+      "family_id": "expiry",
+      "introduced_defect": false,
+      "oracle_matches_label": true,
+      "runs": {
+        "base": {
+          "status": "failed",
+          "tests_executed": true,
+          "side": "base",
+          "snapshot_id": "b54fec4450027e2448060faf2e50921a49c51730fe44240f0f37a58e186a56cf",
+          "revision_sha": "d818578111feb00d649512c7e11bb7a35d386a53",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import is_expired; assert is_expired(4, 4) is True"
+          ],
+          "output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAssertionError\n",
+          "exit_code": 1,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 57,
+            "revision_sha": "d818578111feb00d649512c7e11bb7a35d386a53"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.507411743994453,
+          "container_removed": true,
+          "elapsed_seconds": 1.9715903690084815
+        },
+        "head": {
+          "status": "passed",
+          "tests_executed": true,
+          "side": "head",
+          "snapshot_id": "b54fec4450027e2448060faf2e50921a49c51730fe44240f0f37a58e186a56cf",
+          "revision_sha": "0b04bd8cc01409c87f35e355c8ac6a7a04ee9385",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import is_expired; assert is_expired(4, 4) is True"
+          ],
+          "output": "",
+          "exit_code": 0,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 58,
+            "revision_sha": "0b04bd8cc01409c87f35e355c8ac6a7a04ee9385"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.601978714010329,
+          "container_removed": true,
+          "elapsed_seconds": 2.7270997669984354
+        }
+      },
+      "product_findings": 0,
+      "decision": "COMMENT",
+      "latency_seconds": 4.057135351002216,
+      "model_calls": 1,
+      "completion_tokens": 76,
+      "source_file_digests": {
+        "app.py": {
+          "base": "537b03a18bbc3e1f5229481954bdb23029b87848ec77c1f1f9315fc6f640af8c",
+          "head": "49c21090a2c1a64ab4f6bb954af71b3b6ff2515969d706d7725b47acbf08d0f9"
+        }
+      }
+    },
+    {
+      "case_id": "delta-regression",
+      "family_id": "delta",
+      "introduced_defect": true,
+      "oracle_matches_label": true,
+      "runs": {
+        "base": {
+          "status": "passed",
+          "tests_executed": true,
+          "side": "base",
+          "snapshot_id": "df735a763a4e0c5336c98818c28bb7b5e2b778510b612bfa0d89393bf79e6270",
+          "revision_sha": "21a78789d5316430fba204d7ffcc52f981745a1d",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import net_change; assert net_change(3, 7) == 4"
+          ],
+          "output": "",
+          "exit_code": 0,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 51,
+            "revision_sha": "21a78789d5316430fba204d7ffcc52f981745a1d"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.6218679370067548,
+          "container_removed": true,
+          "elapsed_seconds": 2.263903525992646
+        },
+        "head": {
+          "status": "failed",
+          "tests_executed": true,
+          "side": "head",
+          "snapshot_id": "df735a763a4e0c5336c98818c28bb7b5e2b778510b612bfa0d89393bf79e6270",
+          "revision_sha": "f3c3ebbfc4af43f84d2c6ceccc5de2ed14c690c1",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import net_change; assert net_change(3, 7) == 4"
+          ],
+          "output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAssertionError\n",
+          "exit_code": 1,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 51,
+            "revision_sha": "f3c3ebbfc4af43f84d2c6ceccc5de2ed14c690c1"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.5941000379971229,
+          "container_removed": true,
+          "elapsed_seconds": 2.173377305007307
+        }
+      },
+      "product_findings": 0,
+      "decision": "COMMENT",
+      "latency_seconds": 5.385874950996367,
+      "model_calls": 1,
+      "completion_tokens": 93,
+      "source_file_digests": {
+        "app.py": {
+          "base": "d60d2268939270d6a4030432120831278cc7044d77ed4c6d7c9d57bf41234b45",
+          "head": "3cf31eef081ccb16c9f51010f936cb45104563e3951af37b502dbd04cdd5d4e1"
+        }
+      }
+    },
+    {
+      "case_id": "delta-repair",
+      "family_id": "delta",
+      "introduced_defect": false,
+      "oracle_matches_label": true,
+      "runs": {
+        "base": {
+          "status": "failed",
+          "tests_executed": true,
+          "side": "base",
+          "snapshot_id": "5172c6fc28c83d47e43705d1d22df3e0faf770271e00a32745f297d0d2439fcf",
+          "revision_sha": "0c1df4b649a8b4649b130abffd95b27131bbe0b4",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import net_change; assert net_change(3, 7) == 4"
+          ],
+          "output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAssertionError\n",
+          "exit_code": 1,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 51,
+            "revision_sha": "0c1df4b649a8b4649b130abffd95b27131bbe0b4"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.5784496109990869,
+          "container_removed": true,
+          "elapsed_seconds": 2.5936868690041592
+        },
+        "head": {
+          "status": "passed",
+          "tests_executed": true,
+          "side": "head",
+          "snapshot_id": "5172c6fc28c83d47e43705d1d22df3e0faf770271e00a32745f297d0d2439fcf",
+          "revision_sha": "68d4ea5ee85f9ab7f8778ac27846014c21e3a440",
+          "profile": {
+            "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+            "timeout_seconds": 30,
+            "memory_mb": 512,
+            "pids": 64,
+            "cpus": 1,
+            "output_bytes": 65536
+          },
+          "command": [
+            "python",
+            "-c",
+            "from app import net_change; assert net_change(3, 7) == 4"
+          ],
+          "output": "",
+          "exit_code": 0,
+          "image_id": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+          "export": {
+            "files": 1,
+            "bytes": 51,
+            "revision_sha": "68d4ea5ee85f9ab7f8778ac27846014c21e3a440"
+          },
+          "oom_killed": false,
+          "controls": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": true,
+            "CapDrop": [
+              "ALL"
+            ],
+            "SecurityOpt": [
+              "no-new-privileges=true"
+            ],
+            "Memory": 536870912,
+            "MemorySwap": 536870912,
+            "PidsLimit": 64,
+            "NanoCpus": 1000000000
+          },
+          "user": "65534:65534",
+          "execution_seconds": 0.6324959030025639,
+          "container_removed": true,
+          "elapsed_seconds": 2.5098246579873376
+        }
+      },
+      "product_findings": 1,
+      "decision": "REQUEST_CHANGES",
+      "latency_seconds": 11.086005071003456,
+      "model_calls": 3,
+      "completion_tokens": 177,
+      "source_file_digests": {
+        "app.py": {
+          "base": "3cf31eef081ccb16c9f51010f936cb45104563e3951af37b502dbd04cdd5d4e1",
+          "head": "d60d2268939270d6a4030432120831278cc7044d77ed4c6d7c9d57bf41234b45"
+        }
+      }
+    }
+  ]
+}
