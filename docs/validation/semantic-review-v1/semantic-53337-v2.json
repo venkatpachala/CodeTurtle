@@ -1,0 +1,759 @@
+{
+  "tool": "codeturtle",
+  "pr_url": "https://github.com/BerriAI/litellm/pull/53337",
+  "repo_name": "BerriAI/litellm",
+  "model": "qwen2.5-coder:7b",
+  "review_comments": [],
+  "latency_seconds": 89.59,
+  "decision": null,
+  "policy_reason": "analysis_failed",
+  "coverage_total": 3,
+  "coverage_packed": 3,
+  "coverage_ratio": 1.0,
+  "created_at": null,
+  "diagnostic_findings": [],
+  "findings": [],
+  "result": {
+    "schema_version": "2.3",
+    "run_id": "7179d096ae4a4af79e2d7f57781a11e1",
+    "target": {
+      "repo": "BerriAI/litellm",
+      "number": 53337,
+      "base_sha": "754c2225d7db8ce71a94459df2216708995c037b",
+      "head_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+      "diff_sha256": "a3b31864ffd3f1d6b28b3cdfd76573799108d58ad1ac4c8406af718cae16ce5a",
+      "comparison_base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc"
+    },
+    "health": {
+      "status": "failed",
+      "stages": [
+        {
+          "stage": "bundle:B-001",
+          "status": "failed",
+          "code": "INVALID_SCHEMA",
+          "detail": "",
+          "retryable": false
+        },
+        {
+          "stage": "graph",
+          "status": "degraded",
+          "code": "graph_unavailable",
+          "detail": "",
+          "retryable": false
+        }
+      ]
+    },
+    "inspection": {
+      "eligible": 3,
+      "packed": 3,
+      "inspected": 0,
+      "assessments": [
+        {
+          "unit_id": "CU-001",
+          "path": "litellm/batches/main.py",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "assessment_unavailable"
+        },
+        {
+          "unit_id": "CU-002",
+          "path": "litellm/batches/main.py",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "assessment_unavailable"
+        },
+        {
+          "unit_id": "CU-003",
+          "path": "tests/unit/batches/test_main.py",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "assessment_unavailable"
+        }
+      ],
+      "ratio": 0.0
+    },
+    "policy_reasons": [
+      "analysis_failed"
+    ],
+    "unresolved": [],
+    "approval_eligible": false,
+    "provenance": {
+      "reviewer_commit": "69dc4f54360052f0a87a339a66b8c83040e98ff2",
+      "dirty": true,
+      "prompt_version": "semantic-contract-v2-bounded-assessments",
+      "discovery_protocol": "semantic",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b",
+      "model_calls": [
+        {
+          "timestamp": "2026-11-22T07:18:02.827743",
+          "agent_name": "BundleAgent",
+          "capability": "correctness_review",
+          "provider": "ollama_provider",
+          "model": "qwen2.5-coder:7b",
+          "prompt_tokens": 517,
+          "completion_tokens": 345,
+          "total_tokens": 862,
+          "latency": 18.771708726882935,
+          "retries": 0,
+          "estimated_cost": 0.0,
+          "success": true,
+          "error": null,
+          "finish_reason": "stop",
+          "output_truncated": false,
+          "max_output_tokens": 1100,
+          "context_tokens": 8192,
+          "response_format": "json_schema",
+          "schema_sha256": "e42dbb6bb76799f49cd71d3d9e64c2001b6284f0f7d5014bb817182934c3408a",
+          "prompt_characters": 2121,
+          "stage": "semantic_discovery"
+        },
+        {
+          "timestamp": "2026-11-22T07:18:26.682308",
+          "agent_name": "BundleAgent",
+          "capability": "correctness_review",
+          "provider": "ollama_provider",
+          "model": "qwen2.5-coder:7b",
+          "prompt_tokens": 552,
+          "completion_tokens": 433,
+          "total_tokens": 985,
+          "latency": 23.849984884262085,
+          "retries": 0,
+          "estimated_cost": 0.0,
+          "success": true,
+          "error": null,
+          "finish_reason": "stop",
+          "output_truncated": false,
+          "max_output_tokens": 1100,
+          "context_tokens": 8192,
+          "response_format": "json_schema",
+          "schema_sha256": "e42dbb6bb76799f49cd71d3d9e64c2001b6284f0f7d5014bb817182934c3408a",
+          "prompt_characters": 2244,
+          "stage": "assessment_repair"
+        }
+      ],
+      "budget": {
+        "calls": 2,
+        "prompt_chars": 4365,
+        "elapsed_seconds": 43.14131683499727,
+        "max_model_calls": 12,
+        "max_prompt_chars": 120000,
+        "max_wall_seconds": 300.0
+      },
+      "investigation_source": "git_snapshot",
+      "requirement_strategy": "link",
+      "requirement_runs": [],
+      "finding_verifier_mode": "structured",
+      "finding_source_rules": true,
+      "source_preparation": {
+        "status": "ready",
+        "attempted_fetch_depths": [
+          32,
+          128,
+          512
+        ],
+        "snapshot_id": "03b21c466beecc6c2cc549d1848e96e8d796cc90077938d38272c45ecde3ad46",
+        "review_diff_sha256": "a3b31864ffd3f1d6b28b3cdfd76573799108d58ad1ac4c8406af718cae16ce5a",
+        "comparison_base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc"
+      },
+      "verification_snapshot_id": "03b21c466beecc6c2cc549d1848e96e8d796cc90077938d38272c45ecde3ad46",
+      "verification_snapshot": {
+        "repository_identity": "/home/venkat/.codeturtle/repos/BerriAI_litellm",
+        "base_sha": "754c2225d7db8ce71a94459df2216708995c037b",
+        "head_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+        "diff_sha256": "39581851f591d42faab359cd0c2c76417cf6ed852d98df1d8f42e08dbd44358c",
+        "config_sha256": "c1d02a6cccd697d7d468f986fff6149d657c7d5e64b8c7b0dc469b0ca8d2c952",
+        "comparison_base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc",
+        "schema_version": "1.0"
+      }
+    },
+    "product_findings": [],
+    "decision": null,
+    "policy_reason": "analysis_failed",
+    "comments": [],
+    "dropped": [],
+    "bundles": [
+      {
+        "id": "B-001",
+        "paths": [
+          "litellm/batches/main.py",
+          "tests/unit/batches/test_main.py"
+        ],
+        "units": [
+          {
+            "id": "CU-001",
+            "path": "litellm/batches/main.py",
+            "start_line": 879,
+            "end_line": 885,
+            "symbols": [
+              "list_batches",
+              "format"
+            ],
+            "excerpt": "@@ -879,7 +879,7 @@ def list_batches(\n             )\n         else:\n             raise litellm.exceptions.BadRequestError(\n-                message=\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\".format(\n+                message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n                     custom_llm_provider,\n                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n                 ),",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-002",
+            "path": "litellm/batches/main.py",
+            "start_line": 888,
+            "end_line": 894,
+            "symbols": [
+              "list_batches",
+              "httpx.Request",
+              "github.com",
+              "Request"
+            ],
+            "excerpt": "@@ -888,7 +888,7 @@ def list_batches(\n                 response=httpx.Response(\n                     status_code=400,\n                     content=\"Unsupported provider\",\n-                    request=httpx.Request(method=\"create_thread\", url=\"https://github.com/BerriAI/litellm\"),\n+                    request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n                 ),\n             )\n         return response\n",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "io"
+          },
+          {
+            "id": "CU-003",
+            "path": "tests/unit/batches/test_main.py",
+            "start_line": 348,
+            "end_line": 365,
+            "symbols": [
+              "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+              "test_list__unsupported_provider_raises_badrequest",
+              "httpx.Request",
+              "pytest.raises",
+              "litellm.exceptions.BadRequestError",
+              "bm.list_batches",
+              "exc_info.value",
+              "error.message",
+              "error.response.request.method",
+              "raises",
+              "list_batches"
+            ],
+            "excerpt": "@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\n         m.assert_not_called()\n \n \n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n+    \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n+        bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n+\n+    error = exc_info.value\n+    assert \"list_batches\" in error.message\n+    assert \"list_batch'\" not in error.message  # no singular form\n+    assert error.response.request.method == \"GET\"\n+\n+\n # =========================================================================== #\n # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n # =========================================================================== #",
+            "n_added": 11,
+            "n_removed": 0,
+            "kind": "test",
+            "risk_hint": "io"
+          }
+        ],
+        "symbols": [
+          "list_batches",
+          "format",
+          "httpx.Request",
+          "github.com",
+          "Request",
+          "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+          "test_list__unsupported_provider_raises_badrequest",
+          "pytest.raises",
+          "litellm.exceptions.BadRequestError",
+          "bm.list_batches",
+          "exc_info.value",
+          "error.message",
+          "error.response.request.method",
+          "raises"
+        ],
+        "kind": "source",
+        "risk_signals": [],
+        "requirements": [],
+        "change_context": {
+          "snapshot_id": "03b21c466beecc6c2cc549d1848e96e8d796cc90077938d38272c45ecde3ad46",
+          "changes": [
+            {
+              "path": "litellm/batches/main.py",
+              "symbol": "list_batches",
+              "kind": "function",
+              "status": "modified",
+              "base_line": 753,
+              "head_line": 753,
+              "signature_changed": false
+            },
+            {
+              "path": "tests/unit/batches/test_main.py",
+              "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+              "kind": "function",
+              "status": "added",
+              "base_line": null,
+              "head_line": 351,
+              "signature_changed": false
+            }
+          ],
+          "limitations": [
+            "Structural changes guide investigation; they do not prove changed runtime behavior.",
+            "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+          ],
+          "unresolved_context": []
+        }
+      }
+    ],
+    "coverage": {
+      "units_total": 3,
+      "units_packed": 3,
+      "units_omitted": 0,
+      "source_units": 2
+    },
+    "execution": {
+      "enabled": false,
+      "skipped": true,
+      "skip_reason": "flag_off",
+      "cmd": "",
+      "cwd": "",
+      "exit_code": null,
+      "elapsed_s": 0.0,
+      "passed": null,
+      "failed": null,
+      "failed_names": [],
+      "raw_tail": "",
+      "ran_paths": [],
+      "python_env": "",
+      "python": {
+        "skipped": true,
+        "skip_reason": null,
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "env": "",
+        "frozen": false,
+        "cached": false,
+        "install_cmd": "",
+        "install_elapsed_s": 0.0
+      },
+      "js": {
+        "skipped": true,
+        "skip_reason": null,
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "env": "",
+        "frozen": false,
+        "cached": false,
+        "install_cmd": "",
+        "install_elapsed_s": 0.0
+      }
+    },
+    "findings": [],
+    "pipeline_trace": [],
+    "timing": {
+      "workspace_s": 0.0,
+      "graphify_s": 0.0,
+      "pr_facts_s": 0.0,
+      "change_units_s": 0.0,
+      "bundling_s": 0.0,
+      "bundle_agent_s": 42.994,
+      "reflect_s": 0.0,
+      "verify_s": 0.0,
+      "sandbox_s": 0.0,
+      "policy_s": 0.0,
+      "total_s": 42.994
+    },
+    "agent_runs": [
+      {
+        "status": "INVALID_SCHEMA",
+        "candidate_count": 0,
+        "raw_outputs": [
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"Changed method name from 'list_batch' to 'list_batches'.\",\n      \"contract\": \"The function should handle requests for listing batches from supported providers.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-001\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-001\"],\n      \"missing_evidence\": [\"unit_id: CU-001, hypothesis: A concrete input that tests the function with an unsupported provider, expected property: The function should raise a BadRequestError, distinct suspected HEAD outcome: The function raises a BadRequestError with \"],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-002\",\n      \"behavioral_delta\": \"Changed HTTP method from 'create_thread' to 'GET'.\",\n      \"contract\": \"The function should return a BadRequestError with a specific message when an unsupported provider is used.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-002\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-002\"],\n      \"missing_evidence\": [\"unit_id: CU-002, hypothesis: A concrete input that tests the function with an unsupported provider, expected property: The function should return a BadRequestError, distinct suspected HEAD outcome: The function returns a BadRequestError\"],\n      \"hypothesis\": null\n    }\n  ]\n}",
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"Changed method name from 'list_batch' to 'list_batches'.\",\n      \"contract\": \"The function should handle requests for listing batches from supported providers.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-001\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-001\"],\n      \"missing_evidence\": [\"CU-002\"],\n      \"hypothesis\": {\n        \"symbol\": \"custom_llm_provider\",\n        \"trigger\": \"GET\",\n        \"expected\": {\n          \"kind\": \"unknown\",\n          \"property\": \"response.status_code\",\n          \"value\": \"400\"\n        },\n        \"suspected\": {\n          \"kind\": \"unknown\",\n          \"property\": \"response.content\",\n          \"value\": \"Unsupported provider\"\n        }\n      }\n    },\n    {\n      \"unit_id\": \"CU-002\",\n      \"behavioral_delta\": \"Changed HTTP method from 'create_thread' to 'GET'.\",\n      \"contract\": \"The function should handle requests for listing batches from supported providers.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-002\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-002\"],\n      \"missing_evidence\": [\"CU-001\"],\n      \"hypothesis\": {\n        \"symbol\": \"custom_llm_provider\",\n        \"trigger\": \"GET\",\n        \"expected\": {\n          \"kind\": \"unknown\",\n          \"property\": \"response.status_code\",\n          \"value\": \"400\"\n        },\n        \"suspected\": {\n          \"kind\": \"unknown\",\n          \"property\": \"response.content\",\n          \"value\": \"Unsupported provider\"\n        }\n      }\n    }\n  ]\n}"
+        ],
+        "tool_calls": [],
+        "hypotheses": [],
+        "hypothesis_count": 0,
+        "evidence_items": [],
+        "evidence_count": 0,
+        "stage_status": {
+          "discovery": "SEMANTIC_CONTRACT",
+          "proof": "INVALID_SCHEMA"
+        },
+        "parse_error": null,
+        "exception": null,
+        "latency_ms": 42985.53,
+        "prompt_version": "semantic-contract-v2-bounded-assessments",
+        "model_calls": 2,
+        "assessments": [
+          {
+            "unit_id": "CU-001",
+            "status": "unknown",
+            "reason": "assessment_unavailable",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-002",
+            "status": "unknown",
+            "reason": "assessment_unavailable",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-003",
+            "status": "unknown",
+            "reason": "assessment_unavailable",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          }
+        ],
+        "hypothesis_outcomes": [],
+        "protocol_errors": [
+          {
+            "stage": "assessment",
+            "unit_id": "CU-001",
+            "error": "1 validation error for ChangeAssessment\n  Value error, only a potential regression has a regression lead [type=value_error, input_value={'unit_id': 'CU-001', 'be... '], 'hypothesis': None}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+          },
+          {
+            "stage": "assessment",
+            "unit_id": "CU-002",
+            "error": "1 validation error for ChangeAssessment\n  Value error, only a potential regression has a regression lead [type=value_error, input_value={'unit_id': 'CU-002', 'be...r'], 'hypothesis': None}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+          },
+          {
+            "stage": "assessment",
+            "missing_unit_ids": [
+              "CU-001",
+              "CU-002"
+            ],
+            "error": "repair only these incomplete unit assessments"
+          },
+          {
+            "stage": "assessment",
+            "unit_id": "CU-001",
+            "error": "1 validation error for ChangeAssessment\nhypothesis\n  Value error, a regression lead needs an expected contract and a distinct suspected failure [type=value_error, input_value={'symbol': 'custom_llm_pr...'Unsupported provider'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+          },
+          {
+            "stage": "assessment",
+            "unit_id": "CU-002",
+            "error": "1 validation error for ChangeAssessment\nhypothesis\n  Value error, a regression lead needs an expected contract and a distinct suspected failure [type=value_error, input_value={'symbol': 'custom_llm_pr...'Unsupported provider'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+          },
+          {
+            "stage": "assessment",
+            "missing_unit_ids": [
+              "CU-001",
+              "CU-002"
+            ],
+            "error": "repair only these incomplete unit assessments"
+          }
+        ],
+        "proof_runs": [],
+        "discovery_protocol": "semantic-v1",
+        "contract_assessments": [],
+        "semantic_rejections": [],
+        "request_attempts": 2,
+        "estimated_completion_tokens": 757,
+        "bundle_id": "B-001"
+      }
+    ],
+    "pipeline_health": {
+      "healthy": false,
+      "agent_runs": 1,
+      "unhealthy_runs": 1,
+      "unhealthy_statuses": [
+        "INVALID_SCHEMA"
+      ],
+      "coverage_ratio": 1.0,
+      "coverage_adequate": true,
+      "status": "failed",
+      "inspection_ratio": 0.0
+    },
+    "intent_sources": [],
+    "requirements": [],
+    "requirement_assessments": [],
+    "investigations": [],
+    "evidence": [],
+    "source_observations": [],
+    "finding_verifications": [],
+    "requirement_coverage": {
+      "total": 0,
+      "verified": 0,
+      "violated": 0,
+      "unverified": 0,
+      "not_assessed": 0,
+      "not_applicable": 0,
+      "assessed": 0,
+      "applicable": 0,
+      "ratio": null
+    }
+  },
+  "schema_version": "2.3",
+  "target": {
+    "repo": "BerriAI/litellm",
+    "number": 53337,
+    "base_sha": "754c2225d7db8ce71a94459df2216708995c037b",
+    "head_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+    "diff_sha256": "a3b31864ffd3f1d6b28b3cdfd76573799108d58ad1ac4c8406af718cae16ce5a",
+    "comparison_base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc"
+  },
+  "health": {
+    "status": "failed",
+    "stages": [
+      {
+        "stage": "bundle:B-001",
+        "status": "failed",
+        "code": "INVALID_SCHEMA",
+        "detail": "",
+        "retryable": false
+      },
+      {
+        "stage": "graph",
+        "status": "degraded",
+        "code": "graph_unavailable",
+        "detail": "",
+        "retryable": false
+      }
+    ]
+  },
+  "publication_preview": null,
+  "publication": null,
+  "pipeline_trace": [],
+  "agent_runs": [
+    {
+      "status": "INVALID_SCHEMA",
+      "candidate_count": 0,
+      "raw_outputs": [
+        "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"Changed method name from 'list_batch' to 'list_batches'.\",\n      \"contract\": \"The function should handle requests for listing batches from supported providers.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-001\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-001\"],\n      \"missing_evidence\": [\"unit_id: CU-001, hypothesis: A concrete input that tests the function with an unsupported provider, expected property: The function should raise a BadRequestError, distinct suspected HEAD outcome: The function raises a BadRequestError with \"],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-002\",\n      \"behavioral_delta\": \"Changed HTTP method from 'create_thread' to 'GET'.\",\n      \"contract\": \"The function should return a BadRequestError with a specific message when an unsupported provider is used.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-002\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-002\"],\n      \"missing_evidence\": [\"unit_id: CU-002, hypothesis: A concrete input that tests the function with an unsupported provider, expected property: The function should return a BadRequestError, distinct suspected HEAD outcome: The function returns a BadRequestError\"],\n      \"hypothesis\": null\n    }\n  ]\n}",
+        "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"Changed method name from 'list_batch' to 'list_batches'.\",\n      \"contract\": \"The function should handle requests for listing batches from supported providers.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-001\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-001\"],\n      \"missing_evidence\": [\"CU-002\"],\n      \"hypothesis\": {\n        \"symbol\": \"custom_llm_provider\",\n        \"trigger\": \"GET\",\n        \"expected\": {\n          \"kind\": \"unknown\",\n          \"property\": \"response.status_code\",\n          \"value\": \"400\"\n        },\n        \"suspected\": {\n          \"kind\": \"unknown\",\n          \"property\": \"response.content\",\n          \"value\": \"Unsupported provider\"\n        }\n      }\n    },\n    {\n      \"unit_id\": \"CU-002\",\n      \"behavioral_delta\": \"Changed HTTP method from 'create_thread' to 'GET'.\",\n      \"contract\": \"The function should handle requests for listing batches from supported providers.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-002\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-002\"],\n      \"missing_evidence\": [\"CU-001\"],\n      \"hypothesis\": {\n        \"symbol\": \"custom_llm_provider\",\n        \"trigger\": \"GET\",\n        \"expected\": {\n          \"kind\": \"unknown\",\n          \"property\": \"response.status_code\",\n          \"value\": \"400\"\n        },\n        \"suspected\": {\n          \"kind\": \"unknown\",\n          \"property\": \"response.content\",\n          \"value\": \"Unsupported provider\"\n        }\n      }\n    }\n  ]\n}"
+      ],
+      "tool_calls": [],
+      "hypotheses": [],
+      "hypothesis_count": 0,
+      "evidence_items": [],
+      "evidence_count": 0,
+      "stage_status": {
+        "discovery": "SEMANTIC_CONTRACT",
+        "proof": "INVALID_SCHEMA"
+      },
+      "parse_error": null,
+      "exception": null,
+      "latency_ms": 42985.53,
+      "prompt_version": "semantic-contract-v2-bounded-assessments",
+      "model_calls": 2,
+      "assessments": [
+        {
+          "unit_id": "CU-001",
+          "status": "unknown",
+          "reason": "assessment_unavailable",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-002",
+          "status": "unknown",
+          "reason": "assessment_unavailable",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-003",
+          "status": "unknown",
+          "reason": "assessment_unavailable",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        }
+      ],
+      "hypothesis_outcomes": [],
+      "protocol_errors": [
+        {
+          "stage": "assessment",
+          "unit_id": "CU-001",
+          "error": "1 validation error for ChangeAssessment\n  Value error, only a potential regression has a regression lead [type=value_error, input_value={'unit_id': 'CU-001', 'be... '], 'hypothesis': None}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        },
+        {
+          "stage": "assessment",
+          "unit_id": "CU-002",
+          "error": "1 validation error for ChangeAssessment\n  Value error, only a potential regression has a regression lead [type=value_error, input_value={'unit_id': 'CU-002', 'be...r'], 'hypothesis': None}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        },
+        {
+          "stage": "assessment",
+          "missing_unit_ids": [
+            "CU-001",
+            "CU-002"
+          ],
+          "error": "repair only these incomplete unit assessments"
+        },
+        {
+          "stage": "assessment",
+          "unit_id": "CU-001",
+          "error": "1 validation error for ChangeAssessment\nhypothesis\n  Value error, a regression lead needs an expected contract and a distinct suspected failure [type=value_error, input_value={'symbol': 'custom_llm_pr...'Unsupported provider'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        },
+        {
+          "stage": "assessment",
+          "unit_id": "CU-002",
+          "error": "1 validation error for ChangeAssessment\nhypothesis\n  Value error, a regression lead needs an expected contract and a distinct suspected failure [type=value_error, input_value={'symbol': 'custom_llm_pr...'Unsupported provider'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        },
+        {
+          "stage": "assessment",
+          "missing_unit_ids": [
+            "CU-001",
+            "CU-002"
+          ],
+          "error": "repair only these incomplete unit assessments"
+        }
+      ],
+      "proof_runs": [],
+      "discovery_protocol": "semantic-v1",
+      "contract_assessments": [],
+      "semantic_rejections": [],
+      "request_attempts": 2,
+      "estimated_completion_tokens": 757,
+      "bundle_id": "B-001"
+    }
+  ],
+  "pipeline_health": {
+    "healthy": false,
+    "agent_runs": 1,
+    "unhealthy_runs": 1,
+    "unhealthy_statuses": [
+      "INVALID_SCHEMA"
+    ],
+    "coverage_ratio": 1.0,
+    "coverage_adequate": true,
+    "status": "failed",
+    "inspection_ratio": 0.0
+  },
+  "telemetry": {
+    "timing": {
+      "workspace_s": 0.0,
+      "graphify_s": 0.0,
+      "pr_facts_s": 0.0,
+      "change_units_s": 0.0,
+      "bundling_s": 0.0,
+      "bundle_agent_s": 42.994,
+      "reflect_s": 0.0,
+      "verify_s": 0.0,
+      "sandbox_s": 0.0,
+      "policy_s": 0.0,
+      "total_s": 42.994
+    },
+    "agent_runs": [
+      {
+        "status": "INVALID_SCHEMA",
+        "candidate_count": 0,
+        "raw_outputs": [
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"Changed method name from 'list_batch' to 'list_batches'.\",\n      \"contract\": \"The function should handle requests for listing batches from supported providers.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-001\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-001\"],\n      \"missing_evidence\": [\"unit_id: CU-001, hypothesis: A concrete input that tests the function with an unsupported provider, expected property: The function should raise a BadRequestError, distinct suspected HEAD outcome: The function raises a BadRequestError with \"],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-002\",\n      \"behavioral_delta\": \"Changed HTTP method from 'create_thread' to 'GET'.\",\n      \"contract\": \"The function should return a BadRequestError with a specific message when an unsupported provider is used.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-002\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-002\"],\n      \"missing_evidence\": [\"unit_id: CU-002, hypothesis: A concrete input that tests the function with an unsupported provider, expected property: The function should return a BadRequestError, distinct suspected HEAD outcome: The function returns a BadRequestError\"],\n      \"hypothesis\": null\n    }\n  ]\n}",
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"Changed method name from 'list_batch' to 'list_batches'.\",\n      \"contract\": \"The function should handle requests for listing batches from supported providers.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-001\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-001\"],\n      \"missing_evidence\": [\"CU-002\"],\n      \"hypothesis\": {\n        \"symbol\": \"custom_llm_provider\",\n        \"trigger\": \"GET\",\n        \"expected\": {\n          \"kind\": \"unknown\",\n          \"property\": \"response.status_code\",\n          \"value\": \"400\"\n        },\n        \"suspected\": {\n          \"kind\": \"unknown\",\n          \"property\": \"response.content\",\n          \"value\": \"Unsupported provider\"\n        }\n      }\n    },\n    {\n      \"unit_id\": \"CU-002\",\n      \"behavioral_delta\": \"Changed HTTP method from 'create_thread' to 'GET'.\",\n      \"contract\": \"The function should handle requests for listing batches from supported providers.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-002\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-002\"],\n      \"missing_evidence\": [\"CU-001\"],\n      \"hypothesis\": {\n        \"symbol\": \"custom_llm_provider\",\n        \"trigger\": \"GET\",\n        \"expected\": {\n          \"kind\": \"unknown\",\n          \"property\": \"response.status_code\",\n          \"value\": \"400\"\n        },\n        \"suspected\": {\n          \"kind\": \"unknown\",\n          \"property\": \"response.content\",\n          \"value\": \"Unsupported provider\"\n        }\n      }\n    }\n  ]\n}"
+        ],
+        "tool_calls": [],
+        "hypotheses": [],
+        "hypothesis_count": 0,
+        "evidence_items": [],
+        "evidence_count": 0,
+        "stage_status": {
+          "discovery": "SEMANTIC_CONTRACT",
+          "proof": "INVALID_SCHEMA"
+        },
+        "parse_error": null,
+        "exception": null,
+        "latency_ms": 42985.53,
+        "prompt_version": "semantic-contract-v2-bounded-assessments",
+        "model_calls": 2,
+        "assessments": [
+          {
+            "unit_id": "CU-001",
+            "status": "unknown",
+            "reason": "assessment_unavailable",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-002",
+            "status": "unknown",
+            "reason": "assessment_unavailable",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-003",
+            "status": "unknown",
+            "reason": "assessment_unavailable",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          }
+        ],
+        "hypothesis_outcomes": [],
+        "protocol_errors": [
+          {
+            "stage": "assessment",
+            "unit_id": "CU-001",
+            "error": "1 validation error for ChangeAssessment\n  Value error, only a potential regression has a regression lead [type=value_error, input_value={'unit_id': 'CU-001', 'be... '], 'hypothesis': None}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+          },
+          {
+            "stage": "assessment",
+            "unit_id": "CU-002",
+            "error": "1 validation error for ChangeAssessment\n  Value error, only a potential regression has a regression lead [type=value_error, input_value={'unit_id': 'CU-002', 'be...r'], 'hypothesis': None}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+          },
+          {
+            "stage": "assessment",
+            "missing_unit_ids": [
+              "CU-001",
+              "CU-002"
+            ],
+            "error": "repair only these incomplete unit assessments"
+          },
+          {
+            "stage": "assessment",
+            "unit_id": "CU-001",
+            "error": "1 validation error for ChangeAssessment\nhypothesis\n  Value error, a regression lead needs an expected contract and a distinct suspected failure [type=value_error, input_value={'symbol': 'custom_llm_pr...'Unsupported provider'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+          },
+          {
+            "stage": "assessment",
+            "unit_id": "CU-002",
+            "error": "1 validation error for ChangeAssessment\nhypothesis\n  Value error, a regression lead needs an expected contract and a distinct suspected failure [type=value_error, input_value={'symbol': 'custom_llm_pr...'Unsupported provider'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+          },
+          {
+            "stage": "assessment",
+            "missing_unit_ids": [
+              "CU-001",
+              "CU-002"
+            ],
+            "error": "repair only these incomplete unit assessments"
+          }
+        ],
+        "proof_runs": [],
+        "discovery_protocol": "semantic-v1",
+        "contract_assessments": [],
+        "semantic_rejections": [],
+        "request_attempts": 2,
+        "estimated_completion_tokens": 757,
+        "bundle_id": "B-001"
+      }
+    ],
+    "pipeline_health": {
+      "healthy": false,
+      "agent_runs": 1,
+      "unhealthy_runs": 1,
+      "unhealthy_statuses": [
+        "INVALID_SCHEMA"
+      ],
+      "coverage_ratio": 1.0,
+      "coverage_adequate": true,
+      "status": "failed",
+      "inspection_ratio": 0.0
+    },
+    "candidate_count": 0,
+    "verified_count": 0,
+    "drop_reasons": {}
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "exit_code": 0,
+  "elapsed_seconds": 113.8905891569957,
+  "command": [
+    "/home/venkat/projects/CodeTurtle/.venv/bin/python",
+    "-m",
+    "cli.main",
+    "review",
+    "https://github.com/BerriAI/litellm/pull/53342",
+    "--github-auth",
+    "gh",
+    "--dry-run",
+    "--show-uncertain",
+    "--expected-head-sha",
+    "3ace05125c1ca8e186c42bfc51f2b98f223c34c5",
+    "--expected-base-sha",
+    "5f5b378a3a998f3278efa8e7b9f90c46093bf677",
+    "--json-output",
+    "/home/venkat/projects/CodeTurtle/.validation/semantic-quality/semantic-53342-latest-v4.json"
+  ],
+  "revision": "cd857b0c5f38c70e330101473006bb85e6c06240"
+}

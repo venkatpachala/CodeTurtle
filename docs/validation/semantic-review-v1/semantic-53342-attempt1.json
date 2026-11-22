@@ -1,0 +1,69 @@
+{
+  "schema_version": "2.3",
+  "run_id": "340fb81175d84026aab5a8a1dc96e153",
+  "target": {
+    "repo": "BerriAI/litellm",
+    "number": 53342,
+    "base_sha": "5f5b378a3a998f3278efa8e7b9f90c46093bf677",
+    "head_sha": "3ace05125c1ca8e186c42bfc51f2b98f223c34c5",
+    "diff_sha256": "",
+    "comparison_base_sha": ""
+  },
+  "health": {
+    "status": "failed",
+    "stages": [
+      {
+        "stage": "intake",
+        "status": "failed",
+        "code": "ValueError",
+        "detail": "",
+        "retryable": false
+      }
+    ]
+  },
+  "inspection": {
+    "eligible": 0,
+    "packed": 0,
+    "inspected": 0,
+    "assessments": [],
+    "ratio": null
+  },
+  "policy_reasons": [
+    "ValueError"
+  ],
+  "unresolved": [],
+  "approval_eligible": false,
+  "provenance": {},
+  "product_findings": [],
+  "decision": null,
+  "policy_reason": "ValueError",
+  "comments": [],
+  "dropped": [],
+  "bundles": [],
+  "coverage": {},
+  "execution": {},
+  "findings": [],
+  "pipeline_trace": [],
+  "timing": {},
+  "agent_runs": [],
+  "pipeline_health": {},
+  "intent_sources": [],
+  "requirements": [],
+  "requirement_assessments": [],
+  "investigations": [],
+  "evidence": [],
+  "source_observations": [],
+  "finding_verifications": [],
+  "requirement_coverage": {
+    "total": 0,
+    "verified": 0,
+    "violated": 0,
+    "unverified": 0,
+    "not_assessed": 0,
+    "not_applicable": 0,
+    "assessed": 0,
+    "applicable": 0,
+    "ratio": null
+  },
+  "review_comments": []
+}

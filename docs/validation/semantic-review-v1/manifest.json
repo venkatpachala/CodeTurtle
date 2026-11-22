@@ -1,0 +1,659 @@
+{
+  "reviewer_commit": "cd857b0c5f38c70e330101473006bb85e6c06240",
+  "local_tests_passed": 773,
+  "ci": {
+    "run_url": "https://github.com/venkatpachala/CodeTurtle/actions/runs/44998406823",
+    "passed_jobs": [
+      "ubuntu-latest/3.11",
+      "ubuntu-latest/3.12",
+      "windows-latest/3.11",
+      "windows-latest/3.12"
+    ]
+  },
+  "reference_model": "gpt-6-astra",
+  "reference_cli_version": "0.153.4",
+  "reference_tests_executed": false,
+  "reference_cli_reported_tokens": {
+    "original": 85120,
+    "latest": 82889
+  },
+  "unavailable_reference_models": [
+    "gpt-6.2-sol",
+    "gpt-6.2-astra",
+    "gpt-5.3-codex",
+    "gpt-6-sol"
+  ],
+  "unavailable_reason": "model_not_found: model not supported for the available ChatGPT account route",
+  "packets": [
+    {
+      "file": "independent-review-input.json",
+      "sha256": "2d8c2c78fe005b719b3ceaaeef427cf23edb4e1b21a3c458436d3e07eb9c3e95",
+      "base_sha": "66aa18a169280cfad8195490d057e468cfe3224b",
+      "head_sha": "6288812fe4c81b7c9ed59a24e190cd6e19464701",
+      "comparison_base_sha": "66aa18a169280cfad8195490d057e468cfe3224b",
+      "changed_file_count": 47,
+      "file_scope": [
+        {
+          "path": "litellm/rust/Cargo.lock",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/AGENTS.md",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/authn/key/expiry.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/authn/key/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/authz/credential.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/caller.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": [
+            "head"
+          ]
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/key/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/principal.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/lib.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/jwt.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/AGENTS.md",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/Cargo.toml",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/authentication.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": [
+            "base",
+            "head"
+          ]
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/authorization.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/error.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/http.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/identity.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/keys.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/lib.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/tests/auth.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/tests/keys.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/AGENTS.md",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/Cargo.toml",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/caching.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": [
+            "base",
+            "head"
+          ]
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/error.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/hooks.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/lib.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/routing.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": [
+            "base",
+            "head"
+          ]
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/serve.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/test_support.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/tests/caching.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/tests/messages.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/tests/support/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/AGENTS.md",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/Cargo.toml",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/admit/checks/caller.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/admit/checks/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/admit/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": [
+            "head"
+          ]
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/host/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/host/router.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/lib.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/state.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/python-bridge/src/auth/call.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        }
+      ]
+    },
+    {
+      "file": "independent-review-latest-input.json",
+      "sha256": "dd875f3c6e526d98f94053053ba8a9d038a6a69c7d64e7e8d293e3ba96f8d3d2",
+      "base_sha": "5f5b378a3a998f3278efa8e7b9f90c46093bf677",
+      "head_sha": "3ace05125c1ca8e186c42bfc51f2b98f223c34c5",
+      "comparison_base_sha": "5f5b378a3a998f3278efa8e7b9f90c46093bf677",
+      "changed_file_count": 47,
+      "file_scope": [
+        {
+          "path": "litellm/rust/Cargo.lock",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/AGENTS.md",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/authn/key/expiry.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/authn/key/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/authz/credential.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/caller.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": [
+            "head"
+          ]
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/key/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/principal.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/lib.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/jwt.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/AGENTS.md",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/Cargo.toml",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/authentication.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": [
+            "base",
+            "head"
+          ]
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/authorization.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/error.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/http.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/identity.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/keys.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/src/lib.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/tests/auth.rs",
+          "patch_missing": false,
+          "patch_clipped": true,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-auth/tests/keys.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/AGENTS.md",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/Cargo.toml",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/caching.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": [
+            "base",
+            "head"
+          ]
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/error.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/hooks.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/lib.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/routing.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": [
+            "base",
+            "head"
+          ]
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/serve.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/src/test_support.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/tests/caching.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/tests/messages.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway-inference/tests/support/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/AGENTS.md",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/Cargo.toml",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/admit/checks/caller.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/admit/checks/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/admit/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": true,
+          "included_source_sides": [
+            "head"
+          ]
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/host/mod.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/host/router.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/lib.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/gateway/src/state.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        },
+        {
+          "path": "litellm/rust/crates/python-bridge/src/auth/call.rs",
+          "patch_missing": false,
+          "patch_clipped": false,
+          "included_source_sides": []
+        }
+      ]
+    }
+  ],
+  "artifacts": {
+    "baseline-53342.json": "a93535b3f8cd0275092e120a2164892a2e9ef1765063b29670900fec2aa16a57",
+    "semantic-53342-attempt1.json": "b43a812821fd79418224035c97fa3daaa41a481e2546c80bc96a7cf5484bb5bd",
+    "semantic-53342-pinned.json": "352042a4dcfddb1c0767949d552ecdf4629ea3cd6bd37837dd2e298013575b8b",
+    "semantic-53337-v2.json": "eba38e34f129d8eff27e100e5ab217c8ee22b913096ebc235e7711ae4959e1d0",
+    "semantic-53337-v3.json": "6b6c0db04fa68048a46cf356472bf4d85792e218243b599fdda4d3e7d1c04b71",
+    "semantic-53342-v3.json": "8b64fa82b505030add644eae72901c0e3513157175b7b44f9441c1dba6599bd6",
+    "semantic-53337-v4.json": "ef58eeb4af75d9252826aefcea13aaf68d47049488cf3eb4cfd6a5135287e87b",
+    "semantic-53342-latest-v4.json": "84c7dd9f35c11fe2d83c89cf6f71fda34a05eeded30564fbdd86b8a831712edc",
+    "reference-53342-original.json": "37eb71dd826af7ba929ee5d0c0fe8557e71f3d06212bf31dce27a864fdf237d0",
+    "reference-53342-latest.json": "55a4b745c50b9f8c68ab980a3811a09cc8557119068acc2949541f838e53e77e"
+  },
+  "limitations": [
+    "Development cases, not a held-out benchmark.",
+    "No human adjudication establishing reviewed-clean PR labels.",
+    "Profiles and diff inventories differ; these are not matched latency or quality A/B results.",
+    "Reference models received broader packets than bounded CodeTurtle bundles.",
+    "Main agent had exposure to earlier bot reviews; reference packets contained no other reviews or CodeTurtle predictions.",
+    "PR Rust code/build scripts were not executed."
+  ]
+}

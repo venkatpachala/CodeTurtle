@@ -1,0 +1,3733 @@
+{
+  "tool": "codeturtle",
+  "pr_url": "https://github.com/BerriAI/litellm/pull/53342",
+  "repo_name": "BerriAI/litellm",
+  "model": "qwen2.5-coder:7b",
+  "review_comments": [],
+  "latency_seconds": 113.32,
+  "decision": "COMMENT",
+  "policy_reason": "partial_analysis",
+  "coverage_total": 89,
+  "coverage_packed": 28,
+  "coverage_ratio": 0.3146,
+  "created_at": null,
+  "diagnostic_findings": [],
+  "findings": [],
+  "result": {
+    "schema_version": "2.3",
+    "run_id": "cd56c3b4eba74a819bb91beed4ee833e",
+    "target": {
+      "repo": "BerriAI/litellm",
+      "number": 53342,
+      "base_sha": "5f5b378a3a998f3278efa8e7b9f90c46093bf677",
+      "head_sha": "3ace05125c1ca8e186c42bfc51f2b98f223c34c5",
+      "diff_sha256": "2259ea844be3a2b2a32bd48873802dce1b8306cdda9cde002e3d5439eb8d5d36",
+      "comparison_base_sha": ""
+    },
+    "health": {
+      "status": "partial",
+      "stages": [
+        {
+          "stage": "bundle:B-001",
+          "status": "succeeded",
+          "code": "VALID_EMPTY",
+          "detail": "",
+          "retryable": false
+        },
+        {
+          "stage": "bundle:B-002",
+          "status": "degraded",
+          "code": "PARTIAL",
+          "detail": "",
+          "retryable": false
+        },
+        {
+          "stage": "bundle:B-003",
+          "status": "degraded",
+          "code": "PARTIAL",
+          "detail": "",
+          "retryable": false
+        },
+        {
+          "stage": "bundle:B-004",
+          "status": "degraded",
+          "code": "PARTIAL",
+          "detail": "",
+          "retryable": false
+        },
+        {
+          "stage": "graph",
+          "status": "degraded",
+          "code": "graph_unavailable",
+          "detail": "",
+          "retryable": false
+        }
+      ]
+    },
+    "inspection": {
+      "eligible": 79,
+      "packed": 28,
+      "inspected": 12,
+      "assessments": [
+        {
+          "unit_id": "CU-005",
+          "path": "litellm/rust/crates/gateway-auth-core/src/authn/key/expiry.rs",
+          "status": "inspected",
+          "behavioral_delta": "No change",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-005"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-006",
+          "path": "litellm/rust/crates/gateway-auth-core/src/authn/key/expiry.rs",
+          "status": "inspected",
+          "behavioral_delta": "Changed return type",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-006"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-007",
+          "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+          "status": "inspected",
+          "behavioral_delta": "No change observed.",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-007"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-008",
+          "path": "litellm/rust/crates/gateway-auth-core/src/authz/credential.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-009",
+          "path": "litellm/rust/crates/gateway-auth-core/src/authz/credential.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-010",
+          "path": "litellm/rust/crates/gateway-auth-core/src/authz/credential.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-011",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-012",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-013",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-014",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-015",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-016",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-017",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-018",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-019",
+          "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+          "status": "inspected",
+          "behavioral_delta": "No change observed.",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-019"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-020",
+          "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+          "status": "inspected",
+          "behavioral_delta": "The code introduces a new struct `NativeAuthHost` and a function `declined` that returns an error for any request step not handled by this host. It also defines a new struct `NativeRows` that implements the `Rows` trait with `Infallible` as",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-020"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-021",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/principal.rs",
+          "status": "inspected",
+          "behavioral_delta": "Renamed 'Caller' to 'ClaimedCaller'",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-021"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-022",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/principal.rs",
+          "status": "inspected",
+          "behavioral_delta": "Renamed 'caller' field to 'caller'",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-022"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-023",
+          "path": "litellm/rust/crates/gateway-auth-core/src/lib.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-024",
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/jwt.rs",
+          "status": "inspected",
+          "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-024"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-025",
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/jwt.rs",
+          "status": "inspected",
+          "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-025"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-026",
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/jwt.rs",
+          "status": "inspected",
+          "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-026"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-027",
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/jwt.rs",
+          "status": "inspected",
+          "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-027"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-028",
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-029",
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-030",
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-031",
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-032",
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-033",
+          "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-036",
+          "path": "litellm/rust/crates/gateway-auth/src/authentication.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-037",
+          "path": "litellm/rust/crates/gateway-auth/src/authentication.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-038",
+          "path": "litellm/rust/crates/gateway-auth/src/authorization.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-039",
+          "path": "litellm/rust/crates/gateway-auth/src/error.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-040",
+          "path": "litellm/rust/crates/gateway-auth/src/error.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-041",
+          "path": "litellm/rust/crates/gateway-auth/src/error.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-042",
+          "path": "litellm/rust/crates/gateway-auth/src/http.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-043",
+          "path": "litellm/rust/crates/gateway-auth/src/http.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-044",
+          "path": "litellm/rust/crates/gateway-auth/src/http.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-045",
+          "path": "litellm/rust/crates/gateway-auth/src/identity.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "related_tests; explicit_requirements; validation_feedback"
+        },
+        {
+          "unit_id": "CU-046",
+          "path": "litellm/rust/crates/gateway-auth/src/keys.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-047",
+          "path": "litellm/rust/crates/gateway-auth-core/src/lib.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-048",
+          "path": "litellm/rust/crates/gateway-auth/tests/auth.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-049",
+          "path": "litellm/rust/crates/gateway-auth/tests/auth.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-050",
+          "path": "litellm/rust/crates/gateway-auth/src/keys.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-053",
+          "path": "litellm/rust/crates/gateway-inference/tests/caching.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-054",
+          "path": "litellm/rust/crates/gateway-auth/src/error.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-055",
+          "path": "litellm/rust/crates/gateway-auth/src/error.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-056",
+          "path": "litellm/rust/crates/gateway-auth/src/error.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-057",
+          "path": "litellm/rust/crates/gateway-inference/src/hooks.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-058",
+          "path": "litellm/rust/crates/gateway-inference/src/hooks.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-059",
+          "path": "litellm/rust/crates/gateway-auth-core/src/lib.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-060",
+          "path": "litellm/rust/crates/gateway-inference/src/routing.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-061",
+          "path": "litellm/rust/crates/gateway-inference/src/routing.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-062",
+          "path": "litellm/rust/crates/gateway-inference/src/routing.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-063",
+          "path": "litellm/rust/crates/gateway-inference/src/routing.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-064",
+          "path": "litellm/rust/crates/gateway-inference/src/routing.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-065",
+          "path": "litellm/rust/crates/gateway-inference/src/serve.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-066",
+          "path": "litellm/rust/crates/gateway-inference/src/serve.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-067",
+          "path": "litellm/rust/crates/gateway-inference/src/serve.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-068",
+          "path": "litellm/rust/crates/gateway-inference/src/test_support.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-069",
+          "path": "litellm/rust/crates/gateway-inference/tests/caching.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-070",
+          "path": "litellm/rust/crates/gateway-inference/tests/messages.rs",
+          "status": "inspected",
+          "behavioral_delta": "Removed a test case for model permissions preventing provider calls.",
+          "hypothesis_outcome": "no_regression_identified",
+          "evidence_refs": [
+            "CU-070"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-071",
+          "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-074",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-075",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-076",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-077",
+          "path": "litellm/rust/crates/gateway-auth-core/src/identity/jwt/caller.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-078",
+          "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-079",
+          "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-080",
+          "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-081",
+          "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-082",
+          "path": "litellm/rust/crates/gateway/src/host/router.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-083",
+          "path": "litellm/rust/crates/gateway/src/host/router.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-084",
+          "path": "litellm/rust/crates/gateway/src/host/router.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-085",
+          "path": "litellm/rust/crates/gateway-auth-core/src/lib.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-086",
+          "path": "litellm/rust/crates/gateway/src/state.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-087",
+          "path": "litellm/rust/crates/gateway/src/state.rs",
+          "status": "omitted",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "not_packed"
+        },
+        {
+          "unit_id": "CU-088",
+          "path": "litellm/rust/crates/python-bridge/src/auth/call.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        },
+        {
+          "unit_id": "CU-089",
+          "path": "litellm/rust/crates/python-bridge/src/auth/call.rs",
+          "status": "unknown",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": [],
+          "reason": "model_input_budget"
+        }
+      ],
+      "ratio": 0.1518987341772152
+    },
+    "policy_reasons": [
+      "partial_analysis",
+      "insufficient_inspection",
+      "unresolved_hypotheses"
+    ],
+    "unresolved": [
+      {
+        "stage": "contract_assessment",
+        "bundle_id": "B-001",
+        "unit_id": "CU-070",
+        "reason": "explicit_requirements"
+      },
+      {
+        "stage": "contract_assessment",
+        "bundle_id": "B-002",
+        "unit_id": "CU-045",
+        "reason": "related_tests"
+      },
+      {
+        "stage": "contract_assessment",
+        "bundle_id": "B-002",
+        "unit_id": "CU-045",
+        "reason": "explicit_requirements"
+      },
+      {
+        "stage": "contract_assessment",
+        "bundle_id": "B-002",
+        "unit_id": "CU-045",
+        "reason": "validation_feedback"
+      },
+      {
+        "stage": "contract_assessment",
+        "bundle_id": "B-003",
+        "unit_id": "CU-007",
+        "reason": "explicit_requirements"
+      },
+      {
+        "stage": "contract_assessment",
+        "bundle_id": "B-003",
+        "unit_id": "CU-007",
+        "reason": "related_tests"
+      },
+      {
+        "stage": "contract_assessment",
+        "bundle_id": "B-003",
+        "unit_id": "CU-019",
+        "reason": "explicit_requirements"
+      },
+      {
+        "stage": "contract_assessment",
+        "bundle_id": "B-003",
+        "unit_id": "CU-019",
+        "reason": "related_tests"
+      }
+    ],
+    "approval_eligible": false,
+    "provenance": {
+      "reviewer_commit": "cd857b0c5f38c70e330101473006bb85e6c06240",
+      "dirty": false,
+      "prompt_version": "semantic-contract-v4-scoped-authority",
+      "discovery_protocol": "semantic",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b",
+      "model_calls": [
+        {
+          "timestamp": "2026-11-22T07:30:01.465314",
+          "agent_name": "BundleAgent",
+          "capability": "correctness_review",
+          "provider": "ollama_provider",
+          "model": "qwen2.5-coder:7b",
+          "prompt_tokens": 780,
+          "completion_tokens": 210,
+          "total_tokens": 990,
+          "latency": 13.389243841171265,
+          "retries": 0,
+          "estimated_cost": 0.0,
+          "success": true,
+          "error": null,
+          "finish_reason": "stop",
+          "output_truncated": false,
+          "max_output_tokens": 1100,
+          "context_tokens": 8192,
+          "response_format": "json_schema",
+          "schema_sha256": "79283ece9f7dbc69ff9f44cb6c33cfbabd9baaf9cf55d7a56c80fedae63fc272",
+          "prompt_characters": 2939,
+          "stage": "semantic_discovery"
+        },
+        {
+          "timestamp": "2026-11-22T07:30:09.913388",
+          "agent_name": "BundleAgent",
+          "capability": "correctness_review",
+          "provider": "ollama_provider",
+          "model": "qwen2.5-coder:7b",
+          "prompt_tokens": 665,
+          "completion_tokens": 133,
+          "total_tokens": 798,
+          "latency": 8.439929246902466,
+          "retries": 0,
+          "estimated_cost": 0.0,
+          "success": true,
+          "error": null,
+          "finish_reason": "stop",
+          "output_truncated": false,
+          "max_output_tokens": 1100,
+          "context_tokens": 8192,
+          "response_format": "json_schema",
+          "schema_sha256": "31392f51d48574ddcd8ed067afbe8bd6f37bb49ff976a360f4292d7a31f8d80f",
+          "prompt_characters": 2640,
+          "stage": "semantic_discovery"
+        },
+        {
+          "timestamp": "2026-11-22T07:30:25.242975",
+          "agent_name": "BundleAgent",
+          "capability": "correctness_review",
+          "provider": "ollama_provider",
+          "model": "qwen2.5-coder:7b",
+          "prompt_tokens": 699,
+          "completion_tokens": 245,
+          "total_tokens": 944,
+          "latency": 15.320997953414917,
+          "retries": 0,
+          "estimated_cost": 0.0,
+          "success": true,
+          "error": null,
+          "finish_reason": "stop",
+          "output_truncated": false,
+          "max_output_tokens": 1100,
+          "context_tokens": 8192,
+          "response_format": "json_schema",
+          "schema_sha256": "5414ff15c6980668085add715f8f7eaec1c53bb8e782cfdb667b01476adeb04c",
+          "prompt_characters": 2777,
+          "stage": "semantic_discovery"
+        },
+        {
+          "timestamp": "2026-11-22T07:30:33.411246",
+          "agent_name": "BundleAgent",
+          "capability": "correctness_review",
+          "provider": "ollama_provider",
+          "model": "qwen2.5-coder:7b",
+          "prompt_tokens": 1105,
+          "completion_tokens": 122,
+          "total_tokens": 1227,
+          "latency": 8.15841007232666,
+          "retries": 0,
+          "estimated_cost": 0.0,
+          "success": true,
+          "error": null,
+          "finish_reason": "stop",
+          "output_truncated": false,
+          "max_output_tokens": 1100,
+          "context_tokens": 8192,
+          "response_format": "json_schema",
+          "schema_sha256": "757dfda75b05804fa2ff688a9cbc346ac3a8d6aec09df94899453204d7409ad2",
+          "prompt_characters": 4299,
+          "stage": "semantic_discovery"
+        },
+        {
+          "timestamp": "2026-11-22T07:30:47.889958",
+          "agent_name": "BundleAgent",
+          "capability": "correctness_review",
+          "provider": "ollama_provider",
+          "model": "qwen2.5-coder:7b",
+          "prompt_tokens": 2034,
+          "completion_tokens": 216,
+          "total_tokens": 2250,
+          "latency": 14.47128677368164,
+          "retries": 0,
+          "estimated_cost": 0.0,
+          "success": true,
+          "error": null,
+          "finish_reason": "stop",
+          "output_truncated": false,
+          "max_output_tokens": 1100,
+          "context_tokens": 8192,
+          "response_format": "json_schema",
+          "schema_sha256": "3a3c4516249173c6f430efea63a91aba153d6fe78206b3183eeeb73c70d1ad28",
+          "prompt_characters": 7385,
+          "stage": "semantic_discovery"
+        },
+        {
+          "timestamp": "2026-11-22T07:31:01.170066",
+          "agent_name": "BundleAgent",
+          "capability": "correctness_review",
+          "provider": "ollama_provider",
+          "model": "qwen2.5-coder:7b",
+          "prompt_tokens": 1192,
+          "completion_tokens": 217,
+          "total_tokens": 1409,
+          "latency": 13.273578882217407,
+          "retries": 0,
+          "estimated_cost": 0.0,
+          "success": true,
+          "error": null,
+          "finish_reason": "stop",
+          "output_truncated": false,
+          "max_output_tokens": 1100,
+          "context_tokens": 8192,
+          "response_format": "json_schema",
+          "schema_sha256": "83e9f7c7d40eac46439b98dd700c55ffc6f1e1e44161139e6cff2882f22a7ba0",
+          "prompt_characters": 4498,
+          "stage": "semantic_discovery"
+        },
+        {
+          "timestamp": "2026-11-22T07:31:15.843829",
+          "agent_name": "BundleAgent",
+          "capability": "correctness_review",
+          "provider": "ollama_provider",
+          "model": "qwen2.5-coder:7b",
+          "prompt_tokens": 679,
+          "completion_tokens": 247,
+          "total_tokens": 926,
+          "latency": 14.66658091545105,
+          "retries": 0,
+          "estimated_cost": 0.0,
+          "success": true,
+          "error": null,
+          "finish_reason": "stop",
+          "output_truncated": false,
+          "max_output_tokens": 1100,
+          "context_tokens": 8192,
+          "response_format": "json_schema",
+          "schema_sha256": "42c8944745899c26984b34fb42e9cbbf048586bc0dcea4f2d55f9f2f81bafb09",
+          "prompt_characters": 2688,
+          "stage": "semantic_discovery"
+        },
+        {
+          "timestamp": "2026-11-22T07:31:31.371097",
+          "agent_name": "BundleAgent",
+          "capability": "correctness_review",
+          "provider": "ollama_provider",
+          "model": "qwen2.5-coder:7b",
+          "prompt_tokens": 639,
+          "completion_tokens": 273,
+          "total_tokens": 912,
+          "latency": 15.521422147750854,
+          "retries": 0,
+          "estimated_cost": 0.0,
+          "success": true,
+          "error": null,
+          "finish_reason": "stop",
+          "output_truncated": false,
+          "max_output_tokens": 1100,
+          "context_tokens": 8192,
+          "response_format": "json_schema",
+          "schema_sha256": "e00335ec26065da3fafe698745b7da7687d34fb21a4809fb7091f9c2322720c2",
+          "prompt_characters": 2443,
+          "stage": "semantic_discovery"
+        }
+      ],
+      "budget": {
+        "calls": 8,
+        "prompt_chars": 29669,
+        "elapsed_seconds": 103.68574514799548,
+        "max_model_calls": 12,
+        "max_prompt_chars": 120000,
+        "max_wall_seconds": 300.0
+      },
+      "investigation_source": "git_snapshot",
+      "requirement_strategy": "link",
+      "requirement_runs": [],
+      "finding_verifier_mode": "structured",
+      "finding_source_rules": true,
+      "source_preparation": {
+        "status": "ready",
+        "attempted_fetch_depths": [
+          32
+        ],
+        "snapshot_id": "0f42afb748bedd0829663cc7c379d9644d0ee19c9ff1031bc85170ac74891c07",
+        "review_diff_sha256": "2259ea844be3a2b2a32bd48873802dce1b8306cdda9cde002e3d5439eb8d5d36",
+        "comparison_base_sha": "5f5b378a3a998f3278efa8e7b9f90c46093bf677"
+      },
+      "verification_snapshot_id": "0f42afb748bedd0829663cc7c379d9644d0ee19c9ff1031bc85170ac74891c07",
+      "verification_snapshot": {
+        "repository_identity": "/home/venkat/.codeturtle/repos/BerriAI_litellm",
+        "base_sha": "5f5b378a3a998f3278efa8e7b9f90c46093bf677",
+        "head_sha": "3ace05125c1ca8e186c42bfc51f2b98f223c34c5",
+        "diff_sha256": "a45de43c2001aabc02fc7aaf7976e94faf7b2f0a7798b08ac8954bb554e0cce3",
+        "config_sha256": "bb2b3e0baf0bfb6855159666f0b3576530d588f92f5aeded1a8bac4ec681b7ef",
+        "comparison_base_sha": null,
+        "schema_version": "1.0"
+      }
+    },
+    "product_findings": [],
+    "decision": "COMMENT",
+    "policy_reason": "partial_analysis",
+    "comments": [],
+    "dropped": [],
+    "bundles": [
+      {
+        "id": "B-001",
+        "paths": [
+          "litellm/rust/crates/gateway-auth-core/src/authn/key/expiry.rs",
+          "litellm/rust/crates/gateway-auth-core/src/authn/key/mod.rs",
+          "litellm/rust/crates/gateway-auth-core/src/identity/key/mod.rs",
+          "litellm/rust/crates/gateway-inference/tests/messages.rs"
+        ],
+        "units": [
+          {
+            "id": "CU-005",
+            "path": "litellm/rust/crates/gateway-auth-core/src/authn/key/expiry.rs",
+            "start_line": 1,
+            "end_line": 6,
+            "symbols": [],
+            "excerpt": "@@ -1,6 +1,6 @@\n use jiff::Timestamp;\n \n-use crate::{KeyDenial, token::Shown};\n+use crate::{KeyDenial, KeyHash, token::Shown};\n \n use super::{KeyRecord, KeySettings};\n ",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-006",
+            "path": "litellm/rust/crates/gateway-auth-core/src/authn/key/expiry.rs",
+            "start_line": 19,
+            "end_line": 37,
+            "symbols": [
+              "key.token.clone",
+              "clone",
+              "ok_or",
+              "pub",
+              "expired"
+            ],
+            "excerpt": "@@ -19,21 +19,19 @@ pub(super) fn expired(\n         })\n }\n \n-/// What the key row alone settles, before any read about who holds it.\n+/// What the key row alone settles, before any read about who holds it. A usable key has the hash\n+/// its row is stored under, which names it from here on.\n pub(super) fn usable(\n     key: &KeyRecord,\n     now: Timestamp,\n     shown: Shown<'_>,\n     settings: &KeySettings,\n-) -> Result<(), KeyDenial> {\n+) -> Result<KeyHash, KeyDenial> {\n     if key.blocked {\n         return Err(KeyDenial::Blocked);\n     }\n     if let Some(denial) = expired(key, now, shown, settings) {\n         return Err(denial);\n     }\n-    if key.token.is_none() {\n-        return Err(KeyDenial::NoToken);\n-    }\n-    Ok(())\n+    key.token.clone().ok_or(KeyDenial::NoToken)\n }\n",
+            "n_added": 4,
+            "n_removed": 6,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-070",
+            "path": "litellm/rust/crates/gateway-inference/tests/messages.rs",
+            "start_line": 536,
+            "end_line": 541,
+            "symbols": [
+              "hosted_provider_failure_preserves_status_body_and_request_id"
+            ],
+            "excerpt": "@@ -536,22 +536,6 @@ async fn hosted_provider_failure_preserves_status_body_and_request_id() {\n     assert_eq!(body[\"request_id\"], \"host-http-request\");\n }\n \n-#[rstest]\n-#[case::messages(\"/v1/messages\")]\n-#[case::ocr(\"/ocr\")]\n-#[tokio::test]\n-async fn model_permissions_prevent_provider_calls(#[case] path: &str) {\n-    let upstream = MockServer::start().await;\n-    let app = support::app_with_permissions(\n-        \"anthropic/test-model\",\n-        &upstream.uri(),\n-        litellm_gateway_auth::Permissions::None,\n-    );\n-    let response = support::post(app, path, json!({\"model\": \"public/model\"})).await;\n-    assert_eq!(response.status(), 403);\n-    assert!(upstream.received_requests().await.unwrap().is_empty());\n-}\n-\n #[rstest]\n #[case::completion(false)]\n #[case::streaming(true)]\n",
+            "n_added": 0,
+            "n_removed": 15,
+            "kind": "source",
+            "risk_hint": "none"
+          }
+        ],
+        "symbols": [
+          "key.token.clone",
+          "clone",
+          "ok_or",
+          "pub",
+          "expired",
+          "hosted_provider_failure_preserves_status_body_and_request_id"
+        ],
+        "kind": "source",
+        "risk_signals": [],
+        "requirements": [],
+        "change_context": {
+          "snapshot_id": "0f42afb748bedd0829663cc7c379d9644d0ee19c9ff1031bc85170ac74891c07",
+          "changes": [],
+          "limitations": [
+            "Structural changes guide investigation; they do not prove changed runtime behavior.",
+            "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+          ],
+          "unresolved_context": []
+        }
+      },
+      {
+        "id": "B-002",
+        "paths": [
+          "litellm/rust/crates/gateway-auth-core/src/identity/caller.rs",
+          "litellm/rust/crates/gateway-auth-core/src/identity/mod.rs",
+          "litellm/rust/crates/gateway-auth-core/src/identity/principal.rs",
+          "litellm/rust/crates/gateway-auth/src/identity.rs"
+        ],
+        "units": [
+          {
+            "id": "CU-021",
+            "path": "litellm/rust/crates/gateway-auth-core/src/identity/principal.rs",
+            "start_line": 14,
+            "end_line": 20,
+            "symbols": [
+              "pub"
+            ],
+            "excerpt": "@@ -14,7 +14,7 @@ pub(crate) enum CallerKind {\n /// What a JWT's claims say about who sends it, after the cheap agent reads and before any team,\n /// user or organization is read.\n #[derive(Clone, Debug, PartialEq)]\n-pub(crate) struct Caller<R: Rows> {\n+pub(crate) struct ClaimedCaller<R: Rows> {\n     pub(crate) kind: CallerKind,\n     pub(crate) rbac_role: Option<RbacRole>,\n     pub(crate) scopes: Vec<String>,",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-022",
+            "path": "litellm/rust/crates/gateway-auth-core/src/identity/principal.rs",
+            "start_line": 28,
+            "end_line": 34,
+            "symbols": [
+              "pub"
+            ],
+            "excerpt": "@@ -28,7 +28,7 @@ pub(crate) struct Caller<R: Rows> {\n /// Everything identity read for a caller that is neither a proxy admin nor an autonomous agent.\n #[derive(Clone, Debug, PartialEq)]\n pub(crate) struct Principal<R: Rows> {\n-    pub(crate) caller: Caller<R>,\n+    pub(crate) caller: ClaimedCaller<R>,\n     pub(crate) user_id: Option<String>,\n     pub(crate) user_email: Option<String>,\n     pub(crate) user: Option<User<R::User>>,\n",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-045",
+            "path": "litellm/rust/crates/gateway-auth/src/identity.rs",
+            "start_line": 0,
+            "end_line": 0,
+            "symbols": [],
+            "excerpt": "@@ -1,102 +0,0 @@\n-use std::{sync::Arc, time::SystemTime};\n-\n-use crate::authorization::Permissions;\n-\n-#[derive(Clone, Copy, Debug, Eq, PartialEq)]\n-pub enum PrincipalKind {\n-    Human,\n-    Service,\n-    System,\n-}\n-\n-#[derive(Clone, Debug, Eq, PartialEq)]\n-pub struct Principal {\n-    authority: String,\n-    subject: String,\n-    kind: PrincipalKind,\n-}\n-\n-impl Principal {\n-    pub fn new(authority: String, subject: String, kind: PrincipalKind) -> Self {\n-        Self {\n-            authority,\n-            subject,\n-            kind,\n-        }\n-    }\n-\n-    pub fn authority(&self) -> &str {\n-        &self.authority\n-    }\n-    pub fn subject(&self) -> &str {\n-        &self.subject\n-    }\n-    pub fn kind(&self) -> PrincipalKind {\n-        self.kind\n-    }\n-}\n-\n-#[derive(Clone, Debug, Eq, PartialEq)]\n-pub enum AuthenticationMethod {\n-    MasterKey,\n-    External(String),\n-}\n-\n-#[derive(Clone, Debug)]\n-pub struct Authentication {\n-    pub method: AuthenticationMethod,\n-    pub verifier: String,\n-    pub credential_id: String,\n-    pub expires_at: Option<SystemTime>,\n-}\n-\n-pub struct VerifiedIdentity {\n-    pub principal: Principal,\n-    pub authentication: Authentication,\n-    pub restrictions: Permissions,\n-}\n-\n-pub struct ResolvedIdentity {\n-    pub principal: Principal,\n-    pub permissions: Permissions,\n-}\n-\n-#[derive(Clone, Debug)]\n-pub struct AuthenticatedCaller {\n-    verified_principal: Principal,\n-    principal: Principal,\n-    authentication: Authentication,\n-    permissions: Permissions,\n-    restrictions: Permissions,\n-}\n-\n-impl AuthenticatedCaller {\n-    pub(crate) fn new(verified: VerifiedIdentity, resolved: ResolvedIdentity) -> Self {\n-        Self {\n-            verified_principal: verified.principal,\n-            principal: resolved.principal,\n-            authentication: verified.authentication,\n-            permissions: resolved.permissions,\n-            restrictions: verified.restrictions,\n-        }\n-    }\n-\n-    pub fn verified_principal(&self) -> &Principal {\n-        &self.verified_principal\n-    }\n-\n-    pub fn principal(&self) -> &Principal {\n-        &self.principal\n-    }\n-    pub fn authentication(&self) -> &Authentication {\n-        &self.authentication\n-    }\n-    pub fn permissions(&self) -> &Permissions {\n-        &self.permissions\n-    }\n-    pub fn restrictions(&self) -> &Permissions {\n-        &self.restrictions\n-    }\n-}\n-\n-pub type SharedCaller = Arc<AuthenticatedCaller>;\n",
+            "n_added": 0,
+            "n_removed": 102,
+            "kind": "source",
+            "risk_hint": "none"
+          }
+        ],
+        "symbols": [
+          "pub"
+        ],
+        "kind": "source",
+        "risk_signals": [],
+        "requirements": [],
+        "change_context": {
+          "snapshot_id": "0f42afb748bedd0829663cc7c379d9644d0ee19c9ff1031bc85170ac74891c07",
+          "changes": [],
+          "limitations": [
+            "Structural changes guide investigation; they do not prove changed runtime behavior.",
+            "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+          ],
+          "unresolved_context": []
+        }
+      },
+      {
+        "id": "B-003",
+        "paths": [
+          "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+          "litellm/rust/crates/python-bridge/src/auth/call.rs",
+          "litellm/rust/crates/gateway-auth/tests/auth.rs"
+        ],
+        "units": [
+          {
+            "id": "CU-007",
+            "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+            "start_line": 1,
+            "end_line": 473,
+            "symbols": [
+              "key.expose",
+              "config.general_settings",
+              "master_key.map",
+              "key.clone",
+              "key.row",
+              "await.unwrap",
+              "caller.role",
+              "a.b.c",
+              "await.err",
+              "request.header",
+              "request.body",
+              "response.status"
+            ],
+            "excerpt": "@@ -0,0 +1,473 @@\n+//! The gateway's answers to `gateway-auth-core`'s host steps on the key path, so the core decides\n+//! who calls it with no Python behind it, the native counterpart of python-bridge's\n+//! `PythonAuthHost`.\n+//!\n+//! This host reads no key yet. It answers the steps the master key takes and declines every\n+//! other one, so the master key is the only caller the core hands back. Serving a virtual key\n+//! starts by giving [`NativeRows::Key`] a row.\n+\n+use std::{convert::Infallible, sync::Arc, time::Duration};\n+\n+use litellm_config::{Config, LitellmRole};\n+use litellm_gateway_auth::{Auth, BearerOrXApiKey, KeyAuthenticator, SystemClock};\n+use litellm_gateway_auth_core::{\n+    AgentIdentityFailure, AuthHost, Error, HostFacts, KeyHash, MasterKey, OperatorHooks,\n+    RouteGroups, Rows, Settings, Token,\n+    authn::{\n+        jwt::{KeyMappingRow, KeyMappingWrite, MappedClaim, MappedKey},\n+        key::{CachedTeam, Keyed},\n+    },\n+    identity::{\n+        jwt::{\n+            AliasRead, DelegatedTeam, FinishedJwt, IdentityRead, ManagedAgent, ModelAccess, Org,\n+            RegisteredAgent, TeamRead, UserLookup, UserRead,\n+        },\n+        key::Owner,\n+    },\n+};\n+use serde_json::Value;\n+\n+/// The rows the native host hands the core. `Infallible` is a row this host does not read, so no\n+/// identity that needs one exists. The end user's is `()`, since the key path asks for it on\n+/// every request and a request that names no end user reads none.\n+#[derive(Clone, Debug, PartialEq)]\n+pub struct NativeRows;\n+\n+impl Rows for NativeRows {\n+    type Key = Infallible;\n+    type User = Infallible;\n+    type Team = Infallible;\n+    type EndUser = ();\n+    type ObjectPermission = Infallible;\n+    type Project = Infallible;\n+    type Membership = Infallible;\n+    type Org = Infallible;\n+    type Agent = Infallible;\n+}\n+\n+pub struct NativeAuthHost;\n+\n+/// The request needs `step`, which this host does not answer.\n+fn declined<T>(step: &'static str) -> Result<T, Error> {\n+    tracing::debug!(\n+        step,\n+        \"the native auth host does not serve what this request needs\"\n+    );\n+    Err(Error::HostFailed)\n+}\n+\n+/// What the core reads of this host beside `general_settings`. A blank master key is none. The\n+/// host reads no key, which is what having no database says to the core, so it refuses every\n+/// token but the master key before it asks for one. The gateway guards its inference routes\n+/// alone, so it names no route group, and it serves no UI…",
+            "n_added": 473,
+            "n_removed": 0,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-019",
+            "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+            "start_line": 1,
+            "end_line": 473,
+            "symbols": [
+              "key.expose",
+              "config.general_settings",
+              "master_key.map",
+              "key.clone",
+              "key.row",
+              "await.unwrap",
+              "caller.role",
+              "a.b.c",
+              "await.err",
+              "request.header",
+              "request.body",
+              "response.status"
+            ],
+            "excerpt": "@@ -0,0 +1,473 @@\n+//! The gateway's answers to `gateway-auth-core`'s host steps on the key path, so the core decides\n+//! who calls it with no Python behind it, the native counterpart of python-bridge's\n+//! `PythonAuthHost`.\n+//!\n+//! This host reads no key yet. It answers the steps the master key takes and declines every\n+//! other one, so the master key is the only caller the core hands back. Serving a virtual key\n+//! starts by giving [`NativeRows::Key`] a row.\n+\n+use std::{convert::Infallible, sync::Arc, time::Duration};\n+\n+use litellm_config::{Config, LitellmRole};\n+use litellm_gateway_auth::{Auth, BearerOrXApiKey, KeyAuthenticator, SystemClock};\n+use litellm_gateway_auth_core::{\n+    AgentIdentityFailure, AuthHost, Error, HostFacts, KeyHash, MasterKey, OperatorHooks,\n+    RouteGroups, Rows, Settings, Token,\n+    authn::{\n+        jwt::{KeyMappingRow, KeyMappingWrite, MappedClaim, MappedKey},\n+        key::{CachedTeam, Keyed},\n+    },\n+    identity::{\n+        jwt::{\n+            AliasRead, DelegatedTeam, FinishedJwt, IdentityRead, ManagedAgent, ModelAccess, Org,\n+            RegisteredAgent, TeamRead, UserLookup, UserRead,\n+        },\n+        key::Owner,\n+    },\n+};\n+use serde_json::Value;\n+\n+/// The rows the native host hands the core. `Infallible` is a row this host does not read, so no\n+/// identity that needs one exists. The end user's is `()`, since the key path asks for it on\n+/// every request and a request that names no end user reads none.\n+#[derive(Clone, Debug, PartialEq)]\n+pub struct NativeRows;\n+\n+impl Rows for NativeRows {\n+    type Key = Infallible;\n+    type User = Infallible;\n+    type Team = Infallible;\n+    type EndUser = ();\n+    type ObjectPermission = Infallible;\n+    type Project = Infallible;\n+    type Membership = Infallible;\n+    type Org = Infallible;\n+    type Agent = Infallible;\n+}\n+\n+pub struct NativeAuthHost;\n+\n+/// The request needs `step`, which this host does not answer.\n+fn declined<T>(step: &'static str) -> Result<T, Error> {\n+    tracing::debug!(\n+        step,\n+        \"the native auth host does not serve what this request needs\"\n+    );\n+    Err(Error::HostFailed)\n+}\n+\n+/// What the core reads of this host beside `general_settings`. A blank master key is none. The\n+/// host reads no key, which is what having no database says to the core, so it refuses every\n+/// token but the master key before it asks for one. The gateway guards its inference routes\n+/// alone, so it names no route group, and it serves no UI…",
+            "n_added": 473,
+            "n_removed": 0,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-020",
+            "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+            "start_line": 1,
+            "end_line": 473,
+            "symbols": [
+              "key.expose",
+              "config.general_settings",
+              "master_key.map",
+              "key.clone",
+              "key.row",
+              "await.unwrap",
+              "caller.role",
+              "a.b.c",
+              "await.err",
+              "request.header",
+              "request.body",
+              "response.status"
+            ],
+            "excerpt": "@@ -0,0 +1,473 @@\n+//! The gateway's answers to `gateway-auth-core`'s host steps on the key path, so the core decides\n+//! who calls it with no Python behind it, the native counterpart of python-bridge's\n+//! `PythonAuthHost`.\n+//!\n+//! This host reads no key yet. It answers the steps the master key takes and declines every\n+//! other one, so the master key is the only caller the core hands back. Serving a virtual key\n+//! starts by giving [`NativeRows::Key`] a row.\n+\n+use std::{convert::Infallible, sync::Arc, time::Duration};\n+\n+use litellm_config::{Config, LitellmRole};\n+use litellm_gateway_auth::{Auth, BearerOrXApiKey, KeyAuthenticator, SystemClock};\n+use litellm_gateway_auth_core::{\n+    AgentIdentityFailure, AuthHost, Error, HostFacts, KeyHash, MasterKey, OperatorHooks,\n+    RouteGroups, Rows, Settings, Token,\n+    authn::{\n+        jwt::{KeyMappingRow, KeyMappingWrite, MappedClaim, MappedKey},\n+        key::{CachedTeam, Keyed},\n+    },\n+    identity::{\n+        jwt::{\n+            AliasRead, DelegatedTeam, FinishedJwt, IdentityRead, ManagedAgent, ModelAccess, Org,\n+            RegisteredAgent, TeamRead, UserLookup, UserRead,\n+        },\n+        key::Owner,\n+    },\n+};\n+use serde_json::Value;\n+\n+/// The rows the native host hands the core. `Infallible` is a row this host does not read, so no\n+/// identity that needs one exists. The end user's is `()`, since the key path asks for it on\n+/// every request and a request that names no end user reads none.\n+#[derive(Clone, Debug, PartialEq)]\n+pub struct NativeRows;\n+\n+impl Rows for NativeRows {\n+    type Key = Infallible;\n+    type User = Infallible;\n+    type Team = Infallible;\n+    type EndUser = ();\n+    type ObjectPermission = Infallible;\n+    type Project = Infallible;\n+    type Membership = Infallible;\n+    type Org = Infallible;\n+    type Agent = Infallible;\n+}\n+\n+pub struct NativeAuthHost;\n+\n+/// The request needs `step`, which this host does not answer.\n+fn declined<T>(step: &'static str) -> Result<T, Error> {\n+    tracing::debug!(\n+        step,\n+        \"the native auth host does not serve what this request needs\"\n+    );\n+    Err(Error::HostFailed)\n+}\n+\n+/// What the core reads of this host beside `general_settings`. A blank master key is none. The\n+/// host reads no key, which is what having no database says to the core, so it refuses every\n+/// token but the master key before it asks for one. The gateway guards its inference routes\n+/// alone, so it names no route group, and it serves no UI…",
+            "n_added": 473,
+            "n_removed": 0,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-071",
+            "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+            "start_line": 1,
+            "end_line": 473,
+            "symbols": [
+              "key.expose",
+              "config.general_settings",
+              "master_key.map",
+              "key.clone",
+              "key.row",
+              "await.unwrap",
+              "caller.role",
+              "a.b.c",
+              "await.err",
+              "request.header",
+              "request.body",
+              "response.status"
+            ],
+            "excerpt": "@@ -0,0 +1,473 @@\n+//! The gateway's answers to `gateway-auth-core`'s host steps on the key path, so the core decides\n+//! who calls it with no Python behind it, the native counterpart of python-bridge's\n+//! `PythonAuthHost`.\n+//!\n+//! This host reads no key yet. It answers the steps the master key takes and declines every\n+//! other one, so the master key is the only caller the core hands back. Serving a virtual key\n+//! starts by giving [`NativeRows::Key`] a row.\n+\n+use std::{convert::Infallible, sync::Arc, time::Duration};\n+\n+use litellm_config::{Config, LitellmRole};\n+use litellm_gateway_auth::{Auth, BearerOrXApiKey, KeyAuthenticator, SystemClock};\n+use litellm_gateway_auth_core::{\n+    AgentIdentityFailure, AuthHost, Error, HostFacts, KeyHash, MasterKey, OperatorHooks,\n+    RouteGroups, Rows, Settings, Token,\n+    authn::{\n+        jwt::{KeyMappingRow, KeyMappingWrite, MappedClaim, MappedKey},\n+        key::{CachedTeam, Keyed},\n+    },\n+    identity::{\n+        jwt::{\n+            AliasRead, DelegatedTeam, FinishedJwt, IdentityRead, ManagedAgent, ModelAccess, Org,\n+            RegisteredAgent, TeamRead, UserLookup, UserRead,\n+        },\n+        key::Owner,\n+    },\n+};\n+use serde_json::Value;\n+\n+/// The rows the native host hands the core. `Infallible` is a row this host does not read, so no\n+/// identity that needs one exists. The end user's is `()`, since the key path asks for it on\n+/// every request and a request that names no end user reads none.\n+#[derive(Clone, Debug, PartialEq)]\n+pub struct NativeRows;\n+\n+impl Rows for NativeRows {\n+    type Key = Infallible;\n+    type User = Infallible;\n+    type Team = Infallible;\n+    type EndUser = ();\n+    type ObjectPermission = Infallible;\n+    type Project = Infallible;\n+    type Membership = Infallible;\n+    type Org = Infallible;\n+    type Agent = Infallible;\n+}\n+\n+pub struct NativeAuthHost;\n+\n+/// The request needs `step`, which this host does not answer.\n+fn declined<T>(step: &'static str) -> Result<T, Error> {\n+    tracing::debug!(\n+        step,\n+        \"the native auth host does not serve what this request needs\"\n+    );\n+    Err(Error::HostFailed)\n+}\n+\n+/// What the core reads of this host beside `general_settings`. A blank master key is none. The\n+/// host reads no key, which is what having no database says to the core, so it refuses every\n+/// token but the master key before it asks for one. The gateway guards its inference routes\n+/// alone, so it names no route group, and it serves no UI…",
+            "n_added": 473,
+            "n_removed": 0,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-078",
+            "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+            "start_line": 1,
+            "end_line": 473,
+            "symbols": [
+              "key.expose",
+              "config.general_settings",
+              "master_key.map",
+              "key.clone",
+              "key.row",
+              "await.unwrap",
+              "caller.role",
+              "a.b.c",
+              "await.err",
+              "request.header",
+              "request.body",
+              "response.status"
+            ],
+            "excerpt": "@@ -0,0 +1,473 @@\n+//! The gateway's answers to `gateway-auth-core`'s host steps on the key path, so the core decides\n+//! who calls it with no Python behind it, the native counterpart of python-bridge's\n+//! `PythonAuthHost`.\n+//!\n+//! This host reads no key yet. It answers the steps the master key takes and declines every\n+//! other one, so the master key is the only caller the core hands back. Serving a virtual key\n+//! starts by giving [`NativeRows::Key`] a row.\n+\n+use std::{convert::Infallible, sync::Arc, time::Duration};\n+\n+use litellm_config::{Config, LitellmRole};\n+use litellm_gateway_auth::{Auth, BearerOrXApiKey, KeyAuthenticator, SystemClock};\n+use litellm_gateway_auth_core::{\n+    AgentIdentityFailure, AuthHost, Error, HostFacts, KeyHash, MasterKey, OperatorHooks,\n+    RouteGroups, Rows, Settings, Token,\n+    authn::{\n+        jwt::{KeyMappingRow, KeyMappingWrite, MappedClaim, MappedKey},\n+        key::{CachedTeam, Keyed},\n+    },\n+    identity::{\n+        jwt::{\n+            AliasRead, DelegatedTeam, FinishedJwt, IdentityRead, ManagedAgent, ModelAccess, Org,\n+            RegisteredAgent, TeamRead, UserLookup, UserRead,\n+        },\n+        key::Owner,\n+    },\n+};\n+use serde_json::Value;\n+\n+/// The rows the native host hands the core. `Infallible` is a row this host does not read, so no\n+/// identity that needs one exists. The end user's is `()`, since the key path asks for it on\n+/// every request and a request that names no end user reads none.\n+#[derive(Clone, Debug, PartialEq)]\n+pub struct NativeRows;\n+\n+impl Rows for NativeRows {\n+    type Key = Infallible;\n+    type User = Infallible;\n+    type Team = Infallible;\n+    type EndUser = ();\n+    type ObjectPermission = Infallible;\n+    type Project = Infallible;\n+    type Membership = Infallible;\n+    type Org = Infallible;\n+    type Agent = Infallible;\n+}\n+\n+pub struct NativeAuthHost;\n+\n+/// The request needs `step`, which this host does not answer.\n+fn declined<T>(step: &'static str) -> Result<T, Error> {\n+    tracing::debug!(\n+        step,\n+        \"the native auth host does not serve what this request needs\"\n+    );\n+    Err(Error::HostFailed)\n+}\n+\n+/// What the core reads of this host beside `general_settings`. A blank master key is none. The\n+/// host reads no key, which is what having no database says to the core, so it refuses every\n+/// token but the master key before it asks for one. The gateway guards its inference routes\n+/// alone, so it names no route group, and it serves no UI…",
+            "n_added": 473,
+            "n_removed": 0,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-079",
+            "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+            "start_line": 1,
+            "end_line": 473,
+            "symbols": [
+              "key.expose",
+              "config.general_settings",
+              "master_key.map",
+              "key.clone",
+              "key.row",
+              "await.unwrap",
+              "caller.role",
+              "a.b.c",
+              "await.err",
+              "request.header",
+              "request.body",
+              "response.status"
+            ],
+            "excerpt": "@@ -0,0 +1,473 @@\n+//! The gateway's answers to `gateway-auth-core`'s host steps on the key path, so the core decides\n+//! who calls it with no Python behind it, the native counterpart of python-bridge's\n+//! `PythonAuthHost`.\n+//!\n+//! This host reads no key yet. It answers the steps the master key takes and declines every\n+//! other one, so the master key is the only caller the core hands back. Serving a virtual key\n+//! starts by giving [`NativeRows::Key`] a row.\n+\n+use std::{convert::Infallible, sync::Arc, time::Duration};\n+\n+use litellm_config::{Config, LitellmRole};\n+use litellm_gateway_auth::{Auth, BearerOrXApiKey, KeyAuthenticator, SystemClock};\n+use litellm_gateway_auth_core::{\n+    AgentIdentityFailure, AuthHost, Error, HostFacts, KeyHash, MasterKey, OperatorHooks,\n+    RouteGroups, Rows, Settings, Token,\n+    authn::{\n+        jwt::{KeyMappingRow, KeyMappingWrite, MappedClaim, MappedKey},\n+        key::{CachedTeam, Keyed},\n+    },\n+    identity::{\n+        jwt::{\n+            AliasRead, DelegatedTeam, FinishedJwt, IdentityRead, ManagedAgent, ModelAccess, Org,\n+            RegisteredAgent, TeamRead, UserLookup, UserRead,\n+        },\n+        key::Owner,\n+    },\n+};\n+use serde_json::Value;\n+\n+/// The rows the native host hands the core. `Infallible` is a row this host does not read, so no\n+/// identity that needs one exists. The end user's is `()`, since the key path asks for it on\n+/// every request and a request that names no end user reads none.\n+#[derive(Clone, Debug, PartialEq)]\n+pub struct NativeRows;\n+\n+impl Rows for NativeRows {\n+    type Key = Infallible;\n+    type User = Infallible;\n+    type Team = Infallible;\n+    type EndUser = ();\n+    type ObjectPermission = Infallible;\n+    type Project = Infallible;\n+    type Membership = Infallible;\n+    type Org = Infallible;\n+    type Agent = Infallible;\n+}\n+\n+pub struct NativeAuthHost;\n+\n+/// The request needs `step`, which this host does not answer.\n+fn declined<T>(step: &'static str) -> Result<T, Error> {\n+    tracing::debug!(\n+        step,\n+        \"the native auth host does not serve what this request needs\"\n+    );\n+    Err(Error::HostFailed)\n+}\n+\n+/// What the core reads of this host beside `general_settings`. A blank master key is none. The\n+/// host reads no key, which is what having no database says to the core, so it refuses every\n+/// token but the master key before it asks for one. The gateway guards its inference routes\n+/// alone, so it names no route group, and it serves no UI…",
+            "n_added": 473,
+            "n_removed": 0,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-080",
+            "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+            "start_line": 1,
+            "end_line": 473,
+            "symbols": [
+              "key.expose",
+              "config.general_settings",
+              "master_key.map",
+              "key.clone",
+              "key.row",
+              "await.unwrap",
+              "caller.role",
+              "a.b.c",
+              "await.err",
+              "request.header",
+              "request.body",
+              "response.status"
+            ],
+            "excerpt": "@@ -0,0 +1,473 @@\n+//! The gateway's answers to `gateway-auth-core`'s host steps on the key path, so the core decides\n+//! who calls it with no Python behind it, the native counterpart of python-bridge's\n+//! `PythonAuthHost`.\n+//!\n+//! This host reads no key yet. It answers the steps the master key takes and declines every\n+//! other one, so the master key is the only caller the core hands back. Serving a virtual key\n+//! starts by giving [`NativeRows::Key`] a row.\n+\n+use std::{convert::Infallible, sync::Arc, time::Duration};\n+\n+use litellm_config::{Config, LitellmRole};\n+use litellm_gateway_auth::{Auth, BearerOrXApiKey, KeyAuthenticator, SystemClock};\n+use litellm_gateway_auth_core::{\n+    AgentIdentityFailure, AuthHost, Error, HostFacts, KeyHash, MasterKey, OperatorHooks,\n+    RouteGroups, Rows, Settings, Token,\n+    authn::{\n+        jwt::{KeyMappingRow, KeyMappingWrite, MappedClaim, MappedKey},\n+        key::{CachedTeam, Keyed},\n+    },\n+    identity::{\n+        jwt::{\n+            AliasRead, DelegatedTeam, FinishedJwt, IdentityRead, ManagedAgent, ModelAccess, Org,\n+            RegisteredAgent, TeamRead, UserLookup, UserRead,\n+        },\n+        key::Owner,\n+    },\n+};\n+use serde_json::Value;\n+\n+/// The rows the native host hands the core. `Infallible` is a row this host does not read, so no\n+/// identity that needs one exists. The end user's is `()`, since the key path asks for it on\n+/// every request and a request that names no end user reads none.\n+#[derive(Clone, Debug, PartialEq)]\n+pub struct NativeRows;\n+\n+impl Rows for NativeRows {\n+    type Key = Infallible;\n+    type User = Infallible;\n+    type Team = Infallible;\n+    type EndUser = ();\n+    type ObjectPermission = Infallible;\n+    type Project = Infallible;\n+    type Membership = Infallible;\n+    type Org = Infallible;\n+    type Agent = Infallible;\n+}\n+\n+pub struct NativeAuthHost;\n+\n+/// The request needs `step`, which this host does not answer.\n+fn declined<T>(step: &'static str) -> Result<T, Error> {\n+    tracing::debug!(\n+        step,\n+        \"the native auth host does not serve what this request needs\"\n+    );\n+    Err(Error::HostFailed)\n+}\n+\n+/// What the core reads of this host beside `general_settings`. A blank master key is none. The\n+/// host reads no key, which is what having no database says to the core, so it refuses every\n+/// token but the master key before it asks for one. The gateway guards its inference routes\n+/// alone, so it names no route group, and it serves no UI…",
+            "n_added": 473,
+            "n_removed": 0,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-081",
+            "path": "litellm/rust/crates/gateway/src/host/auth/mod.rs",
+            "start_line": 1,
+            "end_line": 473,
+            "symbols": [
+              "key.expose",
+              "config.general_settings",
+              "master_key.map",
+              "key.clone",
+              "key.row",
+              "await.unwrap",
+              "caller.role",
+              "a.b.c",
+              "await.err",
+              "request.header",
+              "request.body",
+              "response.status"
+            ],
+            "excerpt": "@@ -0,0 +1,473 @@\n+//! The gateway's answers to `gateway-auth-core`'s host steps on the key path, so the core decides\n+//! who calls it with no Python behind it, the native counterpart of python-bridge's\n+//! `PythonAuthHost`.\n+//!\n+//! This host reads no key yet. It answers the steps the master key takes and declines every\n+//! other one, so the master key is the only caller the core hands back. Serving a virtual key\n+//! starts by giving [`NativeRows::Key`] a row.\n+\n+use std::{convert::Infallible, sync::Arc, time::Duration};\n+\n+use litellm_config::{Config, LitellmRole};\n+use litellm_gateway_auth::{Auth, BearerOrXApiKey, KeyAuthenticator, SystemClock};\n+use litellm_gateway_auth_core::{\n+    AgentIdentityFailure, AuthHost, Error, HostFacts, KeyHash, MasterKey, OperatorHooks,\n+    RouteGroups, Rows, Settings, Token,\n+    authn::{\n+        jwt::{KeyMappingRow, KeyMappingWrite, MappedClaim, MappedKey},\n+        key::{CachedTeam, Keyed},\n+    },\n+    identity::{\n+        jwt::{\n+            AliasRead, DelegatedTeam, FinishedJwt, IdentityRead, ManagedAgent, ModelAccess, Org,\n+            RegisteredAgent, TeamRead, UserLookup, UserRead,\n+        },\n+        key::Owner,\n+    },\n+};\n+use serde_json::Value;\n+\n+/// The rows the native host hands the core. `Infallible` is a row this host does not read, so no\n+/// identity that needs one exists. The end user's is `()`, since the key path asks for it on\n+/// every request and a request that names no end user reads none.\n+#[derive(Clone, Debug, PartialEq)]\n+pub struct NativeRows;\n+\n+impl Rows for NativeRows {\n+    type Key = Infallible;\n+    type User = Infallible;\n+    type Team = Infallible;\n+    type EndUser = ();\n+    type ObjectPermission = Infallible;\n+    type Project = Infallible;\n+    type Membership = Infallible;\n+    type Org = Infallible;\n+    type Agent = Infallible;\n+}\n+\n+pub struct NativeAuthHost;\n+\n+/// The request needs `step`, which this host does not answer.\n+fn declined<T>(step: &'static str) -> Result<T, Error> {\n+    tracing::debug!(\n+        step,\n+        \"the native auth host does not serve what this request needs\"\n+    );\n+    Err(Error::HostFailed)\n+}\n+\n+/// What the core reads of this host beside `general_settings`. A blank master key is none. The\n+/// host reads no key, which is what having no database says to the core, so it refuses every\n+/// token but the master key before it asks for one. The gateway guards its inference routes\n+/// alone, so it names no route group, and it serves no UI…",
+            "n_added": 473,
+            "n_removed": 0,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-088",
+            "path": "litellm/rust/crates/python-bridge/src/auth/call.rs",
+            "start_line": 599,
+            "end_line": 605,
+            "symbols": [
+              "context.key.row",
+              "row"
+            ],
+            "excerpt": "@@ -599,7 +599,7 @@ impl KeyContextView {\n         Py::new(\n             py,\n             Self {\n-                key: row(py, &context.key),\n+                key: row(py, &context.key.row),\n                 end_user: row(py, &context.end_user),\n                 owner: rows(py, context.owner.as_ref()),\n                 team: team.into_pyobject(py)?.into_any().unbind(),",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-089",
+            "path": "litellm/rust/crates/python-bridge/src/auth/call.rs",
+            "start_line": 734,
+            "end_line": 740,
+            "symbols": [
+              "key.row",
+              "row"
+            ],
+            "excerpt": "@@ -734,7 +734,7 @@ impl IdentityView {\n             },\n             Identity::Key(KeyIdentity::UserAuthRoute) => Self::UserAuthRoute(),\n             Identity::Key(KeyIdentity::CachedAdmin { key, end_user }) => Self::CachedAdmin {\n-                key: row(py, key),\n+                key: row(py, &key.row),\n                 end_user: row(py, end_user),\n             },\n             Identity::Key(KeyIdentity::MasterKey { hash, end_user }) => Self::MasterKey {",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-048",
+            "path": "litellm/rust/crates/gateway-auth/tests/auth.rs",
+            "start_line": 3,
+            "end_line": 186,
+            "symbols": [
+              "self.failure",
+              "token.expose",
+              "hash.as_str",
+              "await.unwrap",
+              "response.status",
+              "response.into_body",
+              "app.oneshot",
+              "derive",
+              "stored_key",
+              "Key",
+              "default",
+              "match"
+            ],
+            "excerpt": "@@ -3,425 +3,184 @@ use std::sync::Arc;\n use axum::{\n     Router,\n     body::{Body, to_bytes},\n-    http::{Request, StatusCode},\n+    http::{Request, StatusCode, request::Parts},\n     middleware::from_extractor_with_state,\n     routing::get,\n };\n-use litellm_config::Config;\n-use litellm_gateway_auth::{Auth, RequireMasterKey, hash_token};\n-use litellm_secret_value::SecretValue;\n-use rstest::rstest;\n-use tower::ServiceExt;\n-\n-#[rstest]\n-#[case::literal(\"literal-key\", Some(\"Bearer literal-key\"), 204)]\n-#[case::wrong(\"literal-key\", Some(\"Bearer other-key\"), 401)]\n-#[case::missing(\"literal-key\", None, 401)]\n-#[case::wrong_scheme(\"literal-key\", Some(\"Basic literal-key\"), 401)]\n-#[case::empty_token(\"literal-key\", Some(\"Bearer \"), 401)]\n-#[case::empty_key(\"\", Some(\"Bearer \"), 500)]\n-#[case::whitespace_key(\"   \", Some(\"Bearer \"), 500)]\n-#[tokio::test]\n-async fn enforces_configured_keys_without_exposing_secrets(\n-    #[case] key: &str,\n-    #[case] authorization: Option<&str>,\n-    #[case] status: u16,\n-) {\n-    let config = Config::from_yaml(&format!(\n-        \"model_list: []\\ngeneral_settings:\\n  master_key: '{key}'\\n\"\n-    ))\n-    .unwrap();\n-    let app = Router::new()\n-        .route(\"/protected\", get(|| async { StatusCode::NO_CONTENT }))\n-        .layer(from_extractor_with_state::<RequireMasterKey, _>(\n-            Auth::from_config(&config),\n-        ));\n-    let request = Request::get(\"/protected\");\n-    let request = match authorization {\n-        Some(value) => request.header(\"authorization\", value),\n-        None => request,\n-    };\n-    let response = app\n-        .oneshot(request.body(Body::empty()).unwrap())\n-        .await\n-        .unwrap();\n-    assert_eq!(response.status().as_u16(), status);\n-    let body = to_bytes(response.into_body(), 4096).await.unwrap();\n-    let text = std::str::from_utf8(&body).unwrap();\n-    assert!(!text.contains(\"literal-key\"));\n-}\n-\n-#[rstest]\n-fn hash_token_matches_python_sha256_hexdigest() {\n-    assert_eq!(\n-        hash_token(\"sk-9876\"),\n-        \"595b23af2e99cee580245f388d3244a39247a25a3846e898e9c78841f8471a3e\"\n-    );\n-}\n-\n use litellm_gateway_auth::{\n-    AccessRequest, AuthFuture, AuthenticatedCaller, AuthenticatedRequest, Authentication,\n-    AuthenticationMethod, Authenticator, Authorizer, Clock, Error, IdentityResolver, Permissions,\n-    Principal, PrincipalKind, ResolvedIdentity, VerifiedIdentity, authenticate,\n+    Auth, AuthFuture, Authenticated, Authenticator, Credential, CredentialExtractor, Error,\n+…",
+            "n_added": 110,
+            "n_removed": 351,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-049",
+            "path": "litellm/rust/crates/gateway-auth/tests/auth.rs",
+            "start_line": 195,
+            "end_line": 223,
+            "symbols": [
+              "request.header",
+              "request.body",
+              "response.status",
+              "the_master_key",
+              "Some",
+              "a_key",
+              "an_unknown_token",
+              "no_token_is_still_put_to_the_authenticator",
+              "a_malformed_header_is_no_token",
+              "require_master_key_admits_the_master_key_alone",
+              "route",
+              "get"
+            ],
+            "excerpt": "@@ -436,17 +195,29 @@ async fn route_profile_uses_only_its_selected_credentials(\n }\n \n #[rstest]\n+#[case::the_master_key(Some(\"Bearer master-token\"), 204)]\n+#[case::a_key(Some(\"Bearer key-token\"), 401)]\n+#[case::an_unknown_token(Some(\"Bearer other-token\"), 401)]\n+#[case::no_token_is_still_put_to_the_authenticator(None, 500)]\n+#[case::a_malformed_header_is_no_token(Some(\"Basic master-token\"), 500)]\n #[tokio::test]\n-async fn master_rotation_rejects_the_old_key() {\n-    let second =\n-        Config::from_yaml(\"model_list: []\\ngeneral_settings:\\n  master_key: second-key\\n\").unwrap();\n-    let rotated = Auth::from_config(&second);\n-    rotated\n-        .authenticate(&SecretValue::new(\"second-key\"))\n+async fn require_master_key_admits_the_master_key_alone(\n+    #[case] authorization: Option<&str>,\n+    #[case] status: u16,\n+) {\n+    let app = Router::new()\n+        .route(\"/protected\", get(|| async { StatusCode::NO_CONTENT }))\n+        .layer(from_extractor_with_state::<RequireMasterKey, _>(auth(None)));\n+    let request = Request::get(\"/protected\");\n+    let request = match authorization {\n+        Some(value) => request.header(\"authorization\", value),\n+        None => request,\n+    };\n+\n+    let response = app\n+        .oneshot(request.body(Body::empty()).unwrap())\n         .await\n         .unwrap();\n-    assert!(matches!(\n-        rotated.authenticate(&SecretValue::new(\"first-key\")).await,\n-        Err(Error::InvalidToken)\n-    ));\n+\n+    assert_eq!(response.status().as_u16(), status);\n }\n",
+            "n_added": 22,
+            "n_removed": 10,
+            "kind": "source",
+            "risk_hint": "none"
+          }
+        ],
+        "symbols": [
+          "key.expose",
+          "config.general_settings",
+          "master_key.map",
+          "key.clone",
+          "key.row",
+          "await.unwrap",
+          "caller.role",
+          "a.b.c",
+          "await.err",
+          "request.header",
+          "request.body",
+          "response.status",
+          "context.key.row",
+          "row",
+          "self.failure",
+          "token.expose",
+          "hash.as_str",
+          "response.into_body",
+          "app.oneshot",
+          "derive",
+          "stored_key",
+          "Key",
+          "default",
+          "match",
+          "the_master_key",
+          "Some",
+          "a_key",
+          "an_unknown_token",
+          "no_token_is_still_put_to_the_authenticator",
+          "a_malformed_header_is_no_token",
+          "require_master_key_admits_the_master_key_alone",
+          "route",
+          "get"
+        ],
+        "kind": "source",
+        "risk_signals": [],
+        "requirements": [],
+        "change_context": {
+          "snapshot_id": "0f42afb748bedd0829663cc7c379d9644d0ee19c9ff1031bc85170ac74891c07",
+          "changes": [],
+          "limitations": [
+            "Structural changes guide investigation; they do not prove changed runtime behavior.",
+            "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+          ],
+          "unresolved_context": []
+        }
+      },
+      {
+        "id": "B-004",
+        "paths": [
+          "litellm/rust/crates/gateway-auth-core/src/pipeline/jwt.rs",
+          "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs"
+        ],
+        "units": [
+          {
+            "id": "CU-024",
+            "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/jwt.rs",
+            "start_line": 12,
+            "end_line": 18,
+            "symbols": [],
+            "excerpt": "@@ -12,7 +12,7 @@ use crate::{\n     commit::{self, Grant, Grants},\n     host::{KeyRow, UserRow},\n     identity::{\n-        Caller, CallerKind, Principal,\n+        CallerKind, ClaimedCaller, Principal,\n         jwt::{\n             AgentMode, ClaimIdentity, FinishedJwt, JwtIdentity, JwtMapping, JwtOutcome, JwtRows,\n             Provisioning, Team, TeamSettings, UserInfo, agent, caller, claims, org,",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-025",
+            "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/jwt.rs",
+            "start_line": 107,
+            "end_line": 113,
+            "symbols": [
+              "pub"
+            ],
+            "excerpt": "@@ -107,7 +107,7 @@ pub(crate) async fn resolve_identity<H: AuthHost>(\n /// What a caller claims about itself before any read: the user id an RBAC role rebinds to its\n /// object id, and the team an RBAC team token names.\n fn claimed_ids<R: Rows>(\n-    caller: &Caller<R>,\n+    caller: &ClaimedCaller<R>,\n     info: &UserInfo,\n     claims: &Claims,\n     settings: &JwtSettings,",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-026",
+            "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/jwt.rs",
+            "start_line": 191,
+            "end_line": 197,
+            "symbols": [],
+            "excerpt": "@@ -191,7 +191,7 @@ async fn authorize<H: AuthHost>(\n async fn admin<H: AuthHost>(\n     host: &H,\n     claims: &Claims,\n-    caller: Caller<H::Rows>,\n+    caller: ClaimedCaller<H::Rows>,\n     info: UserInfo,\n     request: &JwtRequest<'_>,\n     settings: &JwtSettings,",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-027",
+            "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/jwt.rs",
+            "start_line": 249,
+            "end_line": 255,
+            "symbols": [],
+            "excerpt": "@@ -249,7 +249,7 @@ async fn admin<H: AuthHost>(\n async fn principal<H: AuthHost>(\n     host: &H,\n     claims: &Claims,\n-    caller: Caller<H::Rows>,\n+    caller: ClaimedCaller<H::Rows>,\n     info: UserInfo,\n     request: &JwtRequest<'_>,\n     settings: &JwtSettings,\n",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-028",
+            "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+            "start_line": 35,
+            "end_line": 46,
+            "symbols": [
+              "principal",
+              "pub"
+            ],
+            "excerpt": "@@ -35,8 +35,12 @@ pub(crate) async fn authenticate<H: AuthHost>(\n         Verified::UserAuthRoute => Ok(KeyIdentity::UserAuthRoute),\n         Verified::MasterKey { hash, end_user } => Ok(KeyIdentity::MasterKey { hash, end_user }),\n         Verified::CachedAdmin { key, end_user } => Ok(KeyIdentity::CachedAdmin { key, end_user }),\n-        Verified::VirtualKey { key, end_user } => {\n-            let principal = identity::key::principal(host, key, end_user).await?;\n+        Verified::VirtualKey {\n+            stored,\n+            key,\n+            end_user,\n+        } => {\n+            let principal = identity::key::principal(host, stored, key, end_user).await?;\n             let admitted = crate::admission::key(host, principal, request, settings).await?;\n             Ok(KeyIdentity::VirtualKey(Box::new(KeyContext::from(\n                 admitted,",
+            "n_added": 6,
+            "n_removed": 2,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-029",
+            "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+            "start_line": 368,
+            "end_line": 393,
+            "symbols": [
+              "record.clone",
+              "cached_admin_key_carries_its_row_and_what_it_stores",
+              "virtual_key",
+              "Some",
+              "clone",
+              "to_owned"
+            ],
+            "excerpt": "@@ -364,22 +368,26 @@ mod tests {\n     #[case::fresh(None)]\n     #[case::not_yet_expired(Some(at(1_001)))]\n     #[tokio::test]\n-    async fn cached_admin_key_carries_its_row(\n+    async fn cached_admin_key_carries_its_row_and_what_it_stores(\n         settings: KeySettings,\n         #[case] expires: Option<Timestamp>,\n     ) {\n+        let record = KeyRecord {\n+            is_proxy_admin: true,\n+            expires,\n+            ..virtual_key()\n+        };\n         let host = ScriptedHost {\n-            cached: Some(KeyRecord {\n-                is_proxy_admin: true,\n-                expires,\n-                ..virtual_key()\n-            }),\n+            cached: Some(record.clone()),\n             ..ScriptedHost::default()\n         };\n         assert_eq!(\n             run(&host, \"sk-admin\", \"/chat/completions\", &settings).await,\n             Ok(KeyIdentity::CachedAdmin {\n-                key: \"cached\".to_owned(),\n+                key: Keyed {\n+                    record,\n+                    row: \"cached\".to_owned()\n+                },\n                 end_user: \"end-user\".to_owned()\n             })\n         );",
+            "n_added": 11,
+            "n_removed": 7,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-030",
+            "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+            "start_line": 556,
+            "end_line": 581,
+            "symbols": [
+              "record.clone",
+              "Some",
+              "to_owned",
+              "virtual_key",
+              "clone"
+            ],
+            "excerpt": "@@ -548,21 +556,26 @@ mod tests {\n             proxy_budget: true,\n             ..settings\n         };\n+        let record = KeyRecord {\n+            user_id: Some(\"u\".to_owned()),\n+            team_id: Some(\"t\".to_owned()),\n+            project_id: Some(\"p\".to_owned()),\n+            ..virtual_key()\n+        };\n         let host = ScriptedHost {\n-            db: Some(KeyRecord {\n-                user_id: Some(\"u\".to_owned()),\n-                team_id: Some(\"t\".to_owned()),\n-                project_id: Some(\"p\".to_owned()),\n-                ..virtual_key()\n-            }),\n+            db: Some(record.clone()),\n             key_owner: Some(false),\n             key_team_found: true,\n             ..ScriptedHost::default()\n         };\n         assert_eq!(\n             context(run(&host, \"sk-1\", \"/chat/completions\", &settings).await),\n             KeyContext {\n-                key: \"db+prepared\".to_owned(),\n+                hash: KeyHash::new(\"hashed\"),\n+                key: Keyed {\n+                    record,\n+                    row: \"db+prepared\".to_owned()\n+                },\n                 end_user: \"end-user\".to_owned(),\n                 owner: Some(\"owner u\".to_owned()),\n                 team: TeamGrant::Loaded(\"team t\".to_owned()),",
+            "n_added": 12,
+            "n_removed": 7,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-031",
+            "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+            "start_line": 835,
+            "end_line": 843,
+            "symbols": [
+              "context",
+              "run"
+            ],
+            "excerpt": "@@ -822,7 +835,9 @@ mod tests {\n             ..ScriptedHost::default()\n         };\n         assert_eq!(\n-            context(run(&host, \"sk-1\", \"/chat/completions\", &settings).await).key,\n+            context(run(&host, \"sk-1\", \"/chat/completions\", &settings).await)\n+                .key\n+                .row,\n             key\n         );\n     }",
+            "n_added": 3,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-032",
+            "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+            "start_line": 882,
+            "end_line": 888,
+            "symbols": [
+              "context.key.row.as_str",
+              "context.owner",
+              "as_str"
+            ],
+            "excerpt": "@@ -867,7 +882,7 @@ mod tests {\n             ..ScriptedHost::default()\n         };\n         let context = context(run(&host, \"sk-1\", \"/chat/completions\", &settings).await);\n-        assert_eq!((context.key.as_str(), context.owner), (key, None));\n+        assert_eq!((context.key.row.as_str(), context.owner), (key, None));\n     }\n \n     #[rstest]",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          },
+          {
+            "id": "CU-033",
+            "path": "litellm/rust/crates/gateway-auth-core/src/pipeline/key.rs",
+            "start_line": 917,
+            "end_line": 923,
+            "symbols": [
+              "outcome.map_err",
+              "refused.error",
+              "key.row",
+              "context",
+              "map_err"
+            ],
+            "excerpt": "@@ -902,7 +917,7 @@ mod tests {\n         let host = ScriptedHost::default();\n         let outcome = run_resolved(&host, virtual_key(), &settings).await;\n         assert_eq!(\n-            context(outcome.map_err(|refused| *refused.error)).key,\n+            context(outcome.map_err(|refused| *refused.error)).key.row,\n             \"mapped+prepared\"\n         );\n         assert_eq!(\n",
+            "n_added": 1,
+            "n_removed": 1,
+            "kind": "source",
+            "risk_hint": "none"
+          }
+        ],
+        "symbols": [
+          "pub",
+          "principal",
+          "record.clone",
+          "cached_admin_key_carries_its_row_and_what_it_stores",
+          "virtual_key",
+          "Some",
+          "clone",
+          "to_owned",
+          "context",
+          "run",
+          "context.key.row.as_str",
+          "context.owner",
+          "as_str",
+          "outcome.map_err",
+          "refused.error",
+          "key.row",
+          "map_err"
+        ],
+        "kind": "source",
+        "risk_signals": [],
+        "requirements": [],
+        "change_context": {
+          "snapshot_id": "0f42afb748bedd0829663cc7c379d9644d0ee19c9ff1031bc85170ac74891c07",
+          "changes": [],
+          "limitations": [
+            "Structural changes guide investigation; they do not prove changed runtime behavior.",
+            "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+          ],
+          "unresolved_context": []
+        }
+      }
+    ],
+    "coverage": {
+      "units_total": 89,
+      "units_packed": 28,
+      "units_omitted": 61,
+      "source_units": 79
+    },
+    "execution": {
+      "enabled": false,
+      "skipped": true,
+      "skip_reason": "flag_off",
+      "cmd": "",
+      "cwd": "",
+      "exit_code": null,
+      "elapsed_s": 0.0,
+      "passed": null,
+      "failed": null,
+      "failed_names": [],
+      "raw_tail": "",
+      "ran_paths": [],
+      "python_env": "",
+      "python": {
+        "skipped": true,
+        "skip_reason": null,
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "env": "",
+        "frozen": false,
+        "cached": false,
+        "install_cmd": "",
+        "install_elapsed_s": 0.0
+      },
+      "js": {
+        "skipped": true,
+        "skip_reason": null,
+        "cmd": "",
+        "cwd": "",
+        "exit_code": null,
+        "elapsed_s": 0.0,
+        "passed": null,
+        "failed": null,
+        "failed_names": [],
+        "raw_tail": "",
+        "ran_paths": [],
+        "env": "",
+        "frozen": false,
+        "cached": false,
+        "install_cmd": "",
+        "install_elapsed_s": 0.0
+      }
+    },
+    "findings": [],
+    "pipeline_trace": [],
+    "timing": {
+      "workspace_s": 0.0,
+      "graphify_s": 0.0,
+      "pr_facts_s": 0.0,
+      "change_units_s": 0.0,
+      "bundling_s": 0.0,
+      "bundle_agent_s": 103.637,
+      "reflect_s": 0.0,
+      "verify_s": 0.0,
+      "sandbox_s": 0.0,
+      "policy_s": 0.0,
+      "total_s": 103.637
+    },
+    "agent_runs": [
+      {
+        "status": "VALID_EMPTY",
+        "candidate_count": 0,
+        "raw_outputs": [
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-005\",\n      \"behavioral_delta\": \"No change\",\n      \"contract\": \"No change\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-005\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-005\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-006\",\n      \"behavioral_delta\": \"Changed return type\",\n      \"contract\": \"Changed return type\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-006\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-006\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}",
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-070\",\n      \"behavioral_delta\": \"Removed a test case for model permissions preventing provider calls.\",\n      \"contract\": \"The test case was intended to verify that model permissions prevent provider calls.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"messages.rs\",\n      \"outcome\": \"no_regression_identified\",\n      \"evidence_refs\": [\"CU-070\"],\n      \"missing_evidence\": [\"explicit_requirements\"],\n      \"hypothesis\": null\n    }\n  ]\n}"
+        ],
+        "tool_calls": [],
+        "hypotheses": [],
+        "hypothesis_count": 0,
+        "evidence_items": [],
+        "evidence_count": 0,
+        "stage_status": {
+          "discovery": "SEMANTIC_CONTRACT",
+          "proof": "VALID_EMPTY"
+        },
+        "parse_error": null,
+        "exception": null,
+        "latency_ms": 22176.99,
+        "prompt_version": "semantic-contract-v4-scoped-authority",
+        "model_calls": 2,
+        "assessments": [
+          {
+            "unit_id": "CU-005",
+            "status": "inspected",
+            "behavioral_delta": "No change",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-005"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-006",
+            "status": "inspected",
+            "behavioral_delta": "Changed return type",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-006"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-070",
+            "status": "inspected",
+            "behavioral_delta": "Removed a test case for model permissions preventing provider calls.",
+            "hypothesis_outcome": "no_regression_identified",
+            "evidence_refs": [
+              "CU-070"
+            ],
+            "reason": "explicit_requirements"
+          }
+        ],
+        "hypothesis_outcomes": [],
+        "protocol_errors": [],
+        "proof_runs": [],
+        "discovery_protocol": "semantic-v1",
+        "contract_assessments": [
+          {
+            "unit_id": "CU-005",
+            "behavioral_delta": "No change",
+            "contract": "No change",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-005",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-005"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-006",
+            "behavioral_delta": "Changed return type",
+            "contract": "Changed return type",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-006",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-006"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-070",
+            "behavioral_delta": "Removed a test case for model permissions preventing provider calls.",
+            "contract": "The test case was intended to verify that model permissions prevent provider calls.",
+            "contract_basis": "source_inference",
+            "contract_reference": "messages.rs",
+            "outcome": "no_regression_identified",
+            "evidence_refs": [
+              "CU-070"
+            ],
+            "missing_evidence": [
+              "explicit_requirements"
+            ],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          }
+        ],
+        "semantic_rejections": [],
+        "request_attempts": 2,
+        "estimated_completion_tokens": 297,
+        "bundle_id": "B-001"
+      },
+      {
+        "status": "PARTIAL",
+        "candidate_count": 0,
+        "raw_outputs": [
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-021\",\n      \"behavioral_delta\": \"Renamed 'Caller' to 'ClaimedCaller'\",\n      \"contract\": \"The struct represents a caller with claims about who sends it.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-021\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-021\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-022\",\n      \"behavioral_delta\": \"Renamed 'caller' field to 'caller'\",\n      \"contract\": \"The struct represents a principal with identity information.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-022\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-022\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}",
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-045\",\n      \"behavioral_delta\": \"removed\",\n      \"contract\": \"unknown\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-045\",\n      \"outcome\": \"unassessed\",\n      \"evidence_refs\": [\"CU-045\"],\n      \"missing_evidence\": [\"related_tests\", \"explicit_requirements\", \"validation_feedback\"],\n      \"hypothesis\": null\n    }\n  ]\n}"
+        ],
+        "tool_calls": [],
+        "hypotheses": [],
+        "hypothesis_count": 0,
+        "evidence_items": [],
+        "evidence_count": 0,
+        "stage_status": {
+          "discovery": "SEMANTIC_CONTRACT",
+          "proof": "PARTIAL"
+        },
+        "parse_error": null,
+        "exception": null,
+        "latency_ms": 23496.34,
+        "prompt_version": "semantic-contract-v4-scoped-authority",
+        "model_calls": 2,
+        "assessments": [
+          {
+            "unit_id": "CU-021",
+            "status": "inspected",
+            "behavioral_delta": "Renamed 'Caller' to 'ClaimedCaller'",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-021"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-022",
+            "status": "inspected",
+            "behavioral_delta": "Renamed 'caller' field to 'caller'",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-022"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-045",
+            "status": "unknown",
+            "behavioral_delta": "removed",
+            "hypothesis_outcome": "unassessed",
+            "evidence_refs": [
+              "CU-045"
+            ],
+            "reason": "related_tests; explicit_requirements; validation_feedback"
+          }
+        ],
+        "hypothesis_outcomes": [],
+        "protocol_errors": [],
+        "proof_runs": [],
+        "discovery_protocol": "semantic-v1",
+        "contract_assessments": [
+          {
+            "unit_id": "CU-021",
+            "behavioral_delta": "Renamed 'Caller' to 'ClaimedCaller'",
+            "contract": "The struct represents a caller with claims about who sends it.",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-021",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-021"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-022",
+            "behavioral_delta": "Renamed 'caller' field to 'caller'",
+            "contract": "The struct represents a principal with identity information.",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-022",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-022"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-045",
+            "behavioral_delta": "removed",
+            "contract": "unknown",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-045",
+            "outcome": "unassessed",
+            "evidence_refs": [
+              "CU-045"
+            ],
+            "missing_evidence": [
+              "related_tests",
+              "explicit_requirements",
+              "validation_feedback"
+            ],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          }
+        ],
+        "semantic_rejections": [],
+        "request_attempts": 2,
+        "estimated_completion_tokens": 302,
+        "bundle_id": "B-002"
+      },
+      {
+        "status": "PARTIAL",
+        "candidate_count": 0,
+        "raw_outputs": [
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-007\",\n      \"behavioral_delta\": \"No change observed.\",\n      \"contract\": \"Unknown.\",\n      \"contract_basis\": \"unknown\",\n      \"contract_reference\": \"unknown\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-007\"],\n      \"missing_evidence\": [\"explicit_requirements\", \"related_tests\"],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-019\",\n      \"behavioral_delta\": \"No change observed.\",\n      \"contract\": \"Unknown.\",\n      \"contract_basis\": \"unknown\",\n      \"contract_reference\": \"unknown\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-019\"],\n      \"missing_evidence\": [\"explicit_requirements\", \"related_tests\"],\n      \"hypothesis\": null\n    }\n  ]\n}",
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-020\",\n      \"behavioral_delta\": \"The code introduces a new struct `NativeAuthHost` and a function `declined` that returns an error for any request step not handled by this host. It also defines a new struct `NativeRows` that implements the `Rows` trait with `Infallible` as\",\n      \"contract\": \"The contract for `NativeAuthHost` is to handle specific steps and return the appropriate responses. The contract for `declined` is to return an error for any unhandled request step. The contract for `NativeRows` is to provide the necessary\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-020\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-020\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}"
+        ],
+        "tool_calls": [],
+        "hypotheses": [],
+        "hypothesis_count": 0,
+        "evidence_items": [],
+        "evidence_count": 0,
+        "stage_status": {
+          "discovery": "SEMANTIC_CONTRACT",
+          "proof": "PARTIAL"
+        },
+        "parse_error": null,
+        "exception": null,
+        "latency_ms": 27757.37,
+        "prompt_version": "semantic-contract-v4-scoped-authority",
+        "model_calls": 2,
+        "assessments": [
+          {
+            "unit_id": "CU-007",
+            "status": "inspected",
+            "behavioral_delta": "No change observed.",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-007"
+            ],
+            "reason": "explicit_requirements; related_tests"
+          },
+          {
+            "unit_id": "CU-019",
+            "status": "inspected",
+            "behavioral_delta": "No change observed.",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-019"
+            ],
+            "reason": "explicit_requirements; related_tests"
+          },
+          {
+            "unit_id": "CU-020",
+            "status": "inspected",
+            "behavioral_delta": "The code introduces a new struct `NativeAuthHost` and a function `declined` that returns an error for any request step not handled by this host. It also defines a new struct `NativeRows` that implements the `Rows` trait with `Infallible` as",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-020"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-071",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-078",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-079",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-080",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-081",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-088",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-089",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-048",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-049",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          }
+        ],
+        "hypothesis_outcomes": [],
+        "protocol_errors": [],
+        "proof_runs": [],
+        "discovery_protocol": "semantic-v1",
+        "contract_assessments": [
+          {
+            "unit_id": "CU-007",
+            "behavioral_delta": "No change observed.",
+            "contract": "Unknown.",
+            "contract_basis": "unknown",
+            "contract_reference": "unknown",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-007"
+            ],
+            "missing_evidence": [
+              "explicit_requirements",
+              "related_tests"
+            ],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-019",
+            "behavioral_delta": "No change observed.",
+            "contract": "Unknown.",
+            "contract_basis": "unknown",
+            "contract_reference": "unknown",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-019"
+            ],
+            "missing_evidence": [
+              "explicit_requirements",
+              "related_tests"
+            ],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-020",
+            "behavioral_delta": "The code introduces a new struct `NativeAuthHost` and a function `declined` that returns an error for any request step not handled by this host. It also defines a new struct `NativeRows` that implements the `Rows` trait with `Infallible` as",
+            "contract": "The contract for `NativeAuthHost` is to handle specific steps and return the appropriate responses. The contract for `declined` is to return an error for any unhandled request step. The contract for `NativeRows` is to provide the necessary",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-020",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-020"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          }
+        ],
+        "semantic_rejections": [],
+        "request_attempts": 2,
+        "estimated_completion_tokens": 385,
+        "bundle_id": "B-003"
+      },
+      {
+        "status": "PARTIAL",
+        "candidate_count": 0,
+        "raw_outputs": [
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-024\",\n      \"behavioral_delta\": \"Changed 'Caller' to 'ClaimedCaller'\",\n      \"contract\": \"The code should still correctly handle the caller's identity and claims.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-024\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-024\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-025\",\n      \"behavioral_delta\": \"Changed 'Caller' to 'ClaimedCaller'\",\n      \"contract\": \"The code should still correctly handle the caller's identity and claims.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-025\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-025\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}",
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-026\",\n      \"behavioral_delta\": \"Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.\",\n      \"contract\": \"The function 'authorize' should handle 'ClaimedCaller' instead of 'Caller'.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-026\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-026\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-027\",\n      \"behavioral_delta\": \"Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.\",\n      \"contract\": \"The function 'principal' should handle 'ClaimedCaller' instead of 'Caller'.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-027\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-027\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}"
+        ],
+        "tool_calls": [],
+        "hypotheses": [],
+        "hypothesis_count": 0,
+        "evidence_items": [],
+        "evidence_count": 0,
+        "stage_status": {
+          "discovery": "SEMANTIC_CONTRACT",
+          "proof": "PARTIAL"
+        },
+        "parse_error": null,
+        "exception": null,
+        "latency_ms": 30201.49,
+        "prompt_version": "semantic-contract-v4-scoped-authority",
+        "model_calls": 2,
+        "assessments": [
+          {
+            "unit_id": "CU-024",
+            "status": "inspected",
+            "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-024"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-025",
+            "status": "inspected",
+            "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-025"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-026",
+            "status": "inspected",
+            "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-026"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-027",
+            "status": "inspected",
+            "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-027"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-028",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-029",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-030",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-031",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-032",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-033",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          }
+        ],
+        "hypothesis_outcomes": [],
+        "protocol_errors": [],
+        "proof_runs": [],
+        "discovery_protocol": "semantic-v1",
+        "contract_assessments": [
+          {
+            "unit_id": "CU-024",
+            "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+            "contract": "The code should still correctly handle the caller's identity and claims.",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-024",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-024"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-025",
+            "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+            "contract": "The code should still correctly handle the caller's identity and claims.",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-025",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-025"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-026",
+            "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+            "contract": "The function 'authorize' should handle 'ClaimedCaller' instead of 'Caller'.",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-026",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-026"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-027",
+            "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+            "contract": "The function 'principal' should handle 'ClaimedCaller' instead of 'Caller'.",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-027",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-027"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          }
+        ],
+        "semantic_rejections": [],
+        "request_attempts": 2,
+        "estimated_completion_tokens": 431,
+        "bundle_id": "B-004"
+      }
+    ],
+    "pipeline_health": {
+      "healthy": false,
+      "agent_runs": 4,
+      "unhealthy_runs": 3,
+      "unhealthy_statuses": [
+        "PARTIAL",
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "coverage_ratio": 0.3146067415730337,
+      "coverage_adequate": false,
+      "status": "partial",
+      "inspection_ratio": 0.1518987341772152
+    },
+    "intent_sources": [],
+    "requirements": [],
+    "requirement_assessments": [],
+    "investigations": [],
+    "evidence": [],
+    "source_observations": [],
+    "finding_verifications": [],
+    "requirement_coverage": {
+      "total": 0,
+      "verified": 0,
+      "violated": 0,
+      "unverified": 0,
+      "not_assessed": 0,
+      "not_applicable": 0,
+      "assessed": 0,
+      "applicable": 0,
+      "ratio": null
+    }
+  },
+  "schema_version": "2.3",
+  "target": {
+    "repo": "BerriAI/litellm",
+    "number": 53342,
+    "base_sha": "5f5b378a3a998f3278efa8e7b9f90c46093bf677",
+    "head_sha": "3ace05125c1ca8e186c42bfc51f2b98f223c34c5",
+    "diff_sha256": "2259ea844be3a2b2a32bd48873802dce1b8306cdda9cde002e3d5439eb8d5d36",
+    "comparison_base_sha": ""
+  },
+  "health": {
+    "status": "partial",
+    "stages": [
+      {
+        "stage": "bundle:B-001",
+        "status": "succeeded",
+        "code": "VALID_EMPTY",
+        "detail": "",
+        "retryable": false
+      },
+      {
+        "stage": "bundle:B-002",
+        "status": "degraded",
+        "code": "PARTIAL",
+        "detail": "",
+        "retryable": false
+      },
+      {
+        "stage": "bundle:B-003",
+        "status": "degraded",
+        "code": "PARTIAL",
+        "detail": "",
+        "retryable": false
+      },
+      {
+        "stage": "bundle:B-004",
+        "status": "degraded",
+        "code": "PARTIAL",
+        "detail": "",
+        "retryable": false
+      },
+      {
+        "stage": "graph",
+        "status": "degraded",
+        "code": "graph_unavailable",
+        "detail": "",
+        "retryable": false
+      }
+    ]
+  },
+  "publication_preview": {
+    "repo": "BerriAI/litellm",
+    "number": 53342,
+    "head_sha": "3ace05125c1ca8e186c42bfc51f2b98f223c34c5",
+    "base_sha": "5f5b378a3a998f3278efa8e7b9f90c46093bf677",
+    "event": "COMMENT",
+    "body": "<!-- codeturtle-review-v2:59b128f6c57a2b4e5737255d74d89edd9cfdf508612f6f2a66cd59e321f0cc8e -->\n<!-- codeturtle-sha:3ace05125c1ca8e186c42bfc51f2b98f223c34c5 -->\n\n## CodeTurtle review\n\n**Recommendation:** COMMENT\n**Analysis:** partial\n**Inspection:** 12/79 (15%)\n**Reasons:** partial_analysis, insufficient_inspection, unresolved_hypotheses\n\nThis is a review recommendation. No merge operation was performed.\nTests are supporting evidence; this run does not establish BASE/HEAD regression attribution.\n\n8 unresolved investigation(s); human review required.\n- bundle:B-002: degraded (PARTIAL)\n- bundle:B-003: degraded (PARTIAL)\n- bundle:B-004: degraded (PARTIAL)\n- graph: degraded (graph_unavailable)\n\nNo substantiated defects found within the reported analysis scope.",
+    "comments": [],
+    "summary_only_findings": [],
+    "marker": "<!-- codeturtle-review-v2:59b128f6c57a2b4e5737255d74d89edd9cfdf508612f6f2a66cd59e321f0cc8e -->"
+  },
+  "publication": {
+    "status": "dry_run",
+    "review_id": null,
+    "url": "",
+    "error_code": "",
+    "error": ""
+  },
+  "pipeline_trace": [],
+  "agent_runs": [
+    {
+      "status": "VALID_EMPTY",
+      "candidate_count": 0,
+      "raw_outputs": [
+        "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-005\",\n      \"behavioral_delta\": \"No change\",\n      \"contract\": \"No change\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-005\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-005\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-006\",\n      \"behavioral_delta\": \"Changed return type\",\n      \"contract\": \"Changed return type\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-006\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-006\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}",
+        "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-070\",\n      \"behavioral_delta\": \"Removed a test case for model permissions preventing provider calls.\",\n      \"contract\": \"The test case was intended to verify that model permissions prevent provider calls.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"messages.rs\",\n      \"outcome\": \"no_regression_identified\",\n      \"evidence_refs\": [\"CU-070\"],\n      \"missing_evidence\": [\"explicit_requirements\"],\n      \"hypothesis\": null\n    }\n  ]\n}"
+      ],
+      "tool_calls": [],
+      "hypotheses": [],
+      "hypothesis_count": 0,
+      "evidence_items": [],
+      "evidence_count": 0,
+      "stage_status": {
+        "discovery": "SEMANTIC_CONTRACT",
+        "proof": "VALID_EMPTY"
+      },
+      "parse_error": null,
+      "exception": null,
+      "latency_ms": 22176.99,
+      "prompt_version": "semantic-contract-v4-scoped-authority",
+      "model_calls": 2,
+      "assessments": [
+        {
+          "unit_id": "CU-005",
+          "status": "inspected",
+          "behavioral_delta": "No change",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-005"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-006",
+          "status": "inspected",
+          "behavioral_delta": "Changed return type",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-006"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-070",
+          "status": "inspected",
+          "behavioral_delta": "Removed a test case for model permissions preventing provider calls.",
+          "hypothesis_outcome": "no_regression_identified",
+          "evidence_refs": [
+            "CU-070"
+          ],
+          "reason": "explicit_requirements"
+        }
+      ],
+      "hypothesis_outcomes": [],
+      "protocol_errors": [],
+      "proof_runs": [],
+      "discovery_protocol": "semantic-v1",
+      "contract_assessments": [
+        {
+          "unit_id": "CU-005",
+          "behavioral_delta": "No change",
+          "contract": "No change",
+          "contract_basis": "source_inference",
+          "contract_reference": "CU-005",
+          "outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-005"
+          ],
+          "missing_evidence": [],
+          "hypothesis": null,
+          "verification_level": "source_assessment_not_execution"
+        },
+        {
+          "unit_id": "CU-006",
+          "behavioral_delta": "Changed return type",
+          "contract": "Changed return type",
+          "contract_basis": "source_inference",
+          "contract_reference": "CU-006",
+          "outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-006"
+          ],
+          "missing_evidence": [],
+          "hypothesis": null,
+          "verification_level": "source_assessment_not_execution"
+        },
+        {
+          "unit_id": "CU-070",
+          "behavioral_delta": "Removed a test case for model permissions preventing provider calls.",
+          "contract": "The test case was intended to verify that model permissions prevent provider calls.",
+          "contract_basis": "source_inference",
+          "contract_reference": "messages.rs",
+          "outcome": "no_regression_identified",
+          "evidence_refs": [
+            "CU-070"
+          ],
+          "missing_evidence": [
+            "explicit_requirements"
+          ],
+          "hypothesis": null,
+          "verification_level": "source_assessment_not_execution"
+        }
+      ],
+      "semantic_rejections": [],
+      "request_attempts": 2,
+      "estimated_completion_tokens": 297,
+      "bundle_id": "B-001"
+    },
+    {
+      "status": "PARTIAL",
+      "candidate_count": 0,
+      "raw_outputs": [
+        "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-021\",\n      \"behavioral_delta\": \"Renamed 'Caller' to 'ClaimedCaller'\",\n      \"contract\": \"The struct represents a caller with claims about who sends it.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-021\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-021\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-022\",\n      \"behavioral_delta\": \"Renamed 'caller' field to 'caller'\",\n      \"contract\": \"The struct represents a principal with identity information.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-022\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-022\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}",
+        "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-045\",\n      \"behavioral_delta\": \"removed\",\n      \"contract\": \"unknown\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-045\",\n      \"outcome\": \"unassessed\",\n      \"evidence_refs\": [\"CU-045\"],\n      \"missing_evidence\": [\"related_tests\", \"explicit_requirements\", \"validation_feedback\"],\n      \"hypothesis\": null\n    }\n  ]\n}"
+      ],
+      "tool_calls": [],
+      "hypotheses": [],
+      "hypothesis_count": 0,
+      "evidence_items": [],
+      "evidence_count": 0,
+      "stage_status": {
+        "discovery": "SEMANTIC_CONTRACT",
+        "proof": "PARTIAL"
+      },
+      "parse_error": null,
+      "exception": null,
+      "latency_ms": 23496.34,
+      "prompt_version": "semantic-contract-v4-scoped-authority",
+      "model_calls": 2,
+      "assessments": [
+        {
+          "unit_id": "CU-021",
+          "status": "inspected",
+          "behavioral_delta": "Renamed 'Caller' to 'ClaimedCaller'",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-021"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-022",
+          "status": "inspected",
+          "behavioral_delta": "Renamed 'caller' field to 'caller'",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-022"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-045",
+          "status": "unknown",
+          "behavioral_delta": "removed",
+          "hypothesis_outcome": "unassessed",
+          "evidence_refs": [
+            "CU-045"
+          ],
+          "reason": "related_tests; explicit_requirements; validation_feedback"
+        }
+      ],
+      "hypothesis_outcomes": [],
+      "protocol_errors": [],
+      "proof_runs": [],
+      "discovery_protocol": "semantic-v1",
+      "contract_assessments": [
+        {
+          "unit_id": "CU-021",
+          "behavioral_delta": "Renamed 'Caller' to 'ClaimedCaller'",
+          "contract": "The struct represents a caller with claims about who sends it.",
+          "contract_basis": "source_inference",
+          "contract_reference": "CU-021",
+          "outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-021"
+          ],
+          "missing_evidence": [],
+          "hypothesis": null,
+          "verification_level": "source_assessment_not_execution"
+        },
+        {
+          "unit_id": "CU-022",
+          "behavioral_delta": "Renamed 'caller' field to 'caller'",
+          "contract": "The struct represents a principal with identity information.",
+          "contract_basis": "source_inference",
+          "contract_reference": "CU-022",
+          "outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-022"
+          ],
+          "missing_evidence": [],
+          "hypothesis": null,
+          "verification_level": "source_assessment_not_execution"
+        },
+        {
+          "unit_id": "CU-045",
+          "behavioral_delta": "removed",
+          "contract": "unknown",
+          "contract_basis": "source_inference",
+          "contract_reference": "CU-045",
+          "outcome": "unassessed",
+          "evidence_refs": [
+            "CU-045"
+          ],
+          "missing_evidence": [
+            "related_tests",
+            "explicit_requirements",
+            "validation_feedback"
+          ],
+          "hypothesis": null,
+          "verification_level": "source_assessment_not_execution"
+        }
+      ],
+      "semantic_rejections": [],
+      "request_attempts": 2,
+      "estimated_completion_tokens": 302,
+      "bundle_id": "B-002"
+    },
+    {
+      "status": "PARTIAL",
+      "candidate_count": 0,
+      "raw_outputs": [
+        "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-007\",\n      \"behavioral_delta\": \"No change observed.\",\n      \"contract\": \"Unknown.\",\n      \"contract_basis\": \"unknown\",\n      \"contract_reference\": \"unknown\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-007\"],\n      \"missing_evidence\": [\"explicit_requirements\", \"related_tests\"],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-019\",\n      \"behavioral_delta\": \"No change observed.\",\n      \"contract\": \"Unknown.\",\n      \"contract_basis\": \"unknown\",\n      \"contract_reference\": \"unknown\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-019\"],\n      \"missing_evidence\": [\"explicit_requirements\", \"related_tests\"],\n      \"hypothesis\": null\n    }\n  ]\n}",
+        "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-020\",\n      \"behavioral_delta\": \"The code introduces a new struct `NativeAuthHost` and a function `declined` that returns an error for any request step not handled by this host. It also defines a new struct `NativeRows` that implements the `Rows` trait with `Infallible` as\",\n      \"contract\": \"The contract for `NativeAuthHost` is to handle specific steps and return the appropriate responses. The contract for `declined` is to return an error for any unhandled request step. The contract for `NativeRows` is to provide the necessary\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-020\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-020\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}"
+      ],
+      "tool_calls": [],
+      "hypotheses": [],
+      "hypothesis_count": 0,
+      "evidence_items": [],
+      "evidence_count": 0,
+      "stage_status": {
+        "discovery": "SEMANTIC_CONTRACT",
+        "proof": "PARTIAL"
+      },
+      "parse_error": null,
+      "exception": null,
+      "latency_ms": 27757.37,
+      "prompt_version": "semantic-contract-v4-scoped-authority",
+      "model_calls": 2,
+      "assessments": [
+        {
+          "unit_id": "CU-007",
+          "status": "inspected",
+          "behavioral_delta": "No change observed.",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-007"
+          ],
+          "reason": "explicit_requirements; related_tests"
+        },
+        {
+          "unit_id": "CU-019",
+          "status": "inspected",
+          "behavioral_delta": "No change observed.",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-019"
+          ],
+          "reason": "explicit_requirements; related_tests"
+        },
+        {
+          "unit_id": "CU-020",
+          "status": "inspected",
+          "behavioral_delta": "The code introduces a new struct `NativeAuthHost` and a function `declined` that returns an error for any request step not handled by this host. It also defines a new struct `NativeRows` that implements the `Rows` trait with `Infallible` as",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-020"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-071",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-078",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-079",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-080",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-081",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-088",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-089",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-048",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-049",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        }
+      ],
+      "hypothesis_outcomes": [],
+      "protocol_errors": [],
+      "proof_runs": [],
+      "discovery_protocol": "semantic-v1",
+      "contract_assessments": [
+        {
+          "unit_id": "CU-007",
+          "behavioral_delta": "No change observed.",
+          "contract": "Unknown.",
+          "contract_basis": "unknown",
+          "contract_reference": "unknown",
+          "outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-007"
+          ],
+          "missing_evidence": [
+            "explicit_requirements",
+            "related_tests"
+          ],
+          "hypothesis": null,
+          "verification_level": "source_assessment_not_execution"
+        },
+        {
+          "unit_id": "CU-019",
+          "behavioral_delta": "No change observed.",
+          "contract": "Unknown.",
+          "contract_basis": "unknown",
+          "contract_reference": "unknown",
+          "outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-019"
+          ],
+          "missing_evidence": [
+            "explicit_requirements",
+            "related_tests"
+          ],
+          "hypothesis": null,
+          "verification_level": "source_assessment_not_execution"
+        },
+        {
+          "unit_id": "CU-020",
+          "behavioral_delta": "The code introduces a new struct `NativeAuthHost` and a function `declined` that returns an error for any request step not handled by this host. It also defines a new struct `NativeRows` that implements the `Rows` trait with `Infallible` as",
+          "contract": "The contract for `NativeAuthHost` is to handle specific steps and return the appropriate responses. The contract for `declined` is to return an error for any unhandled request step. The contract for `NativeRows` is to provide the necessary",
+          "contract_basis": "source_inference",
+          "contract_reference": "CU-020",
+          "outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-020"
+          ],
+          "missing_evidence": [],
+          "hypothesis": null,
+          "verification_level": "source_assessment_not_execution"
+        }
+      ],
+      "semantic_rejections": [],
+      "request_attempts": 2,
+      "estimated_completion_tokens": 385,
+      "bundle_id": "B-003"
+    },
+    {
+      "status": "PARTIAL",
+      "candidate_count": 0,
+      "raw_outputs": [
+        "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-024\",\n      \"behavioral_delta\": \"Changed 'Caller' to 'ClaimedCaller'\",\n      \"contract\": \"The code should still correctly handle the caller's identity and claims.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-024\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-024\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-025\",\n      \"behavioral_delta\": \"Changed 'Caller' to 'ClaimedCaller'\",\n      \"contract\": \"The code should still correctly handle the caller's identity and claims.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-025\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-025\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}",
+        "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-026\",\n      \"behavioral_delta\": \"Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.\",\n      \"contract\": \"The function 'authorize' should handle 'ClaimedCaller' instead of 'Caller'.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-026\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-026\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-027\",\n      \"behavioral_delta\": \"Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.\",\n      \"contract\": \"The function 'principal' should handle 'ClaimedCaller' instead of 'Caller'.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-027\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-027\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}"
+      ],
+      "tool_calls": [],
+      "hypotheses": [],
+      "hypothesis_count": 0,
+      "evidence_items": [],
+      "evidence_count": 0,
+      "stage_status": {
+        "discovery": "SEMANTIC_CONTRACT",
+        "proof": "PARTIAL"
+      },
+      "parse_error": null,
+      "exception": null,
+      "latency_ms": 30201.49,
+      "prompt_version": "semantic-contract-v4-scoped-authority",
+      "model_calls": 2,
+      "assessments": [
+        {
+          "unit_id": "CU-024",
+          "status": "inspected",
+          "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-024"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-025",
+          "status": "inspected",
+          "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-025"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-026",
+          "status": "inspected",
+          "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-026"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-027",
+          "status": "inspected",
+          "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+          "hypothesis_outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-027"
+          ],
+          "reason": ""
+        },
+        {
+          "unit_id": "CU-028",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-029",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-030",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-031",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-032",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-033",
+          "status": "unknown",
+          "reason": "model_input_budget",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        }
+      ],
+      "hypothesis_outcomes": [],
+      "protocol_errors": [],
+      "proof_runs": [],
+      "discovery_protocol": "semantic-v1",
+      "contract_assessments": [
+        {
+          "unit_id": "CU-024",
+          "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+          "contract": "The code should still correctly handle the caller's identity and claims.",
+          "contract_basis": "source_inference",
+          "contract_reference": "CU-024",
+          "outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-024"
+          ],
+          "missing_evidence": [],
+          "hypothesis": null,
+          "verification_level": "source_assessment_not_execution"
+        },
+        {
+          "unit_id": "CU-025",
+          "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+          "contract": "The code should still correctly handle the caller's identity and claims.",
+          "contract_basis": "source_inference",
+          "contract_reference": "CU-025",
+          "outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-025"
+          ],
+          "missing_evidence": [],
+          "hypothesis": null,
+          "verification_level": "source_assessment_not_execution"
+        },
+        {
+          "unit_id": "CU-026",
+          "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+          "contract": "The function 'authorize' should handle 'ClaimedCaller' instead of 'Caller'.",
+          "contract_basis": "source_inference",
+          "contract_reference": "CU-026",
+          "outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-026"
+          ],
+          "missing_evidence": [],
+          "hypothesis": null,
+          "verification_level": "source_assessment_not_execution"
+        },
+        {
+          "unit_id": "CU-027",
+          "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+          "contract": "The function 'principal' should handle 'ClaimedCaller' instead of 'Caller'.",
+          "contract_basis": "source_inference",
+          "contract_reference": "CU-027",
+          "outcome": "fix_consistent",
+          "evidence_refs": [
+            "CU-027"
+          ],
+          "missing_evidence": [],
+          "hypothesis": null,
+          "verification_level": "source_assessment_not_execution"
+        }
+      ],
+      "semantic_rejections": [],
+      "request_attempts": 2,
+      "estimated_completion_tokens": 431,
+      "bundle_id": "B-004"
+    }
+  ],
+  "pipeline_health": {
+    "healthy": false,
+    "agent_runs": 4,
+    "unhealthy_runs": 3,
+    "unhealthy_statuses": [
+      "PARTIAL",
+      "PARTIAL",
+      "PARTIAL"
+    ],
+    "coverage_ratio": 0.3146067415730337,
+    "coverage_adequate": false,
+    "status": "partial",
+    "inspection_ratio": 0.1518987341772152
+  },
+  "telemetry": {
+    "timing": {
+      "workspace_s": 0.0,
+      "graphify_s": 0.0,
+      "pr_facts_s": 0.0,
+      "change_units_s": 0.0,
+      "bundling_s": 0.0,
+      "bundle_agent_s": 103.637,
+      "reflect_s": 0.0,
+      "verify_s": 0.0,
+      "sandbox_s": 0.0,
+      "policy_s": 0.0,
+      "total_s": 103.637
+    },
+    "agent_runs": [
+      {
+        "status": "VALID_EMPTY",
+        "candidate_count": 0,
+        "raw_outputs": [
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-005\",\n      \"behavioral_delta\": \"No change\",\n      \"contract\": \"No change\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-005\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-005\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-006\",\n      \"behavioral_delta\": \"Changed return type\",\n      \"contract\": \"Changed return type\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-006\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-006\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}",
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-070\",\n      \"behavioral_delta\": \"Removed a test case for model permissions preventing provider calls.\",\n      \"contract\": \"The test case was intended to verify that model permissions prevent provider calls.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"messages.rs\",\n      \"outcome\": \"no_regression_identified\",\n      \"evidence_refs\": [\"CU-070\"],\n      \"missing_evidence\": [\"explicit_requirements\"],\n      \"hypothesis\": null\n    }\n  ]\n}"
+        ],
+        "tool_calls": [],
+        "hypotheses": [],
+        "hypothesis_count": 0,
+        "evidence_items": [],
+        "evidence_count": 0,
+        "stage_status": {
+          "discovery": "SEMANTIC_CONTRACT",
+          "proof": "VALID_EMPTY"
+        },
+        "parse_error": null,
+        "exception": null,
+        "latency_ms": 22176.99,
+        "prompt_version": "semantic-contract-v4-scoped-authority",
+        "model_calls": 2,
+        "assessments": [
+          {
+            "unit_id": "CU-005",
+            "status": "inspected",
+            "behavioral_delta": "No change",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-005"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-006",
+            "status": "inspected",
+            "behavioral_delta": "Changed return type",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-006"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-070",
+            "status": "inspected",
+            "behavioral_delta": "Removed a test case for model permissions preventing provider calls.",
+            "hypothesis_outcome": "no_regression_identified",
+            "evidence_refs": [
+              "CU-070"
+            ],
+            "reason": "explicit_requirements"
+          }
+        ],
+        "hypothesis_outcomes": [],
+        "protocol_errors": [],
+        "proof_runs": [],
+        "discovery_protocol": "semantic-v1",
+        "contract_assessments": [
+          {
+            "unit_id": "CU-005",
+            "behavioral_delta": "No change",
+            "contract": "No change",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-005",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-005"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-006",
+            "behavioral_delta": "Changed return type",
+            "contract": "Changed return type",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-006",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-006"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-070",
+            "behavioral_delta": "Removed a test case for model permissions preventing provider calls.",
+            "contract": "The test case was intended to verify that model permissions prevent provider calls.",
+            "contract_basis": "source_inference",
+            "contract_reference": "messages.rs",
+            "outcome": "no_regression_identified",
+            "evidence_refs": [
+              "CU-070"
+            ],
+            "missing_evidence": [
+              "explicit_requirements"
+            ],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          }
+        ],
+        "semantic_rejections": [],
+        "request_attempts": 2,
+        "estimated_completion_tokens": 297,
+        "bundle_id": "B-001"
+      },
+      {
+        "status": "PARTIAL",
+        "candidate_count": 0,
+        "raw_outputs": [
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-021\",\n      \"behavioral_delta\": \"Renamed 'Caller' to 'ClaimedCaller'\",\n      \"contract\": \"The struct represents a caller with claims about who sends it.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-021\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-021\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-022\",\n      \"behavioral_delta\": \"Renamed 'caller' field to 'caller'\",\n      \"contract\": \"The struct represents a principal with identity information.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-022\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-022\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}",
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-045\",\n      \"behavioral_delta\": \"removed\",\n      \"contract\": \"unknown\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-045\",\n      \"outcome\": \"unassessed\",\n      \"evidence_refs\": [\"CU-045\"],\n      \"missing_evidence\": [\"related_tests\", \"explicit_requirements\", \"validation_feedback\"],\n      \"hypothesis\": null\n    }\n  ]\n}"
+        ],
+        "tool_calls": [],
+        "hypotheses": [],
+        "hypothesis_count": 0,
+        "evidence_items": [],
+        "evidence_count": 0,
+        "stage_status": {
+          "discovery": "SEMANTIC_CONTRACT",
+          "proof": "PARTIAL"
+        },
+        "parse_error": null,
+        "exception": null,
+        "latency_ms": 23496.34,
+        "prompt_version": "semantic-contract-v4-scoped-authority",
+        "model_calls": 2,
+        "assessments": [
+          {
+            "unit_id": "CU-021",
+            "status": "inspected",
+            "behavioral_delta": "Renamed 'Caller' to 'ClaimedCaller'",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-021"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-022",
+            "status": "inspected",
+            "behavioral_delta": "Renamed 'caller' field to 'caller'",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-022"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-045",
+            "status": "unknown",
+            "behavioral_delta": "removed",
+            "hypothesis_outcome": "unassessed",
+            "evidence_refs": [
+              "CU-045"
+            ],
+            "reason": "related_tests; explicit_requirements; validation_feedback"
+          }
+        ],
+        "hypothesis_outcomes": [],
+        "protocol_errors": [],
+        "proof_runs": [],
+        "discovery_protocol": "semantic-v1",
+        "contract_assessments": [
+          {
+            "unit_id": "CU-021",
+            "behavioral_delta": "Renamed 'Caller' to 'ClaimedCaller'",
+            "contract": "The struct represents a caller with claims about who sends it.",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-021",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-021"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-022",
+            "behavioral_delta": "Renamed 'caller' field to 'caller'",
+            "contract": "The struct represents a principal with identity information.",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-022",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-022"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-045",
+            "behavioral_delta": "removed",
+            "contract": "unknown",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-045",
+            "outcome": "unassessed",
+            "evidence_refs": [
+              "CU-045"
+            ],
+            "missing_evidence": [
+              "related_tests",
+              "explicit_requirements",
+              "validation_feedback"
+            ],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          }
+        ],
+        "semantic_rejections": [],
+        "request_attempts": 2,
+        "estimated_completion_tokens": 302,
+        "bundle_id": "B-002"
+      },
+      {
+        "status": "PARTIAL",
+        "candidate_count": 0,
+        "raw_outputs": [
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-007\",\n      \"behavioral_delta\": \"No change observed.\",\n      \"contract\": \"Unknown.\",\n      \"contract_basis\": \"unknown\",\n      \"contract_reference\": \"unknown\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-007\"],\n      \"missing_evidence\": [\"explicit_requirements\", \"related_tests\"],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-019\",\n      \"behavioral_delta\": \"No change observed.\",\n      \"contract\": \"Unknown.\",\n      \"contract_basis\": \"unknown\",\n      \"contract_reference\": \"unknown\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-019\"],\n      \"missing_evidence\": [\"explicit_requirements\", \"related_tests\"],\n      \"hypothesis\": null\n    }\n  ]\n}",
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-020\",\n      \"behavioral_delta\": \"The code introduces a new struct `NativeAuthHost` and a function `declined` that returns an error for any request step not handled by this host. It also defines a new struct `NativeRows` that implements the `Rows` trait with `Infallible` as\",\n      \"contract\": \"The contract for `NativeAuthHost` is to handle specific steps and return the appropriate responses. The contract for `declined` is to return an error for any unhandled request step. The contract for `NativeRows` is to provide the necessary\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-020\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-020\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}"
+        ],
+        "tool_calls": [],
+        "hypotheses": [],
+        "hypothesis_count": 0,
+        "evidence_items": [],
+        "evidence_count": 0,
+        "stage_status": {
+          "discovery": "SEMANTIC_CONTRACT",
+          "proof": "PARTIAL"
+        },
+        "parse_error": null,
+        "exception": null,
+        "latency_ms": 27757.37,
+        "prompt_version": "semantic-contract-v4-scoped-authority",
+        "model_calls": 2,
+        "assessments": [
+          {
+            "unit_id": "CU-007",
+            "status": "inspected",
+            "behavioral_delta": "No change observed.",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-007"
+            ],
+            "reason": "explicit_requirements; related_tests"
+          },
+          {
+            "unit_id": "CU-019",
+            "status": "inspected",
+            "behavioral_delta": "No change observed.",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-019"
+            ],
+            "reason": "explicit_requirements; related_tests"
+          },
+          {
+            "unit_id": "CU-020",
+            "status": "inspected",
+            "behavioral_delta": "The code introduces a new struct `NativeAuthHost` and a function `declined` that returns an error for any request step not handled by this host. It also defines a new struct `NativeRows` that implements the `Rows` trait with `Infallible` as",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-020"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-071",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-078",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-079",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-080",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-081",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-088",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-089",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-048",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-049",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          }
+        ],
+        "hypothesis_outcomes": [],
+        "protocol_errors": [],
+        "proof_runs": [],
+        "discovery_protocol": "semantic-v1",
+        "contract_assessments": [
+          {
+            "unit_id": "CU-007",
+            "behavioral_delta": "No change observed.",
+            "contract": "Unknown.",
+            "contract_basis": "unknown",
+            "contract_reference": "unknown",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-007"
+            ],
+            "missing_evidence": [
+              "explicit_requirements",
+              "related_tests"
+            ],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-019",
+            "behavioral_delta": "No change observed.",
+            "contract": "Unknown.",
+            "contract_basis": "unknown",
+            "contract_reference": "unknown",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-019"
+            ],
+            "missing_evidence": [
+              "explicit_requirements",
+              "related_tests"
+            ],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-020",
+            "behavioral_delta": "The code introduces a new struct `NativeAuthHost` and a function `declined` that returns an error for any request step not handled by this host. It also defines a new struct `NativeRows` that implements the `Rows` trait with `Infallible` as",
+            "contract": "The contract for `NativeAuthHost` is to handle specific steps and return the appropriate responses. The contract for `declined` is to return an error for any unhandled request step. The contract for `NativeRows` is to provide the necessary",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-020",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-020"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          }
+        ],
+        "semantic_rejections": [],
+        "request_attempts": 2,
+        "estimated_completion_tokens": 385,
+        "bundle_id": "B-003"
+      },
+      {
+        "status": "PARTIAL",
+        "candidate_count": 0,
+        "raw_outputs": [
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-024\",\n      \"behavioral_delta\": \"Changed 'Caller' to 'ClaimedCaller'\",\n      \"contract\": \"The code should still correctly handle the caller's identity and claims.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-024\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-024\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-025\",\n      \"behavioral_delta\": \"Changed 'Caller' to 'ClaimedCaller'\",\n      \"contract\": \"The code should still correctly handle the caller's identity and claims.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-025\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-025\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}",
+          "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-026\",\n      \"behavioral_delta\": \"Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.\",\n      \"contract\": \"The function 'authorize' should handle 'ClaimedCaller' instead of 'Caller'.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-026\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-026\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-027\",\n      \"behavioral_delta\": \"Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.\",\n      \"contract\": \"The function 'principal' should handle 'ClaimedCaller' instead of 'Caller'.\",\n      \"contract_basis\": \"source_inference\",\n      \"contract_reference\": \"CU-027\",\n      \"outcome\": \"fix_consistent\",\n      \"evidence_refs\": [\"CU-027\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}"
+        ],
+        "tool_calls": [],
+        "hypotheses": [],
+        "hypothesis_count": 0,
+        "evidence_items": [],
+        "evidence_count": 0,
+        "stage_status": {
+          "discovery": "SEMANTIC_CONTRACT",
+          "proof": "PARTIAL"
+        },
+        "parse_error": null,
+        "exception": null,
+        "latency_ms": 30201.49,
+        "prompt_version": "semantic-contract-v4-scoped-authority",
+        "model_calls": 2,
+        "assessments": [
+          {
+            "unit_id": "CU-024",
+            "status": "inspected",
+            "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-024"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-025",
+            "status": "inspected",
+            "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-025"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-026",
+            "status": "inspected",
+            "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-026"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-027",
+            "status": "inspected",
+            "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+            "hypothesis_outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-027"
+            ],
+            "reason": ""
+          },
+          {
+            "unit_id": "CU-028",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-029",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-030",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-031",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-032",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          },
+          {
+            "unit_id": "CU-033",
+            "status": "unknown",
+            "reason": "model_input_budget",
+            "behavioral_delta": "",
+            "hypothesis_outcome": "",
+            "evidence_refs": []
+          }
+        ],
+        "hypothesis_outcomes": [],
+        "protocol_errors": [],
+        "proof_runs": [],
+        "discovery_protocol": "semantic-v1",
+        "contract_assessments": [
+          {
+            "unit_id": "CU-024",
+            "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+            "contract": "The code should still correctly handle the caller's identity and claims.",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-024",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-024"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-025",
+            "behavioral_delta": "Changed 'Caller' to 'ClaimedCaller'",
+            "contract": "The code should still correctly handle the caller's identity and claims.",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-025",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-025"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-026",
+            "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+            "contract": "The function 'authorize' should handle 'ClaimedCaller' instead of 'Caller'.",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-026",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-026"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          },
+          {
+            "unit_id": "CU-027",
+            "behavioral_delta": "Changed type of 'caller' from 'Caller' to 'ClaimedCaller'.",
+            "contract": "The function 'principal' should handle 'ClaimedCaller' instead of 'Caller'.",
+            "contract_basis": "source_inference",
+            "contract_reference": "CU-027",
+            "outcome": "fix_consistent",
+            "evidence_refs": [
+              "CU-027"
+            ],
+            "missing_evidence": [],
+            "hypothesis": null,
+            "verification_level": "source_assessment_not_execution"
+          }
+        ],
+        "semantic_rejections": [],
+        "request_attempts": 2,
+        "estimated_completion_tokens": 431,
+        "bundle_id": "B-004"
+      }
+    ],
+    "pipeline_health": {
+      "healthy": false,
+      "agent_runs": 4,
+      "unhealthy_runs": 3,
+      "unhealthy_statuses": [
+        "PARTIAL",
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "coverage_ratio": 0.3146067415730337,
+      "coverage_adequate": false,
+      "status": "partial",
+      "inspection_ratio": 0.1518987341772152
+    },
+    "candidate_count": 0,
+    "verified_count": 0,
+    "drop_reasons": {}
+  }
+}

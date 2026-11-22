@@ -1,0 +1,803 @@
+{
+  "schema_version": "2.3",
+  "run_id": "3152a0b3147f46a181a1c2cd64eec9fe",
+  "target": {
+    "repo": "",
+    "number": 0,
+    "base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc",
+    "head_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+    "diff_sha256": "39581851f591d42faab359cd0c2c76417cf6ed852d98df1d8f42e08dbd44358c",
+    "comparison_base_sha": ""
+  },
+  "health": {
+    "status": "partial",
+    "stages": [
+      {
+        "stage": "bundle:B-001",
+        "status": "degraded",
+        "code": "PARTIAL",
+        "detail": "",
+        "retryable": false
+      },
+      {
+        "stage": "graph",
+        "status": "degraded",
+        "code": "graph_unavailable",
+        "detail": "",
+        "retryable": false
+      }
+    ]
+  },
+  "inspection": {
+    "eligible": 3,
+    "packed": 3,
+    "inspected": 1,
+    "assessments": [
+      {
+        "unit_id": "CU-001",
+        "path": "litellm/batches/main.py",
+        "status": "unknown",
+        "behavioral_delta": "",
+        "hypothesis_outcome": "",
+        "evidence_refs": [],
+        "reason": "assessment_unavailable"
+      },
+      {
+        "unit_id": "CU-002",
+        "path": "litellm/batches/main.py",
+        "status": "unknown",
+        "behavioral_delta": "",
+        "hypothesis_outcome": "",
+        "evidence_refs": [],
+        "reason": "assessment_unavailable"
+      },
+      {
+        "unit_id": "CU-003",
+        "path": "tests/unit/batches/test_main.py",
+        "status": "inspected",
+        "behavioral_delta": "Added a new test to ensure error messages and HTTP methods are correct.",
+        "hypothesis_outcome": "potential_regression",
+        "evidence_refs": [
+          "CU-003"
+        ],
+        "reason": ""
+      }
+    ],
+    "ratio": 0.3333333333333333
+  },
+  "policy_reasons": [
+    "partial_analysis",
+    "insufficient_inspection",
+    "unresolved_hypotheses"
+  ],
+  "unresolved": [
+    {
+      "bundle_id": "B-001",
+      "hypothesis_id": "H-001",
+      "file": "tests/unit/batches/test_main.py",
+      "reason": "2 validation errors for RegressionProof\nbase.source\n  Value error, select one operation, at most six captured source lines [type=value_error, input_value={'evidence_id': 'EV-B-001...': 328, 'end_line': 427}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error\nhead.source\n  Value error, select one operation, at most six captured source lines [type=value_error, input_value={'evidence_id': 'EV-B-001...': 348, 'end_line': 360}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+    },
+    {
+      "stage": "contract_assessment",
+      "bundle_id": "B-001",
+      "unit_id": "CU-003",
+      "reason": "CU-001"
+    },
+    {
+      "stage": "contract_assessment",
+      "bundle_id": "B-001",
+      "unit_id": "CU-003",
+      "reason": "CU-002"
+    },
+    {
+      "stage": "semantic_proof",
+      "bundle_id": "B-001",
+      "hypothesis_id": "H-001",
+      "reason": "2 validation errors for RegressionProof\nbase.source\n  Value error, select one operation, at most six captured source lines [type=value_error, input_value={'evidence_id': 'EV-B-001...': 328, 'end_line': 427}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error\nhead.source\n  Value error, select one operation, at most six captured source lines [type=value_error, input_value={'evidence_id': 'EV-B-001...': 348, 'end_line': 360}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+    },
+    {
+      "stage": "tool_context",
+      "bundle_id": "B-001",
+      "reason": "incomplete_tool_observation",
+      "evidence_id": "EV-B-001-002",
+      "tool": "read_source",
+      "path": "tests/unit/batches/test_main.py",
+      "side": "head",
+      "scope": "window",
+      "error": null,
+      "unresolved_dependencies": [
+        "complete requested source scope unavailable"
+      ],
+      "limitation": "Bounded observation; assess relevance to each claimed contract."
+    },
+    {
+      "stage": "tool_context",
+      "bundle_id": "B-001",
+      "reason": "incomplete_tool_observation",
+      "evidence_id": "EV-B-001-003",
+      "tool": "read_source",
+      "path": "tests/unit/batches/test_main.py",
+      "side": "base",
+      "scope": "window",
+      "error": null,
+      "unresolved_dependencies": [
+        "complete requested source scope unavailable"
+      ],
+      "limitation": "Bounded observation; assess relevance to each claimed contract."
+    }
+  ],
+  "approval_eligible": false,
+  "provenance": {
+    "reviewer_commit": "5545c6356a56db7807cb2e9b62ef8a52893dbd3b",
+    "dirty": false,
+    "prompt_version": "semantic-contract-v3-coherent-schema",
+    "discovery_protocol": "semantic",
+    "provider": "ollama",
+    "model": "qwen2.5-coder:7b",
+    "model_calls": [
+      {
+        "timestamp": "2026-11-22T07:21:52.721182",
+        "agent_name": "BundleAgent",
+        "capability": "correctness_review",
+        "provider": "ollama_provider",
+        "model": "qwen2.5-coder:7b",
+        "prompt_tokens": 886,
+        "completion_tokens": 268,
+        "total_tokens": 1154,
+        "latency": 17.843404293060303,
+        "retries": 0,
+        "estimated_cost": 0.0,
+        "success": true,
+        "error": null,
+        "finish_reason": "stop",
+        "output_truncated": false,
+        "max_output_tokens": 1100,
+        "context_tokens": 8192,
+        "response_format": "json_schema",
+        "schema_sha256": "babd0b1a78ee4862ac76a360f67a233465bf4ab6839e438e4cf1b5afe96431ce",
+        "prompt_characters": 3671,
+        "stage": "semantic_discovery"
+      },
+      {
+        "timestamp": "2026-11-22T07:22:10.671183",
+        "agent_name": "BundleAgent",
+        "capability": "correctness_review",
+        "provider": "ollama_provider",
+        "model": "qwen2.5-coder:7b",
+        "prompt_tokens": 921,
+        "completion_tokens": 314,
+        "total_tokens": 1235,
+        "latency": 17.93326425552368,
+        "retries": 0,
+        "estimated_cost": 0.0,
+        "success": true,
+        "error": null,
+        "finish_reason": "stop",
+        "output_truncated": false,
+        "max_output_tokens": 1100,
+        "context_tokens": 8192,
+        "response_format": "json_schema",
+        "schema_sha256": "babd0b1a78ee4862ac76a360f67a233465bf4ab6839e438e4cf1b5afe96431ce",
+        "prompt_characters": 3794,
+        "stage": "assessment_repair"
+      },
+      {
+        "timestamp": "2026-11-22T07:22:24.939633",
+        "agent_name": "BundleAgent",
+        "capability": "correctness_review",
+        "provider": "ollama_provider",
+        "model": "qwen2.5-coder:7b",
+        "prompt_tokens": 944,
+        "completion_tokens": 250,
+        "total_tokens": 1194,
+        "latency": 14.258565425872803,
+        "retries": 0,
+        "estimated_cost": 0.0,
+        "success": true,
+        "error": null,
+        "finish_reason": "stop",
+        "output_truncated": false,
+        "max_output_tokens": 1100,
+        "context_tokens": 8192,
+        "response_format": "json_schema",
+        "schema_sha256": "eb68f4e46540318d8acdfaaa81a2734dfb78741e6097bf13f9708d9dbdf10629",
+        "prompt_characters": 3987,
+        "stage": "semantic_discovery"
+      },
+      {
+        "timestamp": "2026-11-22T07:22:42.213921",
+        "agent_name": "BundleAgent",
+        "capability": "correctness_review",
+        "provider": "ollama_provider",
+        "model": "qwen2.5-coder:7b",
+        "prompt_tokens": 2794,
+        "completion_tokens": 227,
+        "total_tokens": 3021,
+        "latency": 17.232195377349854,
+        "retries": 0,
+        "estimated_cost": 0.0,
+        "success": true,
+        "error": null,
+        "finish_reason": "stop",
+        "output_truncated": false,
+        "max_output_tokens": 1400,
+        "context_tokens": 8192,
+        "response_format": "json_schema",
+        "schema_sha256": "88584183b0a26ee522a215bff646ad954fbbe799fd6a097b0abd62c20fd919b9",
+        "prompt_characters": 8913,
+        "stage": "semantic_proof"
+      }
+    ],
+    "budget": {
+      "calls": 4,
+      "prompt_chars": 20365,
+      "elapsed_seconds": 67.86542136599746,
+      "max_model_calls": 12,
+      "max_prompt_chars": 120000,
+      "max_wall_seconds": 300.0
+    },
+    "investigation_source": "git_snapshot",
+    "requirement_strategy": "investigate",
+    "requirement_runs": [],
+    "finding_verifier_mode": "structured",
+    "finding_source_rules": true,
+    "source_preparation": null,
+    "verification_snapshot_id": "46f7c4ae1e5a3891a424dc2c214946eecb995c7b9b9c13e2f1e69979b3b44590",
+    "verification_snapshot": {
+      "repository_identity": "/home/venkat/.codeturtle/repos/BerriAI_litellm",
+      "base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc",
+      "head_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+      "diff_sha256": "39581851f591d42faab359cd0c2c76417cf6ed852d98df1d8f42e08dbd44358c",
+      "config_sha256": "25bbc7008dd58456e3e07cb51c166cfbe4c755a368f374b89552ca3598406ec9",
+      "comparison_base_sha": null,
+      "schema_version": "1.0"
+    },
+    "input_snapshot": {
+      "repository_identity": "/home/venkat/.codeturtle/repos/BerriAI_litellm",
+      "base_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc",
+      "head_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+      "diff_sha256": "39581851f591d42faab359cd0c2c76417cf6ed852d98df1d8f42e08dbd44358c",
+      "config_sha256": "25bbc7008dd58456e3e07cb51c166cfbe4c755a368f374b89552ca3598406ec9",
+      "comparison_base_sha": null,
+      "schema_version": "1.0"
+    },
+    "snapshot_id": "46f7c4ae1e5a3891a424dc2c214946eecb995c7b9b9c13e2f1e69979b3b44590",
+    "source_input_id": "0aa38431fae7ec5255e316b55be85a49483ff07662545350f71c94ca18b82248",
+    "analysis_mode": "model"
+  },
+  "product_findings": [],
+  "decision": "COMMENT",
+  "policy_reason": "partial_analysis",
+  "comments": [],
+  "dropped": [],
+  "bundles": [
+    {
+      "id": "B-001",
+      "paths": [
+        "litellm/batches/main.py",
+        "tests/unit/batches/test_main.py"
+      ],
+      "units": [
+        {
+          "id": "CU-001",
+          "path": "litellm/batches/main.py",
+          "start_line": 879,
+          "end_line": 885,
+          "symbols": [
+            "list_batches",
+            "format"
+          ],
+          "excerpt": "@@ -879,7 +879,7 @@ def list_batches(\n             )\n         else:\n             raise litellm.exceptions.BadRequestError(\n-                message=\"LiteLLM doesn't support {} for 'list_batch'. Supported providers: {}.\".format(\n+                message=\"LiteLLM doesn't support {} for 'list_batches'. Supported providers: {}.\".format(\n                     custom_llm_provider,\n                     \", \".join(sorted(LIST_BATCHES_SUPPORTED_PROVIDERS)),\n                 ),",
+          "n_added": 1,
+          "n_removed": 1,
+          "kind": "source",
+          "risk_hint": "none"
+        },
+        {
+          "id": "CU-002",
+          "path": "litellm/batches/main.py",
+          "start_line": 888,
+          "end_line": 894,
+          "symbols": [
+            "list_batches",
+            "httpx.Request",
+            "github.com",
+            "Request"
+          ],
+          "excerpt": "@@ -888,7 +888,7 @@ def list_batches(\n                 response=httpx.Response(\n                     status_code=400,\n                     content=\"Unsupported provider\",\n-                    request=httpx.Request(method=\"create_thread\", url=\"https://github.com/BerriAI/litellm\"),\n+                    request=httpx.Request(method=\"GET\", url=\"https://github.com/BerriAI/litellm\"),\n                 ),\n             )\n         return response",
+          "n_added": 1,
+          "n_removed": 1,
+          "kind": "source",
+          "risk_hint": "io"
+        },
+        {
+          "id": "CU-003",
+          "path": "tests/unit/batches/test_main.py",
+          "start_line": 348,
+          "end_line": 365,
+          "symbols": [
+            "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+            "test_list__unsupported_provider_raises_badrequest",
+            "httpx.Request",
+            "pytest.raises",
+            "litellm.exceptions.BadRequestError",
+            "bm.list_batches",
+            "exc_info.value",
+            "error.message",
+            "error.response.request.method",
+            "raises",
+            "list_batches"
+          ],
+          "excerpt": "@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\n         m.assert_not_called()\n \n \n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n+    \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n+        bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n+\n+    error = exc_info.value\n+    assert \"list_batches\" in error.message\n+    assert \"list_batch'\" not in error.message  # no singular form\n+    assert error.response.request.method == \"GET\"\n+\n+\n # =========================================================================== #\n # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n # =========================================================================== #",
+          "n_added": 11,
+          "n_removed": 0,
+          "kind": "test",
+          "risk_hint": "io"
+        }
+      ],
+      "symbols": [
+        "list_batches",
+        "format",
+        "httpx.Request",
+        "github.com",
+        "Request",
+        "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+        "test_list__unsupported_provider_raises_badrequest",
+        "pytest.raises",
+        "litellm.exceptions.BadRequestError",
+        "bm.list_batches",
+        "exc_info.value",
+        "error.message",
+        "error.response.request.method",
+        "raises"
+      ],
+      "kind": "source",
+      "risk_signals": [],
+      "requirements": [],
+      "change_context": {
+        "snapshot_id": "46f7c4ae1e5a3891a424dc2c214946eecb995c7b9b9c13e2f1e69979b3b44590",
+        "changes": [
+          {
+            "path": "litellm/batches/main.py",
+            "symbol": "list_batches",
+            "kind": "function",
+            "status": "modified",
+            "base_line": 753,
+            "head_line": 753,
+            "signature_changed": false
+          },
+          {
+            "path": "tests/unit/batches/test_main.py",
+            "symbol": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+            "kind": "function",
+            "status": "added",
+            "base_line": null,
+            "head_line": 351,
+            "signature_changed": false
+          }
+        ],
+        "limitations": [
+          "Structural changes guide investigation; they do not prove changed runtime behavior.",
+          "Symbol renames appear as removal/addition; dynamic dispatch is not resolved."
+        ],
+        "unresolved_context": []
+      }
+    }
+  ],
+  "coverage": {
+    "units_total": 3,
+    "units_packed": 3,
+    "units_omitted": 0,
+    "source_units": 2
+  },
+  "execution": {
+    "enabled": false,
+    "skipped": true,
+    "skip_reason": "flag_off",
+    "cmd": "",
+    "cwd": "",
+    "exit_code": null,
+    "elapsed_s": 0.0,
+    "passed": null,
+    "failed": null,
+    "failed_names": [],
+    "raw_tail": "",
+    "ran_paths": [],
+    "python_env": "",
+    "python": {
+      "skipped": true,
+      "skip_reason": null,
+      "cmd": "",
+      "cwd": "",
+      "exit_code": null,
+      "elapsed_s": 0.0,
+      "passed": null,
+      "failed": null,
+      "failed_names": [],
+      "raw_tail": "",
+      "ran_paths": [],
+      "env": "",
+      "frozen": false,
+      "cached": false,
+      "install_cmd": "",
+      "install_elapsed_s": 0.0
+    },
+    "js": {
+      "skipped": true,
+      "skip_reason": null,
+      "cmd": "",
+      "cwd": "",
+      "exit_code": null,
+      "elapsed_s": 0.0,
+      "passed": null,
+      "failed": null,
+      "failed_names": [],
+      "raw_tail": "",
+      "ran_paths": [],
+      "env": "",
+      "frozen": false,
+      "cached": false,
+      "install_cmd": "",
+      "install_elapsed_s": 0.0
+    }
+  },
+  "findings": [],
+  "pipeline_trace": [],
+  "timing": {
+    "workspace_s": 0.0,
+    "graphify_s": 0.0,
+    "pr_facts_s": 0.0,
+    "change_units_s": 0.0,
+    "bundling_s": 0.0,
+    "bundle_agent_s": 67.739,
+    "reflect_s": 0.0,
+    "verify_s": 0.0,
+    "sandbox_s": 0.0,
+    "policy_s": 0.0,
+    "total_s": 67.739
+  },
+  "agent_runs": [
+    {
+      "status": "PARTIAL",
+      "candidate_count": 0,
+      "raw_outputs": [
+        "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"fix_consistent\",\n      \"contract\": \"The error message should correctly reference 'list_batches' instead of 'list_batch'.\",\n      \"contract_basis\": \"explicit_requirement\",\n      \"contract_reference\": \"The error message should correctly reference 'list_batches' instead of 'list_batch'.\",\n      \"outcome\": \"no_regression_identified\",\n      \"evidence_refs\": [\"CU-001\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-002\",\n      \"behavioral_delta\": \"fix_consistent\",\n      \"contract\": \"The error response's request method should be 'GET' instead of 'create_thread'.\",\n      \"contract_basis\": \"explicit_requirement\",\n      \"contract_reference\": \"The error response's request method should be 'GET' instead of 'create_thread'.\",\n      \"outcome\": \"no_regression_identified\",\n      \"evidence_refs\": [\"CU-002\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}",
+        "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-001\",\n      \"behavioral_delta\": \"fix_consistent\",\n      \"contract\": \"The function should raise a BadRequestError with a message indicating that the provider is not supported for 'list_batches'.\",\n      \"contract_basis\": \"explicit_requirement\",\n      \"contract_reference\": \"The function should raise a BadRequestError with a message indicating that the provider is not supported for 'list_batches'.\",\n      \"outcome\": \"no_regression_identified\",\n      \"evidence_refs\": [\"CU-001\", \"CU-002\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    },\n    {\n      \"unit_id\": \"CU-002\",\n      \"behavioral_delta\": \"fix_consistent\",\n      \"contract\": \"The function should raise a BadRequestError with a message indicating that the provider is not supported for 'list_batches'.\",\n      \"contract_basis\": \"explicit_requirement\",\n      \"contract_reference\": \"The function should raise a BadRequestError with a message indicating that the provider is not supported for 'list_batches'.\",\n      \"outcome\": \"no_regression_identified\",\n      \"evidence_refs\": [\"CU-001\", \"CU-002\"],\n      \"missing_evidence\": [],\n      \"hypothesis\": null\n    }\n  ]\n}",
+        "{\n  \"assessments\": [\n    {\n      \"unit_id\": \"CU-003\",\n      \"behavioral_delta\": \"Added a new test to ensure error messages and HTTP methods are correct.\",\n      \"contract\": \"The error message should indicate 'list_batches' and the HTTP method should be 'GET'.\",\n      \"contract_basis\": \"test_expectation\",\n      \"contract_reference\": \"test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method\",\n      \"outcome\": \"potential_regression\",\n      \"evidence_refs\": [\"CU-003\"],\n      \"missing_evidence\": [\"CU-001\", \"CU-002\"],\n      \"hypothesis\": {\n        \"symbol\": \"error.message\",\n        \"trigger\": \"bm.list_batches(custom_llm_provider=\\\"anthropic\\\")\",\n        \"expected\": {\n          \"kind\": \"literal\",\n          \"property\": \"contains\",\n          \"value\": \"list_batches\"\n        },\n        \"suspected\": {\n          \"kind\": \"literal\",\n          \"property\": \"contains\",\n          \"value\": \"list_batch\"\n        }\n      }\n    }\n  ]\n}",
+        "{\n  \"conclusion\": \"violation_refuted\",\n  \"reason\": \"The edit introduced a new test case that checks for the correct operation name and HTTP method in the error message when calling `bm.list_batches(custom_llm_provider=\\\"anthropic\\\")`. This test case is not a regression, as it is a new feature,\",\n  \"base\": {\n    \"kind\": \"literal\",\n    \"property\": \"contains\",\n    \"value\": \"list_batches\",\n    \"source\": {\n      \"evidence_id\": \"EV-B-001-003\",\n      \"start_line\": 328,\n      \"end_line\": 427\n    }\n  },\n  \"head\": {\n    \"kind\": \"literal\",\n    \"property\": \"contains\",\n    \"value\": \"list_batch\",\n    \"source\": {\n      \"evidence_id\": \"EV-B-001-001\",\n      \"start_line\": 348,\n      \"end_line\": 360\n    }\n  },\n  \"missing_evidence\": []\n}"
+      ],
+      "tool_calls": [
+        {
+          "id": "EV-B-001-001",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "read_hunk",
+            "path": "tests/unit/batches/test_main.py"
+          },
+          "result": {
+            "path": "tests/unit/batches/test_main.py",
+            "text": "@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\n         m.assert_not_called()\n \n \n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n+    \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n+        bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n+\n+    error = exc_info.value\n+    assert \"list_batches\" in error.message\n+    assert \"list_batch'\" not in error.message  # no singular form\n+    assert error.response.request.method == \"GET\"\n+\n+\n # =========================================================================== #\n # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n # =========================================================================== #"
+          }
+        },
+        {
+          "id": "EV-B-001-002",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "read_source",
+            "path": "tests/unit/batches/test_main.py",
+            "symbol": "error.message"
+          },
+          "result": {
+            "path": "tests/unit/batches/test_main.py",
+            "text": "328: def test_list__azure_dispatch(seams):\n329:     result = bm.list_batches(custom_llm_provider=\"azure\")\n330: \n331:     assert result is seams.azure.list_batches.return_value\n332:     _assert_only(seams.azure.list_batches, seams, \"list_batches\")\n333: \n334: \n335: def test_list__vertex_ai_dispatch(seams):\n336:     result = bm.list_batches(custom_llm_provider=\"vertex_ai\")\n337: \n338:     assert result is seams.vertex.list_batches.return_value\n339:     _assert_only(seams.vertex.list_batches, seams, \"list_batches\")\n340: \n341: \n342: def test_list__unsupported_provider_raises_badrequest(seams):\n343:     # anthropic supports retrieve but NOT list - good negative case.\n344:     with pytest.raises(litellm.exceptions.BadRequestError):\n345:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n346: \n347:     for m in _all_seam_methods(seams, \"list_batches\"):\n348:         m.assert_not_called()\n349: \n350: \n351: def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n352:     \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n353:     and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n354:     with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n355:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n356: \n357:     error = exc_info.value\n358:     assert \"list_batches\" in error.message\n359:     assert \"list_batch'\" not in error.message  # no singular form\n360:     assert error.response.request.method == \"GET\"\n361: \n362: \n363: # =========================================================================== #\n364: # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n365: # =========================================================================== #\n366: \n367: \n368: def test_cancel__openai_dispatch_and_payload(seams):\n369:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\")\n370: \n371:     assert result is seams.openai.cancel_batch.return_value\n372:     _assert_only(seams.openai.cancel_batch, seams, \"cancel_batch\")\n373: \n374:     kw = seams.openai.cancel_batch.call_args.kwargs\n375:     assert kw[\"cancel_batch_data\"] == {\n376:         \"batch_id\": \"batch-1\",\n377:         \"extra_headers\": None,\n378:         \"extra_body\": None,\n379:     }\n380:     assert kw[\"_is_async\"] is False\n381: \n382: \n383: def test_cancel__azure_dispatch(seams):\n384:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"azure\")\n385: \n386:     assert result is seams.azure.cancel_batch.return_value\n387:     _assert_only(seams.azure.cancel_batch, seams, \"cancel_batch\")\n388: \n389: \n390: def test_cancel__vertex_ai_dispatch(seams):\n391:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"vertex_ai\")\n392: \n393:     assert result is seams.vertex.cancel_batch.return_value\n394:     _assert_only(seams.vertex.cancel_batch, seams, \"cancel_batch\")\n395: \n396: \n397: def test_cancel__unsupported_provider_raises_badrequest(seams):\n398:     with pytest.raises(litellm.exceptions.BadRequestError):\n399:         bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"cohere\")\n400: \n401:     for m in _all_seam_methods(seams, \"cancel_batch\"):\n402:         m.assert_not_called()\n403: \n404: \n405: def test_cancel__async_flag_propagates_is_async(seams):\n406:     bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\", acancel_batch=True)\n407: \n408:     assert seams.openai.cancel_batch.call_args.kwargs[\"_is_async\"] is True\n409: \n410: \n411: # =========================================================================== #\n412: # Async wrappers - delegate to the sync function in an executor, set the right\n413: # \"_is_async\" flag, and return the result untouched.\n414: # =========================================================================== #\n415: \n416: \n417: @pytest.mark.asyncio\n418: async def test_acreate_batch_delegates_to_create_batch():\n419:     with patch.object(bm, \"create_batch\", MagicMock(return_value=\"SENTINEL\")) as m:\n420:         result = await bm.acreate_batch(**CREATE_KW, custom_llm_provider=\"openai\")\n421: \n422:     assert result == \"SENTINEL\"\n423:     assert m.call_count == 1\n424:     assert m.call_args.kwargs.get(\"acreate_batch\") is True\n425:     # positional handoff: (completion_window, endpoint, input_file_id, provider, ...)\n426:     assert m.call_args.args[0] == \"24h\"\n427:     assert m.call_args.args[2] == \"file-abc\"",
+            "source": "git_snapshot",
+            "side": "head",
+            "snapshot_id": "46f7c4ae1e5a3891a424dc2c214946eecb995c7b9b9c13e2f1e69979b3b44590",
+            "revision_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+            "content_sha256": "ed07878560a2c3e410f7b0b156687ed263514f2e92f5c230974621b73ed6a3c9",
+            "truncated": true,
+            "scope": "window",
+            "scope_symbol": "error.message",
+            "start_line": 328,
+            "end_line": 427,
+            "unresolved_dependencies": [
+              "complete requested source scope unavailable"
+            ],
+            "limitations": [
+              "Completeness refers only to the declared source scope; runtime contracts may require more context."
+            ],
+            "status": "truncated"
+          }
+        },
+        {
+          "id": "EV-B-001-003",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "read_source",
+            "path": "tests/unit/batches/test_main.py",
+            "symbol": "error.message",
+            "side": "base"
+          },
+          "result": {
+            "path": "tests/unit/batches/test_main.py",
+            "text": "328: def test_list__azure_dispatch(seams):\n329:     result = bm.list_batches(custom_llm_provider=\"azure\")\n330: \n331:     assert result is seams.azure.list_batches.return_value\n332:     _assert_only(seams.azure.list_batches, seams, \"list_batches\")\n333: \n334: \n335: def test_list__vertex_ai_dispatch(seams):\n336:     result = bm.list_batches(custom_llm_provider=\"vertex_ai\")\n337: \n338:     assert result is seams.vertex.list_batches.return_value\n339:     _assert_only(seams.vertex.list_batches, seams, \"list_batches\")\n340: \n341: \n342: def test_list__unsupported_provider_raises_badrequest(seams):\n343:     # anthropic supports retrieve but NOT list - good negative case.\n344:     with pytest.raises(litellm.exceptions.BadRequestError):\n345:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n346: \n347:     for m in _all_seam_methods(seams, \"list_batches\"):\n348:         m.assert_not_called()\n349: \n350: \n351: # =========================================================================== #\n352: # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n353: # =========================================================================== #\n354: \n355: \n356: def test_cancel__openai_dispatch_and_payload(seams):\n357:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\")\n358: \n359:     assert result is seams.openai.cancel_batch.return_value\n360:     _assert_only(seams.openai.cancel_batch, seams, \"cancel_batch\")\n361: \n362:     kw = seams.openai.cancel_batch.call_args.kwargs\n363:     assert kw[\"cancel_batch_data\"] == {\n364:         \"batch_id\": \"batch-1\",\n365:         \"extra_headers\": None,\n366:         \"extra_body\": None,\n367:     }\n368:     assert kw[\"_is_async\"] is False\n369: \n370: \n371: def test_cancel__azure_dispatch(seams):\n372:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"azure\")\n373: \n374:     assert result is seams.azure.cancel_batch.return_value\n375:     _assert_only(seams.azure.cancel_batch, seams, \"cancel_batch\")\n376: \n377: \n378: def test_cancel__vertex_ai_dispatch(seams):\n379:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"vertex_ai\")\n380: \n381:     assert result is seams.vertex.cancel_batch.return_value\n382:     _assert_only(seams.vertex.cancel_batch, seams, \"cancel_batch\")\n383: \n384: \n385: def test_cancel__unsupported_provider_raises_badrequest(seams):\n386:     with pytest.raises(litellm.exceptions.BadRequestError):\n387:         bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"cohere\")\n388: \n389:     for m in _all_seam_methods(seams, \"cancel_batch\"):\n390:         m.assert_not_called()\n391: \n392: \n393: def test_cancel__async_flag_propagates_is_async(seams):\n394:     bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\", acancel_batch=True)\n395: \n396:     assert seams.openai.cancel_batch.call_args.kwargs[\"_is_async\"] is True\n397: \n398: \n399: # =========================================================================== #\n400: # Async wrappers - delegate to the sync function in an executor, set the right\n401: # \"_is_async\" flag, and return the result untouched.\n402: # =========================================================================== #\n403: \n404: \n405: @pytest.mark.asyncio\n406: async def test_acreate_batch_delegates_to_create_batch():\n407:     with patch.object(bm, \"create_batch\", MagicMock(return_value=\"SENTINEL\")) as m:\n408:         result = await bm.acreate_batch(**CREATE_KW, custom_llm_provider=\"openai\")\n409: \n410:     assert result == \"SENTINEL\"\n411:     assert m.call_count == 1\n412:     assert m.call_args.kwargs.get(\"acreate_batch\") is True\n413:     # positional handoff: (completion_window, endpoint, input_file_id, provider, ...)\n414:     assert m.call_args.args[0] == \"24h\"\n415:     assert m.call_args.args[2] == \"file-abc\"\n416:     assert m.call_args.args[3] == \"openai\"\n417: \n418: \n419: @pytest.mark.asyncio\n420: async def test_aretrieve_batch_delegates_to_retrieve_batch():\n421:     with patch.object(bm, \"retrieve_batch\", MagicMock(return_value=\"SENTINEL\")) as m:\n422:         result = await bm.aretrieve_batch(batch_id=\"batch-1\", custom_llm_provider=\"azure\")\n423: \n424:     assert result == \"SENTINEL\"\n425:     assert m.call_count == 1\n426:     assert m.call_args.kwargs.get(\"aretrieve_batch\") is True\n427:     assert m.call_args.args[0] == \"batch-1\"",
+            "source": "git_snapshot",
+            "side": "base",
+            "snapshot_id": "46f7c4ae1e5a3891a424dc2c214946eecb995c7b9b9c13e2f1e69979b3b44590",
+            "revision_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc",
+            "content_sha256": "890c4010cb73baffda86eb5fc14536b6fc6aafa70587a7b7d11da460725c7edb",
+            "truncated": true,
+            "scope": "window",
+            "scope_symbol": "error.message",
+            "start_line": 328,
+            "end_line": 427,
+            "unresolved_dependencies": [
+              "complete requested source scope unavailable"
+            ],
+            "limitations": [
+              "Completeness refers only to the declared source scope; runtime contracts may require more context."
+            ],
+            "status": "truncated"
+          }
+        }
+      ],
+      "hypotheses": [
+        {
+          "id": "H-001",
+          "bundle_id": "B-001",
+          "file": "tests/unit/batches/test_main.py",
+          "observation": "Added a new test to ensure error messages and HTTP methods are correct.",
+          "hypothesis": "For bm.list_batches(custom_llm_provider=\"anthropic\"), HEAD may literal contains=list_batch, violating The error message should indicate 'list_batches' and the HTTP method should be 'GET'.",
+          "symbol": "error.message",
+          "category": "correctness",
+          "why_investigate": "Typed suspected violation, not confirmation that an edit occurred",
+          "required_evidence": [
+            "source"
+          ],
+          "confidence": 0.5
+        }
+      ],
+      "hypothesis_count": 1,
+      "evidence_items": [
+        {
+          "id": "EV-B-001-001",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "read_hunk",
+            "path": "tests/unit/batches/test_main.py"
+          },
+          "result": {
+            "path": "tests/unit/batches/test_main.py",
+            "text": "@@ -348,6 +348,18 @@ def test_list__unsupported_provider_raises_badrequest(seams):\n         m.assert_not_called()\n \n \n+def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n+    \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n+    and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n+    with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n+        bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n+\n+    error = exc_info.value\n+    assert \"list_batches\" in error.message\n+    assert \"list_batch'\" not in error.message  # no singular form\n+    assert error.response.request.method == \"GET\"\n+\n+\n # =========================================================================== #\n # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n # =========================================================================== #"
+          }
+        },
+        {
+          "id": "EV-B-001-002",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "read_source",
+            "path": "tests/unit/batches/test_main.py",
+            "symbol": "error.message"
+          },
+          "result": {
+            "path": "tests/unit/batches/test_main.py",
+            "text": "328: def test_list__azure_dispatch(seams):\n329:     result = bm.list_batches(custom_llm_provider=\"azure\")\n330: \n331:     assert result is seams.azure.list_batches.return_value\n332:     _assert_only(seams.azure.list_batches, seams, \"list_batches\")\n333: \n334: \n335: def test_list__vertex_ai_dispatch(seams):\n336:     result = bm.list_batches(custom_llm_provider=\"vertex_ai\")\n337: \n338:     assert result is seams.vertex.list_batches.return_value\n339:     _assert_only(seams.vertex.list_batches, seams, \"list_batches\")\n340: \n341: \n342: def test_list__unsupported_provider_raises_badrequest(seams):\n343:     # anthropic supports retrieve but NOT list - good negative case.\n344:     with pytest.raises(litellm.exceptions.BadRequestError):\n345:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n346: \n347:     for m in _all_seam_methods(seams, \"list_batches\"):\n348:         m.assert_not_called()\n349: \n350: \n351: def test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method(seams):\n352:     \"\"\"Regression: the error handler must say 'list_batches' (not 'list_batch')\n353:     and the dummy httpx.Request must use 'GET' (not 'create_thread').\"\"\"\n354:     with pytest.raises(litellm.exceptions.BadRequestError) as exc_info:\n355:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n356: \n357:     error = exc_info.value\n358:     assert \"list_batches\" in error.message\n359:     assert \"list_batch'\" not in error.message  # no singular form\n360:     assert error.response.request.method == \"GET\"\n361: \n362: \n363: # =========================================================================== #\n364: # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n365: # =========================================================================== #\n366: \n367: \n368: def test_cancel__openai_dispatch_and_payload(seams):\n369:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\")\n370: \n371:     assert result is seams.openai.cancel_batch.return_value\n372:     _assert_only(seams.openai.cancel_batch, seams, \"cancel_batch\")\n373: \n374:     kw = seams.openai.cancel_batch.call_args.kwargs\n375:     assert kw[\"cancel_batch_data\"] == {\n376:         \"batch_id\": \"batch-1\",\n377:         \"extra_headers\": None,\n378:         \"extra_body\": None,\n379:     }\n380:     assert kw[\"_is_async\"] is False\n381: \n382: \n383: def test_cancel__azure_dispatch(seams):\n384:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"azure\")\n385: \n386:     assert result is seams.azure.cancel_batch.return_value\n387:     _assert_only(seams.azure.cancel_batch, seams, \"cancel_batch\")\n388: \n389: \n390: def test_cancel__vertex_ai_dispatch(seams):\n391:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"vertex_ai\")\n392: \n393:     assert result is seams.vertex.cancel_batch.return_value\n394:     _assert_only(seams.vertex.cancel_batch, seams, \"cancel_batch\")\n395: \n396: \n397: def test_cancel__unsupported_provider_raises_badrequest(seams):\n398:     with pytest.raises(litellm.exceptions.BadRequestError):\n399:         bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"cohere\")\n400: \n401:     for m in _all_seam_methods(seams, \"cancel_batch\"):\n402:         m.assert_not_called()\n403: \n404: \n405: def test_cancel__async_flag_propagates_is_async(seams):\n406:     bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\", acancel_batch=True)\n407: \n408:     assert seams.openai.cancel_batch.call_args.kwargs[\"_is_async\"] is True\n409: \n410: \n411: # =========================================================================== #\n412: # Async wrappers - delegate to the sync function in an executor, set the right\n413: # \"_is_async\" flag, and return the result untouched.\n414: # =========================================================================== #\n415: \n416: \n417: @pytest.mark.asyncio\n418: async def test_acreate_batch_delegates_to_create_batch():\n419:     with patch.object(bm, \"create_batch\", MagicMock(return_value=\"SENTINEL\")) as m:\n420:         result = await bm.acreate_batch(**CREATE_KW, custom_llm_provider=\"openai\")\n421: \n422:     assert result == \"SENTINEL\"\n423:     assert m.call_count == 1\n424:     assert m.call_args.kwargs.get(\"acreate_batch\") is True\n425:     # positional handoff: (completion_window, endpoint, input_file_id, provider, ...)\n426:     assert m.call_args.args[0] == \"24h\"\n427:     assert m.call_args.args[2] == \"file-abc\"",
+            "source": "git_snapshot",
+            "side": "head",
+            "snapshot_id": "46f7c4ae1e5a3891a424dc2c214946eecb995c7b9b9c13e2f1e69979b3b44590",
+            "revision_sha": "ae0ac16cec6e2ba89c5814f3d1d936db90317582",
+            "content_sha256": "ed07878560a2c3e410f7b0b156687ed263514f2e92f5c230974621b73ed6a3c9",
+            "truncated": true,
+            "scope": "window",
+            "scope_symbol": "error.message",
+            "start_line": 328,
+            "end_line": 427,
+            "unresolved_dependencies": [
+              "complete requested source scope unavailable"
+            ],
+            "limitations": [
+              "Completeness refers only to the declared source scope; runtime contracts may require more context."
+            ],
+            "status": "truncated"
+          }
+        },
+        {
+          "id": "EV-B-001-003",
+          "hypothesis_id": "H-001",
+          "request": {
+            "tool": "read_source",
+            "path": "tests/unit/batches/test_main.py",
+            "symbol": "error.message",
+            "side": "base"
+          },
+          "result": {
+            "path": "tests/unit/batches/test_main.py",
+            "text": "328: def test_list__azure_dispatch(seams):\n329:     result = bm.list_batches(custom_llm_provider=\"azure\")\n330: \n331:     assert result is seams.azure.list_batches.return_value\n332:     _assert_only(seams.azure.list_batches, seams, \"list_batches\")\n333: \n334: \n335: def test_list__vertex_ai_dispatch(seams):\n336:     result = bm.list_batches(custom_llm_provider=\"vertex_ai\")\n337: \n338:     assert result is seams.vertex.list_batches.return_value\n339:     _assert_only(seams.vertex.list_batches, seams, \"list_batches\")\n340: \n341: \n342: def test_list__unsupported_provider_raises_badrequest(seams):\n343:     # anthropic supports retrieve but NOT list - good negative case.\n344:     with pytest.raises(litellm.exceptions.BadRequestError):\n345:         bm.list_batches(custom_llm_provider=\"anthropic\")  # type: ignore[arg-type]\n346: \n347:     for m in _all_seam_methods(seams, \"list_batches\"):\n348:         m.assert_not_called()\n349: \n350: \n351: # =========================================================================== #\n352: # cancel_batch  (supported: openai, hosted_vllm, azure, vertex_ai; no @client)\n353: # =========================================================================== #\n354: \n355: \n356: def test_cancel__openai_dispatch_and_payload(seams):\n357:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\")\n358: \n359:     assert result is seams.openai.cancel_batch.return_value\n360:     _assert_only(seams.openai.cancel_batch, seams, \"cancel_batch\")\n361: \n362:     kw = seams.openai.cancel_batch.call_args.kwargs\n363:     assert kw[\"cancel_batch_data\"] == {\n364:         \"batch_id\": \"batch-1\",\n365:         \"extra_headers\": None,\n366:         \"extra_body\": None,\n367:     }\n368:     assert kw[\"_is_async\"] is False\n369: \n370: \n371: def test_cancel__azure_dispatch(seams):\n372:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"azure\")\n373: \n374:     assert result is seams.azure.cancel_batch.return_value\n375:     _assert_only(seams.azure.cancel_batch, seams, \"cancel_batch\")\n376: \n377: \n378: def test_cancel__vertex_ai_dispatch(seams):\n379:     result = bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"vertex_ai\")\n380: \n381:     assert result is seams.vertex.cancel_batch.return_value\n382:     _assert_only(seams.vertex.cancel_batch, seams, \"cancel_batch\")\n383: \n384: \n385: def test_cancel__unsupported_provider_raises_badrequest(seams):\n386:     with pytest.raises(litellm.exceptions.BadRequestError):\n387:         bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"cohere\")\n388: \n389:     for m in _all_seam_methods(seams, \"cancel_batch\"):\n390:         m.assert_not_called()\n391: \n392: \n393: def test_cancel__async_flag_propagates_is_async(seams):\n394:     bm.cancel_batch(batch_id=\"batch-1\", custom_llm_provider=\"openai\", acancel_batch=True)\n395: \n396:     assert seams.openai.cancel_batch.call_args.kwargs[\"_is_async\"] is True\n397: \n398: \n399: # =========================================================================== #\n400: # Async wrappers - delegate to the sync function in an executor, set the right\n401: # \"_is_async\" flag, and return the result untouched.\n402: # =========================================================================== #\n403: \n404: \n405: @pytest.mark.asyncio\n406: async def test_acreate_batch_delegates_to_create_batch():\n407:     with patch.object(bm, \"create_batch\", MagicMock(return_value=\"SENTINEL\")) as m:\n408:         result = await bm.acreate_batch(**CREATE_KW, custom_llm_provider=\"openai\")\n409: \n410:     assert result == \"SENTINEL\"\n411:     assert m.call_count == 1\n412:     assert m.call_args.kwargs.get(\"acreate_batch\") is True\n413:     # positional handoff: (completion_window, endpoint, input_file_id, provider, ...)\n414:     assert m.call_args.args[0] == \"24h\"\n415:     assert m.call_args.args[2] == \"file-abc\"\n416:     assert m.call_args.args[3] == \"openai\"\n417: \n418: \n419: @pytest.mark.asyncio\n420: async def test_aretrieve_batch_delegates_to_retrieve_batch():\n421:     with patch.object(bm, \"retrieve_batch\", MagicMock(return_value=\"SENTINEL\")) as m:\n422:         result = await bm.aretrieve_batch(batch_id=\"batch-1\", custom_llm_provider=\"azure\")\n423: \n424:     assert result == \"SENTINEL\"\n425:     assert m.call_count == 1\n426:     assert m.call_args.kwargs.get(\"aretrieve_batch\") is True\n427:     assert m.call_args.args[0] == \"batch-1\"",
+            "source": "git_snapshot",
+            "side": "base",
+            "snapshot_id": "46f7c4ae1e5a3891a424dc2c214946eecb995c7b9b9c13e2f1e69979b3b44590",
+            "revision_sha": "c030ffb6b9c7a1b49072dceca1c2224cdfc21bcc",
+            "content_sha256": "890c4010cb73baffda86eb5fc14536b6fc6aafa70587a7b7d11da460725c7edb",
+            "truncated": true,
+            "scope": "window",
+            "scope_symbol": "error.message",
+            "start_line": 328,
+            "end_line": 427,
+            "unresolved_dependencies": [
+              "complete requested source scope unavailable"
+            ],
+            "limitations": [
+              "Completeness refers only to the declared source scope; runtime contracts may require more context."
+            ],
+            "status": "truncated"
+          }
+        }
+      ],
+      "evidence_count": 3,
+      "stage_status": {
+        "discovery": "SEMANTIC_CONTRACT",
+        "proof": "PARTIAL"
+      },
+      "parse_error": null,
+      "exception": null,
+      "latency_ms": 67731.85,
+      "prompt_version": "semantic-contract-v3-coherent-schema",
+      "model_calls": 4,
+      "assessments": [
+        {
+          "unit_id": "CU-001",
+          "status": "unknown",
+          "reason": "assessment_unavailable",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-002",
+          "status": "unknown",
+          "reason": "assessment_unavailable",
+          "behavioral_delta": "",
+          "hypothesis_outcome": "",
+          "evidence_refs": []
+        },
+        {
+          "unit_id": "CU-003",
+          "status": "inspected",
+          "behavioral_delta": "Added a new test to ensure error messages and HTTP methods are correct.",
+          "hypothesis_outcome": "potential_regression",
+          "evidence_refs": [
+            "CU-003"
+          ],
+          "reason": "CU-001; CU-002"
+        }
+      ],
+      "hypothesis_outcomes": [
+        {
+          "hypothesis_id": "H-001",
+          "status": "unresolved",
+          "reason": "2 validation errors for RegressionProof\nbase.source\n  Value error, select one operation, at most six captured source lines [type=value_error, input_value={'evidence_id': 'EV-B-001...': 328, 'end_line': 427}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error\nhead.source\n  Value error, select one operation, at most six captured source lines [type=value_error, input_value={'evidence_id': 'EV-B-001...': 348, 'end_line': 360}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+          "evidence_refs": []
+        }
+      ],
+      "protocol_errors": [
+        {
+          "stage": "assessment",
+          "unit_id": "CU-001",
+          "error": "explicit contract has no supplied requirement authority"
+        },
+        {
+          "stage": "assessment",
+          "unit_id": "CU-002",
+          "error": "explicit contract has no supplied requirement authority"
+        },
+        {
+          "stage": "assessment",
+          "missing_unit_ids": [
+            "CU-001",
+            "CU-002"
+          ],
+          "error": "repair only these incomplete unit assessments"
+        },
+        {
+          "stage": "assessment",
+          "unit_id": "CU-001",
+          "error": "explicit contract has no supplied requirement authority"
+        },
+        {
+          "stage": "assessment",
+          "unit_id": "CU-002",
+          "error": "explicit contract has no supplied requirement authority"
+        },
+        {
+          "stage": "assessment",
+          "missing_unit_ids": [
+            "CU-001",
+            "CU-002"
+          ],
+          "error": "repair only these incomplete unit assessments"
+        }
+      ],
+      "proof_runs": [
+        {
+          "hypothesis_ids": [
+            "H-001"
+          ],
+          "status": "invalid_response",
+          "reason": "2 validation errors for RegressionProof\nbase.source\n  Value error, select one operation, at most six captured source lines [type=value_error, input_value={'evidence_id': 'EV-B-001...': 328, 'end_line': 427}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error\nhead.source\n  Value error, select one operation, at most six captured source lines [type=value_error, input_value={'evidence_id': 'EV-B-001...': 348, 'end_line': 360}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        }
+      ],
+      "discovery_protocol": "semantic-v1",
+      "contract_assessments": [
+        {
+          "unit_id": "CU-003",
+          "behavioral_delta": "Added a new test to ensure error messages and HTTP methods are correct.",
+          "contract": "The error message should indicate 'list_batches' and the HTTP method should be 'GET'.",
+          "contract_basis": "test_expectation",
+          "contract_reference": "test_list__unsupported_provider_error_uses_correct_operation_name_and_http_method",
+          "outcome": "potential_regression",
+          "evidence_refs": [
+            "CU-003"
+          ],
+          "missing_evidence": [
+            "CU-001",
+            "CU-002"
+          ],
+          "hypothesis": {
+            "symbol": "error.message",
+            "trigger": "bm.list_batches(custom_llm_provider=\"anthropic\")",
+            "expected": {
+              "kind": "literal",
+              "property": "contains",
+              "value": "list_batches"
+            },
+            "suspected": {
+              "kind": "literal",
+              "property": "contains",
+              "value": "list_batch"
+            }
+          },
+          "verification_level": "source_assessment_not_execution"
+        }
+      ],
+      "semantic_rejections": [
+        {
+          "hypothesis_id": "H-001",
+          "reason": "2 validation errors for RegressionProof\nbase.source\n  Value error, select one operation, at most six captured source lines [type=value_error, input_value={'evidence_id': 'EV-B-001...': 328, 'end_line': 427}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error\nhead.source\n  Value error, select one operation, at most six captured source lines [type=value_error, input_value={'evidence_id': 'EV-B-001...': 348, 'end_line': 360}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        }
+      ],
+      "request_attempts": 4,
+      "estimated_completion_tokens": 961,
+      "bundle_id": "B-001"
+    }
+  ],
+  "pipeline_health": {
+    "healthy": false,
+    "agent_runs": 1,
+    "unhealthy_runs": 1,
+    "unhealthy_statuses": [
+      "PARTIAL"
+    ],
+    "coverage_ratio": 1.0,
+    "coverage_adequate": true,
+    "status": "partial",
+    "inspection_ratio": 0.3333333333333333
+  },
+  "intent_sources": [],
+  "requirements": [],
+  "requirement_assessments": [],
+  "investigations": [],
+  "evidence": [],
+  "source_observations": [],
+  "finding_verifications": [],
+  "requirement_coverage": {
+    "total": 0,
+    "verified": 0,
+    "violated": 0,
+    "unverified": 0,
+    "not_assessed": 0,
+    "not_applicable": 0,
+    "assessed": 0,
+    "applicable": 0,
+    "ratio": null
+  }
+}

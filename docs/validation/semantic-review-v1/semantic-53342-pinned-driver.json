@@ -1,0 +1,19 @@
+{
+  "exit_code": 0,
+  "elapsed_seconds": 311.6002770699997,
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "cli.main",
+    "review-local",
+    "--repo",
+    "/home/venkat/.codeturtle/repos/BerriAI_litellm",
+    "--base",
+    "66aa18a169280cfad8195490d057e468cfe3224b",
+    "--head",
+    "6288812fe4c81b7c9ed59a24e190cd6e19464701",
+    "--json-output",
+    ".validation/semantic-quality/semantic-53342-pinned.json"
+  ],
+  "revision": "574e30cb1b5f1cc9ff4d168bfb38e06aba5683da"
+}

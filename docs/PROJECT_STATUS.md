@@ -11,7 +11,7 @@ and does not use LangGraph. Optional integrations do not establish broad quality
 | --- | --- | --- |
 | Input | GitHub PR and local committed snapshots; normal PR investigation source/search/risk reads use pinned objects | Explicit legacy callers remain; working-tree snapshots and broader graph provenance are unfinished |
 | Planning | Change units, bounded source/test bundles, explicit scoped requirements | Packing is not inspection; omission remains visible |
-| Investigation | Structural rules, bounded hypothesis discovery, typed proof batches and shared repair limits | Model reasoning and broad-language accuracy remain unqualified |
+| Investigation | Structural rules, typed change/contract assessments, BASE/HEAD regression proposals, bounded repair | Model reasoning and broad-language accuracy remain unqualified |
 | Requirement investigation | Local requirement-first proposal and fresh challenge | GitHub mode currently supplies requirements and links verified findings |
 | Retrieval | Pinned source lookup, Python AST function scopes, dependency gaps, bounded lexical tools | Large/complex functions and external dependencies remain limited; no comprehensive impact/dataflow guarantee |
 | Verification | Structured decisions, exact citations, HEAD evidence, narrow None/len source rule, bounded repairs | Rule support is deliberately narrow; model reasoning remains unqualified |
@@ -19,7 +19,7 @@ and does not use LangGraph. Optional integrations do not establish broad quality
 | Policy | Deterministic MERGE/COMMENT/REQUEST_CHANGES or no verdict | MERGE is a recommendation, not a merge operation or correctness proof |
 | Delivery | Dry-run preview and explicitly requested SHA-bound grouped GitHub review | Cross-machine exactly-once delivery is not guaranteed |
 | Persistence | Local session/memory/repository utilities and JSON artifacts | No complete durable review-task recovery/event ledger |
-| Evaluation | Frozen input helpers, separate labels, sealed predictions, scorers, paired analysis | Expanded real-PR benchmark and explicit false-MERGE uncertainty are unfinished |
+| Evaluation | Frozen inputs, sealed predictions, explicit PR truth, both false-MERGE denominators, Wilson intervals and gates | Real-PR pilot assembly, adjudication, and held-out quality measurements remain unfinished |
 
 ## Current system flow
 
@@ -79,6 +79,12 @@ for target identities, usage, CI evidence, and limitations.
 
 ## Evidence we have
 
+- Current semantic-review milestone: **773 local tests passed**, and the hosted
+  Windows/Linux Python 3.11/3.12 contract matrix passed at `cd857b0`. Native final
+  runs recorded 3/3 units on the small #53337 control and 12/79 units on latest
+  #53342; both remained partial COMMENT results. Independent `gpt-6-astra`
+  references did not establish a clean label. See
+  [implementation, failures, artifacts, and remaining work](SEMANTIC_REVIEW_PHASE.md).
 - Full local suite: 742 tests passed after snapshot-context and partial-progress
   fixes, extending the 697-test proof-protocol milestone. See
   [snapshot-context implementation](SNAPSHOT_CONTEXT_PHASE.md) and
@@ -131,11 +137,12 @@ bounded stronger-model comparison if needed; no improvement is presumed.
 
 ### 3. Implement explicit benchmark truth and decision metrics
 
-Represent defective, reviewed-clean, and uncertain cases explicitly. Missing
-reference comments must not imply clean code. Add both buggy-PR MERGE rate and
-unsafe fraction among MERGE recommendations, raw denominators, uncertainty, clean
-recommendation coverage, finding quality, and operational completion. Preserve
-failed and ambiguous attempts. A system that abstains on everything is not useful.
+Core PR truth records, both safety denominators, Wilson intervals, unknown-case
+accounting, scorer/report integration, and missing-measurement release gates are
+implemented. Missing reference comments no longer establish clean code. Remaining
+work is real-case adjudication and release measurement, including clean
+recommendation coverage and operational failures. A system that abstains on
+everything is not useful; implemented metrics are not measured quality results.
 
 ### 4. Assemble and adjudicate the real-PR pilot
 
