@@ -137,7 +137,7 @@ def seal(root: Path, predictions: list[dict], output: Path, *, split="test"):
         if not provenance.get("reviewer_commit") or provenance.get("dirty") is not False:
             raise ValueError("pilot predictions require a frozen clean reviewer")
         profile = {k: provenance.get(k) for k in ("reviewer_commit","provider","model","prompt_version",
-                   "analysis_mode","finding_verifier_mode","finding_source_rules","discovery_protocol","requirement_strategy")}
+                   "analysis_mode","finding_verifier_mode","finding_source_rules","discovery_protocol","requirement_strategy","pilot_profile")}
         profile["limits"] = {key: value for key, value in (provenance.get("budget") or {}).items()
                              if key.startswith("max_")}
         profiles.add(digest(profile))
