@@ -10,6 +10,7 @@ from cli.commands.graphify_cmd import graphify_test
 from cli.commands.inspect_kb import inspect_kb
 from cli.commands.local_review import review_local
 from cli.commands.jobs import app as jobs_app
+from cli.commands.sandbox import sandbox_check
 
 app = typer.Typer(
     name="codeturtle",
@@ -24,6 +25,7 @@ app.command()(init.init)
 app.command()(review.review)
 app.command("review-local")(review_local)
 app.add_typer(jobs_app, name="jobs")
+app.command("sandbox-check")(sandbox_check)
 app.command()(add_repo.add_repo)
 app.command()(inspect_kb)
 app.command("graphify-test")(graphify_test)
