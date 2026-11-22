@@ -92,10 +92,12 @@ class DockerRunner:
         try:
             info = self._docker("info", "--format", "{{.OSType}}")
             if info.returncode or info.stdout.strip() != "linux":
-                return result | {"reason": "linux_docker_engine_unavailable"}
+                result["reason"] = "linux_docker_engine_unavailable"
+                return result
             image = self._docker("image", "inspect", self.profile.image, "--format", "{{.Id}}")
             if image.returncode:
-                return result | {"reason": "pinned_image_not_installed"}
+                result["reason"] = "pinned_image_not_installed"
+                return result
             result["image_id"] = image.stdout.strip()
             with tempfile.TemporaryDirectory(prefix="ct-source-", dir=self.staging_root) as directory:
                 source = Path(directory)/"source"
@@ -115,7 +117,8 @@ class DockerRunner:
                     "--env", "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1", self.profile.image, *command]
                 creation = self._docker(*options)
                 if creation.returncode:
-                    return result | {"reason": "container_creation_failed"}
+                    result["reason"] = "container_creation_failed"
+                    return result
                 created = True
                 process = subprocess.Popen([self.executable, "start", "--attach", name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 captured, exceeded = bytearray(), threading.Event()
