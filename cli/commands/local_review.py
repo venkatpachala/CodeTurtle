@@ -65,6 +65,8 @@ def review_local(
             carried = [{"stage": "incremental", "reason": "previous_finding_requires_revalidation",
                         "file": f.file, "claim": f.claim, "previous_head": old.target.head_sha}
                        for f in old.product_findings]
+            carried.extend(item for item in old.unresolved if item.get("stage")=="incremental"
+                           and item.get("reason")=="previous_finding_requires_revalidation")
         diff = provider.diff(snapshot)
         index = build_diff_index(diff)
         files = sorted(index.files)

@@ -98,8 +98,8 @@ class JobStore:
             self._event(db, job_id, "submitted")
         return self.get(job_id)
 
-    def claim(self, *, lease_seconds=30, max_attempts=3) -> dict | None:
-        if lease_seconds <= 0 or max_attempts < 1:
+    def claim(self, *, lease_seconds=30, max_attempts=3, max_running=1) -> dict | None:
+        if lease_seconds <= 0 or max_attempts < 1 or not 1<=max_running<=32:
             raise ValueError("invalid worker limits")
         with self.transaction() as db:
             now = self.clock()
@@ -108,6 +108,8 @@ class JobStore:
                 db.execute("UPDATE jobs SET state=?,token=NULL,lease=NULL,updated=?,error=? WHERE id=?",
                            (state, now, "lease_expired", row["id"]))
                 self._event(db, row["id"], "lease_expired", {"next_state": state})
+            if db.execute("SELECT COUNT(*) FROM jobs WHERE state='running'").fetchone()[0]>=max_running:
+                return None
             row = db.execute("SELECT * FROM jobs WHERE state='queued' ORDER BY created,id LIMIT 1").fetchone()
             if row is None:
                 return None
@@ -185,6 +187,8 @@ class JobStore:
                 # Absence of a finding is not evidence that its defect was fixed.
                 db.execute("UPDATE tracked_findings SET state='needs_recheck' WHERE project=? AND fingerprint=?",
                            (project, row["fingerprint"]))
+                db.execute("INSERT INTO finding_events(project,fingerprint,at,state,actor,evidence) VALUES(?,?,?,'needs_recheck','review',?)",
+                           (project,row["fingerprint"],self.clock(),job_id))
 
     def findings(self, project: str) -> list[dict]:
         with self.connection() as db:

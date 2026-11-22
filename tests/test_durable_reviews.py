@@ -61,6 +61,15 @@ def test_wrong_target_never_commits_success(tmp_path):
     assert store.get(claimed["id"])["state"] == "running"
 
 
+def test_default_worker_limit_prevents_competing_local_inference_jobs(tmp_path):
+    store=JobStore(tmp_path/"jobs.db")
+    store.submit(payload());store.submit(payload()|{"head_sha":"c"*40})
+    first=store.claim()
+    assert first is not None and store.claim() is None
+    second=store.claim(max_running=2)
+    assert second is not None and first["id"]!=second["id"]
+
+
 def test_missing_finding_is_not_automatically_resolved(tmp_path):
     store = JobStore(tmp_path/"jobs.db")
     one = store.submit(payload()); claimed = store.claim()
@@ -117,3 +126,21 @@ def test_worker_enforces_deadline_and_records_failure(repository):
     result = work_once(store, poll_seconds=0.005)
     assert result["id"] == job["id"] and result["state"] == "failed"
     assert result["error"] == "worker_deadline_exceeded"
+
+
+def test_worker_recovers_completed_artifact_after_crash_before_commit(repository, monkeypatch):
+    from core.review.worker import work_once
+    import core.review.worker as worker
+    root,base=repository;db=root/"recovery.db";runner=CliRunner()
+    response=runner.invoke(app,["jobs","submit","--repo",str(root),"--base",base,"--static-only","--db",str(db)])
+    assert response.exit_code==0,response.output
+    queue=JobStore(db);job_id=json.loads(response.output)["id"];queue.claim()
+    artifact=db.parent/"artifacts"/job_id/"attempt-1"/"review.json";artifact.parent.mkdir(parents=True)
+    completed=runner.invoke(app,["review-local","--repo",str(root),"--base",base,"--static-only","--json-output",str(artifact)])
+    assert completed.exit_code==0,completed.output
+    with queue.transaction() as connection:
+        connection.execute("UPDATE jobs SET lease=0 WHERE id=?",(job_id,))
+    monkeypatch.setattr(worker.subprocess,"Popen",lambda *a,**k:pytest.fail("completed immutable artifact should be recovered without another child"))
+    recovered=work_once(queue)
+    assert recovered["state"]=="succeeded" and recovered["attempt"]==2
+    assert recovered["artifact"]==str(artifact)

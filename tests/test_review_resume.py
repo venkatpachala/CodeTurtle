@@ -31,6 +31,14 @@ def test_incremental_review_carries_unresolved_prior_findings(verification_case)
     data = json.loads(output.read_text())
     assert data["decision"] == "COMMENT" and not data["approval_eligible"]
     assert any(x["reason"] == "previous_finding_requires_revalidation" for x in data["unresolved"])
+    next_base=git(provider.root,"rev-parse","HEAD")
+    (provider.root/"README.md").write_text("Another documentation update")
+    git(provider.root,"commit","-am","docs again")
+    third=provider.root/"third.json"
+    response=CliRunner().invoke(app,["review-local","--repo",str(provider.root),"--base",next_base,
+        "--previous",str(output),"--static-only","--json-output",str(third)])
+    assert response.exit_code==0,response.output
+    assert any(x["reason"]=="previous_finding_requires_revalidation" for x in json.loads(third.read_text())["unresolved"])
 
 
 def test_native_checkpoint_reuse_still_runs_independent_final_verification(verification_case, ollama_server):

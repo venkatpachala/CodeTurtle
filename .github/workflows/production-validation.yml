@@ -37,6 +37,7 @@ jobs:
       - run: python -m pytest tests/test_gateway_http.py tests/test_scoped_source_capture.py tests/test_none_len_source_rule.py -q -p no:cacheprovider
       - run: python -m pytest tests/test_semantic_review.py tests/test_merge_safety_metrics.py -q -p no:cacheprovider
       - run: python -m pytest tests/test_review_admission.py tests/test_durable_reviews.py tests/test_review_resume.py tests/test_behavior_contrasts.py tests/test_pure_contract_route.py tests/test_real_pilot.py tests/test_isolated_runner.py -q -p no:cacheprovider
+      - run: python -m pytest tests/test_pure_contract_verifier.py tests/test_diff_path_identity.py -q -p no:cacheprovider
       - run: codeturtle review --help
       - run: codeturtle review-local --help
       - run: codeturtle jobs --help
