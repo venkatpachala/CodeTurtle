@@ -816,11 +816,23 @@ class ReviewRuntime:
             unresolved.extend({"reason": reason, "stage": "semantic_context"}
                               for reason in semantic_context.unresolved_context)
         for run in agent_runs:
+            for assessment in run.get("contract_assessments") or []:
+                for gap in assessment.get("missing_evidence") or []:
+                    unresolved.append({"stage": "contract_assessment", "bundle_id": run.get("bundle_id"),
+                                       "unit_id": assessment.get("unit_id"), "reason": gap})
+            for rejection in run.get("semantic_rejections") or []:
+                unresolved.append({"stage": "semantic_proof", "bundle_id": run.get("bundle_id"), **rejection})
             for call in run.get("tool_calls") or []:
                 observation = call.get("result") or {}
                 if observation.get("truncated") or observation.get("error"):
                     unresolved.append({"stage": "tool_context", "bundle_id": run.get("bundle_id"),
-                                       "reason": "incomplete_tool_observation"})
+                                       "reason": "incomplete_tool_observation", "evidence_id": call.get("id"),
+                                       "tool": call.get("request", {}).get("tool"),
+                                       "path": observation.get("path") or call.get("request", {}).get("path"),
+                                       "side": observation.get("side"), "scope": observation.get("scope"),
+                                       "error": observation.get("error"),
+                                       "unresolved_dependencies": observation.get("unresolved_dependencies", []),
+                                       "limitation": "Bounded observation; assess relevance to each claimed contract."})
         requirement_assessments, requirement_investigations, requirement_evidence = [], [], []
         source_observations = []
         if requirement_runs:

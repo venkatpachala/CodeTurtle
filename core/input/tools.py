@@ -16,24 +16,29 @@ class SnapshotBundleTools(BundleTools):
         self.provider = provider
         self.snapshot = snapshot
 
-    def read_source(self, path: str, *, symbol: str = "") -> dict:
+    def read_source(self, path: str, *, symbol: str = "", side: str = "head") -> dict:
         resolved = self._in_bundle(path)
         if not resolved:
             return {"error": "outside_bundle", "status": "denied"}
+        if side not in {"base", "head"}:
+            return {"error": "invalid_revision_side", "status": "denied"}
         try:
-            source = self.provider.read(self.snapshot, resolved)
+            source = self.provider.read(self.snapshot, resolved, side)
         except InputError as exc:
             return {"error": str(exc), "status": "error"}
         lines = source.content.decode("utf-8", errors="replace").splitlines()
         starts = [int(unit.get("start_line", 1) if isinstance(unit, dict) else getattr(unit, "start_line", 1))
                   for unit in self.bundle.units
                   if normalize_path(unit.get("path", "") if isinstance(unit, dict) else getattr(unit, "path", "")) == resolved]
+        if side == "base" and self.index is not None:
+            starts = [int(h.old_start) for h in self.index.hunks_for(resolved) if h.old_start > 0]
         from core.input.excerpts import capture_excerpt
         excerpt = capture_excerpt("\n".join(lines), resolved, symbol=symbol,
                                   anchor=max(1, min(starts or [1])), max_lines=100, max_chars=4000)
         text = "\n".join(f"{i}: {line}" for i, line in enumerate(excerpt.text.splitlines(), start=excerpt.start_line))
         truncated = not excerpt.complete or bool(excerpt.unresolved_dependencies) or len(text) > 5000
         return {"path": resolved, "text": text[:5000], "source": "git_snapshot",
+                "side": side,
                 "snapshot_id": self.snapshot.id, "revision_sha": source.revision_sha,
                 "content_sha256": source.content_sha256, "truncated": truncated,
                 "scope": excerpt.scope, "scope_symbol": excerpt.symbol,

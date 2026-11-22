@@ -40,6 +40,10 @@ class AgentRunResult:
     hypothesis_outcomes: List[dict[str, Any]] = field(default_factory=list)
     protocol_errors: List[dict[str, Any]] = field(default_factory=list)
     proof_runs: List[dict[str, Any]] = field(default_factory=list)
+    discovery_protocol: str = "legacy-v5"
+    contract_assessments: List[dict[str, Any]] = field(default_factory=list)
+    semantic_rejections: List[dict[str, Any]] = field(default_factory=list)
+    request_attempts: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -55,12 +59,16 @@ class AgentRunResult:
             "parse_error": self.parse_error,
             "exception": self.exception,
             "latency_ms": round(self.latency_ms, 2),
-            "prompt_version": PROMPT_VERSION,
+            "prompt_version": "semantic-contract-v1" if self.discovery_protocol == "semantic-v1" else PROMPT_VERSION,
             "model_calls": len(self.raw_outputs),
             "assessments": list(self.assessments),
             "hypothesis_outcomes": list(self.hypothesis_outcomes),
             "protocol_errors": list(self.protocol_errors),
             "proof_runs": list(self.proof_runs),
+            "discovery_protocol": self.discovery_protocol,
+            "contract_assessments": list(self.contract_assessments),
+            "semantic_rejections": list(self.semantic_rejections),
+            "request_attempts": self.request_attempts,
             "estimated_completion_tokens": sum(max(1, len(x) // 4) for x in self.raw_outputs),
         }
 
@@ -146,6 +154,7 @@ class BundleAgent:
         *,
         max_steps: int = MAX_STEPS,
         proof_mode: str = "structured",
+        discovery_protocol: str | None = None,
     ):
         self.llm = llm
         self.max_steps = max(1, int(max_steps or MAX_STEPS))
@@ -154,8 +163,13 @@ class BundleAgent:
         if proof_mode not in {"structured", "legacy"}:
             raise ValueError("unknown proof mode")
         self.proof_mode = proof_mode
+        # Historical injected callbacks retain their declared old wire contract.
+        # Native CLI calls use the semantic contract and never fall back on parse failure.
+        self.discovery_protocol = discovery_protocol or ("legacy" if llm is not None else "semantic")
+        if self.discovery_protocol not in {"semantic", "legacy"}:
+            raise ValueError("unknown discovery protocol")
 
-    def _complete(self, prompt: str, response_schema=None, *, stage="discovery") -> str:
+    def _complete(self, prompt: str, response_schema=None, *, stage="discovery", max_tokens=1400) -> str:
         if self.budget is not None:
             self.budget.reserve(prompt)
         if self.llm is not None:
@@ -168,7 +182,7 @@ class BundleAgent:
             capability="correctness_review",
             agent_name="BundleAgent",
             temperature=0.0,
-            max_tokens=1400,
+            max_tokens=max_tokens,
             retries=0,
             response_schema=response_schema,
         )
@@ -351,6 +365,9 @@ class BundleAgent:
         return f"{_PROOF_SYSTEM}\n\nInvestigation package:\n{json.dumps(payload)}\n\nJSON only."
 
     def run_result(self, bundle: Bundle, tools: Optional[BundleTools] = None) -> AgentRunResult:
+        if self.discovery_protocol == "semantic":
+            from core.agent.semantic import run_semantic
+            return run_semantic(self, bundle, tools or BundleTools(bundle))
         history: List[str] = []
         tools = tools or BundleTools(bundle)
         raw_outputs: List[str] = []

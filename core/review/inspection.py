@@ -16,12 +16,15 @@ def collect_inspection(units: list, bundles: list, runs: list[dict]) -> ReviewCo
     healthy = {"VALID_CANDIDATES", "VALID_EMPTY"}
     by_bundle = {b.id: b for b in bundles}
     for run in runs:
-        if run.get("status") not in healthy:
+        semantic = run.get("discovery_protocol") == "semantic-v1"
+        if run.get("status") not in healthy and not semantic:
             continue
         bundle = by_bundle.get(run.get("bundle_id"))
         permitted = {str(_get(u, "id")) for u in (bundle.units[:12] if bundle else [])}
         for raw in run.get("assessments") or []:
             if not isinstance(raw, dict):
+                continue
+            if semantic and raw.get("status") != "inspected":
                 continue
             uid = str(raw.get("unit_id") or "")
             if uid not in eligible or uid not in permitted:
@@ -41,9 +44,11 @@ def collect_inspection(units: list, bundles: list, runs: list[dict]) -> ReviewCo
                 continue
     assessments = []
     for uid, unit in eligible.items():
+        recorded = next((raw for run in runs if run.get("discovery_protocol")=="semantic-v1"
+                         for raw in run.get("assessments",[]) if raw.get("unit_id")==uid),{})
         assessments.append(observed.get(uid) or UnitAssessment(unit_id=uid, path=_get(unit, "path"),
             status="omitted" if uid not in packed else "unknown",
-            reason="not_packed" if uid not in packed else "missing_or_incomplete_assessment"))
+            reason="not_packed" if uid not in packed else recorded.get("reason") or "missing_or_incomplete_assessment"))
     return ReviewCoverage(eligible=len(eligible), packed=len(packed), inspected=len(observed), assessments=assessments)
 
 

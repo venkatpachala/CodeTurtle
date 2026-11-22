@@ -124,7 +124,7 @@ def test_parsed_structured_calls_keep_usage(ollama_server):
     assert response.usage["completion_tokens"] == 2
 
 
-def test_default_agent_sends_proof_schema_through_normal_gateway(ollama_server):
+def test_explicit_legacy_agent_sends_proof_schema_through_normal_gateway(ollama_server):
     from core.agent.bundle_agent import BundleAgent
     from core.runtime.models import Bundle
     requests, state = ollama_server
@@ -133,13 +133,33 @@ def test_default_agent_sends_proof_schema_through_normal_gateway(ollama_server):
     proof = {"decisions": [{"hypothesis_id": "H-001", "status": "unresolved", "candidate": None,
         "reason": "Caller contract unavailable", "evidence_refs": [], "missing_evidence": ["caller contract"]}]}
     state["contents"] = [json.dumps(discovery), json.dumps(proof)]
-    agent = BundleAgent()
+    agent = BundleAgent(discovery_protocol="legacy")
     result = agent.run_result(Bundle(id="B-001", paths=["app.py"]))
     assert result.status == "VALID_EMPTY"
     assert len(requests) == 2
     assert requests[1]["body"]["format"]["properties"]["decisions"]
     assert agent.usage_records[1]["stage"] == "proof"
     assert result.proof_runs[0]["status"] == "completed"
+
+
+def test_default_semantic_agent_uses_native_schema_and_pinned_sources(ollama_server, tmp_path):
+    from core.agent.bundle_agent import BundleAgent
+    from tests.test_semantic_review import assessment, pinned_tools, proof_for
+    requests, state = ollama_server
+    bundle, tools = pinned_tools(tmp_path)
+    def respond(prompt):
+        package = json.loads(prompt.split("\nPACKAGE\n", 1)[1])
+        return json.dumps({"assessments": [assessment(regression=True)]}) if "units" in package else json.dumps(proof_for(prompt))
+    state["respond"] = respond
+    agent = BundleAgent()
+    result = agent.run_result(bundle, tools)
+    assert result.status == "VALID_CANDIDATES" and len(result.candidates) == 1
+    assert result.discovery_protocol == "semantic-v1"
+    assert len(requests) == 2 and len(agent.usage_records) == 2
+    assert requests[0]["body"]["format"]["properties"]["assessments"]
+    assert requests[1]["body"]["format"]["properties"]["conclusion"]
+    assert agent.usage_records[0]["stage"] == "semantic_discovery"
+    assert agent.usage_records[1]["stage"] == "semantic_proof"
 
 
 def test_runtime_final_gate_requests_schema_and_validates_citations(ollama_server, tmp_path):
