@@ -10,6 +10,10 @@
 | Durable runtime | SQLite job ledger, claims, leases, recovery, cancellation, idempotency, bundle checkpointing and finding events | Current scope is a local worker, an operator-supplied repository and a shared SQLite database. |
 | Execution and release | Qualified Docker fixture profile, frozen reviewer and observed model metadata, test matrix | Release quality gates, representative performance, peak memory and monetary inference cost remain open. |
 
+The first sealed 30-PR pilot produced zero verified findings and one MERGE
+recommendation on an externally labeled defective PR. It gives us a
+reproducible failure case.
+
 ## 1. How the reviewer spends its budget
 
 The runtime converts each diff into change units and ranks source and test changes by
@@ -107,6 +111,35 @@ digest and configuration. Seals require one attempt for every test input,
 including explicit failed or no-verdict attempts. Source scope is narrower
 than a full local checkout.
 
+### Sealed test-split result
+
+| Measure | Observed value |
+| --- | --- |
+| Attempts | 30/30 sealed on `6ad326e` |
+| Analysis health | 10 completed, 20 partial |
+| Decisions | 28 COMMENT, 2 MERGE, 0 no verdict |
+| Inspected scope | 84 of 392 eligible units |
+| False-MERGE among defective PRs | 1 of 19, or 5.3% |
+| Defective among MERGE recommendations | 1 of 1 labeled MERGE recommendations. The other MERGE was unlabeled |
+| Reference issue matches | 0 matches for 67 published issue references, with zero product findings |
+| Model work | 51 budgeted calls, 117,872 reported input tokens and 13,338 output tokens |
+| GPU resume latency | 21 cases, p50 39.0 s and p95 63.2 s |
+| GPU resume resources | 4,104,734,637 bytes sampled resident model VRAM, 99,896 KiB max WSL reviewer-child RSS |
+
+The other 11 cases have no accepted functional defect or clean label. The
+nominal Wilson 95% interval on 1/19 is 0.9%–24.6%. It assumes independence and
+representative sampling, which remain unestablished for this purposive split.
+With zero emitted findings, issue precision is undefined. The reference-match
+count concerns the published issue list and this particular profile.
+
+The run resumed twice from case checkpoints. The original six cases have no
+per-case hardware sampling. Three cases completed on CPU during service
+recovery. The last 21 used CUDA with the same endpoint and model digest. GPU
+latency figures use the CUDA cohort only and include GitHub source fetches.
+Memory figures cover reported resident model allocation and the one WSL
+reviewer child. Monetary cost is unmeasured.
+[Sealed report](validation/efficient-reviewer-v1/real-pilot-test/report.json)
+
 `P(MERGE | defective)` counts merges among the defect-labeled PRs.
 `P(defective | MERGE)` counts defects among labeled recommendations to merge.
 The second metric is undefined when the system recommends no merges. For
@@ -114,6 +147,20 @@ portfolio reporting, a low first number is meaningful only alongside the
 decision mix, inspection, clean merge coverage and uncertainty. Public
 benchmark exposure and partial labels limit generalization even when a
 numerator and denominator can be reported.
+
+The observed false MERGE was [Cal.com #14943](https://github.com/calcom/cal.com/pull/14943).
+The older reviewer counted all three units as inspected and treated the
+edited database updates and deletion criteria as consistent. The follow-up
+prioritizes visible storage mutations, including edits inside call arguments.
+Even with full inspection and no finding, those changes now require human
+review. A verified blocking finding can still request changes. This lexical
+guard covers recognizable persistence APIs. Broader stateful changes and
+defect detection still require evaluation.
+Replaying policy against the original artifact changes MERGE to COMMENT.
+A fresh native run on the same pinned trees at `461daa8` independently
+returned COMMENT with `persistence_change_requires_review` and zero findings
+in 40.28 seconds. This known-case retest does not change the sealed pilot
+score. [Regression evidence](validation/efficient-reviewer-v1/persistence-regression/check.json)
 
 ## 4. What makes the runtime durable
 
@@ -132,6 +179,7 @@ incremental baseline when its HEAD equals the current BASE. Unresolved prior
 findings carry forward. A missing finding is recorded as needing recheck,
 and operator feedback requires audit evidence. This keeps a changed code
 location or omission from silently closing a real issue.
+[CLI recovery and cancellation smoke](validation/efficient-reviewer-v1/runtime/job-cli-qualification.json)
 
 ## 5. What execution and release qualification established
 
@@ -145,6 +193,12 @@ blocks legacy host-side test and install flags. The qualified profile covers
 small Python probe workloads. Building arbitrary PRs and installing dependency
 sets needs separate runner and workload qualification.
 [Execution qualification](validation/efficient-reviewer-v1/runtime/isolation-qualification.json)
+
+The full local suite after the persistence fix passed **833 tests** with
+five Docker integration checks skipped in that run. The separate Docker
+qualification covered the executable fixtures. The hosted four-job
+Windows/Linux and Python 3.11/3.12 matrix covers selected contracts.
+[Test record](validation/efficient-reviewer-v1/runtime/test-qualification.json)
 
 The release manifest freezes the clean reviewer commit, dependencies, scorer
 hash, configured model and observed Ollama digest. Two wheel builds at pilot

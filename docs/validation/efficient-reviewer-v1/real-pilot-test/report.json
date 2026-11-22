@@ -1,0 +1,107 @@
+{
+  "merge_safety": {
+    "measured": true,
+    "labels": {
+      "defective": 19,
+      "reviewed_clean": 0,
+      "uncertain": 0,
+      "unlabeled": 11
+    },
+    "no_verdict": 0,
+    "false_merge_given_defective": {
+      "events": 1,
+      "total": 19,
+      "rate": 0.05263157894736842,
+      "wilson_95": [
+        0.009351994062300362,
+        0.24638731166898786
+      ]
+    },
+    "defective_given_labeled_merge": {
+      "events": 1,
+      "total": 1,
+      "rate": 1.0,
+      "wilson_95": [
+        0.20654931437723745,
+        1.0
+      ]
+    },
+    "all_merges": 2,
+    "unlabeled_or_uncertain_merges": 1,
+    "all_merge_defect_rate_label_bounds": [
+      0.5,
+      1.0
+    ],
+    "limitation": "Wilson intervals assume independent representative PRs; label bounds are not confidence intervals."
+  },
+  "labels_complete": false,
+  "exposure_audited": false,
+  "operations": {
+    "attempts": 30,
+    "health": {
+      "completed": 10,
+      "partial": 20
+    },
+    "decisions": {
+      "COMMENT": 28,
+      "MERGE": 2
+    },
+    "eligible_units": 392,
+    "inspected_units": 84,
+    "model_budget_calls": 51,
+    "reported_prompt_tokens": 117872,
+    "reported_completion_tokens": 13338,
+    "latency_seconds": {
+      "count": 30,
+      "total": 1847.6372339270001,
+      "p50_nearest_rank": 47.080347330999984,
+      "p95_nearest_rank": 264.94071530400004
+    },
+    "monetary_cost_usd": null
+  },
+  "findings": {
+    "product_findings": 0,
+    "prs_with_any_finding_by_reference_label": {
+      "defective": 0,
+      "unlabeled": 0
+    },
+    "published_reference_issues_on_prs_with_zero_findings": 67,
+    "matching_scope": "On cases with zero emitted findings, every published reference issue has zero matches. Cases with emitted findings require issue matching."
+  },
+  "eligible_for_headline_metrics": false,
+  "scope": "Safety accounting only. Issue matching, label independence, representative sampling and release qualification are separate requirements.",
+  "annotations_sha256": "a178ba9d130523df01dd4e24ec90f3c99496c5335339cba0addde340e3d9f689",
+  "timing_epochs": {
+    "pre_pause": {
+      "device_scope": "original session; hardware not sampled per case",
+      "attempts": 6,
+      "case_seconds_sum": 307.04858146100014,
+      "p50_nearest_rank": 53.21632032800699,
+      "p95_nearest_rank": 57.26126025299891
+    },
+    "cpu_recovery": {
+      "device_scope": "CPU after service restart",
+      "attempts": 3,
+      "case_seconds_sum": 748.19731524,
+      "p50_nearest_rank": 264.94071530400004,
+      "p95_nearest_rank": 275.59294371199996
+    },
+    "gpu_resume": {
+      "device_scope": "CUDA staging runtime at the same model digest and endpoint",
+      "attempts": 21,
+      "case_seconds_sum": 792.391337226,
+      "p50_nearest_rank": 39.042829928999936,
+      "p95_nearest_rank": 63.1602951010002
+    },
+    "scope": "Case wall times include source retrieval; elapsed resume driver includes glue and polling. Interrupted work may not appear in successful case timings."
+  },
+  "gpu_resume_resources": {
+    "sampled_model_vram_max_bytes": 4104734637,
+    "sample_interval_seconds": 5,
+    "wsl_child_max_rss_kib": 99896,
+    "scope": "Ollama resident model report and reviewer child RSS. Driver transient GPU use, process-tree totals and energy unmeasured."
+  },
+  "measured_on_reviewer_commit": "6ad326e5bbaeacce206986e65fcd1cd51ace74bb",
+  "pilot_reporting_code_sha256": "4817c7e6c37d17de0adcdf824038bd71c3164d578b40bf3798b9d7fe21c88032",
+  "sealed_predictions_sha256": "44c6f1b2d3cb212df8091c937de969d3010bf2d49ee3d1579af1c939f6999662"
+}

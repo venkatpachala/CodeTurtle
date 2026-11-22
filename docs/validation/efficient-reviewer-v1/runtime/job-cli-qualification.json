@@ -1,0 +1,13 @@
+{
+  "revision": "a50026c4ded0e5dbdc026ce4cac7d6a5c859a10f",
+  "base": "6713582c47929f7aaa5138a7228ef93ef9cb2cda",
+  "head": "d25d3fc87e929f400cc878f4478a744867137f64",
+  "idempotent_submission": true,
+  "cancelled_job_state": "cancelled",
+  "executed_job_state": "succeeded",
+  "artifact_matches_pinned_revisions": true,
+  "review_decision": "COMMENT",
+  "review_health": "partial",
+  "static_job_wall_seconds": 1.837326892999954,
+  "model_calls": 0
+}

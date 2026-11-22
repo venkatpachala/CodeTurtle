@@ -53,7 +53,14 @@ The frozen real-PR registry includes 60 inputs. Published issue references
 matched both trees on 40. Under the functional category policy, 38 have external
 defect labels. The other controls and near-duplicate or prior-exposure checks
 still require adjudication. Report publicly sourced pilot statistics with their
-exact denominators and scope. A reproducible code/model freeze and passing
+exact denominators and scope. The sealed 30-case test split produced 28 COMMENT,
+two MERGE and zero findings. One of 19 externally labeled defective PRs received
+MERGE. A subsequent policy change routes visible persistence changes to human
+review and preserves the original pilot as the baseline. The reference set had
+67 issue annotations and zero matches in this run.
+[Sealed pilot report](validation/efficient-reviewer-v1/real-pilot-test/report.json)
+
+A reproducible code/model freeze and passing
 contract tests establish engineering behavior. Broader coverage, issue matching,
 clean-PR adjudication and repeated latency and resource measurement remain the
 path to a qualified reviewer release.

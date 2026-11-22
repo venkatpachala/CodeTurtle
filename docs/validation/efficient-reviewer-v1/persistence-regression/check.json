@@ -1,0 +1,39 @@
+{
+  "case": "https://github.com/calcom/cal.com/pull/14943",
+  "target": {
+    "repo": "calcom/cal.com",
+    "number": 14943,
+    "base_sha": "917c7b0764f4c6bfdca95db2c5f73dbfdbe11757",
+    "head_sha": "c790227e0cda780e6fea9bb03af27948d9e286b9",
+    "diff_sha256": "59c1dfb75eeecddca898f8d281179067f4e5c2f66b4058031f24d90c3ce002c5",
+    "comparison_base_sha": "917c7b0764f4c6bfdca95db2c5f73dbfdbe11757"
+  },
+  "before": {
+    "decision": "MERGE",
+    "policy_reasons": [
+      "complete_no_findings"
+    ],
+    "reviewer_commit": "6ad326e5bbaeacce206986e65fcd1cd51ace74bb"
+  },
+  "policy_replay_with_original_evidence": {
+    "decision": "COMMENT",
+    "reasons": [
+      "persistence_change_requires_review"
+    ],
+    "approval_eligible": false
+  },
+  "after": {
+    "decision": "COMMENT",
+    "policy_reasons": [
+      "persistence_change_requires_review"
+    ],
+    "reviewer_commit": "461daa8da2bf6aa12ee3d1c147eec66bded824d5",
+    "product_findings": 0,
+    "elapsed_seconds": 40.27664688300001
+  },
+  "pilot_units_with_persistence_signal": [
+    "CU-001",
+    "CU-003"
+  ],
+  "scope": "Known failure rerun and frozen policy replay. Development regression evidence only."
+}
