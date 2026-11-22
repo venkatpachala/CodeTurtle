@@ -1,0 +1,82 @@
+[
+  {
+    "case_id": "utf8-regression",
+    "files": {
+      "app.py": {
+        "base": "def permits(text, limit):\n    \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n    return len(text.encode(\"utf-8\")) <= limit\n",
+        "head": "def permits(text, limit):\n    \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n    return len(text) <= limit\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+        "acceptance_criterion": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "utf8-repair",
+    "files": {
+      "app.py": {
+        "base": "def permits(text, limit):\n    \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n    return len(text) <= limit\n",
+        "head": "def permits(text, limit):\n    \"\"\"Accept only when UTF-8 byte length is at most limit.\"\"\"\n    return len(text.encode(\"utf-8\")) <= limit\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+        "acceptance_criterion": "permits(text, limit) enforces UTF-8 byte length, not Unicode character count.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "pagination-regression",
+    "files": {
+      "app.py": {
+        "base": "def page(items, start, count):\n    \"\"\"start is an offset; count is the number of requested items.\"\"\"\n    return items[start:start + count]\n",
+        "head": "def page(items, start, count):\n    \"\"\"start is an offset; count is the number of requested items.\"\"\"\n    return items[start:count]\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "page(items, start, count) returns up to count items beginning at start.",
+        "acceptance_criterion": "page(items, start, count) returns up to count items beginning at start.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "pagination-repair",
+    "files": {
+      "app.py": {
+        "base": "def page(items, start, count):\n    \"\"\"start is an offset; count is the number of requested items.\"\"\"\n    return items[start:count]\n",
+        "head": "def page(items, start, count):\n    \"\"\"start is an offset; count is the number of requested items.\"\"\"\n    return items[start:start + count]\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "page(items, start, count) returns up to count items beginning at start.",
+        "acceptance_criterion": "page(items, start, count) returns up to count items beginning at start.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  }
+]

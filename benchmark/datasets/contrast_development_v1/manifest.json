@@ -1,0 +1,10 @@
+{
+  "name": "contrast-development-v1",
+  "split": "development",
+  "eligible_for_headline_metrics": false,
+  "scope": "Two fresh synthetic families, introduced regression and repair per family; not real PRs.",
+  "case_count": 4,
+  "family_count": 2,
+  "inputs_sha256": "2461d4166562582d93a7505f51b996b82c3e948f492c6fb56e8794f6d611d389",
+  "labels_sha256": "2a9144d5d9ccd57f103ecd4957ab12446d7a4eb626bbed7942b486c6db98fe94"
+}

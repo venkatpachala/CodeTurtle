@@ -1,0 +1,34 @@
+{
+  "utf8-regression": {
+    "family_id": "utf8",
+    "introduced_defect": true,
+    "probe": "from app import permits; assert permits(\"é\", 1) is False",
+    "expected_base_passes": true,
+    "expected_head_passes": false,
+    "label_source": "trusted synthetic contract probe; development only"
+  },
+  "utf8-repair": {
+    "family_id": "utf8",
+    "introduced_defect": false,
+    "probe": "from app import permits; assert permits(\"é\", 1) is False",
+    "expected_base_passes": false,
+    "expected_head_passes": true,
+    "label_source": "trusted synthetic contract probe; development only"
+  },
+  "pagination-regression": {
+    "family_id": "pagination",
+    "introduced_defect": true,
+    "probe": "from app import page; assert page([\"a\",\"b\",\"c\",\"d\"], 2, 2) == [\"c\",\"d\"]",
+    "expected_base_passes": true,
+    "expected_head_passes": false,
+    "label_source": "trusted synthetic contract probe; development only"
+  },
+  "pagination-repair": {
+    "family_id": "pagination",
+    "introduced_defect": false,
+    "probe": "from app import page; assert page([\"a\",\"b\",\"c\",\"d\"], 2, 2) == [\"c\",\"d\"]",
+    "expected_base_passes": false,
+    "expected_head_passes": true,
+    "label_source": "trusted synthetic contract probe; development only"
+  }
+}
