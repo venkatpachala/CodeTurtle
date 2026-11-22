@@ -31,6 +31,8 @@ def review_local(
     requirement_strategy: RequirementStrategy = typer.Option(RequirementStrategy.INVESTIGATE, "--requirement-strategy",
         help="Investigate each requirement, link existing findings only, or disable intent for ablation"),
     max_requirements: int = typer.Option(8, "--max-requirements", min=0, max=32, help="Requirement task admission cap"),
+    bundle_max: int = typer.Option(4, "--bundle-max", min=1, max=32, help="Bundle admission cap; model budget remains shared"),
+    agent_max_steps: int = typer.Option(4, "--agent-max-steps", min=1, max=8),
 ):
     """Review committed code. Dirty and untracked changes are deliberately excluded."""
     try:
@@ -46,7 +48,8 @@ def review_local(
                   "prompt_version": PROMPT_VERSION, "rules_enabled": settings.rules_enabled,
                   "ollama_context_tokens": settings.ollama_context_tokens if settings.llm_backend == "ollama" else None,
                   "verification_enabled": settings.verification_enabled}
-        config.update(requirement_strategy=requirement_strategy.value, max_requirements=max_requirements)
+        config.update(requirement_strategy=requirement_strategy.value, max_requirements=max_requirements,
+                      bundle_max=bundle_max, agent_max_steps=agent_max_steps)
         snapshot = provider.resolve(base, head, config=config)
         diff = provider.diff(snapshot)
         index = build_diff_index(diff)
@@ -57,6 +60,7 @@ def review_local(
             review_snapshot=snapshot, input_provider=provider, review_intent=intent,
             requirement_strategy=requirement_strategy.value, max_requirements=max_requirements,
             analysis_mode=config["analysis_mode"],
+            repo_cfg=SimpleNamespace(bundle_max=bundle_max, agent_max_steps=agent_max_steps),
         )
         runtime = ReviewRuntime()
         result = runtime.run(context)

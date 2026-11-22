@@ -65,7 +65,7 @@ def test_fix_assessment_never_becomes_defect_candidate():
     assert result.status == "VALID_EMPTY"
     assert not result.hypotheses and not result.candidates
     assert result.contract_assessments[0]["verification_level"] == "source_assessment_not_execution"
-    assert result.to_dict()["prompt_version"] == "semantic-contract-v2-bounded-assessments"
+    assert result.to_dict()["prompt_version"] == "semantic-contract-v3-coherent-schema"
 
 
 def test_partial_assessment_repairs_only_missing_units_and_preserves_inspection():
@@ -137,6 +137,59 @@ def test_unit_input_budget_is_visible_in_inspection():
     result = BundleAgent(llm=lambda _: json.dumps({"assessments": [assessment()]}), discovery_protocol="semantic").run_result(bundle)
     assert result.status == "PARTIAL"
     assert result.assessments[1]["reason"] == "model_input_budget"
+
+
+def test_large_bundle_is_split_into_two_unit_requests():
+    bundle = Bundle(id="B1", units=[unit(f"CU-{i:03d}") for i in range(1, 6)])
+    packages = []
+    def respond(prompt):
+        package = json.loads(prompt.split("\nPACKAGE\n")[1])
+        packages.append(package)
+        return json.dumps({"assessments": [assessment(u["unit_id"]) for u in package["units"]]})
+    result = BundleAgent(llm=respond, discovery_protocol="semantic").run_result(bundle)
+    assert [len(p["units"]) for p in packages] == [2, 2]
+    assert sum(a["status"] == "inspected" for a in result.assessments) == 4
+    assert result.assessments[-1]["reason"] == "model_input_budget"
+    assert result.status == "PARTIAL"
+
+
+def test_truncated_batch_is_repaired_with_one_unit_instead_of_repeated():
+    bundle = Bundle(id="B1", units=[unit(), unit("CU-002"), unit("CU-003")])
+    packages = []
+    agent = BundleAgent(discovery_protocol="semantic")
+    def respond(prompt):
+        package = json.loads(prompt.split("\nPACKAGE\n")[1])
+        packages.append(package)
+        agent.usage_records.append({"output_truncated": len(packages) == 1})
+        return json.dumps({"assessments": [assessment(u["unit_id"]) for u in package["units"]]})
+    agent.llm = respond
+    result = agent.run_result(bundle)
+    assert [[u["unit_id"] for u in p["units"]] for p in packages] == [["CU-001", "CU-002"], ["CU-001"], ["CU-002", "CU-003"]]
+    assert result.status == "VALID_EMPTY" and len(result.protocol_errors) == 1
+
+
+def test_repair_does_not_mix_missing_unit_with_next_batch():
+    bundle = Bundle(id="B1", units=[unit(), unit("CU-002"), unit("CU-003")])
+    ids = []
+    def respond(prompt):
+        package = json.loads(prompt.split("\nPACKAGE\n")[1])
+        ids.append([u["unit_id"] for u in package["units"]])
+        return json.dumps({"assessments": [assessment(uid) for uid in (ids[-1][:1] if len(ids) == 1 else ids[-1])]})
+    result = BundleAgent(llm=respond, discovery_protocol="semantic").run_result(bundle)
+    assert ids == [["CU-001", "CU-002"], ["CU-002"], ["CU-003"]]
+    assert result.status == "VALID_EMPTY"
+
+
+def test_failed_assessments_do_not_starve_remaining_units():
+    bundle = Bundle(id="B1", units=[unit(), unit("CU-002"), unit("CU-003")])
+    ids = []
+    def respond(prompt):
+        package = json.loads(prompt.split("\nPACKAGE\n")[1])
+        ids.append([u["unit_id"] for u in package["units"]])
+        return "invalid" if len(ids) < 3 else json.dumps({"assessments": [assessment("CU-003")]})
+    result = BundleAgent(llm=respond, discovery_protocol="semantic").run_result(bundle)
+    assert ids == [["CU-001", "CU-002"], ["CU-001", "CU-002"], ["CU-003"]]
+    assert result.status == "PARTIAL" and result.assessments[-1]["status"] == "inspected"
 
 
 @pytest.mark.parametrize("code,path,expected", [

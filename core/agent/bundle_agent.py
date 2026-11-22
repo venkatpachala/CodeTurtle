@@ -15,7 +15,7 @@ from core.runtime.models import Bundle, Candidate
 
 MAX_STEPS = 4
 LEGACY_PROMPT_VERSION = "hypothesis-proof-v5-partial-decisions"
-PROMPT_VERSION = "semantic-contract-v2-bounded-assessments"
+PROMPT_VERSION = "semantic-contract-v3-coherent-schema"
 
 
 @dataclass

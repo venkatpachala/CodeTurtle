@@ -101,6 +101,10 @@ correct change, added test, or behavior-preserving refactor is NOT a defect lead
 For those use fix_consistent/no_regression_identified and hypothesis=null.
 Only potential_regression may have a hypothesis: a concrete input, an expected
 property and a DISTINCT suspected HEAD outcome for that SAME property.
+Example: BASE returns an invalid cached item; HEAD adds a validity guard and
+returns a fresh item. If that satisfies the contract, use fix_consistent, not a
+regression hypothesis describing the new guard. Raising an exception for invalid
+input can also be correct. Related test text is context, not executed proof.
 Source inference is an assumption, not a verified requirement. Never invent user requirements.
 Return an assessment for every admitted unit_id, or unassessed with a precise gap.
 Source inspection is not test execution. Keep EACH text field below 100 characters.
@@ -124,8 +128,16 @@ def _unit(unit, key, default=""):
 
 
 def _assessment_schema(ids):
-    row = create_model("ScopedChangeAssessment", __base__=ChangeAssessment, unit_id=(Literal[tuple(ids)], ...),
-                       evidence_refs=(tuple[Literal[tuple(ids)], ...], Field(min_length=1, max_length=len(ids))))
+    common = {"unit_id": (Literal[tuple(ids)], ...),
+              "evidence_refs": (tuple[Literal[tuple(ids)], ...], Field(min_length=1, max_length=len(ids)))}
+    # Express outcome/lead coherence in the provider schema as well as Python.
+    positive = create_model("ConsistentChange", __base__=ChangeAssessment, **common,
+                            outcome=(Literal["fix_consistent", "no_regression_identified"], ...), hypothesis=(type(None), ...))
+    regression = create_model("SuspectedViolation", __base__=ChangeAssessment, **common,
+                              outcome=(Literal["potential_regression"], ...), hypothesis=(RegressionLead, ...))
+    unknown = create_model("UnassessedChange", __base__=ChangeAssessment, **common,
+                           outcome=(Literal["unassessed"], ...), hypothesis=(type(None), ...))
+    row = positive | regression | unknown
     return create_model("ChangeAssessments", __base__=DomainRecord,
                         assessments=(list[row], Field(min_length=len(ids), max_length=len(ids))))
 
@@ -208,7 +220,11 @@ def run_semantic(agent, bundle, tools):
         selected = retry_ids or pending[:2]
         retry_ids = None
         schema = _assessment_schema(selected)
-        package = {"units":[{"unit_id":uid,"path":_unit(by_id[uid],"path"),"excerpt":_unit(by_id[uid],"excerpt")} for uid in selected],
+        package = {"units":[{"unit_id":uid,"path":_unit(by_id[uid],"path"),"kind":_unit(by_id[uid],"kind"),
+                             "symbols":_unit(by_id[uid],"symbols",[]),"excerpt":_unit(by_id[uid],"excerpt")} for uid in selected],
+                   "related_tests": [{"path":_unit(u,"path"),"excerpt":str(_unit(u,"excerpt"))[:1800],
+                                      "clipped":len(str(_unit(u,"excerpt")))>1800}
+                                     for u in (bundle.units or []) if _unit(u,"kind")=="test"][:2],
                    "explicit_requirements":bundle.requirements,"validation_feedback":errors[-1:]}
         try:
             doc = complete(DISCOVER+"\nPACKAGE\n"+json.dumps(package),schema,next_stage,1100)
@@ -233,7 +249,9 @@ def run_semantic(agent, bundle, tools):
             if missing:
                 errors.append({"stage":"assessment","missing_unit_ids":missing,"error":"repair only these incomplete unit assessments"})
                 if not repair_available:
-                    break
+                    pending = [uid for uid in pending if uid not in missing]
+                    next_stage = "semantic_discovery"
+                    continue
                 repair_available = False
                 # Repair only invalid rows; valid siblings are never re-generated.
                 pending = missing + [uid for uid in pending if uid not in missing]
@@ -246,7 +264,9 @@ def run_semantic(agent, bundle, tools):
             if isinstance(error,BudgetExceeded):
                 break
             if not repair_available:
-                break
+                pending = [uid for uid in pending if uid not in selected]
+                next_stage = "semantic_discovery"
+                continue
             repair_available = False
             retry_ids = selected[:1] if "truncated" in str(error) else selected
             next_stage = "assessment_repair"
