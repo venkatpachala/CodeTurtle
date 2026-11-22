@@ -38,3 +38,19 @@ def test_case_distinct_git_paths_keep_exact_identity_and_reject_folded_ambiguity
     assert index.hunks_for("auth/mod.rs")[0].new_start==40
     assert index.hunks_for("AUTH/mod.rs")[0].new_start==90
     assert index.hunks_for("Auth/mod.rs")==[]
+
+
+def test_plus_minus_source_operators_cannot_impersonate_file_headers():
+    patch='''diff --git a/counter.cpp b/counter.cpp
+--- a/counter.cpp
++++ b/counter.cpp
+@@ -1 +1 @@
+--- counter;
++++ counter;
+'''
+    index=build_diff_index(patch)
+    assert index.files=={"counter.cpp"}
+    hunk=index.hunks_for("counter.cpp")[0]
+    assert hunk.removed=="-- counter;" and hunk.added=="++ counter;"
+    assert index.first_added_line(hunk) == 1
+    assert index.line_for_snippet("counter.cpp", "counter;") == 1

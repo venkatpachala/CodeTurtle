@@ -186,6 +186,8 @@ class ReviewPipeline:
             self.context.execute_install = bool(cfg.execute_install)
             if os.environ.get("GITHUB_ACTIONS") and (cfg.execute_tests or cfg.execute_install):
                 raise ValueError("PR code execution is disabled in GitHub Actions; use a separate credential-free runner")
+            if cfg.execute_tests or cfg.execute_install:
+                raise ValueError("Host PR execution is disabled; use sandbox-check with a digest-pinned image")
             self.context.show_uncertain = bool(show_uncertain)
             if cfg.model:
                 settings.ollama_model = cfg.model

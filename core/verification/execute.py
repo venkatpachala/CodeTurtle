@@ -1,5 +1,7 @@
-"""Phase 4.3 / 4.3b — optional isolated pytest, with opt-in worktree install.
+"""Legacy host-worktree pytest helpers, not a security isolation boundary.
 
+Native review runtime blocks this executor; use the digest-pinned Docker runner.
+Direct legacy library callers retain the historical opt-in helper contract.
 Default off. Never pytest the dirty repos/ tree as a silent fallback.
 Lockfile-only PRs skip. Path jail + timeout. No shell=True.
 4.3b: --execute-install may uv sync / venv from a recognized manifest.
@@ -107,6 +109,8 @@ def execution_skip_reason(state: dict) -> Optional[str]:
     files = list(facts.get("files_changed") or state.get("files_changed") or [])
     if not any(is_source_file(f) for f in files):
         return SKIP_NO_TEST_TARGETS
+    if state.get("isolated_execution_required"):
+        return "isolated_runner_required"
     return None
 
 

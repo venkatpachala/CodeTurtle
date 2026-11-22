@@ -98,7 +98,7 @@ class DiffIndex:
             if n < 1:
                 continue
             for raw in (h.body or "").splitlines():
-                if raw.startswith("---") or raw.startswith("+++"):
+                if raw.startswith("\\"):
                     continue
                 if raw.startswith("-"):
                     continue
@@ -116,9 +116,9 @@ class DiffIndex:
         if n < 1:
             return None
         for raw in (hunk.body or "").splitlines():
-            if raw.startswith("-") and not raw.startswith("---"):
+            if raw.startswith(("-", "\\")):
                 continue
-            if raw.startswith("+") and not raw.startswith("+++"):
+            if raw.startswith("+"):
                 return n
             n += 1
         if hunk.new_count > 0 and hunk.new_start >= 1:
@@ -214,6 +214,8 @@ def build_diff_index(full_diff: str) -> DiffIndex:
         hunk = None
 
     for raw in (full_diff or "").splitlines():
+        if hunk is not None and hunk["old_seen"]>=hunk["old_count"] and hunk["new_seen"]>=hunk["new_count"]:
+            flush_hunk()
         if raw.startswith("diff --git "):
             flush_hunk()
             current_file = None
@@ -224,20 +226,19 @@ def build_diff_index(full_diff: str) -> DiffIndex:
                     current_file = p
                     idx.files.add(p)
             continue
-        if raw.startswith("+++ b/"):
+        if hunk is None and raw.startswith("+++ b/"):
             p = _strip_ab(raw[4:].strip())
             if p and p != "/dev/null":
                 current_file = p
                 idx.files.add(p)
             continue
-        if raw.startswith("--- a/"):
+        if hunk is None and raw.startswith("--- a/"):
             p = _strip_ab(raw[4:].strip())
             if p and p != "/dev/null":
                 idx.files.add(p)
-                if current_file is None:
-                    current_file = p
+                current_file = p
             continue
-        if raw.startswith("+++ ") or raw.startswith("--- "):
+        if hunk is None and (raw.startswith("+++ ") or raw.startswith("--- ")):
             rest = raw[4:].strip()
             if rest and rest != "/dev/null":
                 p = _strip_ab(rest)
@@ -258,14 +259,21 @@ def build_diff_index(full_diff: str) -> DiffIndex:
                 "body": [],
                 "added": [],
                 "removed": [],
+                "old_seen": 0,
+                "new_seen": 0,
             }
             continue
         if hunk is not None:
             hunk["body"].append(raw)
-            if raw.startswith("+") and not raw.startswith("+++"):
+            if raw.startswith("+"):
                 hunk["added"].append(raw[1:])
-            elif raw.startswith("-") and not raw.startswith("---"):
+                hunk["new_seen"]+=1
+            elif raw.startswith("-"):
                 hunk["removed"].append(raw[1:])
+                hunk["old_seen"]+=1
+            elif raw.startswith(" "):
+                hunk["old_seen"]+=1
+                hunk["new_seen"]+=1
 
     flush_hunk()
     return idx

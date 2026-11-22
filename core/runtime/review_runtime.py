@@ -780,6 +780,7 @@ class ReviewRuntime:
             ]
 
         exec_state = {
+            "isolated_execution_required": True,
             "execute_tests": bool(getattr(ctx, "execute_tests", False)) if ctx is not None else False,
             "execute_install": bool(getattr(ctx, "execute_install", False)) if ctx is not None else False,
             "pr_facts": facts,

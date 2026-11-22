@@ -36,6 +36,15 @@ def test_unavailable_docker_never_falls_back_to_host(repository):
     assert result["status"] == "unavailable" and result["tests_executed"] is False
 
 
+def test_legacy_execution_environment_cannot_enable_host_pr_execution(monkeypatch):
+    from core.verification.execute import execute_tests_node
+    monkeypatch.setenv("CODETURTLE_EXECUTE_TESTS","true")
+    monkeypatch.setenv("CODETURTLE_EXECUTE_INSTALL","true")
+    result=execute_tests_node({"isolated_execution_required":True,"files_changed":["app.py"]})
+    assert result["execution_report"]["skipped"]
+    assert result["execution_report"]["skip_reason"]=="isolated_runner_required"
+
+
 @pytest.fixture
 def live_runner():
     executable = os.environ.get("CODETURTLE_TEST_DOCKER")
