@@ -77,7 +77,8 @@ def unit_kind(path: str) -> str:
     base = n.split("/")[-1]
     if is_lockfile(n):
         return "lockfile"
-    if _TEST_BASENAME_RE.match(base or ""):
+    if (_TEST_BASENAME_RE.match(base or "") or {"test", "tests"}.intersection(n.split("/")[:-1])
+            or base.endswith(("_test.go", "_spec.rb", ".spec.ts", ".spec.js"))):
         return "test"
     if _is_docs_or_trivia(n) or n.lower().endswith((".md", ".mdx", ".rst")):
         return "docs"

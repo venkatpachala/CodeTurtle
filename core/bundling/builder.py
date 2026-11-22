@@ -15,6 +15,7 @@ from core.pr_facts import (
     source_first_paths,
 )
 from core.runtime.models import Bundle
+from core.review.admission import priority
 
 MAX_FILES_PER_BUNDLE = 6
 MAX_BUNDLES = 4
@@ -171,7 +172,7 @@ def _path_rank(path: str, units_by_path: Dict[str, List[Any]]) -> Tuple[int, int
         return (0, 0, path)
     kind = unit_kind(path)
     rank = {"source": 1, "test": 2, "other": 3, "docs": 4, "lockfile": 5}.get(kind, 6)
-    return (rank, 0, path)
+    return (rank, -max((priority(u).score for u in units), default=0), path)
 
 
 def _order_paths(paths: Sequence[str], units_by_path: Dict[str, List[Any]]) -> List[str]:
@@ -233,7 +234,7 @@ def _group_rank(paths: Sequence[str], units_by_path: Dict[str, List[Any]]) -> Tu
     if mutation:
         return (0, -len(paths))
     if source:
-        return (1, -len(paths))
+        return (1, -max((priority(u).score for p in paths for u in units_by_path.get(p, [])), default=0), -len(paths))
     if test:
         return (2, -len(paths))
     return (3, -len(paths))

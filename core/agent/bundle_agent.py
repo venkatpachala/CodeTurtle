@@ -15,7 +15,7 @@ from core.runtime.models import Bundle, Candidate
 
 MAX_STEPS = 4
 LEGACY_PROMPT_VERSION = "hypothesis-proof-v5-partial-decisions"
-PROMPT_VERSION = "semantic-contract-v4-scoped-authority"
+PROMPT_VERSION = "semantic-contract-v5-priority-impact"
 
 
 @dataclass
@@ -45,6 +45,7 @@ class AgentRunResult:
     contract_assessments: List[dict[str, Any]] = field(default_factory=list)
     semantic_rejections: List[dict[str, Any]] = field(default_factory=list)
     request_attempts: int = 0
+    admission: List[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -70,6 +71,7 @@ class AgentRunResult:
             "contract_assessments": list(self.contract_assessments),
             "semantic_rejections": list(self.semantic_rejections),
             "request_attempts": self.request_attempts,
+            "admission": list(self.admission),
             "estimated_completion_tokens": sum(max(1, len(x) // 4) for x in self.raw_outputs),
         }
 

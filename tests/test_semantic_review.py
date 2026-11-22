@@ -65,7 +65,7 @@ def test_fix_assessment_never_becomes_defect_candidate():
     assert result.status == "VALID_EMPTY"
     assert not result.hypotheses and not result.candidates
     assert result.contract_assessments[0]["verification_level"] == "source_assessment_not_execution"
-    assert result.to_dict()["prompt_version"] == "semantic-contract-v4-scoped-authority"
+    assert result.to_dict()["prompt_version"] == "semantic-contract-v5-priority-impact"
 
 
 def test_partial_assessment_repairs_only_missing_units_and_preserves_inspection():
@@ -153,10 +153,9 @@ def test_large_bundle_is_split_into_two_unit_requests():
         packages.append(package)
         return json.dumps({"assessments": [assessment(u["unit_id"]) for u in package["units"]]})
     result = BundleAgent(llm=respond, discovery_protocol="semantic").run_result(bundle)
-    assert [len(p["units"]) for p in packages] == [2, 2]
-    assert sum(a["status"] == "inspected" for a in result.assessments) == 4
-    assert result.assessments[-1]["reason"] == "model_input_budget"
-    assert result.status == "PARTIAL"
+    assert [len(p["units"]) for p in packages] == [2, 2, 1]
+    assert sum(a["status"] == "inspected" for a in result.assessments) == 5
+    assert result.status == "VALID_EMPTY"
 
 
 def test_truncated_batch_is_repaired_with_one_unit_instead_of_repeated():

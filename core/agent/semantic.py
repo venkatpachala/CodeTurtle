@@ -192,14 +192,8 @@ def run_semantic(agent, bundle, tools):
     hypotheses, candidates, outcomes = [], [], []
     leads_by_id = {}
     attempts = 0
-    admitted, used = [], 0
-    for unit in (bundle.units or [])[:4]:
-        excerpt = str(_unit(unit, "excerpt"))
-        # Do not silently trim an admitted unit or overrun the local context profile.
-        if len(excerpt) > 2500 or used + len(excerpt) > 9500:
-            continue
-        admitted.append(unit)
-        used += len(excerpt)
+    from core.review.admission import plan_admission
+    admitted, admission = plan_admission(list(bundle.units or []), max_units=min(12, agent.max_steps*2))
     by_id = {str(_unit(u,"id")):u for u in admitted}
     valid = {}
 
@@ -220,9 +214,20 @@ def run_semantic(agent, bundle, tools):
     repair_available = True
     retry_ids = None
     next_stage = "semantic_discovery"
-    for attempt in range(3):
+    impact = []
+    if getattr(tools, "supports_scoped_source", False):
+        symbols = list(dict.fromkeys(str(s) for unit in admitted for s in _unit(unit, "symbols", [])
+                                    if str(s) not in {"pub", "self", "mod", "use", "format", "Some", "Err", "Ok"}))[:2]
+        for symbol in symbols:
+            observed = tools.graph_callers(symbol)
+            impact.append({k: observed[k] for k in ("symbol", "source", "snapshot_id", "truncated", "error", "limitations") if k in observed}
+                          | {"matches": observed.get("matches", [])[:4],
+                             "package_clipped": len(observed.get("matches", [])) > 4})
+    for attempt in range(agent.max_steps):
         if not pending or attempts >= agent.max_steps:
             break
+        if attempts >= agent.max_steps-1 and any(row.hypothesis is not None for row in valid.values()):
+            break  # Reserve an investigation request rather than consuming all steps on discovery.
         selected = retry_ids or pending[:2]
         retry_ids = None
         schema = _assessment_schema(selected, bundle.requirements)
@@ -232,6 +237,10 @@ def run_semantic(agent, bundle, tools):
                                       "clipped":len(str(_unit(u,"excerpt")))>1800}
                                      for u in (bundle.units or []) if _unit(u,"kind")=="test"][:2],
                    "explicit_requirements":bundle.requirements,"validation_feedback":errors[-1:]}
+        package["impact_context"] = impact
+        package["structural_context"] = {"snapshot_id": bundle.change_context.get("snapshot_id"),
+                                         "changes": bundle.change_context.get("changes", [])[:8],
+                                         "limitations": bundle.change_context.get("limitations", [])}
         try:
             doc = complete(DISCOVER+"\nPACKAGE\n"+json.dumps(package),schema,next_stage,1100)
             rows = doc.get("assessments") if isinstance(doc,dict) and set(doc)=={"assessments"} else None
@@ -343,4 +352,5 @@ def run_semantic(agent, bundle, tools):
         evidence_items=evidence,assessments=assessments,hypothesis_outcomes=outcomes,protocol_errors=errors,
         proof_runs=proof_runs,stage_status={"discovery":"SEMANTIC_CONTRACT","proof":status},
         latency_ms=(time.monotonic()-started)*1000,
-        discovery_protocol="semantic-v1",contract_assessments=contracts,semantic_rejections=rejections,request_attempts=attempts)
+        discovery_protocol="semantic-v1",contract_assessments=contracts,semantic_rejections=rejections,request_attempts=attempts,
+        admission=admission)

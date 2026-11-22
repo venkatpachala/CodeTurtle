@@ -509,6 +509,10 @@ class ReviewRuntime:
                 candidates.extend(self._rules(bundles, files, full_diff=diff, repo_dir=repo_dir))
         else:
             self.stage_errors.append(StageOutcome(stage="rules", status="skipped", code="ablation_disabled"))
+        impact_index = None
+        if investigation_snapshot is not None:
+            from core.input.impact import SnapshotImpactIndex
+            impact_index = SnapshotImpactIndex(investigation_inputs, investigation_snapshot, files)
         for bundle in bundles:
             bundle.symbols = [
                 s
@@ -519,7 +523,8 @@ class ReviewRuntime:
                                 repo_dir=None if prepared_pr else repo_dir or None)
             if investigation_snapshot is not None:
                 from core.input.tools import SnapshotBundleTools
-                tools = SnapshotBundleTools(bundle, index=index, provider=investigation_inputs, snapshot=investigation_snapshot)
+                tools = SnapshotBundleTools(bundle, index=index, provider=investigation_inputs, snapshot=investigation_snapshot,
+                                            impact=impact_index)
             with timed(timing, "bundle_agent"):
                 if static_only:
                     bundle_candidates, agent_record = [], {"bundle_id": bundle.id, "status": "VALID_EMPTY",

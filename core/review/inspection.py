@@ -20,7 +20,8 @@ def collect_inspection(units: list, bundles: list, runs: list[dict]) -> ReviewCo
         if run.get("status") not in healthy and not semantic:
             continue
         bundle = by_bundle.get(run.get("bundle_id"))
-        permitted = {str(_get(u, "id")) for u in (bundle.units[:12] if bundle else [])}
+        permitted = ({str(x["unit_id"]) for x in run.get("admission", []) if x.get("selected")}
+                     if semantic and run.get("admission") else {str(_get(u, "id")) for u in (bundle.units[:12] if bundle else [])})
         for raw in run.get("assessments") or []:
             if not isinstance(raw, dict):
                 continue
