@@ -7,8 +7,9 @@ evaluation; this is not a high-recall or automatic-merge claim.
 Current references: [architecture](docs/CURRENT_ARCHITECTURE.md),
 [limitations](docs/LIMITATIONS.md), [release checklist](docs/RELEASE_CHECKLIST.md),
 and [implementation validation](docs/IMPLEMENTATION_VALIDATION.md).
-See the [current project status and remaining phases](docs/PROJECT_STATUS.md)
-for implemented behavior, native gateway validation, and portfolio evidence.
+See the [current project status](docs/PROJECT_STATUS.md) and
+[efficient reviewer report](docs/EFFICIENT_REVIEWER_PHASE.md) for implemented
+behavior, runtime controls, and benchmark evidence.
 
 Local committed review now supports requirement-first investigation with exact
 source citations. See the [implementation and learning walkthrough](docs/REQUIREMENT_FIRST_PHASE.md)
@@ -171,9 +172,12 @@ codeturtle review owner/repo 123 --github-auth gh --dry-run --json-output review
 # Approval is a separate, eligible opt-in; MERGE normally posts COMMENT
 codeturtle review owner/repo 123 --github-auth gh --comment --approve
 
-# Optional sandbox: run related tests inside a jailed worktree
-codeturtle review owner/repo 123 --dry-run --execute-tests
-codeturtle review owner/repo 123 --dry-run --execute-tests --execute-install
+# Compare a trusted probe command on pinned BASE and HEAD in Docker
+codeturtle sandbox-check --repo /path/to/clone --base BASE --head HEAD --image IMAGE_AT_DIGEST -- python -m unittest
+
+# Submit and work one durable local review
+codeturtle jobs submit --repo /path/to/clone --base BASE --head HEAD
+codeturtle jobs work --max-jobs 1
 
 # Verify Graphify is reachable for a repo
 codeturtle graphify-test owner/repo --stats
@@ -194,8 +198,7 @@ Default is **dry-run**. `--comment` on a repo without write access fails closed 
 |------|---------|-------------|
 | `--dry-run` | `true` | Print the review body without posting to GitHub |
 | `--comment` | `false` | Post the review to GitHub |
-| `--execute-tests` | `false` | Opt-in sandbox: jailed pytest on PR's related tests only |
-| `--execute-install` | `false` | Install deps before running tests (implies network) |
+| `--execute-tests` / `--execute-install` | `false` | Legacy flags rejected by `review`. Use `sandbox-check` with a prepared image |
 | `--config PATH` | auto | Path to a `.codeturtle.yaml` policy file |
 | `-v / --verbose` | `false` | Emit debug-level logs |
 
@@ -220,7 +223,7 @@ Drop a `.codeturtle.yaml` at your repo root (see [`examples/codeturtle.yaml`](ex
 | `skip_authors` | Skip bot accounts (e.g. `dependabot[bot]`) |
 | `ignore_paths` | Drop paths from `files_changed` and the rebuilt diff |
 | `inline_max` | Cap on inline comments posted (default 8) |
-| `execute_tests` / `execute_install` | Turn sandbox on without a CLI flag |
+| `execute_tests` / `execute_install` | Legacy execution settings. Keep these false and use `sandbox-check` explicitly |
 | `model` | Override the Ollama model for this repo |
 | `coverage_merge_min` | Min packed/total ratio required to `MERGE` on empty finding set (default 0.5) |
 | `runtime` | `v4` (default) or `legacy` (17-node LangGraph graph) |

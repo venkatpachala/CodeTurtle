@@ -86,8 +86,7 @@ Default runtime is **v4**. Printed `Decision:` is Policy (`MERGE` / `COMMENT` / 
 |------|---------|-------------|
 | `--dry-run` | `True` | Print the review body without posting to GitHub |
 | `--comment` | `False` | Post the review to GitHub (requires write access or PR ownership) |
-| `--execute-tests` | `False` | Opt-in sandbox: jailed pytest on this PR’s related tests only |
-| `--execute-install` | `False` | Install dependencies before running tests (implies network) |
+| `--execute-tests` / `--execute-install` | `False` | Legacy flags rejected by `review`. Use `sandbox-check` with a digest-pinned image |
 | `--config PATH` | auto | Path to a `.codeturtle.yaml` policy file |
 | `-v / --verbose` | `False` | Emit debug-level logs |
 

@@ -4,7 +4,7 @@
 # Merge order: Settings/.env  <  this file  <  CLI flags
 # Missing file = CodeTurtle defaults. Dry-run still does not post.
 #
-# execute_tests: true here turns execution on without a CLI flag — leave false
+# Use the explicit sandbox-check command for isolated execution.
 # unless you accept running untrusted PR code.
 
 version: 1

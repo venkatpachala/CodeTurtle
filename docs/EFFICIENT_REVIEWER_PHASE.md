@@ -147,7 +147,13 @@ sets needs separate runner and workload qualification.
 [Execution qualification](validation/efficient-reviewer-v1/runtime/isolation-qualification.json)
 
 The release manifest freezes the clean reviewer commit, dependencies, scorer
-hash, configured model and observed Ollama digest. During one four-case transfer
+hash, configured model and observed Ollama digest. Two wheel builds at pilot
+revision `6ad326e` using a fixed `SOURCE_DATE_EPOCH` were byte-identical.
+The installed wheel passed help-command smoke tests outside the repository,
+with runtime dependencies supplied by the existing environment.
+[Wheel build record](validation/efficient-reviewer-v1/runtime/wheel-qualification.json)
+
+During one four-case transfer
 run, peak reviewer-child RSS was 78,872 KiB and sampled Ollama resident model
 VRAM reached 4,104,734,637 bytes. That excludes transient and shared GPU overhead.
 The model digest matched before and after. Monetary cost was left unset because

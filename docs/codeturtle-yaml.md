@@ -9,7 +9,7 @@ Later wins:
 1. `config.py` / `Settings` (including `.env`)
 2. Environment variables
 3. `.codeturtle.yaml` (or `--config` / `CODETURTLE_CONFIG`)
-4. **CLI flags** (highest): `--dry-run` / `--comment`, `--execute-tests`, `--execute-install`
+4. **CLI flags** (highest): `--dry-run` / `--comment`
 
 Missing file = today’s behavior. Unknown YAML keys are ignored. Invalid YAML or wrong types **fail startup** (the file is not silently dropped).
 
@@ -35,7 +35,7 @@ Template: [`examples/codeturtle.yaml`](../examples/codeturtle.yaml).
 | `ignore_paths` | Dropped from `files_changed` and the rebuilt diff **after** GitHub fetch. Classification, grounding, hunks, and inlines all see the **filtered** list |
 | `inline_max` | Cap on 6.2 inline comments |
 | `inline_lockfile` | Default false |
-| `execute_tests` / `execute_install` | YAML `true` can turn execute **on** without a flag (dangerous). CLI `--execute-tests` still turns it on even if YAML is false |
+| `execute_tests` / `execute_install` | Deprecated review settings. Keep these false and use the explicit `sandbox-check` command for execution |
 | `model` | Chat model name for this run (`settings.ollama_model`) |
 | `post_on_github` | Does **not** override CLI `--dry-run`. Do not rely on this alone to post |
 | `coverage_merge_min` | Optional. Empty KEEP may MERGE only if `units_packed / units_total` ≥ this (default `0.5`). Low coverage is COMMENT, never REQUEST_CHANGES |

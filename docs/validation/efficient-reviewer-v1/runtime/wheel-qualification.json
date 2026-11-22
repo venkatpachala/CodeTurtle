@@ -1,0 +1,14 @@
+{
+  "revision": "6ad326e5bbaeacce206986e65fcd1cd51ace74bb",
+  "wheel": "codeturtle_review-0.5.0a1-py3-none-any.whl",
+  "sha256": "ee03bcd96449c1ab8fb26636fbb773e697ab5de94ad0db8b6fe9031c01be0e43",
+  "two_builds_byte_identical": true,
+  "source_date_epoch": 1795360474,
+  "installed_help_commands": [
+    "review",
+    "review-local",
+    "jobs",
+    "sandbox-check"
+  ],
+  "builder": "uv build, Hatch wheel; dependencies supplied by existing venv for smoke."
+}
