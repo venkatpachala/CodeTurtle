@@ -15,7 +15,7 @@ from core.runtime.models import Bundle, Candidate
 
 MAX_STEPS = 4
 LEGACY_PROMPT_VERSION = "hypothesis-proof-v5-partial-decisions"
-PROMPT_VERSION = "semantic-contract-v6-contrast-facts"
+PROMPT_VERSION = "semantic-contract-v7-pure-contract-route"
 
 
 @dataclass
@@ -369,6 +369,10 @@ class BundleAgent:
 
     def run_result(self, bundle: Bundle, tools: Optional[BundleTools] = None) -> AgentRunResult:
         if self.discovery_protocol == "semantic":
+            from core.agent.contrast_agent import run_contrast
+            result = run_contrast(self, bundle)
+            if result is not None:
+                return result
             from core.agent.semantic import run_semantic
             return run_semantic(self, bundle, tools or BundleTools(bundle))
         history: List[str] = []

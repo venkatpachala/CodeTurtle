@@ -38,7 +38,7 @@ def predict(corpus: Path, output: Path):
         class CapturingAgent(BundleAgent):
             def _complete(self, prompt, response_schema=None, *, stage="discovery", max_tokens=1400):
                 # Capture input only; do not alter provider, response, schema or budgets.
-                if stage in {"semantic_discovery", "assessment_repair"}:
+                if stage in {"semantic_discovery", "assessment_repair", "contract_interpretation"}:
                     prompts.append({"stage": stage, "prompt": prompt,
                                     "schema": response_schema.model_json_schema() if response_schema else None})
                 return super()._complete(prompt, response_schema, stage=stage, max_tokens=max_tokens)

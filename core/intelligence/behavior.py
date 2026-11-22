@@ -6,6 +6,8 @@ input validity; the reviewer must still justify the expected contract.
 from __future__ import annotations
 
 import ast
+import hashlib
+import json
 from itertools import product
 
 from core.input.snapshot import InputError
@@ -95,7 +97,7 @@ def _functions(text):
                  ast.Is,ast.IsNot,ast.Subscript,ast.Slice,ast.List,ast.Tuple)
         if expression is None or any(not isinstance(n,allowed) for n in ast.walk(expression)):
             continue
-        functions[node.name]=(node,expression,tuple(arg.arg for arg in arguments.args))
+        functions[node.name]=(node,expression,tuple(arg.arg for arg in arguments.args),body[0])
     return functions
 
 
@@ -134,7 +136,9 @@ def compare_pure(before: str, after: str, *, max_samples=100, max_facts=4) -> li
                         outputs.append({"kind":"raises","value":type(error).__name__})
                 if outputs[0]!=outputs[1]:
                     facts.append({"symbol":name,"inputs":bindings,"base":outputs[0],"head":outputs[1],
-                                  "base_line":left[0].lineno,"head_line":right[0].lineno})
+                                  "base_line":left[3].lineno,"head_line":right[3].lineno,
+                                  "base_operation":"\n".join(before.splitlines()[left[3].lineno-1:left[3].end_lineno]),
+                                  "head_operation":"\n".join(after.splitlines()[right[3].lineno-1:right[3].end_lineno])})
             except Unsupported:
                 break
     return facts
@@ -148,6 +152,8 @@ def build_behavior_context(provider,snapshot,paths) -> list[dict]:
             base=provider.read(snapshot,path,"base");head=provider.read(snapshot,path,"head")
             facts=compare_pure(base.content.decode("utf-8"),head.content.decode("utf-8"),max_facts=2)
             if facts:
+                for fact in facts:
+                    fact["id"]="BX-"+hashlib.sha256(json.dumps(fact,sort_keys=True).encode()).hexdigest()[:16]
                 results.append({"path":path,"snapshot_id":snapshot.id,"source":"bounded_python_ast",
                                 "base_sha256":base.content_sha256,"head_sha256":head.content_sha256,"examples":facts,
                                 "limitations":["Sampled pure-expression differences, not executed tests, input-validity proof or defect verdict."]})

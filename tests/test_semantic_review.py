@@ -65,7 +65,7 @@ def test_fix_assessment_never_becomes_defect_candidate():
     assert result.status == "VALID_EMPTY"
     assert not result.hypotheses and not result.candidates
     assert result.contract_assessments[0]["verification_level"] == "source_assessment_not_execution"
-    assert result.to_dict()["prompt_version"] == "semantic-contract-v6-contrast-facts"
+    assert result.to_dict()["prompt_version"] == "semantic-contract-v7-pure-contract-route"
 
 
 def test_partial_assessment_repairs_only_missing_units_and_preserves_inspection():
