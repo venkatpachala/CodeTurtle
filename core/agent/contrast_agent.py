@@ -30,7 +30,11 @@ def run_contrast(agent,bundle):
     facts=[f for f in context["examples"] if len(f["head_operation"].splitlines())<=6]
     if not facts: return None
     changes=bundle.change_context.get("changes",[])
-    if len(changes)!=1 or changes[0].get("symbol") not in {f["symbol"] for f in facts}:
+    if len(changes) != 1:
+        return None
+    facts = [f for f in facts if f["symbol"] == changes[0].get("symbol")
+             and all(f[side]["kind"] == "return_value" for side in ("base", "head"))]
+    if not facts:
         return None
     from core.agent.bundle_agent import AgentRunResult
     started=time.monotonic();_,admission=plan_admission(units)

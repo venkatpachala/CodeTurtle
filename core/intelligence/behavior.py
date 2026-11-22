@@ -110,8 +110,10 @@ def _domains(parameters, expressions):
             if isinstance(node,ast.Subscript) and isinstance(node.slice,ast.Slice):
                 if isinstance(node.value,ast.Name): sequences.add(node.value.id)
                 numbers.update(n.id for n in ast.walk(node.slice) if isinstance(n,ast.Name))
-            if isinstance(node,ast.Compare):
-                numbers.update(n.id for n in node.comparators if isinstance(n,ast.Name))
+            if isinstance(node, ast.Compare) and isinstance(node.ops[0], (ast.Lt, ast.LtE, ast.Gt, ast.GtE)):
+                numbers.update(n.id for n in (node.left, *node.comparators) if isinstance(n, ast.Name))
+            if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Sub):
+                numbers.update(n.id for n in (node.left, node.right) if isinstance(n, ast.Name))
     return [["","a","é","🙂"] if p in strings else [[],["a"],["a","b","c","d"]] if p in sequences
             else [0,1,2,3] if p in numbers else [None,False,0,1,"","a","é",[],["a","b"]] for p in parameters]
 

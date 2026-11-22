@@ -62,3 +62,20 @@ def test_tuple_and_list_outputs_retain_distinct_python_types():
     fact = compare_pure("def f(x):\n    return (x,)", "def f(x):\n    return [x]")[0]
     assert fact["base"]["value"] == "(None,)"
     assert fact["head"]["value"] == "[None]"
+
+
+def test_ordered_comparison_samples_both_operands_as_integers():
+    facts = compare_pure("def ready(a, b):\n    return a >= b", "def ready(a, b):\n    return a > b")
+    assert facts and all(type(v) is int for f in facts for v in f["inputs"].values())
+
+
+def test_integer_relations_remain_identical_when_challenge_reverses_options():
+    from core.intelligence.contract_question import question
+
+    fact = compare_pure("def change(x, y):\n    return x-y", "def change(x, y):\n    return y-x")[0]
+    first_options, first = question(fact, [])
+    second_options, second = question(fact, [], challenge=True)
+    assert first_options["option_1"] == second_options["option_2"]
+    assert first["integer_relations"] == second["integer_relations"] == [
+        {"left": "x", "right": "y", "left_minus_right": -1, "right_minus_left": 1}
+    ]

@@ -14,7 +14,7 @@ from core.review.budget import BudgetExceeded, ReviewBudget
 from core.runtime.models import Bundle, Candidate
 from core.verification.reachability import function_at, none_trigger_reaches_anchor
 
-FINDING_PROMPT_VERSION = "finding-source-v5-neutral-contract"
+FINDING_PROMPT_VERSION = "finding-source-v6-integer-relations"
 
 
 def candidate_fingerprint(candidate: Candidate) -> str:
