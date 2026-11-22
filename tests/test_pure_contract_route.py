@@ -21,9 +21,9 @@ def test_contract_choice_uses_backend_operation_and_outcomes_without_self_verifi
     def respond(prompt):
         package=json.loads(prompt.split("\nPACKAGE\n")[1])
         fact=bundle().change_context["behavioral_examples"][0]["examples"][0]
-        selected="unknown" if side=="unknown" else next(key for key,value in package["options"].items() if value==fact[side]["value"])
-        assert "base" not in package and "head" not in package
-        return json.dumps({"requirement_id":"R1","selected":selected,"reason":"Contract interpretation"})
+        value = None if side == "unknown" else int(fact[side]["value"])
+        assert not {"base","head","options","integer_relations"}.intersection(package)
+        return json.dumps({"requirement_id":"R1","required_integer":value,"reason":"Contract interpretation"})
     agent=BundleAgent(llm=respond,discovery_protocol="semantic")
     result=agent.run_result(bundle())
     assert result.status==status and len(result.candidates)==count
@@ -38,3 +38,11 @@ def test_foreign_example_or_requirement_cannot_create_candidate():
     agent=BundleAgent(llm=lambda _:json.dumps({"requirement_id":"R1","selected":"foreign","reason":"bad"}),discovery_protocol="semantic")
     result=agent.run_result(bundle())
     assert result.status=="INVALID_SCHEMA" and not result.candidates
+
+
+@pytest.mark.parametrize("value,status", [(True, "INVALID_SCHEMA"), (145, "PARTIAL")])
+def test_integer_contract_rejects_boolean_and_abstains_on_unmatched_answer(value, status):
+    agent = BundleAgent(llm=lambda _: json.dumps({"requirement_id":"R1","required_integer":value,
+                      "reason":"Computed from the stated example"}), discovery_protocol="semantic")
+    result = agent.run_result(bundle())
+    assert result.status == status and not result.candidates
