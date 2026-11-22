@@ -493,6 +493,18 @@ class ReviewRuntime:
             self.agent = BundleAgent(llm=self.llm, max_steps=agent_steps)
         if isinstance(self.agent, BundleAgent):
             self.agent.budget = self.budget
+        checkpoints = None
+        checkpoint_dir = getattr(ctx, "checkpoint_dir", None)
+        if checkpoint_dir and isinstance(self.agent, BundleAgent) and self.agent.llm is None and investigation_snapshot is not None:
+            from pathlib import Path
+            from core.review.checkpoints import BundleCheckpoints, reviewer_identity
+            from core.review.worker import review_config
+            checkpoints = BundleCheckpoints(Path(checkpoint_dir), {
+                "snapshot": investigation_snapshot.model_dump(mode="json"), "reviewer": reviewer_identity(),
+                "protocol": self.agent.discovery_protocol, "steps": self.agent.max_steps,
+                "static_only": static_only,
+                "model_config": review_config(),
+            })
 
         trace = PipelineTrace()
         timing = TimingRecord()
@@ -530,7 +542,13 @@ class ReviewRuntime:
                     bundle_candidates, agent_record = [], {"bundle_id": bundle.id, "status": "VALID_EMPTY",
                         "assessments": [], "model_calls": 0, "stage_status": {"discovery": "SKIPPED_STATIC_ONLY"}}
                 else:
-                    bundle_candidates, agent_record = self._agent_candidates(bundle, tools)
+                    cached = checkpoints.load(bundle) if checkpoints else None
+                    if cached is not None:
+                        bundle_candidates, agent_record = cached
+                    else:
+                        bundle_candidates, agent_record = self._agent_candidates(bundle, tools)
+                        if checkpoints:
+                            checkpoints.save(bundle, bundle_candidates, agent_record)
                 candidates.extend(bundle_candidates)
                 agent_runs.append(agent_record)
 
@@ -800,6 +818,7 @@ class ReviewRuntime:
         }
         inspection = collect_inspection(units, bundles, agent_runs)
         unresolved = unresolved_hypotheses(agent_runs, candidates, dropped)
+        unresolved.extend(getattr(ctx, "carried_findings", []))
         all_failed = bool(agent_runs) and all(r.get("status") not in healthy_statuses | {"PARTIAL"} for r in agent_runs)
         health = ReviewHealth(status="failed" if all_failed else "partial" if unhealthy else "completed",
             stages=[StageOutcome(stage=f"bundle:{r['bundle_id']}", status="degraded" if r.get("status") == "PARTIAL" else "failed" if r in unhealthy else "succeeded",

@@ -33,6 +33,9 @@ def review_local(
     max_requirements: int = typer.Option(8, "--max-requirements", min=0, max=32, help="Requirement task admission cap"),
     bundle_max: int = typer.Option(4, "--bundle-max", min=1, max=32, help="Bundle admission cap; model budget remains shared"),
     agent_max_steps: int = typer.Option(4, "--agent-max-steps", min=1, max=8),
+    checkpoint_dir: Path | None = typer.Option(None, "--checkpoint-dir", help="Reuse exact-input native bundle checkpoints; final verification reruns"),
+    previous: Path | None = typer.Option(None, "--previous", exists=True, dir_okay=False,
+                                        help="Incremental review from a prior canonical local result; BASE must equal prior HEAD"),
 ):
     """Review committed code. Dirty and untracked changes are deliberately excluded."""
     try:
@@ -51,6 +54,17 @@ def review_local(
         config.update(requirement_strategy=requirement_strategy.value, max_requirements=max_requirements,
                       bundle_max=bundle_max, agent_max_steps=agent_max_steps)
         snapshot = provider.resolve(base, head, config=config)
+        carried = []
+        if previous:
+            import json
+            from core.runtime.models import ReviewResult
+            old = ReviewResult.from_dict(json.loads(previous.read_text(encoding="utf-8")))
+            old_input = old.provenance.get("input_snapshot") or {}
+            if old.target.head_sha != snapshot.base_sha or old_input.get("repository_identity") != provider.identity:
+                raise InputError("incremental BASE/repository must match the previous reviewed HEAD/repository")
+            carried = [{"stage": "incremental", "reason": "previous_finding_requires_revalidation",
+                        "file": f.file, "claim": f.claim, "previous_head": old.target.head_sha}
+                       for f in old.product_findings]
         diff = provider.diff(snapshot)
         index = build_diff_index(diff)
         files = sorted(index.files)
@@ -61,6 +75,7 @@ def review_local(
             requirement_strategy=requirement_strategy.value, max_requirements=max_requirements,
             analysis_mode=config["analysis_mode"],
             repo_cfg=SimpleNamespace(bundle_max=bundle_max, agent_max_steps=agent_max_steps),
+            checkpoint_dir=checkpoint_dir, carried_findings=carried,
         )
         runtime = ReviewRuntime()
         result = runtime.run(context)
