@@ -167,17 +167,19 @@ class DiffIndex:
         p = normalize_path(path)
         if not p:
             return None
+        if p in self.files:
+            return p
         pl = p.lower()
-        base = pl.split("/")[-1]
-        for a in self.files:
-            al = a.lower()
-            if pl == al:
-                return a
-            if pl.endswith("/" + al) or al.endswith("/" + pl):
-                return a
-            if base and base == al.split("/")[-1]:
-                return a
-        return None
+        folded = [a for a in self.files if a.lower() == pl]
+        if folded:
+            return folded[0] if len(folded) == 1 else None
+        suffix = [a for a in self.files if pl.endswith("/"+a.lower()) or a.lower().endswith("/"+pl)]
+        if suffix:
+            return suffix[0] if len(suffix) == 1 else None
+        if "/" in pl:
+            return None
+        names = [a for a in self.files if a.lower().split("/")[-1] == pl]
+        return names[0] if len(names) == 1 else None
 
 
 def _strip_ab(p: str) -> str:
