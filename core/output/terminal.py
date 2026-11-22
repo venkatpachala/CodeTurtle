@@ -78,7 +78,7 @@ def render_findings_terminal(
             body += f"\n**Call path:** `{'` → `'.join(finding.execution_path)}`\n"
 
         meta = (
-            f"*Confidence: {int(finding.confidence * 100)}% · "
+            f"*Model score (uncalibrated): {finding.confidence:.2f} · "
             f"Verification: {finding.verification_status} · "
             f"Bundle: {finding.bundle_id or '?'}*"
         )

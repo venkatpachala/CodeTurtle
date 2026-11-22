@@ -157,7 +157,7 @@ class ReviewFinding:
         # Metadata footer
         parts.extend([
             "",
-            f"*Severity: {self.severity} · Confidence: {int(self.confidence * 100)}% · "
+            f"*Severity: {self.severity} · Model score (uncalibrated): {self.confidence:.2f} · "
             f"Verified: {self.verification_status}*",
         ])
         return "\n".join(parts)

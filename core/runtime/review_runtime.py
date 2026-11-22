@@ -962,7 +962,7 @@ class ReviewRuntime:
 
 
 def _provenance(agent: Any) -> dict:
-    from core.agent.bundle_agent import PROMPT_VERSION
+    from core.agent.bundle_agent import PROMPT_VERSION, LEGACY_PROMPT_VERSION
     from config import settings
     try:
         commit = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, timeout=10).stdout.strip()
@@ -973,7 +973,10 @@ def _provenance(agent: Any) -> dict:
     records = list(getattr(agent, "usage_records", []) or [])
     model = records[-1]["model"] if records else (os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
         if settings.llm_backend == "openai" else settings.ollama_model)
-    return {"reviewer_commit": commit, "dirty": dirty, "prompt_version": PROMPT_VERSION,
+    protocol = getattr(agent, "discovery_protocol", "custom")
+    return {"reviewer_commit": commit, "dirty": dirty,
+            "prompt_version": LEGACY_PROMPT_VERSION if protocol == "legacy" else PROMPT_VERSION,
+            "discovery_protocol": protocol,
             "provider": getattr(settings, "llm_backend", "ollama"),
             "model": model, "model_calls": records}
 

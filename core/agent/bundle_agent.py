@@ -14,7 +14,8 @@ from core.agent.tools import BundleTools
 from core.runtime.models import Bundle, Candidate
 
 MAX_STEPS = 4
-PROMPT_VERSION = "hypothesis-proof-v5-partial-decisions"
+LEGACY_PROMPT_VERSION = "hypothesis-proof-v5-partial-decisions"
+PROMPT_VERSION = "semantic-contract-v1"
 
 
 @dataclass
@@ -59,7 +60,7 @@ class AgentRunResult:
             "parse_error": self.parse_error,
             "exception": self.exception,
             "latency_ms": round(self.latency_ms, 2),
-            "prompt_version": "semantic-contract-v1" if self.discovery_protocol == "semantic-v1" else PROMPT_VERSION,
+            "prompt_version": PROMPT_VERSION if self.discovery_protocol == "semantic-v1" else LEGACY_PROMPT_VERSION,
             "model_calls": len(self.raw_outputs),
             "assessments": list(self.assessments),
             "hypothesis_outcomes": list(self.hypothesis_outcomes),
