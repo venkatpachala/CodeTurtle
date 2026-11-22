@@ -1,0 +1,34 @@
+{
+  "expiry-regression": {
+    "family_id": "expiry",
+    "introduced_defect": true,
+    "probe": "from app import is_expired; assert is_expired(4, 4) is True",
+    "expected_base_passes": true,
+    "expected_head_passes": false,
+    "label_source": "executable synthetic requirement oracle"
+  },
+  "expiry-repair": {
+    "family_id": "expiry",
+    "introduced_defect": false,
+    "probe": "from app import is_expired; assert is_expired(4, 4) is True",
+    "expected_base_passes": false,
+    "expected_head_passes": true,
+    "label_source": "executable synthetic requirement oracle"
+  },
+  "delta-regression": {
+    "family_id": "delta",
+    "introduced_defect": true,
+    "probe": "from app import net_change; assert net_change(3, 7) == 4",
+    "expected_base_passes": true,
+    "expected_head_passes": false,
+    "label_source": "executable synthetic requirement oracle"
+  },
+  "delta-repair": {
+    "family_id": "delta",
+    "introduced_defect": false,
+    "probe": "from app import net_change; assert net_change(3, 7) == 4",
+    "expected_base_passes": false,
+    "expected_head_passes": true,
+    "label_source": "executable synthetic requirement oracle"
+  }
+}

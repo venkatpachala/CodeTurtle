@@ -1,0 +1,10 @@
+{
+  "name": "contrast-transfer-v1",
+  "split": "development",
+  "eligible_for_headline_metrics": false,
+  "scope": "First-pass transfer check after development on UTF-8 and pagination. Frozen before prediction, no tuning on these outputs.",
+  "case_count": 4,
+  "family_count": 2,
+  "inputs_sha256": "cbadb94203a0008715d4151b92922df238555a6ac2f039ef9f65a3b09e6a7be2",
+  "labels_sha256": "71a32b3839fa5d7684da60e86627c0f43fa127828f1e4ccbb4959b32f7cf30ff"
+}

@@ -1,0 +1,82 @@
+[
+  {
+    "case_id": "expiry-regression",
+    "files": {
+      "app.py": {
+        "base": "def is_expired(now, deadline):\n    return now >= deadline\n",
+        "head": "def is_expired(now, deadline):\n    return now > deadline\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "is_expired(now, deadline) is true from the deadline onward, including the instant now equals deadline. Both inputs are integer ticks.",
+        "acceptance_criterion": "is_expired(now, deadline) is true from the deadline onward, including the instant now equals deadline. Both inputs are integer ticks.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "expiry-repair",
+    "files": {
+      "app.py": {
+        "base": "def is_expired(now, deadline):\n    return now > deadline\n",
+        "head": "def is_expired(now, deadline):\n    return now >= deadline\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "is_expired(now, deadline) is true from the deadline onward, including the instant now equals deadline. Both inputs are integer ticks.",
+        "acceptance_criterion": "is_expired(now, deadline) is true from the deadline onward, including the instant now equals deadline. Both inputs are integer ticks.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "delta-regression",
+    "files": {
+      "app.py": {
+        "base": "def net_change(start, end):\n    return end - start\n",
+        "head": "def net_change(start, end):\n    return start - end\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "net_change(start, end) returns the signed increase from the starting integer value to the ending integer value. A decrease must be negative.",
+        "acceptance_criterion": "net_change(start, end) returns the signed increase from the starting integer value to the ending integer value. A decrease must be negative.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  },
+  {
+    "case_id": "delta-repair",
+    "files": {
+      "app.py": {
+        "base": "def net_change(start, end):\n    return start - end\n",
+        "head": "def net_change(start, end):\n    return end - start\n"
+      }
+    },
+    "requirements": [
+      {
+        "id": "R1",
+        "description": "net_change(start, end) returns the signed increase from the starting integer value to the ending integer value. A decrease must be negative.",
+        "acceptance_criterion": "net_change(start, end) returns the signed increase from the starting integer value to the ending integer value. A decrease must be negative.",
+        "paths": [
+          "app.py"
+        ],
+        "context_paths": []
+      }
+    ]
+  }
+]
