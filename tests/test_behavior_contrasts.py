@@ -50,3 +50,15 @@ def test_repository_code_cannot_execute_during_ast_analysis(tmp_path):
 def test_sample_and_output_limits_are_enforced():
     assert compare_pure('def f(x):\n    return len(x)\n','def f(x):\n    return 1\n',max_samples=0)==[]
     assert len(compare_pure('def f(x):\n    return len(x)\n','def f(x):\n    return 1\n',max_facts=1))<=1
+
+
+def test_subset_limits_never_become_python_exception_evidence():
+    facts = compare_pure("def f(x):\n    return x + x", "def f(x):\n    return x")
+    assert facts and all(fact["base"]["kind"] == "return_value" for fact in facts)
+    assert all(type(fact["inputs"]["x"]) is int for fact in facts)
+
+
+def test_tuple_and_list_outputs_retain_distinct_python_types():
+    fact = compare_pure("def f(x):\n    return (x,)", "def f(x):\n    return [x]")[0]
+    assert fact["base"]["value"] == "(None,)"
+    assert fact["head"]["value"] == "[None]"

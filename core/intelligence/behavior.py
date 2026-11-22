@@ -28,11 +28,12 @@ def _value(node, values, depth=0):
     if isinstance(node,ast.Name) and node.id in values:
         return values[node.id]
     if isinstance(node,(ast.List,ast.Tuple)) and len(node.elts)<=16:
-        return [visit(item) for item in node.elts]
+        elements = [visit(item) for item in node.elts]
+        return tuple(elements) if isinstance(node, ast.Tuple) else elements
     if isinstance(node,ast.Call) and not node.keywords:
         if isinstance(node.func,ast.Name) and node.func.id=="len" and len(node.args)==1:
             value=visit(node.args[0])
-            if type(value) in {str,bytes,list}: return len(value)
+            if type(value) in {str,bytes,list,tuple}: return len(value)
             raise TypeError("unsupported len input")
         if (isinstance(node.func,ast.Attribute) and node.func.attr=="encode" and len(node.args)<=1
                 and (not node.args or isinstance(node.args[0],ast.Constant) and node.args[0].value in {"utf-8","utf8","UTF-8"})):
@@ -41,7 +42,7 @@ def _value(node, values, depth=0):
         raise Unsupported("call outside pure whitelist")
     if isinstance(node,ast.BinOp) and isinstance(node.op,(ast.Add,ast.Sub)):
         left,right=visit(node.left),visit(node.right)
-        if type(left) is not int or type(right) is not int: raise TypeError("integer operation required")
+        if type(left) is not int or type(right) is not int: raise Unsupported("integer operation required")
         return left+right if isinstance(node.op,ast.Add) else left-right
     if isinstance(node,ast.UnaryOp) and isinstance(node.op,(ast.Not,ast.USub)):
         value=visit(node.operand)
@@ -60,9 +61,9 @@ def _value(node, values, depth=0):
             return left is right if isinstance(op,ast.Is) else left is not right
     if isinstance(node,ast.Subscript) and isinstance(node.slice,ast.Slice):
         value=visit(node.value)
-        if type(value) not in {list,str,bytes}: raise TypeError("sequence required")
+        if type(value) not in {list,tuple,str,bytes}: raise TypeError("sequence required")
         bounds=[visit(part) if part is not None else None for part in (node.slice.lower,node.slice.upper,node.slice.step)]
-        if any(part is not None and type(part) is not int for part in bounds): raise TypeError("integer bounds required")
+        if any(part is not None and type(part) not in {int, bool} for part in bounds): raise TypeError("integer bounds required")
         return value[slice(*bounds)]
     raise Unsupported("unsupported expression")
 
@@ -130,7 +131,11 @@ def compare_pure(before: str, after: str, *, max_samples=100, max_facts=4) -> li
             try:
                 outputs=[]
                 for expression in (left[1],right[1]):
-                    try: outputs.append({"kind":"return_value","value":repr(_value(expression,bindings))[:200]})
+                    try:
+                        value = repr(_value(expression, bindings))
+                        if len(value) > 200:
+                            raise Unsupported("result exceeds the evidence budget")
+                        outputs.append({"kind":"return_value","value":value})
                     except (TypeError,ValueError,IndexError,ZeroDivisionError) as error:
                         if isinstance(error,Unsupported): raise
                         outputs.append({"kind":"raises","value":type(error).__name__})
@@ -140,7 +145,7 @@ def compare_pure(before: str, after: str, *, max_samples=100, max_facts=4) -> li
                                   "base_operation":"\n".join(before.splitlines()[left[3].lineno-1:left[3].end_lineno]),
                                   "head_operation":"\n".join(after.splitlines()[right[3].lineno-1:right[3].end_lineno])})
             except Unsupported:
-                break
+                continue
     return facts
 
 
