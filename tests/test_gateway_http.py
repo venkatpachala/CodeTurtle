@@ -189,4 +189,54 @@ def test_runtime_final_gate_requests_schema_and_validates_citations(ollama_serve
     assert len(requests) == 1
     assert requests[0]["body"]["format"] == FindingDecision.model_json_schema()
     assert result.finding_verifications[0].verdict == "supported"
+    from core.runtime.models import ReviewResult
+    assert ReviewResult.from_dict(result.to_dict()).to_dict() == result.to_dict()
     assert len(result.product_findings) == 1
+
+
+def test_native_semantic_discovery_reaches_independent_rule_and_product(ollama_server, tmp_path):
+    """Positive end-to-end control: rejecting everything cannot pass this test."""
+    from types import SimpleNamespace
+    from core.input.snapshot import GitSnapshotProvider
+    from core.runtime.review_runtime import ReviewRuntime
+    from tests.test_input_snapshot import git
+    from tests.test_source_finding_verifier import PROTECTED, BROKEN
+    from tests.test_semantic_review import assessment
+    requests, state = ollama_server
+    git(tmp_path, "init")
+    git(tmp_path, "config", "user.name", "HTTP semantic test")
+    git(tmp_path, "config", "user.email", "test@example.invalid")
+    (tmp_path / "app.py").write_text(PROTECTED)
+    git(tmp_path, "add", ".")
+    git(tmp_path, "commit", "-m", "correct baseline")
+    base = git(tmp_path, "rev-parse", "HEAD")
+    (tmp_path / "app.py").write_text(BROKEN)
+    git(tmp_path, "commit", "-am", "introduced regression")
+    provider = GitSnapshotProvider(tmp_path)
+    snapshot = provider.resolve(base)
+    expected = {"kind": "return_value", "property": "return", "value": "0"}
+    actual = {"kind": "raises", "property": "return", "value": "TypeError"}
+    def respond(prompt):
+        package = json.loads(prompt.split("\nPACKAGE\n", 1)[1])
+        if "units" in package:
+            rows = []
+            for unit in package["units"]:
+                row = assessment(unit["unit_id"], regression=True)
+                row.update(behavioral_delta="Removed None guard", contract="None input returns zero")
+                row["hypothesis"] = {"symbol": "size", "trigger": "items is None", "expected": expected, "suspected": actual}
+                rows.append(row)
+            return json.dumps({"assessments": rows})
+        observed = {}
+        for side, value, line in (("base", expected, 3), ("head", actual, 2)):
+            record = next(e for e in package["evidence"] if e["result"].get("source") == "git_snapshot" and e["result"].get("side", "head") == side)
+            observed[side] = {**value, "source": {"evidence_id": record["id"], "start_line": line, "end_line": line}}
+        return json.dumps({"conclusion": "violation_supported", "reason": "None reaches builtin len", **observed, "missing_evidence": []})
+    state["respond"] = respond
+    result = ReviewRuntime(rule_engine=lambda *a, **k: []).run(SimpleNamespace(
+        review_snapshot=snapshot, input_provider=provider, repo_dir=str(tmp_path),
+        pr_base_sha=base, pr_head_sha=snapshot.head_sha,
+        files_changed=["app.py"], full_diff=provider.diff(snapshot)))
+    assert len(requests) == 2
+    assert result.decision == "REQUEST_CHANGES" and len(result.product_findings) == 1
+    assert result.finding_verifications[0].verification_method == "source_rule"
+    assert result.finding_verifications[0].verdict == "supported"

@@ -17,12 +17,20 @@ class FindingClaim(DomainRecord):
     file: NonBlank
     symbol: str
     claim: str
-    existing_code: NonBlank
+    # Operation text is exact source evidence. Trimming indentation changes the
+    # signed claim and breaks publication/serialization identity checks.
+    existing_code: str = Field(min_length=1)
     invariant: NonBlank
     violating_condition: NonBlank
     expected: str
     actual: str
     execution_path: tuple[str, ...]
+
+    @model_validator(mode="after")
+    def nonblank_operation(self):
+        if not self.existing_code.strip():
+            raise ValueError("operation source cannot be blank")
+        return self
 
     @property
     def fingerprint(self) -> str:

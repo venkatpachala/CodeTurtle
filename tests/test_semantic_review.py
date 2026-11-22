@@ -5,7 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from core.agent.bundle_agent import BundleAgent
-from core.agent.semantic import RegressionLead, RegressionProof, validate_transition
+from core.agent.semantic import Outcome, RegressionLead, RegressionProof, validate_transition
 from core.input.snapshot import GitSnapshotProvider
 from core.input.tools import SnapshotBundleTools
 from core.review.inspection import collect_inspection
@@ -65,7 +65,7 @@ def test_fix_assessment_never_becomes_defect_candidate():
     assert result.status == "VALID_EMPTY"
     assert not result.hypotheses and not result.candidates
     assert result.contract_assessments[0]["verification_level"] == "source_assessment_not_execution"
-    assert result.to_dict()["prompt_version"] == "semantic-contract-v3-coherent-schema"
+    assert result.to_dict()["prompt_version"] == "semantic-contract-v4-scoped-authority"
 
 
 def test_partial_assessment_repairs_only_missing_units_and_preserves_inspection():
@@ -124,6 +124,12 @@ def test_regression_requires_distinct_expected_and_suspected_outcomes():
     lead = assessment(regression=True)["hypothesis"]
     lead["suspected"] = lead["expected"]
     with pytest.raises(ValidationError): RegressionLead.model_validate(lead)
+
+
+def test_outcome_identity_preserves_empty_and_whitespace_sensitive_values():
+    assert Outcome(**outcome("")).value == ""
+    assert Outcome(**outcome("A  B")).identity != Outcome(**outcome("A B")).identity
+    assert Outcome(**outcome(" GET ")).value == " GET "
 
 
 def test_invalid_discovery_never_falls_back_to_legacy_protocol():

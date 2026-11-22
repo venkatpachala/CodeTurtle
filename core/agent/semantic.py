@@ -25,11 +25,12 @@ Value = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, ma
 class Outcome(DomainRecord):
     kind: Literal["literal", "return_value", "raises", "side_effect", "unknown"]
     property: Value
-    value: Value
+    # Exact scalar spelling: empty strings and whitespace can be behavior.
+    value: Annotated[str, StringConstraints(max_length=120)]
 
     @property
     def identity(self):
-        return self.kind, self.property, " ".join(self.value.split())
+        return self.kind, self.property, self.value
 
     def describe(self):
         return f"{self.kind} {self.property}={self.value}"
@@ -105,6 +106,9 @@ Example: BASE returns an invalid cached item; HEAD adds a validity guard and
 returns a fresh item. If that satisfies the contract, use fix_consistent, not a
 regression hypothesis describing the new guard. Raising an exception for invalid
 input can also be correct. Related test text is context, not executed proof.
+A new test asserting intended behavior does not show production contradicts it.
+Test names are not production function symbols. Explicit requirements exist only
+in explicit_requirements; otherwise use source_inference/test_expectation/unknown.
 Source inference is an assumption, not a verified requirement. Never invent user requirements.
 Return an assessment for every admitted unit_id, or unassessed with a precise gap.
 Source inspection is not test execution. Keep EACH text field below 100 characters.
@@ -127,9 +131,11 @@ def _unit(unit, key, default=""):
     return unit.get(key, default) if isinstance(unit, dict) else getattr(unit, key, default)
 
 
-def _assessment_schema(ids):
+def _assessment_schema(ids, requirements=()):
     common = {"unit_id": (Literal[tuple(ids)], ...),
               "evidence_refs": (tuple[Literal[tuple(ids)], ...], Field(min_length=1, max_length=len(ids)))}
+    if not requirements:
+        common["contract_basis"] = (Literal["source_inference", "test_expectation", "unknown"], ...)
     # Express outcome/lead coherence in the provider schema as well as Python.
     positive = create_model("ConsistentChange", __base__=ChangeAssessment, **common,
                             outcome=(Literal["fix_consistent", "no_regression_identified"], ...), hypothesis=(type(None), ...))
@@ -219,7 +225,7 @@ def run_semantic(agent, bundle, tools):
             break
         selected = retry_ids or pending[:2]
         retry_ids = None
-        schema = _assessment_schema(selected)
+        schema = _assessment_schema(selected, bundle.requirements)
         package = {"units":[{"unit_id":uid,"path":_unit(by_id[uid],"path"),"kind":_unit(by_id[uid],"kind"),
                              "symbols":_unit(by_id[uid],"symbols",[]),"excerpt":_unit(by_id[uid],"excerpt")} for uid in selected],
                    "related_tests": [{"path":_unit(u,"path"),"excerpt":str(_unit(u,"excerpt"))[:1800],
