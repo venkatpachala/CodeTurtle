@@ -109,6 +109,8 @@ input can also be correct. Related test text is context, not executed proof.
 A new test asserting intended behavior does not show production contradicts it.
 Test names are not production function symbols. Explicit requirements exist only
 in explicit_requirements; otherwise use source_inference/test_expectation/unknown.
+behavioral_examples are bounded AST calculations, not executed tests. Compare their
+BASE/HEAD values against the contract; a difference can also be an intended repair.
 Source inference is an assumption, not a verified requirement. Never invent user requirements.
 Return an assessment for every admitted unit_id, or unassessed with a precise gap.
 Source inspection is not test execution. Keep EACH text field below 100 characters.
@@ -241,6 +243,7 @@ def run_semantic(agent, bundle, tools):
         package["structural_context"] = {"snapshot_id": bundle.change_context.get("snapshot_id"),
                                          "changes": bundle.change_context.get("changes", [])[:8],
                                          "limitations": bundle.change_context.get("limitations", [])}
+        package["behavioral_examples"] = bundle.change_context.get("behavioral_examples", [])
         try:
             doc = complete(DISCOVER+"\nPACKAGE\n"+json.dumps(package),schema,next_stage,1100)
             rows = doc.get("assessments") if isinstance(doc,dict) and set(doc)=={"assessments"} else None
@@ -327,6 +330,7 @@ def run_semantic(agent, bundle, tools):
             admitted_evidence, omitted = compact_evidence(relevant, [hyp], max_chars=10000)
             package={"hypothesis_id":hyp.id,"path":hyp.file,"trigger":lead.trigger,"expected":lead.expected.model_dump(),
                      "suspected":lead.suspected.model_dump(),"evidence":admitted_evidence,"omitted_evidence":omitted}
+            package["behavioral_examples"] = [item for item in bundle.change_context.get("behavioral_examples", []) if item["path"] == hyp.file]
             proof = RegressionProof.model_validate(complete(PROVE+"\nPACKAGE\n"+json.dumps(package),RegressionProof,"semantic_proof"))
             head_code = validate_transition(proof,lead,hyp.file,admitted_evidence)
             if head_code is not None:

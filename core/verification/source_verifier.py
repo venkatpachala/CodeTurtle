@@ -14,7 +14,7 @@ from core.review.budget import BudgetExceeded, ReviewBudget
 from core.runtime.models import Bundle, Candidate
 from core.verification.reachability import function_at, none_trigger_reaches_anchor
 
-FINDING_PROMPT_VERSION = "finding-source-v3-scopes"
+FINDING_PROMPT_VERSION = "finding-source-v4-contrast-facts"
 
 
 def candidate_fingerprint(candidate: Candidate) -> str:
@@ -150,11 +150,13 @@ class SourceFindingVerifier:
                     decision, verdict, status, reason = rule_decision, rule_decision.verdict, "completed", rule_decision.rationale
                     method, rule_id = "source_rule", RULE_ID
                     return {"supported": "VERIFIED", "refuted": "DISPROVED"}[verdict]
+            from core.intelligence.behavior import build_behavior_context
             package = {"required_checked_trigger": candidate.violating_condition.strip(),
                 "candidate": {name: getattr(candidate, name) for name in (
                 "file", "symbol", "claim", "invariant", "violating_condition", "existing_code", "expected", "actual", "execution_path")},
                 "head_observations": [self._view(obs) for obs in observations if obs.revision_side == "head"],
                 "base_observations": [self._view(obs) for obs in observations if obs.revision_side == "base"],
+                "behavioral_examples": build_behavior_context(self.provider, self.snapshot, [candidate.file]),
                 "hints_not_proof": hints}
             for attempt in (1, 2):
                 prompt = _SYSTEM + "\nPACKAGE\n" + json.dumps(package)

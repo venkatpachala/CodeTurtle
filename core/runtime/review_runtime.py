@@ -445,11 +445,13 @@ class ReviewRuntime:
             from core.intelligence.changes import build_change_context
             semantic_context = build_change_context(investigation_inputs, investigation_snapshot, files)
             for bundle in bundles:
+                from core.intelligence.behavior import build_behavior_context
                 bundle.change_context = {
                     "snapshot_id": investigation_snapshot.id,
                     "changes": [change.model_dump() for change in semantic_context.changes if change.path in bundle.paths],
                     "limitations": list(semantic_context.limitations),
                     "unresolved_context": list(semantic_context.unresolved_context),
+                    "behavioral_examples": build_behavior_context(investigation_inputs, investigation_snapshot, bundle.paths),
                 }
         repo_name = repo or getattr(ctx, "repo", "") or str(facts.get("repo") or "")
         client = self._client(repo_name)
