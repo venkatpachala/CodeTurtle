@@ -1,0 +1,921 @@
+{
+  "source_pool_sha256": "16815a81e492849d6ba97466ccf9878c277ed52c00a8e7087fe5a1d317f1b577",
+  "candidate_count": 90,
+  "pinned": [
+    {
+      "case_id": "pr-6d0220a9b1ac01ebca38",
+      "pr_url": "https://github.com/keycloak/keycloak/pull/37429",
+      "original_url": "https://github.com/keycloak/keycloak/pull/37429",
+      "base_sha": "f3c8e8f3487112f2c99aa78400430cce2d30be39",
+      "head_sha": "02f48f776f43734d1ac8914d3ad6a7115acdcb33",
+      "comparison_base_sha": "f3c8e8f3487112f2c99aa78400430cce2d30be39",
+      "patch_sha256": "4c80f5096e217d9f6149042f863cea1c6b2dd4998f19badff915d167d776272c",
+      "family_id": "5076a30f297b22e386d587b4f4567fe4dadc82347171299cdb74ddedf99de99d",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-a581f88d7ba4b6c26789",
+      "pr_url": "https://github.com/keycloak/keycloak/pull/38446",
+      "original_url": "https://github.com/keycloak/keycloak/pull/38446",
+      "base_sha": "85737f52b59aa2e3403c9b8e48acf71ccc5bfae3",
+      "head_sha": "ce2dcc537b4b1f98a335e88cfe8e0b804483252a",
+      "comparison_base_sha": "85737f52b59aa2e3403c9b8e48acf71ccc5bfae3",
+      "patch_sha256": "380e743bafbf6f45746499b33d5c6144745b41129c60016ea7abfe4342fe068e",
+      "family_id": "c0c2ea01821a8ce8654540a5e59dc6ed323b343a7afffec80c2a550d2d1a2215",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-261abfbfed1918bc41ab",
+      "pr_url": "https://github.com/keycloak/keycloak/pull/36882",
+      "original_url": "https://github.com/keycloak/keycloak/pull/36882",
+      "base_sha": "8671f860469d6d95e54df3e13f77ebc401249489",
+      "head_sha": "62bf98939eda58f0d0a1a41a58aa6d4ecdc24dba",
+      "comparison_base_sha": "1b28ac610dc16e0de14199f9ca5d2acdf7f3cc16",
+      "patch_sha256": "9afbdb5448b1f032c1460d398efa011b15e3d2ae2dba7030a7e72051f9d37f85",
+      "family_id": "64644f5c09f853c3c51a332b17a7dd584d006bc9efc8d3878f21bf7ca387a774",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-5a2266452d59a9372c20",
+      "pr_url": "https://github.com/keycloak/keycloak/pull/37634",
+      "original_url": "https://github.com/keycloak/keycloak/pull/37634",
+      "base_sha": "c22f76867f595f0f7c327376a66a08dca01949e8",
+      "head_sha": "daffb05b5ad091d3ec09933c3c99c2b54f448696",
+      "comparison_base_sha": "c22f76867f595f0f7c327376a66a08dca01949e8",
+      "patch_sha256": "71fe05c29d160487ede74d14d224e9fb5c3e5cbac466a9321aede9ca50dccead",
+      "family_id": "0dcc7e7e920f8cc3c28115443805f662d98b0d159654c899663fd2b2f0ba543c",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-f1ac23d8e3fc368dd2fd",
+      "pr_url": "https://github.com/keycloak/keycloak/pull/36880",
+      "original_url": "https://github.com/keycloak/keycloak/pull/36880",
+      "base_sha": "b8c1cd410f4499c77a8b372decfe1718b80ccfd2",
+      "head_sha": "1950a511026d520a7329c7b6b9ee60a4af8f8b55",
+      "comparison_base_sha": "b7b84d75d16e91d3f56ec527a260c53c5dd4396c",
+      "patch_sha256": "4f165d87e95726aacd52944759c3bbe6900c0dd06126200b62e41bb2021f0e54",
+      "family_id": "8da2b2fab12a97d092e70f1f3ccf552abbd6d39e86f0ad264d579373a4f7074c",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-75d33ebf7f545b4e9e66",
+      "pr_url": "https://github.com/keycloak/keycloak/pull/37038",
+      "original_url": "https://github.com/keycloak/keycloak/pull/37038",
+      "base_sha": "7ea067aae9be56cb2622bce6563864817c3dfeaf",
+      "head_sha": "7355f05e6aafe2a7acc6434fb40c686665416606",
+      "comparison_base_sha": "7ea067aae9be56cb2622bce6563864817c3dfeaf",
+      "patch_sha256": "5207da5d4971581ad470de48777726de96f0057c0faf87208625044da11043f7",
+      "family_id": "25363961e56571658a071ac93eb62b04145e295c9f9abf553c0d4aaed92b0d6a",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-2fab9d1cdae455be6624",
+      "pr_url": "https://github.com/keycloak/keycloak/pull/33832",
+      "original_url": "https://github.com/keycloak/keycloak/pull/33832",
+      "base_sha": "10aca5552314d6e5c9226f3c6d0107861c38c693",
+      "head_sha": "79d11c4890cc4792e3dc3535af59e4e5f7a2739d",
+      "comparison_base_sha": "10aca5552314d6e5c9226f3c6d0107861c38c693",
+      "patch_sha256": "a8a1289378b5716c451bcc2f830d16f4afae12c3e149eff927b1fc0565adbe83",
+      "family_id": "1b1e3f882ccc19e343f54911855a153fe15224344c222786de7820a7f339f2bc",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-4d177960be2906d10148",
+      "pr_url": "https://github.com/keycloak/keycloak/pull/40940",
+      "original_url": "https://github.com/keycloak/keycloak/pull/40940",
+      "base_sha": "c834e7473c02f11451216b3fbf355f953cfd95e9",
+      "head_sha": "4def149a50c4b9b2c24fbb753ac60fe4f4df0cac",
+      "comparison_base_sha": "7fd37690c44c7068cb19ecee3aa6ff99c46a821d",
+      "patch_sha256": "9c7b71fbbc6b14bc6efbf2d3b9b19cfab64aebabef83359e2cc3cadd866ba665",
+      "family_id": "2b8c88747df3ce90e34895a25a5df85bcfce18734ad511c6e4e42050a91a4d05",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-e61b6d249eaead6dc739",
+      "pr_url": "https://github.com/ai-code-review-evaluation/keycloak-greptile/pull/1",
+      "original_url": "https://github.com/keycloak/keycloak/pull/41249",
+      "base_sha": "30f804af450dec523909a52f2a4b97302d27f5cc",
+      "head_sha": "3214b188de808fdb0fff335556b686f1b0a63218",
+      "comparison_base_sha": "30f804af450dec523909a52f2a4b97302d27f5cc",
+      "patch_sha256": "d52574f842b0ed71168fff498b5f0d44e3841f7c64e026dbbb629a4fdf2956ff",
+      "family_id": "69997410a75c2a6d44a276a50c934fca7b80ff09446e89fcb0d6c4706fc81280",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-32dd6b640867ec5b4d0f",
+      "pr_url": "https://github.com/getsentry/sentry/pull/93824",
+      "original_url": "https://github.com/getsentry/sentry/pull/93824",
+      "base_sha": "de11fb0166a7244115bb066edd65ec0d6b7e365c",
+      "head_sha": "3162ad68a5c87666788b27a44eb31235025091a9",
+      "comparison_base_sha": "de11fb0166a7244115bb066edd65ec0d6b7e365c",
+      "patch_sha256": "91bd87a5aa2c13e2308c7d3c2c9104f3df40572cdeb55011800a43d526ff2449",
+      "family_id": "e79796e87b75dec2d4ce7e46a5e7d44ee6afa4101553c10a30746737d1a33516",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-b44c6798b3e3af2244ad",
+      "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/1",
+      "original_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/1",
+      "base_sha": "a5d290951def84afdcc4c88d2f1f20023fc36e2a",
+      "head_sha": "8ab88145113dd23a930e23b9cbbcf8b30e4c0b17",
+      "comparison_base_sha": "74618671bff8114fcec8fe77c6260c9a2bc2864a",
+      "patch_sha256": "f5d2a104db702ee5d77b9fc3ce42818e864fbd379c7e75c01d433c065f1eab9e",
+      "family_id": "7c8b2031c83caa8f435729563b7cf550be39180e119da20276b8e23686e17b5f",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": true
+    },
+    {
+      "case_id": "pr-0e81023e9467d5dcb71a",
+      "pr_url": "https://github.com/grafana/grafana/pull/97529",
+      "original_url": "https://github.com/grafana/grafana/pull/97529",
+      "base_sha": "871af07203177ce59a24e742107119409274f48a",
+      "head_sha": "26fed312840cd76b766cbd2158e17a7e6c0ec548",
+      "comparison_base_sha": "871af07203177ce59a24e742107119409274f48a",
+      "patch_sha256": "8acce2fd6538ca4064c4cc3c350e37f7e9fcf745ecaf04ef70586d9dcf9d03b7",
+      "family_id": "eeae14f100100c1c554d8913f1cc6c3eb25fd6e0339d8f0f1e2fdd1bb219aad7",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-b3fe12218dedbef22e4d",
+      "pr_url": "https://github.com/getsentry/sentry/pull/80168",
+      "original_url": "https://github.com/getsentry/sentry/pull/80168",
+      "base_sha": "bdd229e3f22e307fe40b30ef99e92ff3f6723da4",
+      "head_sha": "8422030ef456e3a898415e96475b4d8ddfc7640f",
+      "comparison_base_sha": "bdd229e3f22e307fe40b30ef99e92ff3f6723da4",
+      "patch_sha256": "b6b7d828dbc5121ed135b1cb244258e63082d9009cf0c168d4604dd4da91ca8a",
+      "family_id": "fc3f1477d31c0fb58474bfc3a175dfe3a55640aada8e391761f16fef70d07ffd",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-937b5d12bab5edf24be2",
+      "pr_url": "https://github.com/getsentry/sentry/pull/80528",
+      "original_url": "https://github.com/getsentry/sentry/pull/80528",
+      "base_sha": "0cfc28e76ddc986d2d89dd9b9f63ee916a18a5f9",
+      "head_sha": "dcdcadb771128e79259cc9eff9c70c38fc597976",
+      "comparison_base_sha": "0cfc28e76ddc986d2d89dd9b9f63ee916a18a5f9",
+      "patch_sha256": "0dd64e064ea2930d90445e37997d1a9411c7a1b78ef7fec806d77c379f45a213",
+      "family_id": "856b1e2bc028fe1ca165305699b1815c0a2395d371e5b58b24393e32d40f2302",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-29595a360a7ac6544ebe",
+      "pr_url": "https://github.com/getsentry/sentry/pull/77754",
+      "original_url": "https://github.com/getsentry/sentry/pull/77754",
+      "base_sha": "bb5a6837cb5b3d8d3b174e17d42ec14486ef8738",
+      "head_sha": "9501091c52ae94e8d916f79b35d21975b3f9cadb",
+      "comparison_base_sha": "bb5a6837cb5b3d8d3b174e17d42ec14486ef8738",
+      "patch_sha256": "de01beb019f29c9237142664e86417302cf2175480f0536ade4a3acc181bbd27",
+      "family_id": "0f822be6af96ef1379f1138ab591da4e05a8b3f2cdc28cdd8f3cd2a4064f9145",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-5c4a3586c6f78cbc29e5",
+      "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/2",
+      "original_url": "https://github.com/getsentry/sentry/pull/92393",
+      "base_sha": "28e3db2520d4ea28c57b08da57b83917ba7b2e15",
+      "head_sha": "8ab88145113dd23a930e23b9cbbcf8b30e4c0b17",
+      "comparison_base_sha": "28e3db2520d4ea28c57b08da57b83917ba7b2e15",
+      "patch_sha256": "192e04e33b7a002fe5ceb71f4f16797c3f4253964622d2093b650d69eae1c586",
+      "family_id": "3904241f21696ebf40f5684004e5c978b37dcf8e25376f6b204c28d9edb95271",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": true
+    },
+    {
+      "case_id": "pr-1232dd904b26a67b2a75",
+      "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/3",
+      "original_url": "https://github.com/getsentry/sentry/pull/94376",
+      "base_sha": "a5d290951def84afdcc4c88d2f1f20023fc36e2a",
+      "head_sha": "6ad6fe3899f630ccf922ce7ac681147dc7987435",
+      "comparison_base_sha": "83f40559985e1365a43f35ba3febb7ea4fabb5d5",
+      "patch_sha256": "9c5b262ae259f57c64b31d54c39d9739b0f234b9e00429df1c6b73fe3adbe8c9",
+      "family_id": "9b12aba0080822957820b15f321e5100ac1281e921f4e2091f9eb4af67f7c0f0",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": true
+    },
+    {
+      "case_id": "pr-85ed413d2f648cb53d21",
+      "pr_url": "https://github.com/getsentry/sentry/pull/67876",
+      "original_url": "https://github.com/getsentry/sentry/pull/67876",
+      "base_sha": "344aa102e7818606e29426ebe69d5a680d8727c6",
+      "head_sha": "bb75657fc8f13923c1d7983f422290908a1e7310",
+      "comparison_base_sha": "f3b740199ef0b8057c2c68a377fd3b4d42346deb",
+      "patch_sha256": "a2640b8d7cbbf01156f04d385d60641421055ca6d9a40ba3a01c3ad95acb5652",
+      "family_id": "4cc24d4f652a448f7b22c3a60d71480d9c53dbea15267ee131e50a446139b4a9",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-e2d3261b4e2ac958691d",
+      "pr_url": "https://github.com/grafana/grafana/pull/103633",
+      "original_url": "https://github.com/grafana/grafana/pull/103633",
+      "base_sha": "5634ca44f799a82161f0401dadc286452f3bdbf8",
+      "head_sha": "7562f37880367411a62304bcdcdc178bced23906",
+      "comparison_base_sha": "5634ca44f799a82161f0401dadc286452f3bdbf8",
+      "patch_sha256": "0e07a67760ccfd90b3595d76229c125b0f5740e6123ec3e94c31ed2c54a6edc5",
+      "family_id": "a0d7c8a2ff3a44f1eca10e6e00fde1dcacda556ebac778161bc76226b1884916",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-45a1c0281f89098eb667",
+      "pr_url": "https://github.com/keycloak/keycloak/pull/32918",
+      "original_url": "https://github.com/keycloak/keycloak/pull/32918",
+      "base_sha": "272cfc68dcc88615396ae62ed1571918e9c58ad3",
+      "head_sha": "e944e2acf1e64421860a8e827f93ad06c169621b",
+      "comparison_base_sha": "272cfc68dcc88615396ae62ed1571918e9c58ad3",
+      "patch_sha256": "3e2880ddb4cfc79ce35534c0e39faf8531906514c887450d86a3853246e924bc",
+      "family_id": "e4eeaa6880c256edfd57ed5360791daf330c3b2b5cc21758ed213583fb2b7e1b",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-29518a3aa43da66c6519",
+      "pr_url": "https://github.com/grafana/grafana/pull/94942",
+      "original_url": "https://github.com/grafana/grafana/pull/94942",
+      "base_sha": "cbe1e7d63f098e306058c0fbcab2f5c30602fa7d",
+      "head_sha": "f3317b329b4eb8fd96f99dd86525bc4a22d20248",
+      "comparison_base_sha": "cbe1e7d63f098e306058c0fbcab2f5c30602fa7d",
+      "patch_sha256": "88fdcb33416060af09f41f9903c37dff16465f381e5f4803dff48ee7a479bd44",
+      "family_id": "e3817de8cbe79da580f82326ce8b5dc3f1c855bd3e62c494e52f48a595c223f0",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-c0f669a3dbe8d2465db0",
+      "pr_url": "https://github.com/grafana/grafana/pull/80329",
+      "original_url": "https://github.com/grafana/grafana/pull/80329",
+      "base_sha": "a886bd3c79a417a70b51509384d1f1ec3e87e96b",
+      "head_sha": "04cfa3bfd469c035ff8b35f9a66867c4e8d5dcf4",
+      "comparison_base_sha": "a886bd3c79a417a70b51509384d1f1ec3e87e96b",
+      "patch_sha256": "ab21f22e4ef17606a0913453a3c010aa5f0ba8950b94c1f8997ee6e9ce3875c9",
+      "family_id": "fd08028fdf2a356172189f591310359a8ffb237bb8bb6b9d6c3bea03f6e20576",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-da9fae2167561c55fb15",
+      "pr_url": "https://github.com/grafana/grafana/pull/90939",
+      "original_url": "https://github.com/grafana/grafana/pull/90939",
+      "base_sha": "3ce1a5b0caab215346a51629b0344b90d67e9478",
+      "head_sha": "b1613e320acff00623e6efc59f00ee68c7684a97",
+      "comparison_base_sha": "cca9dee702ac4338ddc38aa56257273b8143e32e",
+      "patch_sha256": "5f78ad1876ccf4a7b15597c446a9ac0abef18c6bf210842a07f4197f14b8b9c2",
+      "family_id": "37486f35213f7d026cdbf1b93118136af782b201b888ea737ece2a52978f6ead",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-824135eafef4f07bbe1d",
+      "pr_url": "https://github.com/grafana/grafana/pull/90045",
+      "original_url": "https://github.com/grafana/grafana/pull/90045",
+      "base_sha": "66c4dff17e9147b11fb9b14c6ed63089a599da65",
+      "head_sha": "e369f24665ec70e1e3700f457d25ef83301d931a",
+      "comparison_base_sha": "66c4dff17e9147b11fb9b14c6ed63089a599da65",
+      "patch_sha256": "fbdb3822918771e9863abd90b50e0d1ddb2f50d8147295fe1c43e22085f84710",
+      "family_id": "25f0e7fb2b56dc511b1ea562523c940393ab006bc287d575ec364b0bb377155f",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-a87c48c474479b8e976a",
+      "pr_url": "https://github.com/grafana/grafana/pull/106778",
+      "original_url": "https://github.com/grafana/grafana/pull/106778",
+      "base_sha": "47e5bd23163e6037fc0741068ac78930bba2769f",
+      "head_sha": "8df850371034b73dc4dd9908cc30fa09f12a1f97",
+      "comparison_base_sha": "15e1aa88551d925a80796a966e52f2b7a178203b",
+      "patch_sha256": "bfc5feaea2e6f5e2255cf77b517b2fc983a467af6db2f829090474ea63f57060",
+      "family_id": "ce1e3388fd5c6021e14f403aa960dba6036c0b4e6f0295060c6cf839e2e506c3",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-777f8a5a84e5f1e957d9",
+      "pr_url": "https://github.com/grafana/grafana/pull/107534",
+      "original_url": "https://github.com/grafana/grafana/pull/107534",
+      "base_sha": "d9a8253640464014aa3662c91131278990cfb828",
+      "head_sha": "1cab4143d443c33079566f6ca36931eb8468159f",
+      "comparison_base_sha": "d9a8253640464014aa3662c91131278990cfb828",
+      "patch_sha256": "7357d28c967b5ff387a52a0d74e4238e7f85e90639d22c20dc495bd8af85edf5",
+      "family_id": "cbe2ffe1a953b73e186008d09e631def6ed3d24be692e352e3a850b7dac0cce8",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-742629d32dfcd1b2dfce",
+      "pr_url": "https://github.com/grafana/grafana/pull/79265",
+      "original_url": "https://github.com/grafana/grafana/pull/79265",
+      "base_sha": "50f4e78a39914711d0d231a501ba215becf17ebc",
+      "head_sha": "bbd8c507cdf56f6b884373809e0b24abd4a2353d",
+      "comparison_base_sha": "7ddcd0c9611882858701f4f876fb8e449fe73980",
+      "patch_sha256": "2bf039f591dbdc4f4ec423508e0ccc71dca33a04c58e96ea81eb57bb83d5b9c3",
+      "family_id": "39cdcb7d91394c6b6f0080ca5a524d99b4890b34ff5ccff995e31f0f303aa66f",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-3ca0586463f0faed77fa",
+      "pr_url": "https://github.com/grafana/grafana/pull/76186",
+      "original_url": "https://github.com/grafana/grafana/pull/76186",
+      "base_sha": "58ba11ecbd60863e2bfc6e32f0399ed4feb3927a",
+      "head_sha": "303cdc2caf256aa5df660611120c2e3f7392365d",
+      "comparison_base_sha": "58ba11ecbd60863e2bfc6e32f0399ed4feb3927a",
+      "patch_sha256": "268cf417db90e37f44cd895fb920a8ea7ce6f6103e23c2c2c480faf2969e5b52",
+      "family_id": "0b76269d9ad473c6ce9f5f56d91402cfa02c00edb9ef7ff047b2c94aad3148ca",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-2bdd6452b36d60e38679",
+      "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/9",
+      "original_url": "https://github.com/discourse/discourse/commit/ecfa17b5a79dfdc91e7a4d50b42ae78a35d0a293",
+      "base_sha": "728845d008f06828630a632e5c7d67e11bf15deb",
+      "head_sha": "ecfa17b5a79dfdc91e7a4d50b42ae78a35d0a293",
+      "comparison_base_sha": "728845d008f06828630a632e5c7d67e11bf15deb",
+      "patch_sha256": "591c8f3e8450e729a7e5aa59dc13013fbfd34eb27c6b93b7b72cbc535242975d",
+      "family_id": "a0c0cf403e8ff62b251ecb1b54f3c1e59162ab77835405f3dac083e673b0c9b6",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": true
+    },
+    {
+      "case_id": "pr-429ee35af503c9d0a185",
+      "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/10",
+      "original_url": "https://github.com/discourse/discourse/commit/d1c69189f3c90ecf56013a8da904da9bff9a8e19",
+      "base_sha": "913c3d6f636d02b3dd6c2c022ca1af2bec95d752",
+      "head_sha": "d1c69189f3c90ecf56013a8da904da9bff9a8e19",
+      "comparison_base_sha": "913c3d6f636d02b3dd6c2c022ca1af2bec95d752",
+      "patch_sha256": "e968f1d7fae3fa7d2e797123d63bd47c1daf4c168730e569f084859bb0823c13",
+      "family_id": "140333f52508ee664964930cdbe6d727b84aa630580531433ad011598c9a469c",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": true
+    },
+    {
+      "case_id": "pr-aa1332bcfff4c920bcd3",
+      "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/8",
+      "original_url": "https://github.com/discourse/discourse/commit/060cda77729cb1c4a827560e09e89a7b22078ba9",
+      "base_sha": "4975fc28903a84418f546b2809370f19abf10e08",
+      "head_sha": "060cda77729cb1c4a827560e09e89a7b22078ba9",
+      "comparison_base_sha": "4975fc28903a84418f546b2809370f19abf10e08",
+      "patch_sha256": "abd4f461fbb61a9bd52efe9ab9b6a2815ecced3c6c50a8daa09d6a31171db0bc",
+      "family_id": "76efe4011dc739e25c6665847b41c8d1c878173b7fe148e8366e6e7519e677b7",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": true
+    },
+    {
+      "case_id": "pr-fc032fdd1aa122b3577f",
+      "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/3",
+      "original_url": "https://github.com/discourse/discourse/commit/5f8a130277dbddc95d133cd2832be639baf89213",
+      "base_sha": "e25638dab0d4b98f99c8fe8976ccaae8f4fb9db3",
+      "head_sha": "5f8a130277dbddc95d133cd2832be639baf89213",
+      "comparison_base_sha": "e25638dab0d4b98f99c8fe8976ccaae8f4fb9db3",
+      "patch_sha256": "f38312155944b07bae641b54543eb491cf444f907fdefb87ddb91501862a696c",
+      "family_id": "4dd0119bae953c3297e4de46e73f34c7f71f3e416b1c446e38bf39ed9383ebdf",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": true
+    },
+    {
+      "case_id": "pr-1ac858707336528af793",
+      "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/6",
+      "original_url": "https://github.com/discourse/discourse/commit/267d8be1f556ed59639ced396c885bb44586da19",
+      "base_sha": "7a5fbae060bd0d3e29f3a4b5c6f2bfd8b2914dc7",
+      "head_sha": "267d8be1f556ed59639ced396c885bb44586da19",
+      "comparison_base_sha": "7a5fbae060bd0d3e29f3a4b5c6f2bfd8b2914dc7",
+      "patch_sha256": "6cd61090d0cfaf509ca0dc77f43105febc8e9cc2855453e4403578d5c39013cb",
+      "family_id": "f4702950545a11c6c08139441b14a3b871456aece17e7bc08a8d55b4810861d7",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": true
+    },
+    {
+      "case_id": "pr-fc3517910f88fc85392d",
+      "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/4",
+      "original_url": "https://github.com/discourse/discourse/commit/4f8aed295a29954023b2849c060ef4fb299d1b5d",
+      "base_sha": "62db063e1e1abe691313ab42682a68f796d63769",
+      "head_sha": "4f8aed295a29954023b2849c060ef4fb299d1b5d",
+      "comparison_base_sha": "62db063e1e1abe691313ab42682a68f796d63769",
+      "patch_sha256": "36f20b288c82b6c25377c4546b18fb04cc6a29d064c6e92397a2dbfee394786c",
+      "family_id": "e824f2d79ea026303ee791d0329b7fa0cca3de9e8c6cd557766453be9340b3ae",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": true
+    },
+    {
+      "case_id": "pr-d38f2a3a726363610b84",
+      "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/1",
+      "original_url": "https://github.com/discourse/discourse/commit/ffbaf8c54269df2ce510de91245760fddce09896",
+      "base_sha": "3f71fa15c93bb0b751bb92abae1b5dc9a21bd4ca",
+      "head_sha": "ffbaf8c54269df2ce510de91245760fddce09896",
+      "comparison_base_sha": "3f71fa15c93bb0b751bb92abae1b5dc9a21bd4ca",
+      "patch_sha256": "843cfa2c924c1414a470ebe9ce08a58fe70931e513824bd25449f6e20f743281",
+      "family_id": "cd3eab70da1ca25bd92882cf6000288ed1885a99b093b17a5e8c586318577f4c",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": true
+    },
+    {
+      "case_id": "pr-a20235e4b4b6cf1ebfc7",
+      "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/2",
+      "original_url": "https://github.com/discourse/discourse/commit/6669a2d94d76eea3b99b8c476d12b1eb66726b07",
+      "base_sha": "56abd247e1829cb6de82dfcc8ce04deb5f0d1e91",
+      "head_sha": "6669a2d94d76eea3b99b8c476d12b1eb66726b07",
+      "comparison_base_sha": "56abd247e1829cb6de82dfcc8ce04deb5f0d1e91",
+      "patch_sha256": "5e50e141665bceae487174e02d11a2b6728b6f5d71c5b1ceddfd9a2153112bde",
+      "family_id": "91605c6ab96f098ba82999ee9193818e65c98e978a4bd38cbd1a951995e785ce",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": true
+    },
+    {
+      "case_id": "pr-cd8133fd72cce4e06c4b",
+      "pr_url": "https://github.com/calcom/cal.com/pull/22532",
+      "original_url": "https://github.com/calcom/cal.com/pull/22532",
+      "base_sha": "30a92a4d66b417f7c19dee2b343099adc6e88aa6",
+      "head_sha": "5fd11f9faa79c4aefd39975d1b0e963e5034f793",
+      "comparison_base_sha": "30a92a4d66b417f7c19dee2b343099adc6e88aa6",
+      "patch_sha256": "dfcb0acd300af7bfc101208c7c7997b0bfdf361992123e63892e0686caeefa8b",
+      "family_id": "a04d52c4ccf9bfb759b91f0ae01f297eb7043ef71c27bf6020adf589b78c2b2d",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-44712457e74d8f797195",
+      "pr_url": "https://github.com/calcom/cal.com/pull/8330",
+      "original_url": "https://github.com/calcom/cal.com/pull/8330",
+      "base_sha": "93cb21f55a2a40d9116c014741f5679fbeff5fd9",
+      "head_sha": "ee38fd295fd294b9fc787eba482bde24bbfea69b",
+      "comparison_base_sha": "93cb21f55a2a40d9116c014741f5679fbeff5fd9",
+      "patch_sha256": "bc2239631f5b8062f108fc080197df2f62b3f3b7a92e3fb156d0209e6cc03795",
+      "family_id": "7ec234364feae993ff9f8dc88ba356f7082c6a8ee4bca57c9859205b7e5c6101",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-7681263c4d38f56bcd9f",
+      "pr_url": "https://github.com/calcom/cal.com/pull/22345",
+      "original_url": "https://github.com/calcom/cal.com/pull/22345",
+      "base_sha": "c9a47dd0cebd121ff73f24e1f8c1829579daf8e3",
+      "head_sha": "da09bc0808e7c6df1bc10e00d5acf764d94c7cc7",
+      "comparison_base_sha": "c9a47dd0cebd121ff73f24e1f8c1829579daf8e3",
+      "patch_sha256": "1cf60ba33cb010ca87a72d36ec6f01cbe6c200e1c90451757b8f0edd652ea7c7",
+      "family_id": "67b4fc9a3ac5ade3389eca65d8d9fcf662a080143eb1da1c12e0dc9a94d19523",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-01817745251e5aa59499",
+      "pr_url": "https://github.com/calcom/cal.com/pull/14943",
+      "original_url": "https://github.com/calcom/cal.com/pull/14943",
+      "base_sha": "917c7b0764f4c6bfdca95db2c5f73dbfdbe11757",
+      "head_sha": "c790227e0cda780e6fea9bb03af27948d9e286b9",
+      "comparison_base_sha": "917c7b0764f4c6bfdca95db2c5f73dbfdbe11757",
+      "patch_sha256": "59c1dfb75eeecddca898f8d281179067f4e5c2f66b4058031f24d90c3ce002c5",
+      "family_id": "80b88d8273495ca63356bf68ec0bb34db3aa6cde14e7bf33bc02658b257dd439",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-511610aff73a49e3090d",
+      "pr_url": "https://github.com/calcom/cal.com/pull/11059",
+      "original_url": "https://github.com/calcom/cal.com/pull/11059",
+      "base_sha": "bc89fe00ea84d20bedcec782f0701b9711dc8201",
+      "head_sha": "9fde0e906897cc0f4f71793f647dd629faba3317",
+      "comparison_base_sha": "bc89fe00ea84d20bedcec782f0701b9711dc8201",
+      "patch_sha256": "749dd5988609dce11efda427408526ca289e14e4a60b8cf26ea7452ca827422c",
+      "family_id": "dec13828021cd40c5d8d6a9e17420d52b17797b8b4d4cab06ad24f26807b1767",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-9af98cef2e55ec92c8f3",
+      "pr_url": "https://github.com/calcom/cal.com/pull/7232",
+      "original_url": "https://github.com/calcom/cal.com/pull/7232",
+      "base_sha": "d1440bb5d2f2190ad7ae1d26c165f970055b5370",
+      "head_sha": "6048e2a86b50e81e1e3b1b467dfea5a895add3dc",
+      "comparison_base_sha": "d1440bb5d2f2190ad7ae1d26c165f970055b5370",
+      "patch_sha256": "4a9709d89f43a6b947830847c07885bc8ddc0739c01383ef1ae5c25f89dad216",
+      "family_id": "83837f8897501c0a4553273f9716e751ee3477e5e9cbd4a3b201ff9744b4fb5d",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-374f52b2ca4d891ea50a",
+      "pr_url": "https://github.com/calcom/cal.com/pull/14740",
+      "original_url": "https://github.com/calcom/cal.com/pull/14740",
+      "base_sha": "b004587262e8221083bafbe9a0c515e7becaa7b3",
+      "head_sha": "92f44dcea7ff19e9123a30c63c167a2938df5a55",
+      "comparison_base_sha": "b004587262e8221083bafbe9a0c515e7becaa7b3",
+      "patch_sha256": "1797814f5ecf24813629cd46407eb3fbebf6d07c041d1f177a1fa4eb50664998",
+      "family_id": "b75db48bcc03b41b3aa43c57f22ed3739db7c4d356ab8cc51e9b93bf4c17748a",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-fb39237370bd1f9b0e9b",
+      "pr_url": "https://github.com/calcom/cal.com/pull/10600",
+      "original_url": "https://github.com/calcom/cal.com/pull/10600",
+      "base_sha": "efa6d464a38e60ceeeb88f40668c1c4ac4bfaf54",
+      "head_sha": "54486a059cd2032042189bb565646ba4e0f6bd61",
+      "comparison_base_sha": "efa6d464a38e60ceeeb88f40668c1c4ac4bfaf54",
+      "patch_sha256": "dd04996fb005b08625a926689d20cef99054a19ed8970ff9379fe8487539a7a4",
+      "family_id": "46dac5d3080d47eb2d37e5941ac789de9ad88589849667001b50e4b0454542e9",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-5a1f3a8ed1ea890ca36a",
+      "pr_url": "https://github.com/fastapi/fastapi/pull/16785",
+      "original_url": "https://github.com/fastapi/fastapi/pull/16785",
+      "base_sha": "57be707b5b5e8f9db625607917f43776119d2574",
+      "head_sha": "3fafd27eb92b3f64205e7196f6801a74f3395e72",
+      "comparison_base_sha": "57be707b5b5e8f9db625607917f43776119d2574",
+      "patch_sha256": "12e17ce6dd742d9f7c45b8a500afcd05a2cb2c4511a4c5eef1e8bebd4c31b868",
+      "family_id": "c8748e068bff7ee85ba5870a502371f4439bab07ffd8314e5deb01d46f3d1b11",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-79f0acefe9cdd053c669",
+      "pr_url": "https://github.com/calcom/cal.com/pull/10967",
+      "original_url": "https://github.com/calcom/cal.com/pull/10967",
+      "base_sha": "a308075bc39b77ed7059b0cae9d443d669a7bf98",
+      "head_sha": "de628295646d0848226618108a52f2f1e5d04ac0",
+      "comparison_base_sha": "a308075bc39b77ed7059b0cae9d443d669a7bf98",
+      "patch_sha256": "cbd214933c7d43ec6f6d13abe2e534222d3ec7c387076ab65acee2417585857e",
+      "family_id": "962020664909a4c6bc8847a67f842954dace54b2f6d4a664263f37c510a3fb21",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-90bf8a295b4d1965a1e6",
+      "pr_url": "https://github.com/fastapi/fastapi/pull/16782",
+      "original_url": "https://github.com/fastapi/fastapi/pull/16782",
+      "base_sha": "74038ff79ff01f902480392926ef1b7c63041724",
+      "head_sha": "983a6e87c00249b018ef7d0215b7b932a2146a87",
+      "comparison_base_sha": "74038ff79ff01f902480392926ef1b7c63041724",
+      "patch_sha256": "2c8d0d5304bb625fadd27763225c63664eee942e2330ca3f0dc2046d70d85d3c",
+      "family_id": "353e3eb3efa00da8d92959b6f005aa724e3af00239f6a71226a95dd9a65db137",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-d54344f73b1b132c8780",
+      "pr_url": "https://github.com/calcom/cal.com/pull/8087",
+      "original_url": "https://github.com/calcom/cal.com/pull/8087",
+      "base_sha": "ba9688a04a8398c9a8332ee7061bfae2f2efd524",
+      "head_sha": "820d7fa87e0c824c5dee8082a33efadb1a2566f7",
+      "comparison_base_sha": "ba9688a04a8398c9a8332ee7061bfae2f2efd524",
+      "patch_sha256": "5f55d05248dc6037d437ae3b355fb1b8f53610d2fcb2f33153e3e9d80a4d1fd9",
+      "family_id": "fbbdfd8101ff76fe469cb85b66ca9edce2042ede262c2a021d1d1238bf9e42e2",
+      "stratum": "source_issue_candidate",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-e38a9b9875e373cb4dce",
+      "pr_url": "https://github.com/fastapi/fastapi/pull/16781",
+      "original_url": "https://github.com/fastapi/fastapi/pull/16781",
+      "base_sha": "b2831196bfee3eb9ce303a3c6440f2a104832954",
+      "head_sha": "3dd050f70a899a2ecf404de0e65a9cd10fc300bc",
+      "comparison_base_sha": "b2831196bfee3eb9ce303a3c6440f2a104832954",
+      "patch_sha256": "8de095f34860718528723f85097e398cd3e09202bf413931ab1a50fae8cf5399",
+      "family_id": "efd80cf2a7801c4137ab4fe6656f8046c84d11812ebe89cc93eadfa4a4242c43",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-42d4f5e3e21f397644d2",
+      "pr_url": "https://github.com/fastapi/fastapi/pull/16779",
+      "original_url": "https://github.com/fastapi/fastapi/pull/16779",
+      "base_sha": "a1b3be01aadc61c67edc09eed4f6cc1fcc3d3b8f",
+      "head_sha": "05f1dd0d97ab054790701ed8909aff6243e1f191",
+      "comparison_base_sha": "a1b3be01aadc61c67edc09eed4f6cc1fcc3d3b8f",
+      "patch_sha256": "f99ebb91845d8ed1070212e8763c39392fd05f05b4c8ee7ac1699d7f2b3321f4",
+      "family_id": "82523e5b5658bb309d34eb6c1e59c1550abd45436b2a0382610e43d2da30e1a1",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-50d2bfda5e52f844060e",
+      "pr_url": "https://github.com/fastapi/fastapi/pull/16780",
+      "original_url": "https://github.com/fastapi/fastapi/pull/16780",
+      "base_sha": "a978e511ebea7fe813900a07169a99cb39dce4f3",
+      "head_sha": "671ab83a5d79c7bfe6c4dd5ec75bb8d669a43c98",
+      "comparison_base_sha": "a978e511ebea7fe813900a07169a99cb39dce4f3",
+      "patch_sha256": "6274993327a806e4fc61417d01d604e176089594fff638b0728fb3052e7d1ddd",
+      "family_id": "c9230db2d8ebec11ef79bee4279c31e49b883613802c0cb5f578e1d0d48f3221",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-b3ad64a168e39e1d939a",
+      "pr_url": "https://github.com/fastapi/fastapi/pull/16775",
+      "original_url": "https://github.com/fastapi/fastapi/pull/16775",
+      "base_sha": "b11137461f382d65cfd8bb3ef51606001bbc237a",
+      "head_sha": "5a053d270c1f37e5bfd1ca95cbda2d3b7717c591",
+      "comparison_base_sha": "b11137461f382d65cfd8bb3ef51606001bbc237a",
+      "patch_sha256": "004d75c507071bcad5056dc4e8a4213937fcce28dfea8bef6bfdb268f8c66607",
+      "family_id": "57a742a9319bce1e31e626d4b52bb39177a2065378e17174700268c3bbb17113",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-e14673b8fca117fbc160",
+      "pr_url": "https://github.com/encode/httpx/pull/3832",
+      "original_url": "https://github.com/encode/httpx/pull/3832",
+      "base_sha": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
+      "head_sha": "aa6d8bb0ba7e457010fe0b392fe59876a9b9f2cb",
+      "comparison_base_sha": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
+      "patch_sha256": "cf3c9936658100198a9f773b2367db2fa0d3b9fddc0b7f964edecc0260053739",
+      "family_id": "013b9a966661f724374c6974aaaecd4a88f1145ce67fef5b34e87d757fcdbe49",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-1d9c7cd626248bd74491",
+      "pr_url": "https://github.com/encode/httpx/pull/3773",
+      "original_url": "https://github.com/encode/httpx/pull/3773",
+      "base_sha": "ae1b9f66238f75ced3ced5e4485408435de10768",
+      "head_sha": "63e885394a629d194b0aa867e8fbf475cdec6521",
+      "comparison_base_sha": "ae1b9f66238f75ced3ced5e4485408435de10768",
+      "patch_sha256": "3a34fbb4018292b814d52d990b0abd389a63214777366f95fac3dfc07990d5dc",
+      "family_id": "5e115685c2e0f3745fe77927184c5be15c120de8f986b40ac118597a7074f842",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-8ed30116f98ee3622652",
+      "pr_url": "https://github.com/encode/httpx/pull/3699",
+      "original_url": "https://github.com/encode/httpx/pull/3699",
+      "base_sha": "ca097c96f97d8d2a5da09b8ca736c7e78a2467f6",
+      "head_sha": "4b9f63e507c4ea75fa59f6bbdfb103e2f014a6f9",
+      "comparison_base_sha": "ca097c96f97d8d2a5da09b8ca736c7e78a2467f6",
+      "patch_sha256": "f40cc62c56433bca54768e3dd7fa2fe3106cf7889db0b2549120ab3ac9658a1f",
+      "family_id": "2c34aefb10d09c50fea22085b833531589b68fbdcdeff46c33d6a898010f1852",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-a69c2d0b09f33f15f588",
+      "pr_url": "https://github.com/Kludex/starlette/pull/3783",
+      "original_url": "https://github.com/Kludex/starlette/pull/3783",
+      "base_sha": "9b403a0c33f0e2eebba099e9e6aa1c1e9535daec",
+      "head_sha": "e64576b4af16aa4f6037049547adeb4adeae487a",
+      "comparison_base_sha": "9b403a0c33f0e2eebba099e9e6aa1c1e9535daec",
+      "patch_sha256": "b1b2d3ec2c5d9af4048d5e15ef373c49afd06b20c1c473a7b6157ab2cefe0882",
+      "family_id": "6852432ca80f2d06e6dbbe281e2fa1f42c223f46d7c69f2174daba74bb0e7dba",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-c24ebf05668e162601b1",
+      "pr_url": "https://github.com/Kludex/starlette/pull/3772",
+      "original_url": "https://github.com/Kludex/starlette/pull/3772",
+      "base_sha": "1ce60e7157d5c7d1c4e48e1cfe2f5f255235a2cc",
+      "head_sha": "91aa0cb83f8cab2dd0b714eccfe8762dff08c761",
+      "comparison_base_sha": "1ce60e7157d5c7d1c4e48e1cfe2f5f255235a2cc",
+      "patch_sha256": "ce12a650e9e1a9a6fac654487f11ecc7483c998a56cdb8161510af6cd9d820b9",
+      "family_id": "84c52f4e6667b346cd2994a9ff48fa8a390806fe40f6a6b213f99fe3aa062df0",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-a7aa98158e43be7a64d0",
+      "pr_url": "https://github.com/Kludex/starlette/pull/3768",
+      "original_url": "https://github.com/Kludex/starlette/pull/3768",
+      "base_sha": "2745bbc5afa2f8ce900d290bedca2bc5d3f3cfe8",
+      "head_sha": "1ed0f99439cea6f056a9f615b74a2030cd5a85eb",
+      "comparison_base_sha": "2745bbc5afa2f8ce900d290bedca2bc5d3f3cfe8",
+      "patch_sha256": "53653e9853533c8dfccdc16fd561b30143f387d23df926fef70e211c0f49c42a",
+      "family_id": "afaed85a0bf0bbcbad5c15eb86dee6860161fb5c8d241da721cbfeb2a96f6eb3",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-08cf1e186a502a8f1301",
+      "pr_url": "https://github.com/pydantic/pydantic/pull/14338",
+      "original_url": "https://github.com/pydantic/pydantic/pull/14338",
+      "base_sha": "45e208ee48b62c47dd92507ec6a4bcd71cfdb0d8",
+      "head_sha": "a626d8afc4f1d2ec5bf21313e110045b142705ec",
+      "comparison_base_sha": "45e208ee48b62c47dd92507ec6a4bcd71cfdb0d8",
+      "patch_sha256": "95b3c05bbe34be14817052ecdc1639e643ecae81a53337f5694cfdcdb2e5bf0e",
+      "family_id": "a6393d427a162fd4ae4582a4efd6ba0e9dd9a11a82ba53756282ff747d1f2cbf",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-a1f14dbc9d5ce0d078f4",
+      "pr_url": "https://github.com/pydantic/pydantic/pull/14325",
+      "original_url": "https://github.com/pydantic/pydantic/pull/14325",
+      "base_sha": "fbd35416d17eae59806f003f7c2017aed131a248",
+      "head_sha": "b66b2c5d2f3b2aa8d2ab9c69fcc9e1e16e1f9696",
+      "comparison_base_sha": "e56f60fd32273d1d7c397a3ac46bba05e6a73454",
+      "patch_sha256": "98c54643ddf5e57bf18906cae526da176d8d5cf156111d572977dcdf7a0a8199",
+      "family_id": "ddb2ed3e685d4eda7973c3a36968887edef7c77bd13dc8168e2a258ffb9d595d",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-794b33b3005191536ae6",
+      "pr_url": "https://github.com/pydantic/pydantic/pull/14324",
+      "original_url": "https://github.com/pydantic/pydantic/pull/14324",
+      "base_sha": "fbd35416d17eae59806f003f7c2017aed131a248",
+      "head_sha": "dbfa539495d50a2953ba55e16f0cdac4c82d51a5",
+      "comparison_base_sha": "e56f60fd32273d1d7c397a3ac46bba05e6a73454",
+      "patch_sha256": "4f0a9dfa4c709967e40fd2adbf7101de4d5a83ecdaf8d7e849eed226cc3a8114",
+      "family_id": "dc94cd68aac2bd18a86e724a54b08fc7561dd19d5839b79c2367be184e653c34",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-accc1d7076f99f4ede0b",
+      "pr_url": "https://github.com/fastapi/typer/pull/2022",
+      "original_url": "https://github.com/fastapi/typer/pull/2022",
+      "base_sha": "25be7ec4fdf09979f4a878bf19b22bce1960826a",
+      "head_sha": "b06b3d42fbf7acf7856379e98953924fd13b6d20",
+      "comparison_base_sha": "25be7ec4fdf09979f4a878bf19b22bce1960826a",
+      "patch_sha256": "da3985103047e61762387c71558dd865b3aba2292399c5bca17b8a801f30c0d1",
+      "family_id": "16c9b86113c33ca2d0f58be0741b7692cacd086992f1b75974446084b53040b7",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-d50f324147e13cb2f525",
+      "pr_url": "https://github.com/fastapi/typer/pull/2021",
+      "original_url": "https://github.com/fastapi/typer/pull/2021",
+      "base_sha": "695d84504ab52fcb1a8145949ff10accee1e97b5",
+      "head_sha": "2597618c577c9df2c3e0433d305d75bb0394c80a",
+      "comparison_base_sha": "695d84504ab52fcb1a8145949ff10accee1e97b5",
+      "patch_sha256": "61149b731443a53aca45d46dee0556ee913d283dd04527b83414aafafd4f48f6",
+      "family_id": "52102b83cf0accab3ab7d9a2695f56413f23de90f014ad6a6bce2bcee8a1cc43",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-bbb09f5dbac06201cd1f",
+      "pr_url": "https://github.com/fastapi/typer/pull/2015",
+      "original_url": "https://github.com/fastapi/typer/pull/2015",
+      "base_sha": "cfa13cccba98e9c1486f857f4e15b631820817e7",
+      "head_sha": "074bf7ca2f5018990f96ac9ad293583c3920e5f8",
+      "comparison_base_sha": "060a068ae3d96ec5ea367c6bb3154032303c11b8",
+      "patch_sha256": "58167a4cf71cbb4d9aafa7ff97c5b2dc3549f08ad54deebf1c708ea474eac60d",
+      "family_id": "749c4432c0833c2a05149d118f8e4018ad592958655f66876e19f04aa5cf6021",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-127c3072a8c582e5e7b1",
+      "pr_url": "https://github.com/fastapi/typer/pull/2012",
+      "original_url": "https://github.com/fastapi/typer/pull/2012",
+      "base_sha": "f7c8478cfc592b64d172db41871910a97ae01abd",
+      "head_sha": "84df7e3f810eb742033a6f5f0f24ff23a1a100a1",
+      "comparison_base_sha": "f7c8478cfc592b64d172db41871910a97ae01abd",
+      "patch_sha256": "29acdfed830ea865e34e36b47f2a4d53c10d880b9514343299cdbbd15ddb85a4",
+      "family_id": "86a9b41a6eb75d65993381761481d694d726f7fdac0380c273db7b2d79d3ef5a",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    },
+    {
+      "case_id": "pr-c92c537a8c4fdd0b95c2",
+      "pr_url": "https://github.com/fastapi/typer/pull/2011",
+      "original_url": "https://github.com/fastapi/typer/pull/2011",
+      "base_sha": "96895197d4916f6645cf711be5d5edd7050d5f1a",
+      "head_sha": "97765b38cf90f74d5316d394aa9bcf879e427627",
+      "comparison_base_sha": "96895197d4916f6645cf711be5d5edd7050d5f1a",
+      "patch_sha256": "c1b4e4f87da2b1ecc380f3d264bdc5a460efad146c34b1fce945a3b0f17ab547",
+      "family_id": "2eddad88d07d739be27eff6c23ac64dcb1ce1027b425e4f81c69e2bbaab842a4",
+      "stratum": "unreviewed_control",
+      "previously_exposed": false
+    }
+  ],
+  "failures": [
+    {
+      "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/5",
+      "error": "ValueError",
+      "reason": "collection_file_limit"
+    },
+    {
+      "pr_url": "https://github.com/getsentry/sentry/pull/95633",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/7",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/5",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/fastapi/fastapi/pull/16784",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/fastapi/fastapi/pull/16776",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/encode/httpx/pull/3836",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/encode/httpx/pull/3834",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/encode/httpx/pull/3831",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/encode/httpx/pull/3730",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/encode/httpx/pull/3703",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/Kludex/starlette/pull/3773",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/Kludex/starlette/pull/3771",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/Kludex/starlette/pull/3770",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/Kludex/starlette/pull/3769",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/Kludex/starlette/pull/3756",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/pydantic/pydantic/pull/14373",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/pydantic/pydantic/pull/14337",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/pydantic/pydantic/pull/14327",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/pydantic/pydantic/pull/14326",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/pydantic/pydantic/pull/14320",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/fastapi/typer/pull/2019",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/fastapi/typer/pull/2014",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    },
+    {
+      "pr_url": "https://github.com/fastapi/typer/pull/2013",
+      "error": "ValueError",
+      "reason": "missing_code_patch_or_no_code"
+    }
+  ],
+  "criteria": "At most 100 files / 1 MB patch, at least one supported code patch; source candidates plus first 8 merged PRs in closed listing per control repository. No model outcome selection."
+}

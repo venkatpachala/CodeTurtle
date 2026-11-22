@@ -1,0 +1,87 @@
+diff --git a/.github/workflows/test-suite.yml b/.github/workflows/test-suite.yml
+--- a/.github/workflows/test-suite.yml
++++ b/.github/workflows/test-suite.yml
+@@ -14,7 +14,7 @@ jobs:
+ 
+     strategy:
+       matrix:
+-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
++        python-version: ["3.10", "3.11", "3.12", "3.13"]
+ 
+     steps:
+       - uses: "actions/checkout@v4"
+
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -4,11 +4,9 @@ All notable changes to this project will be documented in this file.
+ 
+ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+ 
+-## [UNRELEASED]
++## 1.0.0 (Unreleased)
+ 
+-### Removed
+-
+-* Drop support for Python 3.8
++* Minimum supported Python version is now 3.10
+ 
+ ### Added
+ 
+
+diff --git a/httpx/__version__.py b/httpx/__version__.py
+--- a/httpx/__version__.py
++++ b/httpx/__version__.py
+@@ -1,3 +1,3 @@
+ __title__ = "httpx"
+ __description__ = "A next generation HTTP client, for Python 3."
+-__version__ = "0.28.1"
++__version__ = "1.0.0"
+
+diff --git a/pyproject.toml b/pyproject.toml
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
+ name = "httpx"
+ description = "The next generation HTTP client."
+ license = "BSD-3-Clause"
+-requires-python = ">=3.9"
++requires-python = ">=3.10"
+ authors = [
+     { name = "Tom Christie", email = "tom@tomchristie.com" },
+ ]
+@@ -20,11 +20,11 @@ classifiers = [
+     "Operating System :: OS Independent",
+     "Programming Language :: Python :: 3",
+     "Programming Language :: Python :: 3 :: Only",
+-    "Programming Language :: Python :: 3.9",
+     "Programming Language :: Python :: 3.10",
+     "Programming Language :: Python :: 3.11",
+     "Programming Language :: Python :: 3.12",
+     "Programming Language :: Python :: 3.13",
++    "Programming Language :: Python :: 3.14",
+     "Topic :: Internet :: WWW/HTTP",
+ ]
+ dependencies = [
+@@ -118,6 +118,8 @@ check_untyped_defs = true
+ addopts = "-rxXs"
+ filterwarnings = [
+   "error",
++  # Until https://github.com/encode/httpcore/pull/1119 fixes https://github.com/encode/httpx/issues/3597.
++  "ignore::pytest.PytestUnraisableExceptionWarning",
+   "ignore: You seem to already have a custom sys.excepthook handler installed. I'll skip installing Trio's custom handler, but this means MultiErrors will not show full tracebacks.:RuntimeWarning",
+   # See: https://github.com/agronholm/anyio/issues/508
+   "ignore: trio.MultiError is deprecated since Trio 0.22.0:trio.TrioDeprecationWarning"
+
+diff --git a/requirements.txt b/requirements.txt
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -15,7 +15,7 @@ mkdocs-material==9.6.18
+ 
+ # Packaging
+ build==1.3.0
+-twine==6.1.0
++twine==7.0.0
+ 
+ # Tests & Linting
+ coverage[toml]==7.10.6

@@ -1,0 +1,24 @@
+diff --git a/docs/en/docs/release-notes.md b/docs/en/docs/release-notes.md
+--- a/docs/en/docs/release-notes.md
++++ b/docs/en/docs/release-notes.md
+@@ -7,6 +7,8 @@ hide:
+ 
+ ## Latest Changes
+ 
++## 0.163.1 (2026-11-15)
++
+ ### Fixes
+ 
+ * 🐛 Fix OpenAPI for response model with nested computed field. PR [#14490](https://github.com/fastapi/fastapi/pull/14490) by [@YuriiMotov](https://github.com/YuriiMotov).
+
+diff --git a/fastapi/__init__.py b/fastapi/__init__.py
+--- a/fastapi/__init__.py
++++ b/fastapi/__init__.py
+@@ -1,6 +1,6 @@
+ """FastAPI framework, high performance, easy to learn, fast to code, ready for production"""
+ 
+-__version__ = "0.163.0"
++__version__ = "0.163.1"
+ 
+ from starlette import status as status
+ 

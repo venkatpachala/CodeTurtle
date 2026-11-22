@@ -1,0 +1,87 @@
+diff --git a/packages/features/ee/workflows/api/scheduleSMSReminders.ts b/packages/features/ee/workflows/api/scheduleSMSReminders.ts
+--- a/packages/features/ee/workflows/api/scheduleSMSReminders.ts
++++ b/packages/features/ee/workflows/api/scheduleSMSReminders.ts
+@@ -28,10 +28,19 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
+   //delete all scheduled sms reminders where scheduled date is past current date
+   await prisma.workflowReminder.deleteMany({
+     where: {
+-      method: WorkflowMethods.SMS,
+-      scheduledDate: {
+-        lte: dayjs().toISOString(),
+-      },
++      OR: [
++        {
++          method: WorkflowMethods.SMS,
++          scheduledDate: {
++            lte: dayjs().toISOString(),
++          },
++        },
++        {
++          retryCount: {
++            gt: 1,
++          },
++        },
++      ],
+     },
+   });
+ 
+@@ -44,8 +53,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
+         lte: dayjs().add(7, "day").toISOString(),
+       },
+     },
+-    select,
+-  })) as PartialWorkflowReminder[];
++    select: {
++      ...select,
++      retryCount: true,
++    },
++  })) as (PartialWorkflowReminder & { retryCount: number })[];
+ 
+   if (!unscheduledReminders.length) {
+     res.json({ ok: true });
+@@ -163,9 +175,26 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
+               referenceId: scheduledSMS.sid,
+             },
+           });
++        } else {
++          await prisma.workflowReminder.update({
++            where: {
++              id: reminder.id,
++            },
++            data: {
++              retryCount: reminder.retryCount + 1,
++            },
++          });
+         }
+       }
+     } catch (error) {
++      await prisma.workflowReminder.update({
++        where: {
++          id: reminder.id,
++        },
++        data: {
++          retryCount: reminder.retryCount + 1,
++        },
++      });
+       console.log(`Error scheduling SMS with error ${error}`);
+     }
+   }
+
+diff --git a/packages/prisma/migrations/20240508134359_add_retry_count_to_workflow_reminder/migration.sql b/packages/prisma/migrations/20240508134359_add_retry_count_to_workflow_reminder/migration.sql
+--- a/packages/prisma/migrations/20240508134359_add_retry_count_to_workflow_reminder/migration.sql
++++ b/packages/prisma/migrations/20240508134359_add_retry_count_to_workflow_reminder/migration.sql
+@@ -0,0 +1,2 @@
++-- AlterTable
++ALTER TABLE "WorkflowReminder" ADD COLUMN     "retryCount" INTEGER NOT NULL DEFAULT 0;
+
+diff --git a/packages/prisma/schema.prisma b/packages/prisma/schema.prisma
+--- a/packages/prisma/schema.prisma
++++ b/packages/prisma/schema.prisma
+@@ -997,6 +997,7 @@ model WorkflowReminder {
+   cancelled           Boolean?
+   seatReferenceId     String?
+   isMandatoryReminder Boolean?        @default(false)
++  retryCount          Int             @default(0)
+ 
+   @@index([bookingUid])
+   @@index([workflowStepId])

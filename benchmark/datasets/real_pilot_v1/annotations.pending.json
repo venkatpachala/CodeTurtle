@@ -1,0 +1,482 @@
+{
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/1": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "3f71fa15c93bb0b751bb92abae1b5dc9a21bd4ca",
+    "head_sha": "ffbaf8c54269df2ce510de91245760fddce09896"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/10": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "913c3d6f636d02b3dd6c2c022ca1af2bec95d752",
+    "head_sha": "d1c69189f3c90ecf56013a8da904da9bff9a8e19"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/9": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "728845d008f06828630a632e5c7d67e11bf15deb",
+    "head_sha": "ecfa17b5a79dfdc91e7a4d50b42ae78a35d0a293"
+  },
+  "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/3": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "a5d290951def84afdcc4c88d2f1f20023fc36e2a",
+    "head_sha": "6ad6fe3899f630ccf922ce7ac681147dc7987435"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/4": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "62db063e1e1abe691313ab42682a68f796d63769",
+    "head_sha": "4f8aed295a29954023b2849c060ef4fb299d1b5d"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/2": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "56abd247e1829cb6de82dfcc8ce04deb5f0d1e91",
+    "head_sha": "6669a2d94d76eea3b99b8c476d12b1eb66726b07"
+  },
+  "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/1": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "a5d290951def84afdcc4c88d2f1f20023fc36e2a",
+    "head_sha": "8ab88145113dd23a930e23b9cbbcf8b30e4c0b17"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/8": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "4975fc28903a84418f546b2809370f19abf10e08",
+    "head_sha": "060cda77729cb1c4a827560e09e89a7b22078ba9"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/6": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "7a5fbae060bd0d3e29f3a4b5c6f2bfd8b2914dc7",
+    "head_sha": "267d8be1f556ed59639ced396c885bb44586da19"
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/3": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "e25638dab0d4b98f99c8fe8976ccaae8f4fb9db3",
+    "head_sha": "5f8a130277dbddc95d133cd2832be639baf89213"
+  },
+  "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/2": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "28e3db2520d4ea28c57b08da57b83917ba7b2e15",
+    "head_sha": "8ab88145113dd23a930e23b9cbbcf8b30e4c0b17"
+  },
+  "https://github.com/keycloak/keycloak/pull/37634": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "c22f76867f595f0f7c327376a66a08dca01949e8",
+    "head_sha": "daffb05b5ad091d3ec09933c3c99c2b54f448696"
+  },
+  "https://github.com/calcom/cal.com/pull/8087": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "ba9688a04a8398c9a8332ee7061bfae2f2efd524",
+    "head_sha": "820d7fa87e0c824c5dee8082a33efadb1a2566f7"
+  },
+  "https://github.com/ai-code-review-evaluation/keycloak-greptile/pull/1": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "30f804af450dec523909a52f2a4b97302d27f5cc",
+    "head_sha": "3214b188de808fdb0fff335556b686f1b0a63218"
+  },
+  "https://github.com/grafana/grafana/pull/90939": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "3ce1a5b0caab215346a51629b0344b90d67e9478",
+    "head_sha": "b1613e320acff00623e6efc59f00ee68c7684a97"
+  },
+  "https://github.com/grafana/grafana/pull/79265": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "50f4e78a39914711d0d231a501ba215becf17ebc",
+    "head_sha": "bbd8c507cdf56f6b884373809e0b24abd4a2353d"
+  },
+  "https://github.com/keycloak/keycloak/pull/36882": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "8671f860469d6d95e54df3e13f77ebc401249489",
+    "head_sha": "62bf98939eda58f0d0a1a41a58aa6d4ecdc24dba"
+  },
+  "https://github.com/calcom/cal.com/pull/11059": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "bc89fe00ea84d20bedcec782f0701b9711dc8201",
+    "head_sha": "9fde0e906897cc0f4f71793f647dd629faba3317"
+  },
+  "https://github.com/getsentry/sentry/pull/80528": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "0cfc28e76ddc986d2d89dd9b9f63ee916a18a5f9",
+    "head_sha": "dcdcadb771128e79259cc9eff9c70c38fc597976"
+  },
+  "https://github.com/grafana/grafana/pull/80329": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "a886bd3c79a417a70b51509384d1f1ec3e87e96b",
+    "head_sha": "04cfa3bfd469c035ff8b35f9a66867c4e8d5dcf4"
+  },
+  "https://github.com/calcom/cal.com/pull/7232": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "d1440bb5d2f2190ad7ae1d26c165f970055b5370",
+    "head_sha": "6048e2a86b50e81e1e3b1b467dfea5a895add3dc"
+  },
+  "https://github.com/calcom/cal.com/pull/22532": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "30a92a4d66b417f7c19dee2b343099adc6e88aa6",
+    "head_sha": "5fd11f9faa79c4aefd39975d1b0e963e5034f793"
+  },
+  "https://github.com/keycloak/keycloak/pull/36880": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "b8c1cd410f4499c77a8b372decfe1718b80ccfd2",
+    "head_sha": "1950a511026d520a7329c7b6b9ee60a4af8f8b55"
+  },
+  "https://github.com/grafana/grafana/pull/76186": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "58ba11ecbd60863e2bfc6e32f0399ed4feb3927a",
+    "head_sha": "303cdc2caf256aa5df660611120c2e3f7392365d"
+  },
+  "https://github.com/keycloak/keycloak/pull/33832": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "10aca5552314d6e5c9226f3c6d0107861c38c693",
+    "head_sha": "79d11c4890cc4792e3dc3535af59e4e5f7a2739d"
+  },
+  "https://github.com/grafana/grafana/pull/107534": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "d9a8253640464014aa3662c91131278990cfb828",
+    "head_sha": "1cab4143d443c33079566f6ca36931eb8468159f"
+  },
+  "https://github.com/keycloak/keycloak/pull/40940": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "c834e7473c02f11451216b3fbf355f953cfd95e9",
+    "head_sha": "4def149a50c4b9b2c24fbb753ac60fe4f4df0cac"
+  },
+  "https://github.com/getsentry/sentry/pull/80168": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "bdd229e3f22e307fe40b30ef99e92ff3f6723da4",
+    "head_sha": "8422030ef456e3a898415e96475b4d8ddfc7640f"
+  },
+  "https://github.com/getsentry/sentry/pull/93824": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "de11fb0166a7244115bb066edd65ec0d6b7e365c",
+    "head_sha": "3162ad68a5c87666788b27a44eb31235025091a9"
+  },
+  "https://github.com/calcom/cal.com/pull/8330": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "93cb21f55a2a40d9116c014741f5679fbeff5fd9",
+    "head_sha": "ee38fd295fd294b9fc787eba482bde24bbfea69b"
+  },
+  "https://github.com/getsentry/sentry/pull/77754": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "bb5a6837cb5b3d8d3b174e17d42ec14486ef8738",
+    "head_sha": "9501091c52ae94e8d916f79b35d21975b3f9cadb"
+  },
+  "https://github.com/grafana/grafana/pull/90045": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "66c4dff17e9147b11fb9b14c6ed63089a599da65",
+    "head_sha": "e369f24665ec70e1e3700f457d25ef83301d931a"
+  },
+  "https://github.com/calcom/cal.com/pull/14740": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "b004587262e8221083bafbe9a0c515e7becaa7b3",
+    "head_sha": "92f44dcea7ff19e9123a30c63c167a2938df5a55"
+  },
+  "https://github.com/getsentry/sentry/pull/67876": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "344aa102e7818606e29426ebe69d5a680d8727c6",
+    "head_sha": "bb75657fc8f13923c1d7983f422290908a1e7310"
+  },
+  "https://github.com/calcom/cal.com/pull/10967": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "a308075bc39b77ed7059b0cae9d443d669a7bf98",
+    "head_sha": "de628295646d0848226618108a52f2f1e5d04ac0"
+  },
+  "https://github.com/grafana/grafana/pull/94942": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "cbe1e7d63f098e306058c0fbcab2f5c30602fa7d",
+    "head_sha": "f3317b329b4eb8fd96f99dd86525bc4a22d20248"
+  },
+  "https://github.com/keycloak/keycloak/pull/32918": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "272cfc68dcc88615396ae62ed1571918e9c58ad3",
+    "head_sha": "e944e2acf1e64421860a8e827f93ad06c169621b"
+  },
+  "https://github.com/keycloak/keycloak/pull/37429": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "f3c8e8f3487112f2c99aa78400430cce2d30be39",
+    "head_sha": "02f48f776f43734d1ac8914d3ad6a7115acdcb33"
+  },
+  "https://github.com/calcom/cal.com/pull/14943": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "917c7b0764f4c6bfdca95db2c5f73dbfdbe11757",
+    "head_sha": "c790227e0cda780e6fea9bb03af27948d9e286b9"
+  },
+  "https://github.com/grafana/grafana/pull/97529": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "871af07203177ce59a24e742107119409274f48a",
+    "head_sha": "26fed312840cd76b766cbd2158e17a7e6c0ec548"
+  },
+  "https://github.com/fastapi/typer/pull/2021": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "695d84504ab52fcb1a8145949ff10accee1e97b5",
+    "head_sha": "2597618c577c9df2c3e0433d305d75bb0394c80a"
+  },
+  "https://github.com/fastapi/fastapi/pull/16782": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "74038ff79ff01f902480392926ef1b7c63041724",
+    "head_sha": "983a6e87c00249b018ef7d0215b7b932a2146a87"
+  },
+  "https://github.com/Kludex/starlette/pull/3783": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "9b403a0c33f0e2eebba099e9e6aa1c1e9535daec",
+    "head_sha": "e64576b4af16aa4f6037049547adeb4adeae487a"
+  },
+  "https://github.com/fastapi/fastapi/pull/16779": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "a1b3be01aadc61c67edc09eed4f6cc1fcc3d3b8f",
+    "head_sha": "05f1dd0d97ab054790701ed8909aff6243e1f191"
+  },
+  "https://github.com/fastapi/typer/pull/2022": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "25be7ec4fdf09979f4a878bf19b22bce1960826a",
+    "head_sha": "b06b3d42fbf7acf7856379e98953924fd13b6d20"
+  },
+  "https://github.com/pydantic/pydantic/pull/14325": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "fbd35416d17eae59806f003f7c2017aed131a248",
+    "head_sha": "b66b2c5d2f3b2aa8d2ab9c69fcc9e1e16e1f9696"
+  },
+  "https://github.com/Kludex/starlette/pull/3768": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "2745bbc5afa2f8ce900d290bedca2bc5d3f3cfe8",
+    "head_sha": "1ed0f99439cea6f056a9f615b74a2030cd5a85eb"
+  },
+  "https://github.com/fastapi/typer/pull/2015": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "cfa13cccba98e9c1486f857f4e15b631820817e7",
+    "head_sha": "074bf7ca2f5018990f96ac9ad293583c3920e5f8"
+  },
+  "https://github.com/fastapi/fastapi/pull/16781": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "b2831196bfee3eb9ce303a3c6440f2a104832954",
+    "head_sha": "3dd050f70a899a2ecf404de0e65a9cd10fc300bc"
+  },
+  "https://github.com/fastapi/typer/pull/2011": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "96895197d4916f6645cf711be5d5edd7050d5f1a",
+    "head_sha": "97765b38cf90f74d5316d394aa9bcf879e427627"
+  },
+  "https://github.com/Kludex/starlette/pull/3772": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "1ce60e7157d5c7d1c4e48e1cfe2f5f255235a2cc",
+    "head_sha": "91aa0cb83f8cab2dd0b714eccfe8762dff08c761"
+  },
+  "https://github.com/fastapi/typer/pull/2012": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "f7c8478cfc592b64d172db41871910a97ae01abd",
+    "head_sha": "84df7e3f810eb742033a6f5f0f24ff23a1a100a1"
+  },
+  "https://github.com/fastapi/fastapi/pull/16780": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "a978e511ebea7fe813900a07169a99cb39dce4f3",
+    "head_sha": "671ab83a5d79c7bfe6c4dd5ec75bb8d669a43c98"
+  },
+  "https://github.com/encode/httpx/pull/3699": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "ca097c96f97d8d2a5da09b8ca736c7e78a2467f6",
+    "head_sha": "4b9f63e507c4ea75fa59f6bbdfb103e2f014a6f9"
+  },
+  "https://github.com/fastapi/fastapi/pull/16775": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "b11137461f382d65cfd8bb3ef51606001bbc237a",
+    "head_sha": "5a053d270c1f37e5bfd1ca95cbda2d3b7717c591"
+  },
+  "https://github.com/pydantic/pydantic/pull/14338": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "45e208ee48b62c47dd92507ec6a4bcd71cfdb0d8",
+    "head_sha": "a626d8afc4f1d2ec5bf21313e110045b142705ec"
+  },
+  "https://github.com/encode/httpx/pull/3773": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "ae1b9f66238f75ced3ced5e4485408435de10768",
+    "head_sha": "63e885394a629d194b0aa867e8fbf475cdec6521"
+  },
+  "https://github.com/fastapi/fastapi/pull/16785": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "57be707b5b5e8f9db625607917f43776119d2574",
+    "head_sha": "3fafd27eb92b3f64205e7196f6801a74f3395e72"
+  },
+  "https://github.com/pydantic/pydantic/pull/14324": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "fbd35416d17eae59806f003f7c2017aed131a248",
+    "head_sha": "dbfa539495d50a2953ba55e16f0cdac4c82d51a5"
+  },
+  "https://github.com/encode/httpx/pull/3832": {
+    "status": "pending",
+    "truth": null,
+    "issue_labels": [],
+    "exposure_audit": "pending",
+    "base_sha": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
+    "head_sha": "aa6d8bb0ba7e457010fe0b392fe59876a9b9f2cb"
+  }
+}

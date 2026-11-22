@@ -1,0 +1,59 @@
+diff --git a/starlette/responses.py b/starlette/responses.py
+--- a/starlette/responses.py
++++ b/starlette/responses.py
+@@ -253,7 +253,9 @@ async def listen_for_disconnect(self, receive: Receive) -> None:
+     async def stream_response(self, send: Send) -> None:
+         await send({"type": "http.response.start", "status": self.status_code, "headers": self.raw_headers})
+         async for chunk in self.body_iterator:
+-            if not isinstance(chunk, bytes | memoryview):
++            if isinstance(chunk, memoryview):
++                chunk = chunk.cast("B") if chunk.c_contiguous else chunk.tobytes()
++            elif not isinstance(chunk, bytes):
+                 chunk = chunk.encode(self.charset)
+             await send({"type": "http.response.body", "body": chunk, "more_body": True})
+ 
+
+diff --git a/tests/test_responses.py b/tests/test_responses.py
+--- a/tests/test_responses.py
++++ b/tests/test_responses.py
+@@ -778,6 +778,40 @@ def test_streaming_response_memoryview(test_client_factory: TestClientFactory) -
+     assert response.content == b"\xc0\xf5"
+ 
+ 
++@pytest.mark.anyio
++async def test_streaming_response_typed_memoryview() -> None:
++    bodies: list[bytes | memoryview] = []
++
++    async def receive() -> Message:
++        await anyio.sleep_forever()
++        raise NotImplementedError
++
++    async def send(message: Message) -> None:
++        if message["type"] == "http.response.body" and message["more_body"]:
++            bodies.append(message["body"])
++
++    await StreamingResponse(iter([memoryview(b"01234567").cast("I")]))({"type": "http"}, receive, send)
++    assert len(bodies[0]) == 8
++    assert bytes(bodies[0]) == b"01234567"
++
++
++@pytest.mark.anyio
++async def test_streaming_response_non_contiguous_memoryview() -> None:
++    bodies: list[bytes | memoryview] = []
++
++    async def receive() -> Message:
++        await anyio.sleep_forever()
++        raise NotImplementedError
++
++    async def send(message: Message) -> None:
++        if message["type"] == "http.response.body" and message["more_body"]:
++            bodies.append(message["body"])
++
++    await StreamingResponse(iter([memoryview(b"01234567")[::2]]))({"type": "http"}, receive, send)
++    assert memoryview(bodies[0]).contiguous
++    assert bytes(bodies[0]) == b"0246"
++
++
+ @pytest.mark.anyio
+ async def test_streaming_response_stops_if_receiving_http_disconnect() -> None:
+     streamed = 0

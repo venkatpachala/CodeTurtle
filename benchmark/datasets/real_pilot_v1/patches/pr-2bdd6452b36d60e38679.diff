@@ -1,0 +1,110 @@
+diff --git a/app/controllers/application_controller.rb b/app/controllers/application_controller.rb
+--- a/app/controllers/application_controller.rb
++++ b/app/controllers/application_controller.rb
+@@ -155,6 +155,8 @@ def set_locale
+                   else
+                     SiteSetting.default_locale
+                   end
++
++    I18n.fallbacks.ensure_loaded!
+   end
+ 
+   def store_preloaded(key, json)
+
+diff --git a/config/cloud/cloud66/files/production.rb b/config/cloud/cloud66/files/production.rb
+--- a/config/cloud/cloud66/files/production.rb
++++ b/config/cloud/cloud66/files/production.rb
+@@ -23,11 +23,6 @@
+   # Specifies the header that your server uses for sending files
+   config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for nginx
+ 
+-  # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
+-  # the I18n.default_locale when a translation can not be found)
+-  config.i18n.fallbacks = true
+-
+-
+   # you may use other configuration here for mail eg: sendgrid
+ 
+   config.action_mailer.delivery_method = :smtp
+
+diff --git a/config/environments/production.rb b/config/environments/production.rb
+--- a/config/environments/production.rb
++++ b/config/environments/production.rb
+@@ -24,10 +24,6 @@
+ 
+   config.log_level = :info
+ 
+-  # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
+-  # the I18n.default_locale when a translation can not be found)
+-  config.i18n.fallbacks = true
+-
+   if GlobalSetting.smtp_address
+     settings = {
+       address:              GlobalSetting.smtp_address,
+
+diff --git a/config/environments/profile.rb b/config/environments/profile.rb
+--- a/config/environments/profile.rb
++++ b/config/environments/profile.rb
+@@ -27,10 +27,6 @@
+   # Specifies the header that your server uses for sending files
+   config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for nginx
+ 
+-  # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
+-  # the I18n.default_locale when a translation can not be found)
+-  config.i18n.fallbacks = true
+-
+   # we recommend you use mailcatcher https://github.com/sj26/mailcatcher
+   config.action_mailer.smtp_settings = { address: "localhost", port: 1025 }
+ 
+
+diff --git a/config/initializers/i18n.rb b/config/initializers/i18n.rb
+--- a/config/initializers/i18n.rb
++++ b/config/initializers/i18n.rb
+@@ -0,0 +1,24 @@
++# order: after 02-freedom_patches.rb
++
++# Include pluralization module
++require 'i18n/backend/pluralization'
++I18n::Backend::Simple.send(:include, I18n::Backend::Pluralization)
++
++# Include fallbacks module
++require 'i18n/backend/fallbacks'
++I18n.backend.class.send(:include, I18n::Backend::Fallbacks)
++
++# Configure custom fallback order
++class FallbackLocaleList < Hash
++  def [](locale)
++    # user locale, site locale, english
++    # TODO - this can be extended to be per-language for a better user experience
++    # (e.g. fallback zh_TW to zh_CN / vice versa)
++    [locale, SiteSetting.default_locale.to_sym, :en].uniq.compact
++  end
++
++  def ensure_loaded!
++    self[I18n.locale].each { |l| I18n.ensure_loaded! l }
++  end
++end
++I18n.fallbacks = FallbackLocaleList.new
+
+diff --git a/config/initializers/pluralization.rb b/config/initializers/pluralization.rb
+--- a/config/initializers/pluralization.rb
++++ b/config/initializers/pluralization.rb
+@@ -1,2 +0,0 @@
+-require "i18n/backend/pluralization"
+-I18n::Backend::Simple.send(:include, I18n::Backend::Pluralization)
+
+diff --git a/lib/freedom_patches/translate_accelerator.rb b/lib/freedom_patches/translate_accelerator.rb
+--- a/lib/freedom_patches/translate_accelerator.rb
++++ b/lib/freedom_patches/translate_accelerator.rb
+@@ -59,6 +59,11 @@ def load_locale(locale)
+       end
+     end
+ 
++    def ensure_loaded!(locale)
++      @loaded_locales ||= []
++      load_locale locale unless @loaded_locales.include?(locale)
++    end
++
+     def translate(key, *args)
+       load_locale(config.locale) unless @loaded_locales.include?(config.locale)
+       return translate_no_cache(key, *args) if args.length > 0

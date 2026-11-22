@@ -1,0 +1,24 @@
+diff --git a/docs/en/docs/release-notes.md b/docs/en/docs/release-notes.md
+--- a/docs/en/docs/release-notes.md
++++ b/docs/en/docs/release-notes.md
+@@ -7,6 +7,8 @@ hide:
+ 
+ ## Latest Changes
+ 
++## 0.164.0 (2026-11-18)
++
+ ### Features
+ 
+ * ✨ Add configurable request body size limits. PR [#16781](https://github.com/fastapi/fastapi/pull/16781) by [@tiangolo](https://github.com/tiangolo).
+
+diff --git a/fastapi/__init__.py b/fastapi/__init__.py
+--- a/fastapi/__init__.py
++++ b/fastapi/__init__.py
+@@ -1,6 +1,6 @@
+ """FastAPI framework, high performance, easy to learn, fast to code, ready for production"""
+ 
+-__version__ = "0.163.2"
++__version__ = "0.164.0"
+ 
+ from starlette import status as status
+ 

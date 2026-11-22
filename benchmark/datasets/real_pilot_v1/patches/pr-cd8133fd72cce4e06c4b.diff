@@ -1,0 +1,607 @@
+diff --git a/apps/web/package.json b/apps/web/package.json
+--- a/apps/web/package.json
++++ b/apps/web/package.json
+@@ -8,7 +8,7 @@
+     "analyze:browser": "BUNDLE_ANALYZE=browser next build",
+     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf .next",
+     "dev": "yarn copy-static && next dev --turbopack",
+-    "dev:cron": "ts-node cron-tester.ts",
++    "dev:cron": "npx tsx cron-tester.ts",
+     "dev-https": "NODE_TLS_REJECT_UNAUTHORIZED=0 next dev --experimental-https",
+     "dx": "yarn dev",
+     "test-codegen": "yarn playwright codegen http://localhost:3000",
+
+diff --git a/apps/web/public/static/locales/en/common.json b/apps/web/public/static/locales/en/common.json
+--- a/apps/web/public/static/locales/en/common.json
++++ b/apps/web/public/static/locales/en/common.json
+@@ -3378,5 +3378,12 @@
+   "timezone_mismatch_tooltip": "You are viewing the report based on your profile timezone ({{userTimezone}}), while your browser is set to timezone ({{browserTimezone}})",
+   "failed_bookings_by_field": "Failed Bookings By Field",
+   "event_type_no_hosts": "No hosts are assigned to event type",
++  "cache_status": "Cache Status",
++  "cache_last_updated": "Last updated: {{timestamp}}",
++  "delete_cached_data": "Delete cached data",
++  "cache_deleted_successfully": "Cache deleted successfully",
++  "error_deleting_cache": "Error deleting cache",
++  "confirm_delete_cache": "Are you sure you want to delete the cached data? This action cannot be undone.",
++  "yes_delete_cache": "Yes, delete cache",
+   "ADD_NEW_STRINGS_ABOVE_THIS_LINE_TO_PREVENT_MERGE_CONFLICTS": "↑↑↑↑↑↑↑↑↑↑↑↑↑ Add your new strings above here ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑"
+ }
+
+diff --git a/packages/app-store/googlecalendar/lib/CalendarService.ts b/packages/app-store/googlecalendar/lib/CalendarService.ts
+--- a/packages/app-store/googlecalendar/lib/CalendarService.ts
++++ b/packages/app-store/googlecalendar/lib/CalendarService.ts
+@@ -1019,6 +1019,9 @@ export default class GoogleCalendarService implements Calendar {
+       const data = await this.fetchAvailability(parsedArgs);
+       await this.setAvailabilityInCache(parsedArgs, data);
+     }
++
++    // Update SelectedCalendar.updatedAt for all calendars under this credential
++    await SelectedCalendarRepository.updateManyByCredentialId(this.credential.id, {});
+   }
+ 
+   async createSelectedCalendar(
+
+diff --git a/packages/features/apps/components/CredentialActionsDropdown.tsx b/packages/features/apps/components/CredentialActionsDropdown.tsx
+--- a/packages/features/apps/components/CredentialActionsDropdown.tsx
++++ b/packages/features/apps/components/CredentialActionsDropdown.tsx
+@@ -0,0 +1,157 @@
++"use client";
++
++import { useState } from "react";
++
++import { useLocale } from "@calcom/lib/hooks/useLocale";
++import { GOOGLE_CALENDAR_TYPE } from "@calcom/platform-constants";
++import { trpc } from "@calcom/trpc/react";
++import { Button } from "@calcom/ui/components/button";
++import { ConfirmationDialogContent } from "@calcom/ui/components/dialog";
++import { Dialog } from "@calcom/ui/components/dialog";
++import {
++  Dropdown,
++  DropdownItem,
++  DropdownMenuContent,
++  DropdownMenuItem,
++  DropdownMenuTrigger,
++} from "@calcom/ui/components/dropdown";
++import { showToast } from "@calcom/ui/components/toast";
++
++interface CredentialActionsDropdownProps {
++  credentialId: number;
++  integrationType: string;
++  cacheUpdatedAt?: Date | null;
++  onSuccess?: () => void;
++  delegationCredentialId?: string | null;
++  disableConnectionModification?: boolean;
++}
++
++export default function CredentialActionsDropdown({
++  credentialId,
++  integrationType,
++  cacheUpdatedAt,
++  onSuccess,
++  delegationCredentialId,
++  disableConnectionModification,
++}: CredentialActionsDropdownProps) {
++  const { t } = useLocale();
++  const [dropdownOpen, setDropdownOpen] = useState(false);
++  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
++  const [disconnectModalOpen, setDisconnectModalOpen] = useState(false);
++
++  const deleteCacheMutation = trpc.viewer.calendars.deleteCache.useMutation({
++    onSuccess: () => {
++      showToast(t("cache_deleted_successfully"), "success");
++      onSuccess?.();
++    },
++    onError: () => {
++      showToast(t("error_deleting_cache"), "error");
++    },
++  });
++
++  const utils = trpc.useUtils();
++  const disconnectMutation = trpc.viewer.credentials.delete.useMutation({
++    onSuccess: () => {
++      showToast(t("app_removed_successfully"), "success");
++      onSuccess?.();
++    },
++    onError: () => {
++      showToast(t("error_removing_app"), "error");
++    },
++    async onSettled() {
++      await utils.viewer.calendars.connectedCalendars.invalidate();
++      await utils.viewer.apps.integrations.invalidate();
++    },
++  });
++
++  const isGoogleCalendar = integrationType === GOOGLE_CALENDAR_TYPE;
++  const canDisconnect = !delegationCredentialId && !disableConnectionModification;
++  const hasCache = isGoogleCalendar && cacheUpdatedAt;
++
++  if (!canDisconnect && !hasCache) {
++    return null;
++  }
++
++  return (
++    <>
++      <Dropdown open={dropdownOpen} onOpenChange={setDropdownOpen}>
++        <DropdownMenuTrigger asChild>
++          <Button type="button" variant="icon" color="secondary" StartIcon="ellipsis" />
++        </DropdownMenuTrigger>
++        <DropdownMenuContent>
++          {hasCache && (
++            <>
++              <DropdownMenuItem className="focus:ring-muted">
++                <div className="px-2 py-1">
++                  <div className="text-sm font-medium text-gray-900 dark:text-white">{t("cache_status")}</div>
++                  <div className="text-xs text-gray-500 dark:text-white">
++                    {t("cache_last_updated", {
++                      timestamp: new Intl.DateTimeFormat("en-US", {
++                        dateStyle: "short",
++                        timeStyle: "short",
++                      }).format(new Date(cacheUpdatedAt)),
++                      interpolation: { escapeValue: false },
++                    })}
++                  </div>
++                </div>
++              </DropdownMenuItem>
++              <DropdownMenuItem className="outline-none">
++                <DropdownItem
++                  type="button"
++                  color="destructive"
++                  StartIcon="trash"
++                  onClick={() => {
++                    setDeleteModalOpen(true);
++                    setDropdownOpen(false);
++                  }}>
++                  {t("delete_cached_data")}
++                </DropdownItem>
++              </DropdownMenuItem>
++            </>
++          )}
++          {canDisconnect && hasCache && <hr className="my-1" />}
++          {canDisconnect && (
++            <DropdownMenuItem className="outline-none">
++              <DropdownItem
++                type="button"
++                color="destructive"
++                StartIcon="trash"
++                onClick={() => {
++                  setDisconnectModalOpen(true);
++                  setDropdownOpen(false);
++                }}>
++                {t("remove_app")}
++              </DropdownItem>
++            </DropdownMenuItem>
++          )}
++        </DropdownMenuContent>
++      </Dropdown>
++
++      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
++        <ConfirmationDialogContent
++          variety="danger"
++          title={t("delete_cached_data")}
++          confirmBtnText={t("yes_delete_cache")}
++          onConfirm={() => {
++            deleteCacheMutation.mutate({ credentialId });
++            setDeleteModalOpen(false);
++          }}>
++          {t("confirm_delete_cache")}
++        </ConfirmationDialogContent>
++      </Dialog>
++
++      <Dialog open={disconnectModalOpen} onOpenChange={setDisconnectModalOpen}>
++        <ConfirmationDialogContent
++          variety="danger"
++          title={t("remove_app")}
++          confirmBtnText={t("yes_remove_app")}
++          onConfirm={() => {
++            disconnectMutation.mutate({ id: credentialId });
++            setDisconnectModalOpen(false);
++          }}>
++          {t("are_you_sure_you_want_to_remove_this_app")}
++        </ConfirmationDialogContent>
++      </Dialog>
++    </>
++  );
++}
+
+diff --git a/packages/features/calendar-cache/calendar-cache.repository.interface.ts b/packages/features/calendar-cache/calendar-cache.repository.interface.ts
+--- a/packages/features/calendar-cache/calendar-cache.repository.interface.ts
++++ b/packages/features/calendar-cache/calendar-cache.repository.interface.ts
+@@ -27,4 +27,7 @@ export interface ICalendarCacheRepository {
+     userId: number | null;
+     args: FreeBusyArgs;
+   }): Promise<CalendarCache | null>;
++  getCacheStatusByCredentialIds(
++    credentialIds: number[]
++  ): Promise<{ credentialId: number; updatedAt: Date | null }[]>;
+ }
+
+diff --git a/packages/features/calendar-cache/calendar-cache.repository.mock.ts b/packages/features/calendar-cache/calendar-cache.repository.mock.ts
+--- a/packages/features/calendar-cache/calendar-cache.repository.mock.ts
++++ b/packages/features/calendar-cache/calendar-cache.repository.mock.ts
+@@ -23,4 +23,9 @@ export class CalendarCacheRepositoryMock implements ICalendarCacheRepository {
+   async deleteManyByCredential() {
+     log.info(`Skipping deleteManyByCredential due to calendar-cache being disabled`);
+   }
++
++  async getCacheStatusByCredentialIds() {
++    log.info(`Skipping getCacheStatusByCredentialIds due to calendar-cache being disabled`);
++    return [];
++  }
+ }
+
+diff --git a/packages/features/calendar-cache/calendar-cache.repository.ts b/packages/features/calendar-cache/calendar-cache.repository.ts
+--- a/packages/features/calendar-cache/calendar-cache.repository.ts
++++ b/packages/features/calendar-cache/calendar-cache.repository.ts
+@@ -169,4 +169,21 @@ export class CalendarCacheRepository implements ICalendarCacheRepository {
+       },
+     });
+   }
++
++  async getCacheStatusByCredentialIds(credentialIds: number[]) {
++    const cacheStatuses = await prisma.calendarCache.groupBy({
++      by: ["credentialId"],
++      where: {
++        credentialId: { in: credentialIds },
++      },
++      _max: {
++        updatedAt: true,
++      },
++    });
++
++    return cacheStatuses.map((cache) => ({
++      credentialId: cache.credentialId,
++      updatedAt: cache._max.updatedAt,
++    }));
++  }
+ }
+
+diff --git a/packages/lib/getConnectedDestinationCalendars.ts b/packages/lib/getConnectedDestinationCalendars.ts
+--- a/packages/lib/getConnectedDestinationCalendars.ts
++++ b/packages/lib/getConnectedDestinationCalendars.ts
+@@ -18,8 +18,14 @@ type ReturnTypeGetConnectedCalendars = Awaited<ReturnType<typeof getConnectedCal
+ type ConnectedCalendarsFromGetConnectedCalendars = ReturnTypeGetConnectedCalendars["connectedCalendars"];
+ 
+ export type UserWithCalendars = Pick<User, "id" | "email"> & {
+-  allSelectedCalendars: Pick<SelectedCalendar, "externalId" | "integration" | "eventTypeId">[];
+-  userLevelSelectedCalendars: Pick<SelectedCalendar, "externalId" | "integration" | "eventTypeId">[];
++  allSelectedCalendars: Pick<
++    SelectedCalendar,
++    "externalId" | "integration" | "eventTypeId" | "updatedAt" | "googleChannelId"
++  >[];
++  userLevelSelectedCalendars: Pick<
++    SelectedCalendar,
++    "externalId" | "integration" | "eventTypeId" | "updatedAt" | "googleChannelId"
++  >[];
+   destinationCalendar: DestinationCalendar | null;
+ };
+ 
+
+diff --git a/packages/lib/server/repository/selectedCalendar.ts b/packages/lib/server/repository/selectedCalendar.ts
+--- a/packages/lib/server/repository/selectedCalendar.ts
++++ b/packages/lib/server/repository/selectedCalendar.ts
+@@ -257,8 +257,7 @@ export class SelectedCalendarRepository {
+   }
+ 
+   static async findMany({ where, select, orderBy }: FindManyArgs) {
+-    const args = { where, select, orderBy } satisfies Prisma.SelectedCalendarFindManyArgs;
+-    return await prisma.selectedCalendar.findMany(args);
++    return await prisma.selectedCalendar.findMany({ where, select, orderBy });
+   }
+ 
+   static async findUniqueOrThrow({ where }: { where: Prisma.SelectedCalendarWhereInput }) {
+@@ -398,6 +397,13 @@ export class SelectedCalendarRepository {
+     });
+   }
+ 
++  static async updateManyByCredentialId(credentialId: number, data: Prisma.SelectedCalendarUpdateInput) {
++    return await prisma.selectedCalendar.updateMany({
++      where: { credentialId },
++      data,
++    });
++  }
++
+   static async setErrorInWatching({ id, error }: { id: string; error: string }) {
+     await SelectedCalendarRepository.updateById(id, {
+       error,
+
+diff --git a/packages/lib/server/repository/user.ts b/packages/lib/server/repository/user.ts
+--- a/packages/lib/server/repository/user.ts
++++ b/packages/lib/server/repository/user.ts
+@@ -896,6 +896,8 @@ export class UserRepository {
+             eventTypeId: true,
+             externalId: true,
+             integration: true,
++            updatedAt: true,
++            googleChannelId: true,
+           },
+         },
+         completedOnboarding: true,
+
+diff --git a/packages/platform/atoms/selected-calendars/wrappers/SelectedCalendarsSettingsWebWrapper.tsx b/packages/platform/atoms/selected-calendars/wrappers/SelectedCalendarsSettingsWebWrapper.tsx
+--- a/packages/platform/atoms/selected-calendars/wrappers/SelectedCalendarsSettingsWebWrapper.tsx
++++ b/packages/platform/atoms/selected-calendars/wrappers/SelectedCalendarsSettingsWebWrapper.tsx
+@@ -2,7 +2,7 @@ import Link from "next/link";
+ import React from "react";
+ 
+ import AppListCard from "@calcom/features/apps/components/AppListCard";
+-import DisconnectIntegration from "@calcom/features/apps/components/DisconnectIntegration";
++import CredentialActionsDropdown from "@calcom/features/apps/components/CredentialActionsDropdown";
+ import AdditionalCalendarSelector from "@calcom/features/calendars/AdditionalCalendarSelector";
+ import { CalendarSwitch } from "@calcom/features/calendars/CalendarSwitch";
+ import { useLocale } from "@calcom/lib/hooks/useLocale";
+@@ -67,18 +67,16 @@ const ConnectedCalendarList = ({
+               description={connectedCalendar.primary?.email ?? connectedCalendar.integration.description}
+               className="border-subtle mt-4 rounded-lg border"
+               actions={
+-                // Delegation credential can't be disconnected
+-                !connectedCalendar.delegationCredentialId &&
+-                !disableConnectionModification && (
+-                  <div className="flex w-32 justify-end">
+-                    <DisconnectIntegration
+-                      credentialId={connectedCalendar.credentialId}
+-                      trashIcon
+-                      onSuccess={onChanged}
+-                      buttonProps={{ className: "border border-default" }}
+-                    />
+-                  </div>
+-                )
++                <div className="flex w-32 justify-end">
++                  <CredentialActionsDropdown
++                    credentialId={connectedCalendar.credentialId}
++                    integrationType={connectedCalendar.integration.type}
++                    cacheUpdatedAt={connectedCalendar.cacheUpdatedAt}
++                    onSuccess={onChanged}
++                    delegationCredentialId={connectedCalendar.delegationCredentialId}
++                    disableConnectionModification={disableConnectionModification}
++                  />
++                </div>
+               }>
+               <div className="border-subtle border-t">
+                 {!fromOnboarding && (
+@@ -97,7 +95,7 @@ const ConnectedCalendarList = ({
+                           destination={cal.externalId === destinationCalendarId}
+                           credentialId={cal.credentialId}
+                           eventTypeId={shouldUseEventTypeScope ? eventTypeId : null}
+-                          delegationCredentialId={connectedCalendar.delegationCredentialId}
++                          delegationCredentialId={connectedCalendar.delegationCredentialId || null}
+                         />
+                       ))}
+                     </ul>
+@@ -122,17 +120,16 @@ const ConnectedCalendarList = ({
+             }
+             iconClassName="h-10 w-10 ml-2 mr-1 mt-0.5"
+             actions={
+-              // Delegation credential can't be disconnected
+-              !connectedCalendar.delegationCredentialId && (
+-                <div className="flex w-32 justify-end">
+-                  <DisconnectIntegration
+-                    credentialId={connectedCalendar.credentialId}
+-                    trashIcon
+-                    onSuccess={onChanged}
+-                    buttonProps={{ className: "border border-default" }}
+-                  />
+-                </div>
+-              )
++              <div className="flex w-32 justify-end">
++                <CredentialActionsDropdown
++                  credentialId={connectedCalendar.credentialId}
++                  integrationType={connectedCalendar.integration.type}
++                  cacheUpdatedAt={connectedCalendar.cacheUpdatedAt}
++                  onSuccess={onChanged}
++                  delegationCredentialId={connectedCalendar.delegationCredentialId}
++                  disableConnectionModification={disableConnectionModification}
++                />
++              </div>
+             }
+           />
+         );
+@@ -162,6 +159,7 @@ export const SelectedCalendarsSettingsWebWrapper = (props: SelectedCalendarsSett
+       refetchOnWindowFocus: false,
+     }
+   );
++
+   const { isPending } = props;
+   const showScopeSelector = !!props.eventTypeId;
+   const isDisabled = disabledScope ? disabledScope === scope : false;
+
+diff --git a/packages/prisma/migrations/20250715160635_add_calendar_cache_updated_at/migration.sql b/packages/prisma/migrations/20250715160635_add_calendar_cache_updated_at/migration.sql
+--- a/packages/prisma/migrations/20250715160635_add_calendar_cache_updated_at/migration.sql
++++ b/packages/prisma/migrations/20250715160635_add_calendar_cache_updated_at/migration.sql
+@@ -0,0 +1,9 @@
++/*
++  Warnings:
++
++  - Added the required column `updatedAt` to the `CalendarCache` table without a default value. This is not possible if the table is not empty.
++
++*/
++-- AlterTable
++-- Add the column with a default value to safely handle existing rows
++ALTER TABLE "CalendarCache" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT NOW();
+
+diff --git a/packages/prisma/schema.prisma b/packages/prisma/schema.prisma
+--- a/packages/prisma/schema.prisma
++++ b/packages/prisma/schema.prisma
+@@ -1715,6 +1715,8 @@ model CalendarCache {
+   key          String
+   value        Json
+   expiresAt    DateTime
++  // Provide an initial value for legacy rows and future raw inserts
++  updatedAt    DateTime    @default(now()) @updatedAt
+   credentialId Int
+   userId       Int?
+   credential   Credential? @relation(fields: [credentialId], references: [id], onDelete: Cascade)
+
+diff --git a/packages/trpc/server/routers/viewer/calendars/_router.tsx b/packages/trpc/server/routers/viewer/calendars/_router.tsx
+--- a/packages/trpc/server/routers/viewer/calendars/_router.tsx
++++ b/packages/trpc/server/routers/viewer/calendars/_router.tsx
+@@ -1,3 +1,5 @@
++import { z } from "zod";
++
+ import authedProcedure from "../../../procedures/authedProcedure";
+ import { router } from "../../../trpc";
+ import { ZConnectedCalendarsInputSchema } from "./connectedCalendars.schema";
+@@ -22,4 +24,11 @@ export const calendarsRouter = router({
+ 
+       return setDestinationCalendarHandler({ ctx, input });
+     }),
++
++  deleteCache: authedProcedure
++    .input(z.object({ credentialId: z.number() }))
++    .mutation(async ({ ctx, input }) => {
++      const { deleteCacheHandler } = await import("./deleteCache.handler");
++      return deleteCacheHandler({ ctx, input });
++    }),
+ });
+
+diff --git a/packages/trpc/server/routers/viewer/calendars/connectedCalendars.handler.ts b/packages/trpc/server/routers/viewer/calendars/connectedCalendars.handler.ts
+--- a/packages/trpc/server/routers/viewer/calendars/connectedCalendars.handler.ts
++++ b/packages/trpc/server/routers/viewer/calendars/connectedCalendars.handler.ts
+@@ -1,3 +1,4 @@
++import { CalendarCacheRepository } from "@calcom/features/calendar-cache/calendar-cache.repository";
+ import { getConnectedDestinationCalendarsAndEnsureDefaultsInDb } from "@calcom/lib/getConnectedDestinationCalendars";
+ import { prisma } from "@calcom/prisma";
+ import type { TrpcSessionUser } from "@calcom/trpc/server/types";
+@@ -23,8 +24,19 @@ export const connectedCalendarsHandler = async ({ ctx, input }: ConnectedCalenda
+       prisma,
+     });
+ 
++  const credentialIds = connectedCalendars.map((cal) => cal.credentialId);
++  const cacheRepository = new CalendarCacheRepository();
++  const cacheStatuses = await cacheRepository.getCacheStatusByCredentialIds(credentialIds);
++
++  const cacheStatusMap = new Map(cacheStatuses.map((cache) => [cache.credentialId, cache.updatedAt]));
++
++  const enrichedConnectedCalendars = connectedCalendars.map((calendar) => ({
++    ...calendar,
++    cacheUpdatedAt: cacheStatusMap.get(calendar.credentialId) || null,
++  }));
++
+   return {
+-    connectedCalendars,
++    connectedCalendars: enrichedConnectedCalendars,
+     destinationCalendar,
+   };
+ };
+
+diff --git a/packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts b/packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts
+--- a/packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts
++++ b/packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts
+@@ -0,0 +1,33 @@
++import { prisma } from "@calcom/prisma";
++import type { TrpcSessionUser } from "@calcom/trpc/server/types";
++
++type DeleteCacheOptions = {
++  ctx: {
++    user: NonNullable<TrpcSessionUser>;
++  };
++  input: {
++    credentialId: number;
++  };
++};
++
++export const deleteCacheHandler = async ({ ctx, input }: DeleteCacheOptions) => {
++  const { user } = ctx;
++  const { credentialId } = input;
++
++  const credential = await prisma.credential.findFirst({
++    where: {
++      id: credentialId,
++      userId: user.id,
++    },
++  });
++
++  if (!credential) {
++    throw new Error("Credential not found or access denied");
++  }
++
++  await prisma.calendarCache.deleteMany({
++    where: { credentialId },
++  });
++
++  return { success: true };
++};
+
+diff --git a/scripts/test-gcal-webhooks.sh b/scripts/test-gcal-webhooks.sh
+--- a/scripts/test-gcal-webhooks.sh
++++ b/scripts/test-gcal-webhooks.sh
+@@ -0,0 +1,79 @@
++#!/bin/bash
++
++# Configuration
++LOG_FILE="/tmp/tmole.log"
++ENV_FILE="../.env"
++TM_PORT=3000
++TM_KEYWORD="https://.*\.tunnelmole\.net"
++TMOLE_RUNNING=$(pgrep -f "tmole $TM_PORT")
++
++# Clean exit function
++cleanup() {
++  if [ "$OWNED_PID" = true ]; then
++    echo -e "\nStopping Tunnelmole (PID: $TMOLE_PID)..."
++    kill "$TMOLE_PID" 2>/dev/null
++    wait "$TMOLE_PID" 2>/dev/null
++  fi
++  exit 0
++}
++
++trap cleanup SIGINT SIGTERM
++
++# Function to extract URL from log
++extract_url_from_log() {
++  grep -oE "$TM_KEYWORD" "$LOG_FILE" | head -n 1
++}
++
++# If tmole is already running
++if [ -n "$TMOLE_RUNNING" ]; then
++  echo "Tunnelmole already running (PID: $TMOLE_RUNNING), reusing..."
++  TUNNEL_URL=$(extract_url_from_log)
++  OWNED_PID=false
++else
++  echo "Starting a new Tunnelmole session..."
++  rm -f "$LOG_FILE"
++  tmole $TM_PORT > "$LOG_FILE" 2>&1 &
++  TMOLE_PID=$!
++  OWNED_PID=true
++
++  # Wait for URL or error
++  echo "Waiting for tmole to initialize..."
++  for i in {1..20}; do
++    if grep -q "$TM_KEYWORD" "$LOG_FILE"; then
++      TUNNEL_URL=$(extract_url_from_log)
++      break
++    fi
++    if grep -q "limited to 10 tunnels per hour" "$LOG_FILE"; then
++      echo "❌ Rate limit hit: You've used your 10 free tunnels/hour. Sign up at:"
++      echo "👉 https://dashboard.tunnelmole.com/upgrade/run-more-tunnels-faster"
++      cleanup
++    fi
++    sleep 0.5
++  done
++fi
++
++# Check that we actually got a URL
++if [ -z "$TUNNEL_URL" ]; then
++  echo "❌ Failed to extract Tunnelmole URL."
++  cleanup
++fi
++
++# Update env file
++if [ ! -f "$ENV_FILE" ]; then
++  echo "⚠️  $ENV_FILE not found. Creating new file."
++  touch "$ENV_FILE"
++fi
++
++if grep -q '^GOOGLE_WEBHOOK_URL=' "$ENV_FILE"; then
++  sed -i '' -E "s|^GOOGLE_WEBHOOK_URL=.*|GOOGLE_WEBHOOK_URL=$TUNNEL_URL|" "$ENV_FILE"
++else
++  echo "GOOGLE_WEBHOOK_URL=$TUNNEL_URL" >> "$ENV_FILE"
++fi
++
++echo "✅ Updated GOOGLE_WEBHOOK_URL in $ENV_FILE to $TUNNEL_URL"
++echo "Tunnelmole is running. Press Ctrl+C to stop."
++
++# Keep script alive only if we started tmole
++if [ "$OWNED_PID" = true ]; then
++  wait "$TMOLE_PID"
++fi

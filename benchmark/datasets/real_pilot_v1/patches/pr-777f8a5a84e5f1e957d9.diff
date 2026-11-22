@@ -1,0 +1,128 @@
+diff --git a/public/app/plugins/datasource/loki/querySplitting.test.ts b/public/app/plugins/datasource/loki/querySplitting.test.ts
+--- a/public/app/plugins/datasource/loki/querySplitting.test.ts
++++ b/public/app/plugins/datasource/loki/querySplitting.test.ts
+@@ -72,6 +72,21 @@ describe('runSplitQuery()', () => {
+     });
+   });
+ 
++  test('Interpolates queries before execution', async () => {
++    const request = createRequest([{ expr: 'count_over_time({a="b"}[$__auto])', refId: 'A', step: '$step' }]);
++    datasource = createLokiDatasource({
++      replace: (input = '') => {
++        return input.replace('$__auto', '5m').replace('$step', '5m');
++      },
++      getVariables: () => [],
++    });
++    jest.spyOn(datasource, 'runQuery').mockReturnValue(of({ data: [] }));
++    await expect(runSplitQuery(datasource, request)).toEmitValuesWith(() => {
++      expect(jest.mocked(datasource.runQuery).mock.calls[0][0].targets[0].expr).toBe('count_over_time({a="b"}[5m])');
++      expect(jest.mocked(datasource.runQuery).mock.calls[0][0].targets[0].step).toBe('5m');
++    });
++  });
++
+   test('Skips partial updates as an option', async () => {
+     await expect(runSplitQuery(datasource, request, { skipPartialUpdates: true })).toEmitValuesWith((emitted) => {
+       // 3 days, 3 chunks, 3 requests.
+
+diff --git a/public/app/plugins/datasource/loki/querySplitting.ts b/public/app/plugins/datasource/loki/querySplitting.ts
+--- a/public/app/plugins/datasource/loki/querySplitting.ts
++++ b/public/app/plugins/datasource/loki/querySplitting.ts
+@@ -293,7 +293,10 @@ export function runSplitQuery(
+   request: DataQueryRequest<LokiQuery>,
+   options: QuerySplittingOptions = {}
+ ) {
+-  const queries = request.targets.filter((query) => !query.hide).filter((query) => query.expr);
++  const queries = request.targets
++    .filter((query) => !query.hide)
++    .filter((query) => query.expr)
++    .map((query) => datasource.applyTemplateVariables(query, request.scopedVars, request.filters));
+   const [nonSplittingQueries, normalQueries] = partition(queries, (query) => !querySupportsSplitting(query));
+   const [logQueries, metricQueries] = partition(normalQueries, (query) => isLogsQuery(query.expr));
+ 
+
+diff --git a/public/app/plugins/datasource/loki/shardQuerySplitting.test.ts b/public/app/plugins/datasource/loki/shardQuerySplitting.test.ts
+--- a/public/app/plugins/datasource/loki/shardQuerySplitting.test.ts
++++ b/public/app/plugins/datasource/loki/shardQuerySplitting.test.ts
+@@ -53,11 +53,9 @@ describe('runShardSplitQuery()', () => {
+     request = createRequest([{ expr: '$SELECTOR', refId: 'A', direction: LokiQueryDirection.Scan }]);
+     datasource = createLokiDatasource();
+     datasource.languageProvider.fetchLabelValues = jest.fn();
+-    datasource.interpolateVariablesInQueries = jest.fn().mockImplementation((queries: LokiQuery[]) => {
+-      return queries.map((query) => {
+-        query.expr = query.expr.replace('$SELECTOR', '{a="b"}');
+-        return query;
+-      });
++    datasource.applyTemplateVariables = jest.fn().mockImplementation((query: LokiQuery) => {
++      query.expr = query.expr.replace('$SELECTOR', '{a="b"}');
++      return query;
+     });
+     jest.mocked(datasource.languageProvider.fetchLabelValues).mockResolvedValue(['1', '10', '2', '20', '3']);
+     const { metricFrameA } = getMockFrames();
+@@ -83,6 +81,25 @@ describe('runShardSplitQuery()', () => {
+     });
+   });
+ 
++  test('Interpolates queries before execution', async () => {
++    const request = createRequest([{ expr: 'count_over_time({a="b"}[$__auto])', refId: 'A', step: '$step' }]);
++    datasource = createLokiDatasource({
++      replace: (input = '') => {
++        return input.replace('$__auto', '5m').replace('$step', '5m');
++      },
++      getVariables: () => [],
++    });
++    jest.spyOn(datasource, 'runQuery').mockReturnValue(of({ data: [] }));
++    datasource.languageProvider.fetchLabelValues = jest.fn();
++    jest.mocked(datasource.languageProvider.fetchLabelValues).mockResolvedValue(['1', '10', '2', '20', '3']);
++    await expect(runShardSplitQuery(datasource, request)).toEmitValuesWith(() => {
++      expect(jest.mocked(datasource.runQuery).mock.calls[0][0].targets[0].expr).toBe(
++        'count_over_time({a="b", __stream_shard__=~"20|10"} | drop __stream_shard__[5m])'
++      );
++      expect(jest.mocked(datasource.runQuery).mock.calls[0][0].targets[0].step).toBe('5m');
++    });
++  });
++
+   test('Users query splitting for querying over a day', async () => {
+     await expect(runShardSplitQuery(datasource, request)).toEmitValuesWith(() => {
+       // 5 shards, 3 groups + empty shard group, 4 requests
+@@ -92,7 +109,7 @@ describe('runShardSplitQuery()', () => {
+ 
+   test('Interpolates queries before running', async () => {
+     await expect(runShardSplitQuery(datasource, request)).toEmitValuesWith(() => {
+-      expect(datasource.interpolateVariablesInQueries).toHaveBeenCalledTimes(1);
++      expect(datasource.applyTemplateVariables).toHaveBeenCalledTimes(5);
+ 
+       expect(datasource.runQuery).toHaveBeenCalledWith({
+         intervalMs: expect.any(Number),
+@@ -153,11 +170,9 @@ describe('runShardSplitQuery()', () => {
+   });
+ 
+   test('Sends the whole stream selector to fetch values', async () => {
+-    datasource.interpolateVariablesInQueries = jest.fn().mockImplementation((queries: LokiQuery[]) => {
+-      return queries.map((query) => {
+-        query.expr = query.expr.replace('$SELECTOR', '{service_name="test", filter="true"}');
+-        return query;
+-      });
++    datasource.applyTemplateVariables = jest.fn().mockImplementation((query: LokiQuery) => {
++      query.expr = query.expr.replace('$SELECTOR', '{service_name="test", filter="true"}');
++      return query;
+     });
+ 
+     await expect(runShardSplitQuery(datasource, request)).toEmitValuesWith(() => {
+
+diff --git a/public/app/plugins/datasource/loki/shardQuerySplitting.ts b/public/app/plugins/datasource/loki/shardQuerySplitting.ts
+--- a/public/app/plugins/datasource/loki/shardQuerySplitting.ts
++++ b/public/app/plugins/datasource/loki/shardQuerySplitting.ts
+@@ -46,10 +46,10 @@ import { LokiQuery } from './types';
+  */
+ 
+ export function runShardSplitQuery(datasource: LokiDatasource, request: DataQueryRequest<LokiQuery>) {
+-  const queries = datasource
+-    .interpolateVariablesInQueries(request.targets, request.scopedVars)
++  const queries = request.targets
+     .filter((query) => query.expr)
+-    .filter((query) => !query.hide);
++    .filter((query) => !query.hide)
++    .map((query) => datasource.applyTemplateVariables(query, request.scopedVars, request.filters));
+ 
+   return splitQueriesByStreamShard(datasource, request, queries);
+ }

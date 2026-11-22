@@ -1,0 +1,19 @@
+{
+  "name": "real-pilot-v1",
+  "candidate_count": 60,
+  "family_count": 60,
+  "split_counts": {
+    "development": 20,
+    "validation": 10,
+    "test": 30
+  },
+  "strata": {
+    "source_issue_candidate": 40,
+    "unreviewed_control": 20
+  },
+  "inputs_sha256": "db8b0e427f471084975469e261f98b32a9d2f699c15ce637c6b7f63ef8a60875",
+  "eligible_for_headline_metrics": false,
+  "adjudication": "pending",
+  "exposure_audit": "pending",
+  "sampling": "Purposive public candidate pool; proposed strata are not defective/clean labels."
+}

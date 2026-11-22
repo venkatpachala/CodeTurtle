@@ -1,0 +1,1745 @@
+diff --git a/docs/en/docs/advanced/request-body-limits.md b/docs/en/docs/advanced/request-body-limits.md
+--- a/docs/en/docs/advanced/request-body-limits.md
++++ b/docs/en/docs/advanced/request-body-limits.md
+@@ -0,0 +1,37 @@
++# Request Body Limits { #request-body-limits }
++
++Imagine your app receives small JSON requests, but you also want to let users upload larger files.
++
++You can set `max_body_size` in bytes when you create your `FastAPI` app. Then you can set a different limit for an `APIRouter` or for a single *path operation*.
++
++{* ../../docs_src/request_body_limits/tutorial001.py hl[3:4,17] *}
++
++* `POST /items` uses the app's limit of 1 MiB (`1024 * 1024` bytes).
++* `POST /uploads/` uses the router's limit of 100 MiB.
++* `POST /uploads/small` has its own limit of 10 MiB.
++
++## What counts toward the limit? { #what-counts-toward-the-limit }
++
++The limit applies to the **whole request body**. If you upload two files in the same request, both files, any form fields, and the bytes used to encode the multipart form all count toward that one limit. The URL and request headers are outside the body.
++
++**FastAPI** counts the bytes it reads, even if the client sends the body in chunks without a `Content-Length` header. If a read exceeds the limit, FastAPI stops reading and returns an HTTP **413 Content Too Large** response if the response hasn't started yet.
++
++If your *path operation* reads the body itself, it can start running before FastAPI knows the total size. For example, if you're streaming an upload to a temporary file, finish reading it before you publish the file.
++
++With [`UploadFile`](../tutorial/request-files.md#file-parameters-with-uploadfile), a file can move from memory to disk as it grows. Its contents still count toward the same limit.
++
++## Set a default for a router { #set-a-default-for-a-router }
++
++You can also pass `max_body_size` to `include_router()`. The included router uses that default unless it declares its own limit. A *path operation* can always declare a smaller or larger limit of its own.
++
++If you leave `max_body_size` at its default of `None`, it inherits the limit from the router or app that contains it. Mounted apps inherit the parent app's limit in the same way. If you don't set a limit anywhere, FastAPI leaves the body size unlimited. Use a positive integer for the number of bytes, or `0` to allow only an empty body.
++
++/// note | Middleware that reads the body
++
++If your middleware reads the body before FastAPI selects a *path operation*, the app's limit applies to that read. In the example above, middleware that calls `await request.body()` would reject a 2 MiB upload before it reaches the router that allows 100 MiB.
++
++If the middleware passes the request to a mounted app, the mounted app's limit also applies to the bytes already read.
++
++If your middleware needs to read those uploads, set the app's limit large enough for them and set smaller limits on the *path operations* that need them.
++
++///
+
+diff --git a/docs/en/mkdocs.yml b/docs/en/mkdocs.yml
+--- a/docs/en/mkdocs.yml
++++ b/docs/en/mkdocs.yml
+@@ -172,6 +172,7 @@ nav:
+     - advanced/advanced-python-types.md
+     - advanced/json-base64-bytes.md
+     - advanced/strict-content-type.md
++    - advanced/request-body-limits.md
+   - fastapi-cli.md
+   - editor-support.md
+   - ai-development.md
+
+diff --git a/docs_src/request_body_limits/tutorial001.py b/docs_src/request_body_limits/tutorial001.py
+--- a/docs_src/request_body_limits/tutorial001.py
++++ b/docs_src/request_body_limits/tutorial001.py
+@@ -0,0 +1,22 @@
++from fastapi import APIRouter, FastAPI, UploadFile
++
++app = FastAPI(max_body_size=1 * 1024 * 1024)
++uploads = APIRouter(prefix="/uploads", max_body_size=100 * 1024 * 1024)
++
++
++@app.post("/items")
++def create_item(item: dict):
++    return item
++
++
++@uploads.post("/")
++def upload(file: UploadFile):
++    return {"filename": file.filename, "size": file.size}
++
++
++@uploads.post("/small", max_body_size=10 * 1024 * 1024)
++def small_upload(file: UploadFile):
++    return {"filename": file.filename, "size": file.size}
++
++
++app.include_router(uploads)
+
+diff --git a/fastapi/.agents/skills/fastapi/SKILL.md b/fastapi/.agents/skills/fastapi/SKILL.md
+--- a/fastapi/.agents/skills/fastapi/SKILL.md
++++ b/fastapi/.agents/skills/fastapi/SKILL.md
+@@ -17,6 +17,7 @@ Official FastAPI skill to write code with best practices, keeping up to date wit
+ * OpenTelemetry: use FastAPI's native traces, metrics, and logs. See [OpenTelemetry](#opentelemetry).
+ * Dependencies: use `Annotated[..., Depends(...)]`; see [Dependency Injection](#dependency-injection) and [the dependency injection reference](references/dependencies.md) for `yield`, scopes, concurrency limits, and class dependencies.
+ * Response models: prefer return types; use `response_model` when the public response schema differs from the internal return value; see [the response reference](references/responses.md).
++* Request body limits: use `max_body_size` on the app, router, or path operation. See [Request Body Limits](#request-body-limits).
+ * Parameter models: `Query`, `Header`, `Cookie`, and `Form` support multiple models and optional groups. See [the parameter models reference](references/parameter-models.md) for declarations, form unions, and extra-field behavior.
+ * Pydantic models: do not use ellipsis or `RootModel`; see [the Pydantic reference](references/pydantic.md).
+ * Routing: declare router-level prefix, tags, and shared dependencies on the `APIRouter`; see [the path operation reference](references/path-operations.md).
+@@ -189,6 +190,16 @@ app.include_router(router)
+ 
+ See [the path operation reference](references/path-operations.md) for more routing patterns.
+ 
++## Request Body Limits
++
++Use `max_body_size` when an application needs a limit on total HTTP request body bytes. The limit includes uploaded files and multipart overhead. Enforcement counts received bytes, so a Content-Length-only dependency is not a substitute.
++
++Configure a default with `FastAPI(max_body_size=...)`, a router default with `APIRouter(max_body_size=...)`, or a specific limit on a path operation. More specific configured limits can raise or lower the default. `None` inherits, and `0` allows only an empty body. Without a configured limit, bodies remain unlimited.
++
++Middleware that reads the body before routing uses the application limit, even when an upload endpoint allows more. This total limit is separate from per-file validation, parser field counts, and the spool threshold.
++
++See [Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/) for an example.
++
+ ## Serve Frontend Apps
+ 
+ Use `app.frontend()` to serve a built static frontend app, for example a directory generated by Vite, Astro, Angular, Svelte, Vue, or a similar tool.
+
+diff --git a/fastapi/_body_limit.py b/fastapi/_body_limit.py
+--- a/fastapi/_body_limit.py
++++ b/fastapi/_body_limit.py
+@@ -0,0 +1,101 @@
++from fastapi.exception_handlers import http_exception_handler
++from starlette.exceptions import HTTPException
++from starlette.middleware import body_limit
++from starlette.middleware.body_limit import (
++    MAX_BODY_SIZE_SCOPE_KEY,
++    RequestBodyLimitMiddleware,
++)
++from starlette.requests import Request
++from starlette.types import ASGIApp, Message, Receive, Scope, Send
++
++# Starlette has no public exception types for these two middleware signals.
++# Unknown exceptions must keep their normal handling.
++_response_sent = getattr(body_limit, "_RequestBodyLimitResponseSent", ())
++_body_limit_errors = tuple(
++    cls
++    for cls in (getattr(body_limit, "_RequestBodyTooLarge", None), _response_sent)
++    if cls
++)
++
++
++def validate_max_body_size(max_body_size: int | None) -> None:
++    if max_body_size is None:
++        return
++    if (
++        isinstance(max_body_size, bool)
++        or not isinstance(max_body_size, int)
++        or max_body_size < 0
++    ):
++        raise ValueError("max_body_size must be a non-negative integer or None")
++
++
++def get_body_size_limit(*limits: int | None) -> int | None:
++    for limit in limits:
++        if limit is not None:
++            return limit
++    return None
++
++
++def get_body_limit_error(exc: Exception) -> Exception | None:
++    if isinstance(exc, ExceptionGroup):
++        # Middleware can read the body and start the response in concurrent tasks.
++        # Only unwrap a group if every error belongs to the body limiter.
++        _, other = exc.split(_body_limit_errors)
++        if other is not None:
++            return None
++        # If Starlette already sent the 413, let it finish that response.
++        exc = exc.subgroup(_response_sent) or exc
++        while isinstance(exc, ExceptionGroup):
++            exc = exc.exceptions[0]
++    return exc if isinstance(exc, _body_limit_errors) else None
++
++
++def wrap_app_with_body_limit(app: ASGIApp, max_body_size: int | None) -> ASGIApp:
++    if max_body_size is None:
++        return app
++    return RequestBodyLimitMiddleware(
++        _BodyLimitExceptionMiddleware(app), max_body_size=max_body_size
++    )
++
++
++class _BodyLimitExceptionMiddleware:
++    def __init__(self, app: ASGIApp) -> None:
++        self.app = app
++
++    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
++        try:
++            await self.app(scope, receive, send)
++        except ExceptionGroup as exc:
++            if scope["type"] == "http" and (error := get_body_limit_error(exc)):
++                raise error from exc
++            raise
++
++
++class AppBodyLimitMiddleware:
++    def __init__(self, app: ASGIApp, max_body_size: int | None) -> None:
++        self.app = wrap_app_with_body_limit(app, max_body_size)
++
++    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
++        if MAX_BODY_SIZE_SCOPE_KEY not in scope:
++            await self.app(scope, receive, send)
++            return
++
++        # A mounted app shares the parent's byte counter. Starlette leaves
++        # errors to the parent, but our ServerErrorMiddleware would send a 500
++        # before they got there.
++        started = False
++
++        async def send_response(message: Message) -> None:
++            nonlocal started
++            if message["type"] == "http.response.start":
++                started = True
++            await send(message)
++
++        try:
++            await self.app(scope, receive, send_response)
++        except Exception as exc:
++            error = get_body_limit_error(exc)
++            if started or not isinstance(error, HTTPException):
++                raise
++            response = await http_exception_handler(Request(scope, receive), error)
++            await response(scope, receive, send)
+
+diff --git a/fastapi/applications.py b/fastapi/applications.py
+--- a/fastapi/applications.py
++++ b/fastapi/applications.py
+@@ -6,6 +6,7 @@
+ 
+ from annotated_doc import Doc
+ from fastapi import routing
++from fastapi._body_limit import AppBodyLimitMiddleware
+ from fastapi.datastructures import Default, DefaultPlaceholder
+ from fastapi.exception_handlers import (
+     http_exception_handler,
+@@ -867,7 +868,24 @@ class Item(BaseModel):
+                 """
+             ),
+         ] = True,
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> None:
++        self.max_body_size = max_body_size
+         self.debug = debug
+         self.title = title
+         self.summary = summary
+@@ -993,6 +1011,7 @@ class Item(BaseModel):
+             responses=responses,
+             generate_unique_id_function=generate_unique_id_function,
+             strict_content_type=strict_content_type,
++            max_body_size=max_body_size,
+         )
+         self.exception_handlers: dict[
+             Any, Callable[[Request, Any], Response | Awaitable[Response]]
+@@ -1046,6 +1065,7 @@ def build_middleware_stack(self) -> ASGIApp:
+             [
+                 Middleware(ServerErrorMiddleware, handler=error_handler, debug=debug),
+                 Middleware(ExceptionTelemetryMiddleware),
++                Middleware(AppBodyLimitMiddleware, max_body_size=self.max_body_size),
+             ]
+             + self.user_middleware
+             + [
+@@ -1233,6 +1253,22 @@ def add_api_route(
+         generate_unique_id_function: Callable[[routing.APIRoute], str] = Default(
+             generate_unique_id
+         ),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> None:
+         self.router.add_api_route(
+             path,
+@@ -1259,6 +1295,7 @@ def add_api_route(
+             name=name,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def frontend(
+@@ -1368,6 +1405,22 @@ def api_route(
+         generate_unique_id_function: Callable[[routing.APIRoute], str] = Default(
+             generate_unique_id
+         ),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         def decorator(func: DecoratedCallable) -> DecoratedCallable:
+             self.router.add_api_route(
+@@ -1395,6 +1448,7 @@ def decorator(func: DecoratedCallable) -> DecoratedCallable:
+                 name=name,
+                 openapi_extra=openapi_extra,
+                 generate_unique_id_function=generate_unique_id_function,
++                max_body_size=max_body_size,
+             )
+             return func
+ 
+@@ -1653,6 +1707,22 @@ def include_router(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> None:
+         """
+         Include an `APIRouter` in the same app.
+@@ -1683,6 +1753,7 @@ def include_router(
+             default_response_class=default_response_class,
+             callbacks=callbacks,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def get(
+@@ -2016,6 +2087,22 @@ def get(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP GET operation.
+@@ -2056,6 +2143,7 @@ def read_items():
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def put(
+@@ -2389,6 +2477,22 @@ def put(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP PUT operation.
+@@ -2434,6 +2538,7 @@ def replace_item(item_id: str, item: Item):
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def post(
+@@ -2767,6 +2872,22 @@ def post(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP POST operation.
+@@ -2812,6 +2933,7 @@ def create_item(item: Item):
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def delete(
+@@ -3145,6 +3267,22 @@ def delete(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP DELETE operation.
+@@ -3185,6 +3323,7 @@ def delete_item(item_id: str):
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def options(
+@@ -3518,6 +3657,22 @@ def options(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP OPTIONS operation.
+@@ -3558,6 +3713,7 @@ def get_item_options():
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def head(
+@@ -3891,6 +4047,22 @@ def head(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP HEAD operation.
+@@ -3931,6 +4103,7 @@ def get_items_headers(response: Response):
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def patch(
+@@ -4264,6 +4437,22 @@ def patch(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP PATCH operation.
+@@ -4309,6 +4498,7 @@ def update_item(item: Item):
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def trace(
+@@ -4642,6 +4832,22 @@ def trace(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP TRACE operation.
+@@ -4682,6 +4888,7 @@ def trace_item(item_id: str):
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def websocket_route(
+
+diff --git a/fastapi/routing.py b/fastapi/routing.py
+--- a/fastapi/routing.py
++++ b/fastapi/routing.py
+@@ -44,6 +44,12 @@
+ from annotated_doc import Doc
+ from anyio.abc import ObjectReceiveStream
+ from fastapi import params
++from fastapi._body_limit import (
++    get_body_limit_error,
++    get_body_size_limit,
++    validate_max_body_size,
++    wrap_app_with_body_limit,
++)
+ from fastapi._compat import (
+     ModelField,
+     Undefined,
+@@ -102,6 +108,8 @@
+ from starlette.concurrency import iterate_in_threadpool, run_in_threadpool
+ from starlette.datastructures import URL, URLPath
+ from starlette.exceptions import HTTPException
++from starlette.middleware import Middleware
++from starlette.middleware.body_limit import MAX_BODY_SIZE_SCOPE_KEY
+ from starlette.requests import Request
+ from starlette.responses import (
+     JSONResponse,
+@@ -493,6 +501,10 @@ async def app(request: Request) -> Response:
+             # If a middleware raises an HTTPException, it should be raised again
+             raise
+         except Exception as e:
++            if MAX_BODY_SIZE_SCOPE_KEY in request.scope and (
++                error := get_body_limit_error(e)
++            ):
++                raise error from e
+             http_error = HTTPException(
+                 status_code=400, detail="There was an error parsing the body"
+             )
+@@ -990,6 +1002,7 @@ class _APIRouteLike(Protocol):
+     openapi_extra: dict[str, Any] | None
+     generate_unique_id_function: Callable[[Any], str] | DefaultPlaceholder
+     strict_content_type: bool | DefaultPlaceholder
++    max_body_size: int | None
+     tags: list[str | Enum]
+     responses: dict[int | str, dict[str, Any]]
+     name: str
+@@ -1044,6 +1057,7 @@ def _populate_api_route_state(
+     ),
+     strict_content_type: bool | DefaultPlaceholder = Default(True),
+     stream_item_type: Any | None = None,
++    max_body_size: int | None = None,
+ ) -> None:
+     route.path = path
+     route.endpoint = endpoint
+@@ -1065,6 +1079,8 @@ def _populate_api_route_state(
+     route.openapi_extra = openapi_extra
+     route.generate_unique_id_function = generate_unique_id_function
+     route.strict_content_type = strict_content_type
++    validate_max_body_size(max_body_size)
++    route.max_body_size = max_body_size
+     route.tags = tags or []
+     route.responses = responses or {}
+     route.name = get_name(endpoint) if name is None else name
+@@ -1196,6 +1212,7 @@ class APIRoute(routing.Route):
+     openapi_extra: dict[str, Any] | None
+     generate_unique_id_function: Callable[[Any], str] | DefaultPlaceholder
+     strict_content_type: bool | DefaultPlaceholder
++    max_body_size: int | None
+     tags: list[str | Enum]
+     responses: dict[int | str, dict[str, Any]]
+     unique_id: str
+@@ -1242,6 +1259,7 @@ def __init__(
+         generate_unique_id_function: Callable[["APIRoute"], str]
+         | DefaultPlaceholder = Default(generate_unique_id),
+         strict_content_type: bool | DefaultPlaceholder = Default(True),
++        max_body_size: int | None = None,
+     ) -> None:
+         _populate_api_route_state(
+             cast(_APIRouteLike, self),
+@@ -1272,8 +1290,11 @@ def __init__(
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
+             strict_content_type=strict_content_type,
++            max_body_size=max_body_size,
++        )
++        self.app = wrap_app_with_body_limit(
++            request_response(self.get_route_handler()), max_body_size
+         )
+-        self.app = request_response(self.get_route_handler())
+ 
+     def get_route_handler(self) -> Callable[[Request], Coroutine[Any, Any, Response]]:
+         route = cast(_APIRouteLike, self)
+@@ -1350,6 +1371,7 @@ class _RouterIncludeContext:
+         default_factory=lambda: Default(True)
+     )
+     dependency_overrides_provider: Any | None = None
++    max_body_size: int | None = None
+ 
+     @classmethod
+     def for_include(
+@@ -1369,7 +1391,9 @@ def for_include(
+         include_in_schema: bool = True,
+         generate_unique_id_function: Callable[[APIRoute], str]
+         | DefaultPlaceholder = Default(generate_unique_id),
++        max_body_size: int | None = None,
+     ) -> "_RouterIncludeContext":
++        validate_max_body_size(max_body_size)
+         return cls(
+             included_router=included_router,
+             prefix=parent_router.prefix + prefix,
+@@ -1386,6 +1410,11 @@ def for_include(
+                 generate_unique_id_function, parent_router.generate_unique_id_function
+             ),
+             strict_content_type=parent_router.strict_content_type,
++            max_body_size=get_body_size_limit(
++                included_router.max_body_size,
++                max_body_size,
++                parent_router.max_body_size,
++            ),
+             dependency_overrides_provider=parent_router.dependency_overrides_provider,
+         )
+ 
+@@ -1413,6 +1442,9 @@ def combine(
+                 child_context.strict_content_type, self.strict_content_type
+             ),
+             dependency_overrides_provider=self.dependency_overrides_provider,
++            max_body_size=get_body_size_limit(
++                child_context.max_body_size, self.max_body_size
++            ),
+         )
+ 
+     def path_for(self, route: _RouteWithPath) -> str:
+@@ -1452,6 +1484,7 @@ class _EffectiveRouteContext:
+     strict_content_type: bool | DefaultPlaceholder = field(
+         default_factory=lambda: Default(True)
+     )
++    max_body_size: int | None = None
+     tags: list[str | Enum] = field(default_factory=list)
+     responses: dict[int | str, dict[str, Any]] = field(default_factory=dict)
+     name: str = ""
+@@ -1524,12 +1557,18 @@ def from_api_route(
+                 include_context.strict_content_type,
+             ),
+             stream_item_type=route.stream_item_type,
++            max_body_size=get_body_size_limit(
++                route.max_body_size, include_context.max_body_size
++            ),
+         )
+         # Build once per inclusion context, just as APIRoute does for direct routes.
+         # Integrations may wrap dependant.call while constructing the handler.
+         token = _effective_route_context_var.set(context)
+         try:
+-            context.app = request_response(original_route.get_route_handler())
++            context.app = wrap_app_with_body_limit(
++                request_response(original_route.get_route_handler()),
++                context.max_body_size,
++            )
+         finally:
+             _effective_route_context_var.reset(token)
+         return context
+@@ -1694,6 +1733,11 @@ def effective_low_priority_routes(self) -> list["_EffectiveRouteContext"]:
+             for route in self.original_router._low_priority_routes:
+                 route_context = self._build_effective_context(route)
+                 if route_context is not None:
++                    if not isinstance(route, APIRoute):
++                        effective_route = route_context.starlette_route or route
++                        route_context.app = wrap_app_with_body_limit(
++                            effective_route.handle, self.include_context.max_body_size
++                        )
+                     effective_low_priority_routes.append(route_context)
+             for route in self.original_router.routes:
+                 if isinstance(route, _IncludedRouter):
+@@ -1843,7 +1887,10 @@ async def _handle_selected(
+     ) -> None:
+         match, child_scope, route, effective_context = self._match(scope)
+         if match == Match.NONE or route is None:
+-            await self.original_router.default(scope, receive, send)
++            default = wrap_app_with_body_limit(
++                self.original_router.default, self.include_context.max_body_size
++            )
++            await default(scope, receive, send)
+             return
+         scope.update(child_scope)
+         if isinstance(route, _IncludedRouter):
+@@ -1864,7 +1911,12 @@ async def _handle_selected(
+                 scope["route"] = original_route
+                 await original_route.handle(scope, receive, send)
+                 return
+-        await route.handle(scope, receive, send)
++        # FastAPI routes already apply their resolved limit in effective_context.app.
++        # Other routes, including mounts, inherit this inclusion's default.
++        handle = wrap_app_with_body_limit(
++            route.handle, self.include_context.max_body_size
++        )
++        await handle(scope, receive, send)
+ 
+     def effective_route_contexts(self) -> Iterator[_EffectiveRouteContext]:
+         for candidate in self.effective_candidates():
+@@ -2588,7 +2640,24 @@ def __init__(
+                 """
+             ),
+         ] = Default(True),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> None:
++        validate_max_body_size(max_body_size)
+         # Determine the lifespan context to use
+         if lifespan is None:
+             # Use the default lifespan that runs on_startup/on_shutdown handlers
+@@ -2606,6 +2675,11 @@ def __init__(
+             redirect_slashes=redirect_slashes,
+             default=default,
+             lifespan=lifespan_context,
++            middleware=(
++                [Middleware(wrap_app_with_body_limit, max_body_size=max_body_size)]
++                if max_body_size is not None
++                else None
++            ),
+         )
+         if prefix:
+             assert prefix.startswith("/"), "A path prefix must start with '/'"
+@@ -2635,6 +2709,7 @@ def __init__(
+         self.default_response_class = default_response_class
+         self.generate_unique_id_function = generate_unique_id_function
+         self.strict_content_type = strict_content_type
++        self.max_body_size = max_body_size
+         self._routes_version = 0
+         self._low_priority_routes: list[BaseRoute] = []
+         self._frontend_routes: _FrontendRouteGroup | None = None
+@@ -2880,7 +2955,10 @@ async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
+                     scope["route"] = original_route
+                     await original_route.handle(scope, receive, send)
+                     return
+-            await low_priority_route.handle(scope, receive, send)
++                assert low_priority_context.app is not None
++                await low_priority_context.app(scope, receive, send)
++            else:
++                await low_priority_route.handle(scope, receive, send)
+             return
+ 
+         await self.default(scope, receive, send)
+@@ -3022,6 +3100,22 @@ def add_api_route(
+         generate_unique_id_function: Callable[[APIRoute], str]
+         | DefaultPlaceholder = Default(generate_unique_id),
+         strict_content_type: bool | DefaultPlaceholder = Default(True),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> None:
+         route_class = route_class_override or self.route_class
+         responses = responses or {}
+@@ -3071,6 +3165,7 @@ def add_api_route(
+             strict_content_type=get_value_or_default(
+                 strict_content_type, self.strict_content_type
+             ),
++            max_body_size=get_body_size_limit(max_body_size, self.max_body_size),
+         )
+         self.routes.append(route)
+         self._mark_routes_changed()
+@@ -3104,6 +3199,22 @@ def api_route(
+         generate_unique_id_function: Callable[[APIRoute], str] = Default(
+             generate_unique_id
+         ),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         def decorator(func: DecoratedCallable) -> DecoratedCallable:
+             self.add_api_route(
+@@ -3132,6 +3243,7 @@ def decorator(func: DecoratedCallable) -> DecoratedCallable:
+                 callbacks=callbacks,
+                 openapi_extra=openapi_extra,
+                 generate_unique_id_function=generate_unique_id_function,
++                max_body_size=max_body_size,
+             )
+             return func
+ 
+@@ -3346,6 +3458,22 @@ def include_router(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> None:
+         """
+         Include another `APIRouter` in the same current `APIRouter`.
+@@ -3410,6 +3538,7 @@ def read_users():
+             deprecated=deprecated,
+             include_in_schema=include_in_schema,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+         self.routes.append(
+             _IncludedRouter(original_router=router, include_context=include_context)
+@@ -3755,6 +3884,22 @@ def get(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP GET operation.
+@@ -3799,6 +3944,7 @@ def read_items():
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def put(
+@@ -4132,6 +4278,22 @@ def put(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP PUT operation.
+@@ -4181,6 +4343,7 @@ def replace_item(item_id: str, item: Item):
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def post(
+@@ -4514,6 +4677,22 @@ def post(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP POST operation.
+@@ -4563,6 +4742,7 @@ def create_item(item: Item):
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def delete(
+@@ -4896,6 +5076,22 @@ def delete(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP DELETE operation.
+@@ -4940,6 +5136,7 @@ def delete_item(item_id: str):
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def options(
+@@ -5273,6 +5470,22 @@ def options(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP OPTIONS operation.
+@@ -5317,6 +5530,7 @@ def get_item_options():
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def head(
+@@ -5650,6 +5864,22 @@ def head(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP HEAD operation.
+@@ -5699,6 +5929,7 @@ def get_items_headers(response: Response):
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def patch(
+@@ -6032,6 +6263,22 @@ def patch(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP PATCH operation.
+@@ -6081,6 +6328,7 @@ def update_item(item: Item):
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     def trace(
+@@ -6414,6 +6662,22 @@ def trace(
+                 """
+             ),
+         ] = Default(generate_unique_id),
++        max_body_size: Annotated[
++            int | None,
++            Doc(
++                """
++                Maximum total HTTP request body size in bytes, including files and
++                multipart overhead.
++
++                A more specific configured limit overrides the enclosing default.
++                `None` inherits that default, or leaves the body unlimited when no
++                limit is configured. `0` allows only an empty body.
++
++                Read more in the
++                [FastAPI docs for Request Body Limits](https://fastapi.tiangolo.com/advanced/request-body-limits/).
++                """
++            ),
++        ] = None,
+     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
+         """
+         Add a *path operation* using an HTTP TRACE operation.
+@@ -6463,6 +6727,7 @@ def trace_item(item_id: str):
+             callbacks=callbacks,
+             openapi_extra=openapi_extra,
+             generate_unique_id_function=generate_unique_id_function,
++            max_body_size=max_body_size,
+         )
+ 
+     # TODO: remove this once the lifespan (or alternative) interface is improved
+
+diff --git a/pyproject.toml b/pyproject.toml
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -42,7 +42,7 @@ classifiers = [
+     "Topic :: Internet :: WWW/HTTP",
+ ]
+ dependencies = [
+-    "starlette>=0.46.0",
++    "starlette>=1.6.0",
+     "anyio>=4.1.0",
+     "pydantic>=2.9.0",
+     "typing-extensions>=4.8.0",
+
+diff --git a/tests/test_request_body_limits.py b/tests/test_request_body_limits.py
+--- a/tests/test_request_body_limits.py
++++ b/tests/test_request_body_limits.py
+@@ -0,0 +1,479 @@
++from collections.abc import AsyncIterator
++from typing import Annotated
++
++import anyio
++import httpx
++import pytest
++from fastapi import APIRouter, Body, FastAPI, File, Request, UploadFile, WebSocket
++from fastapi.routing import APIRoute
++from fastapi.testclient import TestClient
++from starlette.exceptions import HTTPException
++from starlette.responses import PlainTextResponse
++from starlette.types import ASGIApp
++
++pytestmark = pytest.mark.anyio
++
++
++async def echo(request: Request):
++    return PlainTextResponse(await request.body())
++
++
++async def parse_body(
++    data: Annotated[bytes, Body(media_type="application/octet-stream")],
++):
++    return PlainTextResponse(data)
++
++
++class BodyStream(httpx.AsyncByteStream):
++    def __init__(self, chunks: list[bytes]):
++        self.chunks = iter(chunks)
++        self.consumed: list[bytes] = []
++
++    def __aiter__(self) -> AsyncIterator[bytes]:
++        return self
++
++    async def __anext__(self) -> bytes:
++        try:
++            chunk = next(self.chunks)
++        except StopIteration:
++            raise StopAsyncIteration from None
++        self.consumed.append(chunk)
++        return chunk
++
++
++async def request(
++    app: ASGIApp,
++    chunks: list[bytes] | BodyStream,
++    *,
++    path: str = "/",
++    method: str = "POST",
++    content_length: str | None = None,
++    content_type: str = "application/octet-stream",
++) -> httpx.Response:
++    headers = {"content-type": content_type}
++    if content_length is not None:
++        headers["content-length"] = content_length
++    async with httpx.AsyncClient(
++        transport=httpx.ASGITransport(app=app), base_url="http://test"
++    ) as client:
++        with anyio.fail_after(5):
++            return await client.send(
++                httpx.Request(
++                    method,
++                    "http://test" + path,
++                    stream=chunks
++                    if isinstance(chunks, BodyStream)
++                    else BodyStream(chunks),
++                    headers=headers,
++                )
++            )
++
++
++@pytest.mark.parametrize("content_length", [None, "2", "5", "6", "invalid"])
++async def test_body_limit_counts_actual_bytes(content_length):
++    app = FastAPI(max_body_size=5)
++    app.post("/")(parse_body)
++    response = await request(app, [b"123", b"456"], content_length=content_length)
++    assert response.status_code == 413
++
++
++async def test_direct_api_route():
++    app = FastAPI()
++    app.router.routes.append(
++        APIRoute("/", parse_body, methods=["POST"], max_body_size=5)
++    )
++    assert (await request(app, [b"12345"])).status_code == 200
++    assert (await request(app, [b"123456"])).status_code == 413
++
++
++@pytest.mark.parametrize(
++    "limit,size,expected",
++    [(None, 6, 200), (0, 0, 200), (0, 1, 413), (5, 4, 200), (5, 5, 200), (5, 6, 413)],
++)
++async def test_boundary_sizes(limit, size, expected):
++    app = FastAPI(max_body_size=limit)
++    app.post("/")(echo)
++    response = await request(app, [b"x" * size])
++    assert response.status_code == expected
++    if expected == 200:
++        assert response.content == b"x" * size
++
++
++@pytest.mark.parametrize("owner", ["app", "router"])
++@pytest.mark.parametrize(
++    "method",
++    [
++        "get",
++        "put",
++        "post",
++        "delete",
++        "options",
++        "head",
++        "patch",
++        "trace",
++        "api_route",
++        "add_api_route",
++    ],
++)
++async def test_operation_methods_forward_limit(owner, method):
++    app = FastAPI(max_body_size=1)
++    router = APIRouter()
++    target = app if owner == "app" else router
++    if method == "add_api_route":
++        target.add_api_route("/", echo, methods=["POST"], max_body_size=5)
++    elif method == "api_route":
++        target.api_route("/", methods=["POST"], max_body_size=5)(echo)
++    else:
++        getattr(target, method)("/", max_body_size=5)(echo)
++    if owner == "router":
++        app.include_router(router)
++    http_method = "POST" if method in {"api_route", "add_api_route"} else method.upper()
++    assert (await request(app, [b"12345"], method=http_method)).status_code == 200
++    assert (await request(app, [b"123456"], method=http_method)).status_code == 413
++
++
++@pytest.mark.parametrize(
++    "app_limit,parent_limit,include_limit,child_limit,route_limit,expected",
++    [
++        (None, None, None, None, None, 200),
++        (5, None, None, None, None, 413),
++        (5, 10, None, None, None, 200),
++        (10, 5, None, None, None, 413),
++        (5, 5, 10, None, None, 200),
++        (10, 10, 5, None, None, 413),
++        (5, 5, 5, 10, None, 200),
++        (10, 10, 10, 5, None, 413),
++        (5, 5, 5, 5, 10, 200),
++        (10, 10, 10, 10, 5, 413),
++        (10, 10, 10, 10, 0, 413),
++        (None, None, 0, None, None, 413),
++    ],
++)
++async def test_nested_limit_precedence(
++    app_limit, parent_limit, include_limit, child_limit, route_limit, expected
++):
++    child = APIRouter(max_body_size=child_limit)
++    child.post("/", max_body_size=route_limit)(echo)
++    parent = APIRouter(max_body_size=parent_limit)
++    parent.include_router(child, prefix="/child", max_body_size=include_limit)
++    app = FastAPI(max_body_size=app_limit)
++    app.include_router(parent, prefix="/parent")
++    response = await request(app, [b"123456"], path="/parent/child/")
++    assert response.status_code == expected
++
++
++async def test_shared_router_has_independent_inclusion_defaults():
++    router = APIRouter()
++    router.post("/")(echo)
++    small = FastAPI(max_body_size=5)
++    large = FastAPI(max_body_size=10)
++    small.include_router(router)
++    large.include_router(router)
++    large.include_router(router, prefix="/small", max_body_size=5)
++    assert (await request(small, [b"123456"])).status_code == 413
++    assert (await request(large, [b"123456"])).status_code == 200
++    assert (await request(large, [b"123456"], path="/small/")).status_code == 413
++    assert (await request(large, [b"123456"])).status_code == 200
++    assert router.max_body_size is None
++    assert isinstance(router.routes[0], APIRoute)
++    assert router.routes[0].max_body_size is None
++
++
++@pytest.mark.parametrize(
++    "parent_limit,child_limit,expected", [(5, None, 413), (5, 10, 200), (10, 5, 413)]
++)
++@pytest.mark.parametrize("mounted_router", [False, True])
++async def test_mounts_inherit_and_override(
++    parent_limit, child_limit, expected, mounted_router
++):
++    child = (
++        APIRouter(max_body_size=child_limit)
++        if mounted_router
++        else FastAPI(max_body_size=child_limit)
++    )
++    child.post("/")(echo)
++    app = FastAPI(max_body_size=parent_limit)
++    app.mount("/child", child)
++    assert (await request(app, [b"123456"], path="/child/")).status_code == expected
++
++
++async def test_shared_frontend_uses_each_inclusions_body_limit(tmp_path):
++    (tmp_path / "index.html").write_text("hello")
++    router = APIRouter()
++    router.frontend("/", directory=tmp_path)
++    app = FastAPI()
++    app.include_router(router, prefix="/empty", max_body_size=0)
++    app.include_router(router, prefix="/small", max_body_size=10)
++
++    for path, expected in [("/empty/index.html", 413), ("/small/index.html", 200)]:
++        response = await request(
++            app, [b"x"], path=path, method="GET", content_length="1"
++        )
++        assert response.status_code == expected
++
++
++async def test_mount_in_an_included_router_inherits_its_limit():
++    mounted = FastAPI()
++    mounted.post("/")(echo)
++    router = APIRouter()
++    router.mount("/mounted", mounted)
++    app = FastAPI()
++    app.include_router(router, prefix="/nested", max_body_size=5)
++    path = "/nested/mounted/"
++    assert (await request(app, [b"12345"], path=path)).status_code == 200
++    assert (await request(app, [b"123456"], path=path)).status_code == 413
++
++
++# Starlette BaseHTTPMiddleware abandons its Request.stream generator after each
++# chunk, including when no body limit is configured. Keep other warnings as errors.
++@pytest.mark.parametrize("limit", [None, 5])
++@pytest.mark.parametrize("body_field", [False, True])
++@pytest.mark.parametrize("content_length", [None, "6"])
++@pytest.mark.filterwarnings(
++    "ignore:Async generator .starlette.requests.Request.stream. was garbage collected:ResourceWarning"
++)
++async def test_base_http_middleware_preserves_413(limit, body_field, content_length):
++    app = FastAPI(max_body_size=limit)
++    app.post("/")(parse_body if body_field else echo)
++
++    @app.middleware("http")
++    async def pass_through(request, call_next):
++        return await call_next(request)
++
++    response = await request(app, [b"123", b"456"], content_length=content_length)
++    assert response.status_code == (413 if limit is not None else 200)
++    assert (await request(app, [b"12345"])).status_code == 200
++
++
++@pytest.mark.filterwarnings(
++    "ignore:Async generator .starlette.requests.Request.stream. was garbage collected:ResourceWarning"
++)
++@pytest.mark.parametrize(
++    "app_limit,router_limit,route_limit,expected",
++    [
++        (5, None, 10, 413),  # The middleware reads under the app limit.
++        (10, None, 5, 413),  # The route can still reject a cached body.
++        (10, 5, 10, 200),  # The selected route overrides the router default.
++        (10, 5, None, 413),  # A route without an override inherits that default.
++    ],
++)
++async def test_limits_when_middleware_reads_the_body(
++    app_limit, router_limit, route_limit, expected
++):
++    app = FastAPI(max_body_size=app_limit)
++    router = APIRouter(max_body_size=router_limit)
++    router.post("/", max_body_size=route_limit)(echo)
++    app.include_router(router)
++
++    @app.middleware("http")
++    async def read_body(request, call_next):
++        await request.body()
++        return await call_next(request)
++
++    response = await request(app, [b"123", b"456"])
++    assert response.status_code == expected
++    if expected == 200:
++        assert response.content == b"123456"
++    assert (await request(app, [b"12345"])).status_code == 200
++
++
++@pytest.mark.filterwarnings(
++    "ignore:Async generator .starlette.requests.Request.stream. was garbage collected:ResourceWarning"
++)
++@pytest.mark.parametrize("read_in_parent", [True, False])
++@pytest.mark.parametrize("content_length", [None, "6"])
++async def test_mounted_app_returns_413_when_middleware_reads_body(
++    read_in_parent, content_length
++):
++    parent = FastAPI(max_body_size=10 if read_in_parent else 5)
++    child = FastAPI(max_body_size=5 if read_in_parent else None)
++    child.post("/")(echo)
++    parent.mount("/child", child)
++
++    reader = parent if read_in_parent else child
++
++    @reader.middleware("http")
++    async def read_body(request, call_next):
++        await request.body()
++        return await call_next(request)
++
++    path = "/child/"
++    response = await request(
++        parent, [b"123", b"456"], path=path, content_length=content_length
++    )
++    assert response.status_code == 413
++    assert (await request(parent, [b"12345"], path=path)).status_code == 200
++
++
++async def test_limit_stops_consumption_before_endpoint():
++    app = FastAPI(max_body_size=5)
++    calls = []
++
++    @app.post("/")
++    async def endpoint(data: Annotated[bytes, Body()]):
++        calls.append(data)
++        return data
++
++    stream = BodyStream([b"123", b"456", b"unread"])
++    response = await request(app, stream)
++    assert response.status_code == 413
++    assert calls == []
++    assert stream.consumed == [b"123", b"456"]
++    accepted = await request(app, [b"ok"])
++    assert accepted.status_code == 200
++    assert accepted.json() == "ok"
++    assert calls == [b"ok"]
++
++
++@pytest.mark.parametrize("limit", [0, 5])
++async def test_query_and_headers_do_not_count_as_body(limit):
++    app = FastAPI(max_body_size=limit)
++    app.post("/")(echo)
++    response = await request(app, [b""], path="/?q=" + "x" * 100)
++    assert response.status_code == 200
++
++
++@pytest.mark.parametrize("value", [-1, True, False, 1.5, "5"])
++def test_invalid_application_limit(value):
++    with pytest.raises(ValueError, match="non-negative integer"):
++        FastAPI(max_body_size=value)
++
++
++@pytest.mark.parametrize(
++    "configure",
++    [
++        lambda: APIRouter(max_body_size=-1),
++        lambda: FastAPI().post("/", max_body_size=-1)(echo),
++        lambda: FastAPI().include_router(APIRouter(), max_body_size=-1),
++        lambda: APIRoute("/", echo, max_body_size=-1),
++    ],
++    ids=["router", "operation", "include", "direct"],
++)
++def test_invalid_limit_fails_at_registration(configure):
++    with pytest.raises(ValueError, match="non-negative integer"):
++        configure()
++
++
++def test_lifespan_and_websockets_are_unaffected():
++    events = []
++
++    async def lifespan(app):
++        events.append("startup")
++        yield
++        events.append("shutdown")
++
++    app = FastAPI(max_body_size=0, lifespan=lifespan)
++
++    @app.websocket("/ws")
++    async def websocket(websocket: WebSocket):
++        await websocket.accept()
++        await websocket.send_text(await websocket.receive_text())
++
++    with TestClient(app) as client:
++        with client.websocket_connect("/ws") as websocket_client:
++            websocket_client.send_text("larger than the HTTP limit")
++            assert websocket_client.receive_text() == "larger than the HTTP limit"
++    assert events == ["startup", "shutdown"]
++
++
++async def test_multipart_rejection_closes_temporary_files(monkeypatch):
++    from starlette import formparsers
++
++    created = []
++    original = formparsers.SpooledTemporaryFile
++
++    def track_file(*args, **kwargs):
++        file = original(*args, **kwargs)
++        created.append(file)
++        return file
++
++    monkeypatch.setattr(formparsers, "SpooledTemporaryFile", track_file)
++    prefix = (
++        b"--boundary\r\n"
++        b'Content-Disposition: form-data; name="file"; filename="example.txt"\r\n'
++        b"Content-Type: text/plain\r\n\r\n"
++        b"hello"
++    )
++    suffix = b"more data\r\n--boundary--\r\n"
++    app = FastAPI(max_body_size=len(prefix))
++
++    @app.post("/")
++    async def endpoint(file: Annotated[UploadFile, File()]):
++        return {"name": file.filename}
++
++    response = await request(
++        app, [prefix, suffix], content_type="multipart/form-data; boundary=boundary"
++    )
++    assert response.status_code == 413
++    assert created
++    assert all(file.closed for file in created)
++
++    # A complete accepted upload still reaches the endpoint and is closed.
++    accepted = prefix + b"\r\n--boundary--\r\n"
++    larger = FastAPI(max_body_size=len(accepted))
++    larger.post("/")(endpoint)
++    response = await request(
++        larger, [accepted], content_type="multipart/form-data; boundary=boundary"
++    )
++    assert response.status_code == 200
++    assert response.json() == {"name": "example.txt"}
++    assert all(file.closed for file in created)
++
++
++async def test_body_parsing_without_limit_preserves_existing_error_response(
++    monkeypatch,
++):
++    async def failed_read(self):
++        raise ExceptionGroup("read failed", [HTTPException(413)])
++
++    monkeypatch.setattr(Request, "body", failed_read)
++    app = FastAPI()
++    app.post("/")(parse_body)
++    response = await request(app, [b"hello"])
++    assert response.status_code == 400
++    assert response.json() == {"detail": "There was an error parsing the body"}
++
++
++async def test_group_with_a_limit_error_preserves_other_errors():
++    app = FastAPI(max_body_size=0)
++    cleanup_error = RuntimeError("cleanup failed")
++
++    @app.post("/")
++    async def endpoint(request: Request):
++        try:
++            await request.body()
++        except HTTPException as exc:
++            raise ExceptionGroup("read and cleanup", [exc, cleanup_error]) from exc
++
++    with pytest.raises(ExceptionGroup) as caught:
++        await request(app, [b"x"])
++    assert len(caught.value.exceptions) == 2
++    assert isinstance(caught.value.exceptions[0], HTTPException)
++    assert caught.value.exceptions[0].status_code == 413
++    assert caught.value.exceptions[1] is cleanup_error
++
++
++@pytest.mark.parametrize(
++    "error",
++    [
++        ExceptionGroup("other", [RuntimeError("other error")]),
++        ExceptionGroup("application error", [HTTPException(413)]),
++        ExceptionGroup("mixed", [HTTPException(413), ValueError("unrelated")]),
++    ],
++)
++@pytest.mark.parametrize("mounted", [False, True])
++async def test_body_limit_does_not_hide_unrelated_exception_groups(error, mounted):
++    app = FastAPI(max_body_size=5)
++
++    @app.post("/")
++    async def endpoint():
++        raise error
++
++    parent = FastAPI(max_body_size=10)
++    parent.mount("/child", app)
++    with pytest.raises(ExceptionGroup) as caught:
++        if mounted:
++            await request(parent, [b""], path="/child/")
++        else:
++            await request(app, [b""])
++    assert caught.value is error
+
+diff --git a/tests/test_tutorial/test_request_body_limits.py b/tests/test_tutorial/test_request_body_limits.py
+--- a/tests/test_tutorial/test_request_body_limits.py
++++ b/tests/test_tutorial/test_request_body_limits.py
+@@ -0,0 +1,26 @@
++import pytest
++from fastapi.testclient import TestClient
++
++from docs_src.request_body_limits.tutorial001 import app
++
++client = TestClient(app)
++
++
++def test_item():
++    response = client.post("/items", json={"name": "Plumbus"})
++    assert response.status_code == 200
++    assert response.json() == {"name": "Plumbus"}
++
++
++@pytest.mark.parametrize("path", ["/uploads/", "/uploads/small"])
++def test_upload(path):
++    # Larger than the application default, within both upload limits.
++    contents = b"x" * (1024 * 1024 + 1)
++    response = client.post(path, files={"file": ("example.txt", contents)})
++    assert response.status_code == 200
++    assert response.json() == {"filename": "example.txt", "size": len(contents)}
++
++
++def test_item_limit():
++    response = client.post("/items", content=b"x" * (1024 * 1024 + 1))
++    assert response.status_code == 413
+
+diff --git a/uv.lock b/uv.lock
+--- a/uv.lock
++++ b/uv.lock
+@@ -943,7 +943,7 @@ requires-dist = [
+     { name = "python-multipart", marker = "extra == 'standard'", specifier = ">=0.0.18" },
+     { name = "python-multipart", marker = "extra == 'standard-no-fastapi-cloud-cli'", specifier = ">=0.0.18" },
+     { name = "pyyaml", marker = "extra == 'all'", specifier = ">=5.3.1" },
+-    { name = "starlette", specifier = ">=0.46.0" },
++    { name = "starlette", specifier = ">=1.6.0" },
+     { name = "typing-extensions", specifier = ">=4.8.0" },
+     { name = "typing-inspection", specifier = ">=0.4.2" },
+     { name = "uvicorn", extras = ["standard"], marker = "extra == 'all'", specifier = ">=0.12.0" },

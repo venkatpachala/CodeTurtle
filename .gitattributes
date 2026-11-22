@@ -1,3 +1,4 @@
 # Preserve exact bytes used by corpus and sealed experiment SHA-256 checks.
 benchmark/datasets/**/*.json -text
+benchmark/datasets/**/*.diff -text
 docs/validation/**/*.json -text

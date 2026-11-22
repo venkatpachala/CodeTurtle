@@ -1,0 +1,19 @@
+{
+  "name": "real-pilot-v1-validation",
+  "split": "validation",
+  "used_for_system_design": false,
+  "eligible_for_headline_metrics": false,
+  "prs": [
+    "https://github.com/grafana/grafana/pull/90939",
+    "https://github.com/grafana/grafana/pull/79265",
+    "https://github.com/keycloak/keycloak/pull/36882",
+    "https://github.com/calcom/cal.com/pull/11059",
+    "https://github.com/getsentry/sentry/pull/80528",
+    "https://github.com/grafana/grafana/pull/80329",
+    "https://github.com/Kludex/starlette/pull/3768",
+    "https://github.com/fastapi/typer/pull/2015",
+    "https://github.com/fastapi/fastapi/pull/16781",
+    "https://github.com/fastapi/typer/pull/2011"
+  ],
+  "exposure_audit_required": true
+}

@@ -1,0 +1,12 @@
+diff --git a/starlette/responses.py b/starlette/responses.py
+--- a/starlette/responses.py
++++ b/starlette/responses.py
+@@ -28,7 +28,7 @@
+ 
+ 
+ class Response:
+-    media_type = None
++    media_type: str | None = None
+     charset = "utf-8"
+ 
+     def __init__(

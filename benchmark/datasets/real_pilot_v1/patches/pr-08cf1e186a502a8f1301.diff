@@ -1,0 +1,213 @@
+diff --git a/tests/benchmarks/test_integer_validation.py b/tests/benchmarks/test_integer_validation.py
+--- a/tests/benchmarks/test_integer_validation.py
++++ b/tests/benchmarks/test_integer_validation.py
+@@ -0,0 +1,37 @@
++"""Isolate scalar integer conversion from the existing large JSON number arrays."""
++
++import json
++
++import pytest
++from pytest_benchmark.fixture import BenchmarkFixture
++
++from pydantic import TypeAdapter, create_model
++
++
++@pytest.mark.benchmark(group='integer validation')
++@pytest.mark.parametrize('shape', ['scalar', 'model'])
++@pytest.mark.parametrize('kind', ['i64', 'positive-bigint', 'negative-bigint'])
++def test_json_integer_validation(benchmark: BenchmarkFixture, shape: str, kind: str) -> None:
++    value = 123456789 if kind == 'i64' else 10**60 + 123456789
++    if kind == 'negative-bigint':
++        value = -value
++    if shape == 'scalar':
++        adapter = TypeAdapter(int)
++        data = str(value).encode()
++        assert adapter.validate_json(data) == value
++        benchmark(adapter.validate_json, data)
++    else:
++        model = create_model('IntegerRecord', **{f'value_{i}': (int, ...) for i in range(8)})
++        expected = {f'value_{i}': value for i in range(8)}
++        data = json.dumps(expected).encode()
++        assert model.model_validate_json(data).model_dump() == expected
++        benchmark(model.model_validate_json, data)
++
++
++@pytest.mark.benchmark(group='integer validation')
++@pytest.mark.parametrize('annotation', [int, int | str], ids=['int', 'int-or-str'])
++def test_python_integer_validation(benchmark: BenchmarkFixture, annotation: object) -> None:
++    adapter = TypeAdapter(annotation)
++    value = 123456789
++    assert adapter.validate_python(value) == value
++    benchmark(adapter.validate_python, value)
+
+diff --git a/tests/benchmarks/test_iterable_collections.py b/tests/benchmarks/test_iterable_collections.py
+--- a/tests/benchmarks/test_iterable_collections.py
++++ b/tests/benchmarks/test_iterable_collections.py
+@@ -0,0 +1,31 @@
++"""Collection validation from sized and unknown-length Python iterables."""
++
++from collections import deque
++
++import pytest
++from pytest_benchmark.fixture import BenchmarkFixture
++
++from pydantic import TypeAdapter
++
++
++@pytest.mark.benchmark(group='iterable collection validation')
++@pytest.mark.parametrize('length', [2, 9, 1000])
++def test_untyped_deque_from_tuple(benchmark: BenchmarkFixture, length: int) -> None:
++    adapter = TypeAdapter(deque)
++    data = tuple(range(length))
++    assert adapter.validate_python(data) == deque(data)
++    benchmark(adapter.validate_python, data)
++
++
++@pytest.mark.benchmark(group='iterable collection validation')
++@pytest.mark.parametrize('length', [2, 9, 1000])
++def test_typed_list_from_generator(benchmark: BenchmarkFixture, length: int) -> None:
++    adapter = TypeAdapter(list[int])
++    data = tuple(range(length))
++
++    def validate() -> list[int]:
++        # A generator has no length hint and must be recreated for each validation.
++        return adapter.validate_python(value for value in data)
++
++    assert validate() == list(data)
++    benchmark(validate)
+
+diff --git a/tests/benchmarks/test_json_bounded_lists.py b/tests/benchmarks/test_json_bounded_lists.py
+--- a/tests/benchmarks/test_json_bounded_lists.py
++++ b/tests/benchmarks/test_json_bounded_lists.py
+@@ -0,0 +1,25 @@
++"""Successful validation at the upper bound of scalar and model list fields."""
++
++import json
++
++import pytest
++from pytest_benchmark.fixture import BenchmarkFixture
++
++from pydantic import Field, create_model
++
++
++@pytest.mark.benchmark(group='JSON bounded lists')
++@pytest.mark.parametrize('items', ['integers', 'models'])
++def test_json_bounded_list_field(benchmark: BenchmarkFixture, items: str) -> None:
++    if items == 'integers':
++        annotation = list[int]
++        values = list(range(10000))
++    else:
++        item = create_model('Item', i=(int, ...), s=(str, ...))
++        annotation = list[item]
++        values = [{'i': i, 's': str(i)} for i in range(1000)]
++    model = create_model('BoundedList', values=(annotation, Field(max_length=len(values))))
++    expected = {'values': values}
++    data = json.dumps(expected).encode()
++    assert model.model_validate_json(data).model_dump() == expected
++    benchmark(model.model_validate_json, data)
+
+diff --git a/tests/benchmarks/test_json_field_order.py b/tests/benchmarks/test_json_field_order.py
+--- a/tests/benchmarks/test_json_field_order.py
++++ b/tests/benchmarks/test_json_field_order.py
+@@ -0,0 +1,23 @@
++"""Compare equivalent model JSON documents with different object key orders."""
++
++import json
++
++import pytest
++from pytest_benchmark.fixture import BenchmarkFixture
++
++from pydantic import create_model
++
++
++@pytest.mark.benchmark(group='JSON field order')
++@pytest.mark.parametrize('order', ['schema', 'reverse', 'container-first'])
++def test_json_field_order(benchmark: BenchmarkFixture, order: str) -> None:
++    model = create_model('Record', count=(int, ...), name=(str, ...), values=(list[int], ...), ratio=(float, ...))
++    expected = {'count': 123, 'name': 'hello', 'values': list(range(256)), 'ratio': 1.5}
++    keys = list(expected)
++    if order == 'reverse':
++        keys.reverse()
++    elif order == 'container-first':
++        keys = ['values', 'count', 'name', 'ratio']
++    data = json.dumps({key: expected[key] for key in keys}).encode()
++    assert model.model_validate_json(data).model_dump() == expected
++    benchmark(model.model_validate_json, data)
+
+diff --git a/tests/benchmarks/test_json_missing_defaults.py b/tests/benchmarks/test_json_missing_defaults.py
+--- a/tests/benchmarks/test_json_missing_defaults.py
++++ b/tests/benchmarks/test_json_missing_defaults.py
+@@ -0,0 +1,25 @@
++"""Cover absent model fields with plain, validated, and callback defaults."""
++
++from typing import Annotated
++
++import pytest
++from pytest_benchmark.fixture import BenchmarkFixture
++
++from pydantic import AfterValidator, Field, TypeAdapter, ValidationInfo, create_model
++
++
++@pytest.mark.benchmark(group='JSON missing defaults')
++@pytest.mark.parametrize('kind', ['plain', 'validated', 'callback'])
++def test_json_missing_defaults(benchmark: BenchmarkFixture, kind: str) -> None:
++    def normalize(value: str, _info: ValidationInfo) -> str:
++        return value.strip()
++
++    annotation = Annotated[str, AfterValidator(normalize)] if kind == 'callback' else str
++    model = create_model('DefaultValue', value=(annotation, Field(default=' Alice ', validate_default=kind != 'plain')))
++    adapter = TypeAdapter(list[model])
++    data = b'[' + b','.join([b'{}'] * 1000) + b']'
++    expected = {'value': 'Alice' if kind == 'callback' else ' Alice '}
++    result = adapter.validate_json(data)
++    assert len(result) == 1000
++    assert all(item.model_dump() == expected for item in result)
++    benchmark(adapter.validate_json, data)
+
+diff --git a/tests/benchmarks/test_short_lists.py b/tests/benchmarks/test_short_lists.py
+--- a/tests/benchmarks/test_short_lists.py
++++ b/tests/benchmarks/test_short_lists.py
+@@ -0,0 +1,43 @@
++"""Cover small typed lists separately from the existing thousand-element cases."""
++
++import json
++
++import pytest
++from pytest_benchmark.fixture import BenchmarkFixture
++
++from pydantic import TypeAdapter
++
++
++@pytest.mark.benchmark(group='short list validation')
++@pytest.mark.parametrize('mode', ['python', 'json'])
++@pytest.mark.parametrize(
++    'item_type,length',
++    [(int, 0), (int, 1), (int, 2), (int, 8), (int, 9), (float, 2), (float, 9), (str, 2), (str, 9)],
++    ids=['int-empty', 'int-one', 'int-two', 'int-eight', 'int-nine', 'float-two', 'float-nine', 'str-two', 'str-nine'],
++)
++def test_short_typed_lists(
++    benchmark: BenchmarkFixture, mode: str, item_type: type[int] | type[float] | type[str], length: int
++) -> None:
++    adapter = TypeAdapter(list[item_type])
++    expected = [item_type(i) for i in range(length)]
++    if mode == 'python':
++        assert adapter.validate_python(expected) == expected
++        benchmark(adapter.validate_python, expected)
++    else:
++        data = json.dumps(expected).encode()
++        assert adapter.validate_json(data) == expected
++        benchmark(adapter.validate_json, data)
++
++
++@pytest.mark.benchmark(group='short list validation')
++@pytest.mark.parametrize('mode', ['python', 'json'])
++def test_coordinate_pairs(benchmark: BenchmarkFixture, mode: str) -> None:
++    adapter = TypeAdapter(list[list[float]])
++    expected = [[i + 0.125, i + 0.625] for i in range(256)]
++    if mode == 'python':
++        assert adapter.validate_python(expected) == expected
++        benchmark(adapter.validate_python, expected)
++    else:
++        data = json.dumps(expected).encode()
++        assert adapter.validate_json(data) == expected
++        benchmark(adapter.validate_json, data)

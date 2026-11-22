@@ -1,0 +1,24 @@
+diff --git a/docs/release-notes.md b/docs/release-notes.md
+--- a/docs/release-notes.md
++++ b/docs/release-notes.md
+@@ -2,6 +2,8 @@
+ 
+ ## Latest Changes
+ 
++## 0.29.2 (2026-11-18)
++
+ ### Internal
+ 
+ * 💥 Drop support for Python 3.10. PR [#2021](https://github.com/fastapi/typer/pull/2021) by [@tiangolo](https://github.com/tiangolo).
+
+diff --git a/typer/__init__.py b/typer/__init__.py
+--- a/typer/__init__.py
++++ b/typer/__init__.py
+@@ -1,6 +1,6 @@
+ """Typer, build great CLIs. Easy to code. Based on Python type hints."""
+ 
+-__version__ = "0.29.1"
++__version__ = "0.29.2"
+ 
+ from shutil import get_terminal_size as get_terminal_size
+ 

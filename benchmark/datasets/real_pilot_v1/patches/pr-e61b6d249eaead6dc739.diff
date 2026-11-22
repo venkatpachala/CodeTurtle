@@ -1,0 +1,677 @@
+diff --git a/services/src/main/java/org/keycloak/authentication/authenticators/browser/AbstractUsernameFormAuthenticator.java b/services/src/main/java/org/keycloak/authentication/authenticators/browser/AbstractUsernameFormAuthenticator.java
+--- a/services/src/main/java/org/keycloak/authentication/authenticators/browser/AbstractUsernameFormAuthenticator.java
++++ b/services/src/main/java/org/keycloak/authentication/authenticators/browser/AbstractUsernameFormAuthenticator.java
+@@ -55,7 +55,7 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
+     public static final String SESSION_INVALID = "SESSION_INVALID";
+ 
+     // Flag is true if user was already set in the authContext before this authenticator was triggered. In this case we skip clearing of the user after unsuccessful password authentication
+-    protected static final String USER_SET_BEFORE_USERNAME_PASSWORD_AUTH = "USER_SET_BEFORE_USERNAME_PASSWORD_AUTH";
++    public static final String USER_SET_BEFORE_USERNAME_PASSWORD_AUTH = "USER_SET_BEFORE_USERNAME_PASSWORD_AUTH";
+ 
+     @Override
+     public void action(AuthenticationFlowContext context) {
+@@ -219,11 +219,7 @@ private boolean badPasswordHandler(AuthenticationFlowContext context, UserModel
+         context.getEvent().user(user);
+         context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);
+ 
+-        if (isUserAlreadySetBeforeUsernamePasswordAuth(context)) {
+-            LoginFormsProvider form = context.form();
+-            form.setAttribute(LoginFormsProvider.USERNAME_HIDDEN, true);
+-            form.setAttribute(LoginFormsProvider.REGISTRATION_DISABLED, true);
+-        }
++        AuthenticatorUtils.setupReauthenticationInUsernamePasswordFormError(context);
+ 
+         Response challengeResponse = challenge(context, getDefaultChallengeMessage(context), FIELD_PASSWORD);
+         if(isEmptyPassword) {
+
+diff --git a/services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernameForm.java b/services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernameForm.java
+--- a/services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernameForm.java
++++ b/services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernameForm.java
+@@ -44,7 +44,7 @@ public UsernameForm(KeycloakSession session) {
+ 
+     @Override
+     public void authenticate(AuthenticationFlowContext context) {
+-        if (context.getUser() != null) {
++        if (context.getUser() != null && !isConditionalPasskeysEnabled()) {
+             // We can skip the form when user is re-authenticating. Unless current user has some IDP set, so he can re-authenticate with that IDP
+             if (!this.hasLinkedBrokers(context)) {
+                 context.success();
+
+diff --git a/services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java b/services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java
+--- a/services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java
++++ b/services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java
+@@ -110,10 +110,10 @@ public void authenticate(AuthenticationFlowContext context) {
+                     formData.add("rememberMe", "on");
+                 }
+             }
+-            // setup webauthn data when the user is not already selected
+-            if (webauthnAuth != null && webauthnAuth.isPasskeysEnabled()) {
+-                webauthnAuth.fillContextForm(context);
+-            }
++        }
++        // setup webauthn data when passkeys enabled
++        if (isConditionalPasskeysEnabled(context.getUser())) {
++            webauthnAuth.fillContextForm(context);
+         }
+         Response challengeResponse = challenge(context, formData);
+         context.challenge(challengeResponse);
+@@ -134,8 +134,8 @@ protected Response challenge(AuthenticationFlowContext context, MultivaluedMap<S
+ 
+     @Override
+     protected Response challenge(AuthenticationFlowContext context, String error, String field) {
+-        if (context.getUser() == null && webauthnAuth != null && webauthnAuth.isPasskeysEnabled()) {
+-            // setup webauthn data when the user is not already selected
++        if (isConditionalPasskeysEnabled(context.getUser())) {
++            // setup webauthn data when possible
+             webauthnAuth.fillContextForm(context);
+         }
+         return super.challenge(context, error, field);
+@@ -157,4 +157,8 @@ public void close() {
+ 
+     }
+ 
++    protected boolean isConditionalPasskeysEnabled(UserModel user) {
++        return webauthnAuth != null && webauthnAuth.isPasskeysEnabled() && user != null;
++    }
++
+ }
+
+diff --git a/services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnAuthenticator.java b/services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnAuthenticator.java
+--- a/services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnAuthenticator.java
++++ b/services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnAuthenticator.java
+@@ -97,7 +97,8 @@ public LoginFormsProvider fillContextForm(AuthenticationFlowContext context) {
+ 
+         UserModel user = context.getUser();
+         boolean isUserIdentified = false;
+-        if (user != null) {
++
++        if (shouldShowWebAuthnAuthenticators(context)) {
+             // in 2 Factor Scenario where the user has already been identified
+             WebAuthnAuthenticatorsBean authenticators = new WebAuthnAuthenticatorsBean(context.getSession(), context.getRealm(), user, getCredentialType());
+             if (authenticators.getAuthenticators().isEmpty()) {
+@@ -120,6 +121,14 @@ public LoginFormsProvider fillContextForm(AuthenticationFlowContext context) {
+         return form;
+     }
+ 
++    /**
++     * @param context authentication context
++     * @return true if the available webauthn authenticators should be shown on the screen. Typically during 2-factor authentication for example
++     */
++    protected boolean shouldShowWebAuthnAuthenticators(AuthenticationFlowContext context) {
++        return context.getUser() != null;
++    }
++
+     protected WebAuthnPolicy getWebAuthnPolicy(AuthenticationFlowContext context) {
+         return context.getRealm().getWebAuthnPolicy();
+     }
+
+diff --git a/services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnConditionalUIAuthenticator.java b/services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnConditionalUIAuthenticator.java
+--- a/services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnConditionalUIAuthenticator.java
++++ b/services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnConditionalUIAuthenticator.java
+@@ -20,6 +20,7 @@
+ import java.util.function.Function;
+ import org.keycloak.WebAuthnConstants;
+ import org.keycloak.authentication.AuthenticationFlowContext;
++import org.keycloak.authentication.authenticators.util.AuthenticatorUtils;
+ import org.keycloak.common.Profile;
+ import org.keycloak.forms.login.LoginFormsProvider;
+ import org.keycloak.models.KeycloakSession;
+@@ -48,6 +49,9 @@ protected Response createErrorResponse(AuthenticationFlowContext context, final
+         // the passkey failed, show error and maintain passkeys
+         context.form().setError(errorCase, "");
+         context.form().setAttribute(WebAuthnConstants.ENABLE_WEBAUTHN_CONDITIONAL_UI, Boolean.TRUE);
++
++        AuthenticatorUtils.setupReauthenticationInUsernamePasswordFormError(context);
++
+         fillContextForm(context);
+         return errorChallenge.apply(context);
+     }
+@@ -56,4 +60,9 @@ public boolean isPasskeysEnabled() {
+         return Profile.isFeatureEnabled(Profile.Feature.PASSKEYS) &&
+                 Boolean.TRUE.equals(session.getContext().getRealm().getWebAuthnPolicyPasswordless().isPasskeysEnabled());
+     }
++
++    // Do not show authenticators during login with conditional passkeys (For example during username/password)
++    protected boolean shouldShowWebAuthnAuthenticators(AuthenticationFlowContext context) {
++        return false;
++    }
+ }
+
+diff --git a/services/src/main/java/org/keycloak/authentication/authenticators/util/AuthenticatorUtils.java b/services/src/main/java/org/keycloak/authentication/authenticators/util/AuthenticatorUtils.java
+--- a/services/src/main/java/org/keycloak/authentication/authenticators/util/AuthenticatorUtils.java
++++ b/services/src/main/java/org/keycloak/authentication/authenticators/util/AuthenticatorUtils.java
+@@ -23,6 +23,7 @@
+ import org.keycloak.common.util.Time;
+ import org.keycloak.credential.hash.PasswordHashProvider;
+ import org.keycloak.events.Errors;
++import org.keycloak.forms.login.LoginFormsProvider;
+ import org.keycloak.models.*;
+ import org.keycloak.services.managers.BruteForceProtector;
+ import org.keycloak.sessions.AuthenticationSessionModel;
+@@ -31,6 +32,8 @@
+ import java.io.IOException;
+ import java.util.Map;
+ 
++import static org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator.USER_SET_BEFORE_USERNAME_PASSWORD_AUTH;
++
+ /**
+  * @author Vaclav Muzikar <vmuzikar@redhat.com>
+  */
+@@ -116,4 +119,17 @@ public static void updateCompletedExecutions(AuthenticationSessionModel authSess
+             throw new IllegalStateException(e);
+         }
+     }
++
++
++    // Make sure that form is setup for "re-authentication" rather than regular authentication if some error happens during re-authentication
++    public static void setupReauthenticationInUsernamePasswordFormError(AuthenticationFlowContext context) {
++        String userAlreadySetBeforeUsernamePasswordAuth = context.getAuthenticationSession().getAuthNote(USER_SET_BEFORE_USERNAME_PASSWORD_AUTH);
++
++        if (Boolean.parseBoolean(userAlreadySetBeforeUsernamePasswordAuth)) {
++            LoginFormsProvider form = context.form();
++            form.setAttribute(LoginFormsProvider.USERNAME_HIDDEN, true);
++            form.setAttribute(LoginFormsProvider.REGISTRATION_DISABLED, true);
++        }
++    }
++
+ }
+
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysOrganizationAuthenticationTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysOrganizationAuthenticationTest.java
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysOrganizationAuthenticationTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysOrganizationAuthenticationTest.java
+@@ -32,6 +32,7 @@
+ import org.keycloak.models.credential.WebAuthnCredentialModel;
+ import org.keycloak.models.utils.KeycloakModelUtils;
+ import org.keycloak.organization.authentication.authenticators.browser.OrganizationAuthenticatorFactory;
++import org.keycloak.protocol.oidc.OIDCLoginProtocol;
+ import org.keycloak.representations.idm.AuthenticationExecutionInfoRepresentation;
+ import org.keycloak.representations.idm.AuthenticatorConfigRepresentation;
+ import org.keycloak.representations.idm.OrganizationDomainRepresentation;
+@@ -193,10 +194,10 @@ public void passwordLoginWithNonDiscoverableKey() throws Exception {
+             MatcherAssert.assertThat(driver.findElement(By.xpath("//form[@id='webauth']")), Matchers.notNullValue());
+             loginPage.loginUsername(USERNAME);
+ 
+-            // now the passkeys username password page should be presented with username selected and passkeys disabled
++            // now the passkeys username password page should be presented with username selected. Passkeys still enabled
+             loginPage.assertCurrent();
+             MatcherAssert.assertThat(loginPage.getAttemptedUsername(), Matchers.is("userwebauthn"));
+-            Assert.assertThrows(NoSuchElementException.class, () -> driver.findElement(By.xpath("//form[@id='webauth']")));
++            MatcherAssert.assertThat(driver.findElement(By.xpath("//form[@id='webauth']")), Matchers.notNullValue());
+             loginPage.login("invalid-password");
+             loginPage.assertCurrent();
+             MatcherAssert.assertThat(loginPage.getPasswordInputError(), Matchers.is("Invalid password."));
+@@ -207,7 +208,7 @@ public void passwordLoginWithNonDiscoverableKey() throws Exception {
+ 
+             // correct login now
+             MatcherAssert.assertThat(loginPage.getAttemptedUsername(), Matchers.is("userwebauthn"));
+-            Assert.assertThrows(NoSuchElementException.class, () -> driver.findElement(By.xpath("//form[@id='webauth']")));
++            MatcherAssert.assertThat(driver.findElement(By.xpath("//form[@id='webauth']")), Matchers.notNullValue());
+             loginPage.login(getPassword(USERNAME));
+             appPage.assertCurrent();
+             events.expectLogin()
+@@ -263,4 +264,59 @@ public void passwordLoginWithExternalKey() throws Exception {
+             logout();
+         }
+     }
++
++    // Test users is able to authenticate with passkey during re-authentication (for example when OIDC parameter prompt=login is used)
++    @Test
++    public void webauthnLoginWithDiscoverableKey_reauthentication() throws IOException {
++        getVirtualAuthManager().useAuthenticator(DefaultVirtualAuthOptions.PASSKEYS.getOptions());
++
++        // set passwordless policy for discoverable keys
++        try (Closeable c = getWebAuthnRealmUpdater()
++                .setWebAuthnPolicyRpEntityName("localhost")
++                .setWebAuthnPolicyRequireResidentKey(Constants.WEBAUTHN_POLICY_OPTION_YES)
++                .setWebAuthnPolicyUserVerificationRequirement(Constants.WEBAUTHN_POLICY_OPTION_REQUIRED)
++                .setWebAuthnPolicyPasskeysEnabled(Boolean.TRUE)
++                .update()) {
++
++            checkWebAuthnConfiguration(Constants.WEBAUTHN_POLICY_OPTION_YES, Constants.WEBAUTHN_POLICY_OPTION_REQUIRED);
++
++            registerDefaultUser();
++
++            UserRepresentation user = userResource().toRepresentation();
++            MatcherAssert.assertThat(user, Matchers.notNullValue());
++
++            logout();
++            events.clear();
++
++            // the user should be automatically logged in using the discoverable key
++            oauth.openLoginForm();
++            WaitUtils.waitForPageToLoad();
++
++            appPage.assertCurrent();
++
++            events.expectLogin()
++                    .user(user.getId())
++                    .detail(Details.USERNAME, user.getUsername())
++                    .detail(Details.CREDENTIAL_TYPE, WebAuthnCredentialModel.TYPE_PASSWORDLESS)
++                    .detail(WebAuthnConstants.USER_VERIFICATION_CHECKED, "true")
++                    .assertEvent();
++
++            // Re-authentication now with prompt=login. Passkeys login should be possible.
++            oauth.loginForm()
++                    .prompt(OIDCLoginProtocol.PROMPT_VALUE_LOGIN)
++                    .open();
++            WaitUtils.waitForPageToLoad();
++
++            appPage.assertCurrent();
++
++            events.expectLogin()
++                    .user(user.getId())
++                    .detail(Details.USERNAME, user.getUsername())
++                    .detail(Details.CREDENTIAL_TYPE, WebAuthnCredentialModel.TYPE_PASSWORDLESS)
++                    .detail(WebAuthnConstants.USER_VERIFICATION_CHECKED, "true")
++                    .assertEvent();
++
++            logout();
++        }
++    }
+ }
+
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernameFormTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernameFormTest.java
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernameFormTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernameFormTest.java
+@@ -34,6 +34,7 @@
+ import org.keycloak.models.Constants;
+ import org.keycloak.models.credential.PasswordCredentialModel;
+ import org.keycloak.models.credential.WebAuthnCredentialModel;
++import org.keycloak.protocol.oidc.OIDCLoginProtocol;
+ import org.keycloak.representations.idm.AuthenticationExecutionExportRepresentation;
+ import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
+ import org.keycloak.representations.idm.CredentialRepresentation;
+@@ -254,4 +255,68 @@ public void passwordLoginWithExternalKey() throws Exception {
+             logout();
+         }
+     }
++
++    // Test that user is able to authenticate with passkeys even during re-authentication (For example when OIDC parameter prompt=login is used)
++    @Test
++    public void webauthnLoginWithDiscoverableKey_reauthentication() throws IOException {
++        getVirtualAuthManager().useAuthenticator(DefaultVirtualAuthOptions.PASSKEYS.getOptions());
++
++        // set passwordless policy for discoverable keys
++        try (Closeable c = getWebAuthnRealmUpdater()
++                .setWebAuthnPolicyRpEntityName("localhost")
++                .setWebAuthnPolicyRequireResidentKey(Constants.WEBAUTHN_POLICY_OPTION_YES)
++                .setWebAuthnPolicyUserVerificationRequirement(Constants.WEBAUTHN_POLICY_OPTION_REQUIRED)
++                .setWebAuthnPolicyPasskeysEnabled(Boolean.TRUE)
++                .update()) {
++
++            checkWebAuthnConfiguration(Constants.WEBAUTHN_POLICY_OPTION_YES, Constants.WEBAUTHN_POLICY_OPTION_REQUIRED);
++
++            registerDefaultUser();
++
++            UserRepresentation user = userResource().toRepresentation();
++            MatcherAssert.assertThat(user, Matchers.notNullValue());
++
++            logout();
++
++            // remove the password, so passkeys are the only credential in the user
++            final CredentialRepresentation passwordCredRep = userResource().credentials().stream()
++                    .filter(cred -> PasswordCredentialModel.TYPE.equals(cred.getType()))
++                    .findAny()
++                    .orElse(null);
++            Assert.assertNotNull("User has no password credential", passwordCredRep);
++            userResource().removeCredential(passwordCredRep.getId());
++
++            events.clear();
++
++            // the user should be automatically logged in using the discoverable key
++            oauth.openLoginForm();
++            WaitUtils.waitForPageToLoad();
++
++            appPage.assertCurrent();
++
++            events.expectLogin()
++                    .user(user.getId())
++                    .detail(Details.USERNAME, user.getUsername())
++                    .detail(Details.CREDENTIAL_TYPE, WebAuthnCredentialModel.TYPE_PASSWORDLESS)
++                    .detail(WebAuthnConstants.USER_VERIFICATION_CHECKED, "true")
++                    .assertEvent();
++
++            // Re-authentication now with prompt=login. Passkeys login should be possible.
++            oauth.loginForm()
++                    .prompt(OIDCLoginProtocol.PROMPT_VALUE_LOGIN)
++                    .open();
++            WaitUtils.waitForPageToLoad();
++
++            appPage.assertCurrent();
++
++            events.expectLogin()
++                    .user(user.getId())
++                    .detail(Details.USERNAME, user.getUsername())
++                    .detail(Details.CREDENTIAL_TYPE, WebAuthnCredentialModel.TYPE_PASSWORDLESS)
++                    .detail(WebAuthnConstants.USER_VERIFICATION_CHECKED, "true")
++                    .assertEvent();
++
++            logout();
++        }
++    }
+ }
+
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java
+@@ -23,6 +23,7 @@
+ import org.hamcrest.MatcherAssert;
+ import org.hamcrest.Matchers;
+ import org.jboss.arquillian.graphene.page.Page;
++import org.junit.Assert;
+ import org.junit.Test;
+ import org.keycloak.WebAuthnConstants;
+ import org.keycloak.authentication.authenticators.browser.UsernamePasswordFormFactory;
+@@ -31,10 +32,13 @@
+ import org.keycloak.events.Errors;
+ import org.keycloak.events.EventType;
+ import org.keycloak.models.Constants;
++import org.keycloak.models.credential.PasswordCredentialModel;
+ import org.keycloak.models.credential.WebAuthnCredentialModel;
++import org.keycloak.protocol.oidc.OIDCLoginProtocol;
+ import org.keycloak.representations.idm.RealmRepresentation;
+ import org.keycloak.representations.idm.UserRepresentation;
+ import org.keycloak.testsuite.admin.AbstractAdminTest;
++import org.keycloak.testsuite.admin.ApiUtil;
+ import org.keycloak.testsuite.arquillian.annotation.EnableFeature;
+ import org.keycloak.testsuite.arquillian.annotation.IgnoreBrowserDriver;
+ import org.keycloak.testsuite.pages.SelectOrganizationPage;
+@@ -44,6 +48,10 @@
+ import org.openqa.selenium.By;
+ import org.openqa.selenium.firefox.FirefoxDriver;
+ 
++import static org.hamcrest.Matchers.nullValue;
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.fail;
++
+ /**
+  *
+  * @author rmartinc
+@@ -62,6 +70,7 @@ public void addTestRealms(List<RealmRepresentation> testRealms) {
+         makePasswordlessRequiredActionDefault(realmRepresentation);
+         switchExecutionInBrowserFormToProvider(realmRepresentation, UsernamePasswordFormFactory.PROVIDER_ID);
+ 
++        configureTestRealm(realmRepresentation);
+         testRealms.add(realmRepresentation);
+     }
+ 
+@@ -140,7 +149,7 @@ public void passwordLoginWithNonDiscoverableKey() throws IOException {
+             loginPage.login(USERNAME, "invalid-password");
+             loginPage.assertCurrent();
+             MatcherAssert.assertThat(loginPage.getUsernameInputError(), Matchers.is("Invalid username or password."));
+-            MatcherAssert.assertThat(loginPage.getPasswordInputError(), Matchers.nullValue());
++            MatcherAssert.assertThat(loginPage.getPasswordInputError(), nullValue());
+             events.expect(EventType.LOGIN_ERROR)
+                     .detail(Details.USERNAME, USERNAME)
+                     .error(Errors.INVALID_USER_CREDENTIALS)
+@@ -153,8 +162,10 @@ public void passwordLoginWithNonDiscoverableKey() throws IOException {
+             events.expectLogin()
+                     .user(user.getId())
+                     .detail(Details.USERNAME, USERNAME)
+-                    .detail(Details.CREDENTIAL_TYPE, Matchers.nullValue())
++                    .detail(Details.CREDENTIAL_TYPE, nullValue())
+                     .assertEvent();
++
++            logout();
+         }
+     }
+ 
+@@ -163,14 +174,174 @@ public void passwordLoginWithExternalKey() throws Exception {
+         // use a default resident key which is not shown in conditional UI
+         getVirtualAuthManager().useAuthenticator(DefaultVirtualAuthOptions.DEFAULT_RESIDENT_KEY.getOptions());
+ 
++        // set passwordless policy for discoverable keys
++        try (Closeable c = setPasswordlessPolicyForExternalKey()) {
++
++            checkWebAuthnConfiguration(Constants.WEBAUTHN_POLICY_OPTION_YES, Constants.WEBAUTHN_POLICY_OPTION_REQUIRED);
++
++            registerDefaultUser();
++
++            UserRepresentation user = userResource().toRepresentation();
++            MatcherAssert.assertThat(user, Matchers.notNullValue());
++
++            logout();
++            events.clear();
++
++            // open login page, the key is not internal so not opened by default
++            oauth.openLoginForm();
++            WaitUtils.waitForPageToLoad();
++
++            loginPage.assertCurrent();
++            MatcherAssert.assertThat(loginPage.getUsernameAutocomplete(), Matchers.is("username webauthn"));
++            MatcherAssert.assertThat(driver.findElement(By.xpath("//form[@id='webauth']")), Matchers.notNullValue());
++
++            // force login using webauthn link
++            webAuthnLoginPage.clickAuthenticate();
++            appPage.assertCurrent();
++
++            events.expectLogin()
++                    .user(user.getId())
++                    .detail(Details.USERNAME, user.getUsername())
++                    .detail(Details.CREDENTIAL_TYPE, WebAuthnCredentialModel.TYPE_PASSWORDLESS)
++                    .detail(WebAuthnConstants.USER_VERIFICATION_CHECKED, "true")
++                    .assertEvent();
++            logout();
++        }
++    }
++
++
++    // Test users is able to authenticate with passkey during re-authentication (for example when OIDC parameter prompt=login is used)
++    @Test
++    public void webauthnLoginWithExternalKey_reauthentication() throws Exception {
++        // use a default resident key which is not shown in conditional UI
++        getVirtualAuthManager().useAuthenticator(DefaultVirtualAuthOptions.DEFAULT_RESIDENT_KEY.getOptions());
++
++        // set passwordless policy for discoverable keys
++        try (Closeable c = setPasswordlessPolicyForExternalKey()) {
++
++            checkWebAuthnConfiguration(Constants.WEBAUTHN_POLICY_OPTION_YES, Constants.WEBAUTHN_POLICY_OPTION_REQUIRED);
++
++            registerDefaultUser();
++
++            UserRepresentation user = userResource().toRepresentation();
++            MatcherAssert.assertThat(user, Matchers.notNullValue());
++
++            logout();
++            events.clear();
++
++            // open login page, the key is not internal so not opened by default
++            oauth.openLoginForm();
++            WaitUtils.waitForPageToLoad();
++
++            loginPage.assertCurrent();
++            MatcherAssert.assertThat(loginPage.getUsernameAutocomplete(), Matchers.is("username webauthn"));
++            MatcherAssert.assertThat(driver.findElement(By.xpath("//form[@id='webauth']")), Matchers.notNullValue());
++
++            // force login using webauthn link
++            webAuthnLoginPage.clickAuthenticate();
++            appPage.assertCurrent();
++
++            events.expectLogin()
++                    .user(user.getId())
++                    .detail(Details.USERNAME, user.getUsername())
++                    .detail(Details.CREDENTIAL_TYPE, WebAuthnCredentialModel.TYPE_PASSWORDLESS)
++                    .detail(WebAuthnConstants.USER_VERIFICATION_CHECKED, "true")
++                    .assertEvent();
++
++            // Re-authentication now with prompt=login. Passkeys login should be possible.
++            oauth.loginForm()
++                    .prompt(OIDCLoginProtocol.PROMPT_VALUE_LOGIN)
++                    .open();
++            WaitUtils.waitForPageToLoad();
++
++            loginPage.assertCurrent();
++            MatcherAssert.assertThat(driver.findElement(By.xpath("//form[@id='webauth']")), Matchers.notNullValue());
++            assertEquals("Please re-authenticate to continue", loginPage.getInfoMessage());
++
++            // force login using webauthn link
++            webAuthnLoginPage.clickAuthenticate();
++            appPage.assertCurrent();
++
++            events.expectLogin()
++                    .user(user.getId())
++                    .detail(Details.USERNAME, user.getUsername())
++                    .detail(Details.CREDENTIAL_TYPE, WebAuthnCredentialModel.TYPE_PASSWORDLESS)
++                    .detail(WebAuthnConstants.USER_VERIFICATION_CHECKED, "true")
++                    .assertEvent();
++
++            logout();
++        }
++    }
++
++
++    // Test user re-authentication with password when passkeys feature enabled, but passkeys is not enabled for the realm. Passkeys should not be shown during re-authentication
++    @Test
++    public void reauthenticationOfUserWithoutPasskey() throws Exception {
+         // set passwordless policy for discoverable keys
+         try (Closeable c = getWebAuthnRealmUpdater()
+-                .setWebAuthnPolicyRpEntityName("localhost")
+-                .setWebAuthnPolicyRequireResidentKey(Constants.WEBAUTHN_POLICY_OPTION_YES)
+-                .setWebAuthnPolicyUserVerificationRequirement(Constants.WEBAUTHN_POLICY_OPTION_REQUIRED)
+-                .setWebAuthnPolicyPasskeysEnabled(Boolean.TRUE)
++                .setWebAuthnPolicyPasskeysEnabled(Boolean.FALSE)
+                 .update()) {
+ 
++            // Login with password
++            oauth.openLoginForm();
++            WaitUtils.waitForPageToLoad();
++
++            // WebAuthn elements not available
++            loginPage.assertCurrent();
++            try {
++                MatcherAssert.assertThat(driver.findElement(By.xpath("//form[@id='webauth']")), nullValue());
++                fail("Not expected to have webauthn button");
++            } catch (Exception nsee) {
++                // expected
++            }
++
++            // Login with password
++            loginPage.login("test-user@localhost", getPassword("test-user@localhost"));
++            appPage.assertCurrent();
++
++            events.clear();
++
++            // Re-authentication now with prompt=login. Passkeys login should not be available on the page as this user does not have passkey
++            oauth.loginForm()
++                    .prompt(OIDCLoginProtocol.PROMPT_VALUE_LOGIN)
++                    .open();
++            WaitUtils.waitForPageToLoad();
++
++            loginPage.assertCurrent();
++            assertEquals("Please re-authenticate to continue", loginPage.getInfoMessage());
++            try {
++                MatcherAssert.assertThat(driver.findElement(By.xpath("//form[@id='webauth']")), nullValue());
++                fail("Not expected to have webauthn button");
++            } catch (Exception nsee) {
++                // expected
++            }
++
++            // Login with password
++            loginPage.login(getPassword("test-user@localhost"));
++            appPage.assertCurrent();
++
++            UserRepresentation testUser = ApiUtil.findUserByUsernameId(testRealm(), "test-user@localhost").toRepresentation();
++
++            events.expectLogin()
++                    .user(testUser.getId())
++                    .detail(Details.USERNAME, testUser.getUsername())
++                    .detail(WebAuthnConstants.USER_VERIFICATION_CHECKED, nullValue())
++                    .assertEvent();
++
++            logout();
++        }
++    }
++
++
++    // Test user, which has both passkey and password, is able to re-authenticate with any of those. Also checks that re-authentication works after failed login (incorrect password)
++    @Test
++    public void webauthnLoginWithExternalKey_reauthenticationWithPasswordOrPasskey() throws Exception {
++        // use a default resident key which is not shown in conditional UI
++        getVirtualAuthManager().useAuthenticator(DefaultVirtualAuthOptions.DEFAULT_RESIDENT_KEY.getOptions());
++
++        // set passwordless policy for discoverable keys
++        try (Closeable c = setPasswordlessPolicyForExternalKey()) {
++
+             checkWebAuthnConfiguration(Constants.WEBAUTHN_POLICY_OPTION_YES, Constants.WEBAUTHN_POLICY_OPTION_REQUIRED);
+ 
+             registerDefaultUser();
+@@ -179,7 +350,6 @@ public void passwordLoginWithExternalKey() throws Exception {
+             MatcherAssert.assertThat(user, Matchers.notNullValue());
+ 
+             logout();
+-            events.clear();
+ 
+             // open login page, the key is not internal so not opened by default
+             oauth.openLoginForm();
+@@ -193,13 +363,71 @@ public void passwordLoginWithExternalKey() throws Exception {
+             webAuthnLoginPage.clickAuthenticate();
+             appPage.assertCurrent();
+ 
++            // Re-authentication now with prompt=login. Passkeys login should be possible.
++            oauth.loginForm()
++                    .prompt(OIDCLoginProtocol.PROMPT_VALUE_LOGIN)
++                    .open();
++            WaitUtils.waitForPageToLoad();
++
++            loginPage.assertCurrent();
++            assertEquals("Please re-authenticate to continue", loginPage.getInfoMessage());
++            MatcherAssert.assertThat(driver.findElement(By.xpath("//form[@id='webauth']")), Matchers.notNullValue());
++
++            // incorrect password (password of different user)
++            loginPage.login(getPassword("test-user@localhost"));
++            Assert.assertEquals("Invalid password.", loginPage.getInputError());
++
++            // Check that passkeys elements still available for this user
++            MatcherAssert.assertThat(driver.findElement(By.xpath("//form[@id='webauth']")), Matchers.notNullValue());
++
++            events.clear();
++
++            // re-authenticate using passkey credential
++            webAuthnLoginPage.clickAuthenticate();
++            appPage.assertCurrent();
++
++            // Successful event - passkey login
+             events.expectLogin()
+                     .user(user.getId())
+                     .detail(Details.USERNAME, user.getUsername())
+                     .detail(Details.CREDENTIAL_TYPE, WebAuthnCredentialModel.TYPE_PASSWORDLESS)
+                     .detail(WebAuthnConstants.USER_VERIFICATION_CHECKED, "true")
+                     .assertEvent();
++
++            // Re-authenticate again
++            oauth.loginForm()
++                    .prompt(OIDCLoginProtocol.PROMPT_VALUE_LOGIN)
++                    .open();
++            WaitUtils.waitForPageToLoad();
++
++            // incorrect password (password of different user)
++            loginPage.login(getPassword("test-user@localhost"));
++            Assert.assertEquals("Invalid password.", loginPage.getInputError());
++
++            events.clear();
++
++            // re-authenticate using password now
++            loginPage.login(getPassword(USERNAME));
++            appPage.assertCurrent();
++
++            // Succesful event - password login
++            events.expectLogin()
++                    .user(user.getId())
++                    .detail(Details.USERNAME, user.getUsername())
++                    .detail(WebAuthnConstants.USER_VERIFICATION_CHECKED, nullValue())
++                    .assertEvent();
++
+             logout();
+         }
+     }
++
++    private Closeable setPasswordlessPolicyForExternalKey() {
++        return getWebAuthnRealmUpdater()
++                .setWebAuthnPolicyRpEntityName("localhost")
++                .setWebAuthnPolicyRequireResidentKey(Constants.WEBAUTHN_POLICY_OPTION_YES)
++                .setWebAuthnPolicyUserVerificationRequirement(Constants.WEBAUTHN_POLICY_OPTION_REQUIRED)
++                .setWebAuthnPolicyPasskeysEnabled(Boolean.TRUE)
++                .update();
++    }
++
+ }
