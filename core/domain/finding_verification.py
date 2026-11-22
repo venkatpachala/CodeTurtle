@@ -5,7 +5,7 @@ from typing import Literal
 import hashlib
 import json
 
-from pydantic import Field, model_validator
+from pydantic import Field, JsonValue, model_validator
 
 from core.domain.observations import SourceCitation, SourceObservation
 from core.domain.review_contracts import ContentHash, DomainRecord, NonBlank, Refs
@@ -64,6 +64,21 @@ class VerificationAttempt(DomainRecord):
     attempt: int = Field(ge=1, le=2)
 
 
+class PureContractCheck(DomainRecord):
+    requirement_id: NonBlank
+    requirement_text: NonBlank
+    required_value: str
+    inputs: dict[str, JsonValue]
+    selected_option: Literal["option_1", "option_2"]
+    options: dict[str, str]
+
+    @model_validator(mode="after")
+    def binds_choice(self):
+        if set(self.options)!={"option_1","option_2"} or self.options[self.selected_option]!=self.required_value:
+            raise ValueError("contract choice does not select its recorded required value")
+        return self
+
+
 class FindingVerificationRecord(DomainRecord):
     id: NonBlank
     candidate_id: NonBlank
@@ -80,6 +95,7 @@ class FindingVerificationRecord(DomainRecord):
     prompt_version: NonBlank
     verification_method: Literal["model", "source_rule"] = "model"
     source_rule_id: str = ""
+    contract_check: PureContractCheck | None = None
 
     @model_validator(mode="after")
     def validate_outcome(self) -> FindingVerificationRecord:
@@ -108,6 +124,20 @@ class FindingVerificationRecord(DomainRecord):
         if self.decision is None:
             return
         permitted = {ref: observations[ref] for ref in self.observation_refs}
+        if self.contract_check is not None:
+            check=self.contract_check.model_dump(mode="json")
+            if (self.verification_method!="model" or check.get("required_value")!=self.claim.expected
+                    or check.get("requirement_text")!=self.claim.invariant or self.verdict!="supported"):
+                raise ValueError("neutral contract verification does not bind the recorded claim")
+            # The semantic contract choice remains a model opinion. Recheck the
+            # computed program transition from the recorded complete sources.
+            from core.intelligence.behavior import compare_pure
+            base=next((o for o in permitted.values() if o.path==self.claim.file and o.revision_side=="base" and o.scope=="file" and o.status=="success"),None)
+            head=next((o for o in permitted.values() if o.path==self.claim.file and o.revision_side=="head" and o.scope=="file" and o.status=="success"),None)
+            if base is None or head is None or not any(f["symbol"]==self.claim.symbol and json.dumps(f["inputs"],sort_keys=True)==json.dumps(check.get("inputs"),sort_keys=True)
+                and f["base"]["value"]==self.claim.expected and f["head"]["value"]==self.claim.actual
+                and f["head_operation"]==self.claim.existing_code for f in compare_pure(base.text,head.text,max_facts=4)):
+                raise ValueError("neutral contract transition cannot be replayed from recorded source")
         if self.verification_method == "source_rule":
             from core.verification.none_len_contract import RULE_ID, verify_none_len
             from core.runtime.models import Candidate

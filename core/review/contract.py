@@ -10,8 +10,8 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
-REVIEW_RESULT_SCHEMA_VERSION = "2.3"
-SUPPORTED_REVIEW_RESULT_SCHEMA_VERSIONS = ("2.0", "2.1", "2.2", REVIEW_RESULT_SCHEMA_VERSION)
+REVIEW_RESULT_SCHEMA_VERSION = "2.4"
+SUPPORTED_REVIEW_RESULT_SCHEMA_VERSIONS = ("2.0", "2.1", "2.2", "2.3", REVIEW_RESULT_SCHEMA_VERSION)
 
 
 class ReviewTarget(BaseModel):

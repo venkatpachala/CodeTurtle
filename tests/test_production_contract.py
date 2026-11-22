@@ -162,9 +162,9 @@ def test_dry_delivery_requires_no_network():
 def test_atomic_json_real_filesystem(tmp_path):
     path = tmp_path / "result.json"
     write_json_atomic(path, result().to_dict())
-    assert json.loads(path.read_text())["schema_version"] == "2.3"
+    assert json.loads(path.read_text())["schema_version"] == "2.4"
     with pytest.raises(ValueError): write_json_atomic(path, {"invalid": float("nan")})
-    assert json.loads(path.read_text())["schema_version"] == "2.3"
+    assert json.loads(path.read_text())["schema_version"] == "2.4"
     assert len(list(tmp_path.iterdir())) == 1
 
 

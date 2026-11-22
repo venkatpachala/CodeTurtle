@@ -68,7 +68,7 @@ def linked_review():
 
 def test_v21_defaults_are_additive():
     data = ReviewResult().to_dict()
-    assert data["schema_version"] == "2.3"
+    assert data["schema_version"] == "2.4"
     for field in ("intent_sources", "requirements", "requirement_assessments", "investigations", "evidence"):
         assert data[field] == []
     assert data["requirement_coverage"]["total"] == 0
@@ -242,7 +242,7 @@ def test_null_decision_survives_cli_and_legacy_adapter(tmp_path, status):
     pipeline = ReviewPipeline()
     pipeline._write_failure_json(str(output), "fixture", skipped=status == "skipped")
     data = json.loads(output.read_text(encoding="utf-8"))
-    assert data["schema_version"] == "2.3"
+    assert data["schema_version"] == "2.4"
     assert data["decision"] is None
     assert data["health"]["status"] == status
     assert data["review_comments"] == []
@@ -260,7 +260,7 @@ def test_cli_diagnostics_and_benchmark_product_output_stay_separate(tmp_path):
     path = tmp_path / "review.json"
     pipeline._write_benchmark_json(str(path))
     data = json.loads(path.read_text(encoding="utf-8"))
-    assert data["schema_version"] == "2.3"
+    assert data["schema_version"] == "2.4"
     assert data["decision"] is None
     assert data["findings"] == data["review_comments"] == []
     assert data["diagnostic_findings"] == [finding.to_dict()]

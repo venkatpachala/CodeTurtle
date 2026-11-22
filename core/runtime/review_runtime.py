@@ -683,9 +683,21 @@ class ReviewRuntime:
                         context_paths.extend(item.context_paths)
             return tuple(context_paths)
 
+        def contract_completion(prompt: str) -> str:
+            finding_generation_metadata.clear()
+            from core.gateway.gateway import AIGateway
+            from core.intelligence.contract_question import ContractAnswer
+            response=AIGateway().generate(prompt=prompt,capability="correctness_review",agent_name="FindingVerifier:contract",
+                temperature=0.0,max_tokens=400,retries=0,response_schema=ContractAnswer)
+            finding_generation_metadata.update(response.telemetry.model_dump(mode="json"))
+            self.verification_usage.append(response.telemetry.model_dump(mode="json"))
+            return str(response.content or "")
+
+        native_contract_check=(contract_completion if not static_only and self.finding_verification_llm is None
+                               and self.verification_llm is None and self.llm is None else None)
         source_verifier = SourceFindingVerifier(verification_inputs, verification_snapshot,
             structured_completion, self.budget, finding_context_paths, lambda: finding_generation_metadata,
-            source_rules=self.finding_source_rules and not static_only)
+            source_rules=self.finding_source_rules and not static_only, contract_complete=native_contract_check)
 
         def verify_completion(prompt: str) -> str:
             if static_only:

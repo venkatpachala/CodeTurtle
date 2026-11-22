@@ -242,6 +242,10 @@ class ReviewResult:
         for verification in self.finding_verifications:
             checked = FindingVerificationRecord.model_validate(verification)
             checked.validate_sources(observations)
+            if checked.contract_check is not None:
+                contract=checked.contract_check
+                if not any(r.id==contract.requirement_id and r.acceptance_criterion==contract.requirement_text for r in self.requirements):
+                    raise ValueError("neutral contract verification lacks its explicit user requirement")
             published = [finding for finding in self.findings if self._is_product_finding(finding)
                          and finding.candidate_id == checked.candidate_id]
             if published and checked.verdict != "supported":

@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator, field_validator
 
 from core.domain.review_contracts import (
     EvidenceRecord, IntentSource, InvestigationRecord, Requirement, RequirementAssessment,
@@ -24,6 +24,11 @@ class ScopedRequirement(BaseModel):
     acceptance_criterion: str = Field(min_length=1, max_length=1500)
     paths: tuple[str, ...] = Field(min_length=1, max_length=20)
     context_paths: tuple[str, ...] = Field(default=(), max_length=20)
+
+    @field_validator("id","description","acceptance_criterion",mode="before")
+    @classmethod
+    def canonical_text(cls,value):
+        return value.strip() if isinstance(value,str) else value
 
     @model_validator(mode="after")
     def validate_paths(self):
