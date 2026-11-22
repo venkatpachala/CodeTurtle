@@ -168,7 +168,7 @@ def main() -> int:
         write_json_atomic(output, prediction)
         predictions.append(prediction); manifest.prs_completed += 1
         if not args.predict_only:
-            evaluation = evaluate_pr(prediction, [vars(g) for g in pr.golden_comments]); evaluation["pr_url"] = pr.pr_url
+            evaluation = evaluate_pr(prediction, [vars(g) for g in pr.golden_comments], pr_truth=pr.pr_truth); evaluation["pr_url"] = pr.pr_url
             write_json_atomic(eval_dir / f"pr_{index + cfg.start:03d}.json", evaluation)
             evaluations.append(evaluation)
     manifest.completed_at = datetime.now(timezone.utc).isoformat(); write_json_atomic(run_dir / "manifest.json", manifest.to_dict())

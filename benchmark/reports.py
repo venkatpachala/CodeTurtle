@@ -11,6 +11,12 @@ def render_ascii(metrics: Dict[str, Any]) -> str:
     blocking_text = "N/A" if blocking is None else f"{blocking:.2%}"
     def percent(value: Any) -> str:
         return "N/A" if value is None else f"{value:.2%}"
+    safety = metrics.get("merge_safety") or {}
+    def safety_rate(name):
+        estimate = safety.get(name) or {}
+        interval = estimate.get("wilson_95")
+        return (f"{estimate.get('events', 0)}/{estimate.get('total', 0)} = {percent(estimate.get('rate'))}"
+                + (f" (95% Wilson {percent(interval[0])}–{percent(interval[1])})" if interval else ""))
     return "\n".join([
         "CodeTurtle benchmark", "="*22,
         f"PRs       {metrics.get('prs',0)}",
@@ -23,6 +29,9 @@ def render_ascii(metrics: Dict[str, Any]) -> str:
         f"FP / PR   {metrics.get('fp_per_pr') if metrics.get('fp_per_pr') is not None else 'N/A'}",
         f"Agent success {percent(metrics.get('agent_run_success_rate'))}",
         f"Decision accuracy {percent(decision.get('accuracy'))}",
+        f"False MERGE / defective PRs {safety_rate('false_merge_given_defective')}",
+        f"Defective / labeled MERGEs {safety_rate('defective_given_labeled_merge')}",
+        f"Uncertain/unlabeled MERGEs {safety.get('unlabeled_or_uncertain_merges', 'N/A')}",
         f"Over/under block {percent(decision.get('over_blocking_rate'))}/{percent(decision.get('under_blocking_rate'))}",
     ])
 

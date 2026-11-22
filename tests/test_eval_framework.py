@@ -414,10 +414,12 @@ def test_release_gate_requires_quality_and_sample_size():
         "max_p95_latency_seconds": 300,
     }
     good = {
-        "prs": 12, "fp_per_pr": 0.1, "agent_run_success_rate": 1.0,
+        "prs": 42, "fp_per_pr": 0.1, "agent_run_success_rate": 1.0,
         "actionable": {"precision": 0.9, "blocking_recall": 0.75, "clean_pr_count": 2},
         "decision": {"accuracy": 0.9, "over_blocking_rate": 0.05},
         "latency_seconds": {"p95": 120},
+        "merge_safety": {"measured": True, "labels": {"defective": 40, "reviewed_clean": 2},
+                         "false_merge_given_defective": {"events": 0, "total": 40, "wilson_95": [0, 0.0877]}},
     }
     assert evaluate_release_gate(good, thresholds)["passed"] is True
     good["prs"] = 1

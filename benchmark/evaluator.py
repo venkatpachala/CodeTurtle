@@ -36,7 +36,7 @@ def _comment_parts(item: Dict[str, Any]) -> tuple[str, int | None, str, str, str
     return path, line, text, str(item.get("category") or ""), str(item.get("severity") or "")
 
 
-def evaluate_pr(prediction: Dict[str, Any], golden_comments: List[Any]) -> Dict[str, Any]:
+def evaluate_pr(prediction: Dict[str, Any], golden_comments: List[Any], *, pr_truth=None) -> Dict[str, Any]:
     """Match one prediction against one PR's goldens, one-to-one."""
     # An intentionally empty product list must not fall back to diagnostic
     # survivors or hypotheses.
@@ -47,6 +47,14 @@ def evaluate_pr(prediction: Dict[str, Any], golden_comments: List[Any]) -> Dict[
     else:
         predicted = list(prediction["review_comments"] if "review_comments" in prediction else prediction.get("findings") or [])
     goldens = [g if isinstance(g, dict) else vars(g) for g in golden_comments]
+    label = "defective" if goldens else "unlabeled"
+    if pr_truth is not None:
+        from benchmark.pr_truth import PRTruth
+        pr_truth = PRTruth.model_validate(pr_truth)
+        pr_truth.check_target(prediction)
+        if pr_truth.label == "reviewed_clean" and goldens:
+            raise ValueError("reviewed-clean truth conflicts with known defects")
+        label = pr_truth.label
     used: set[int] = set(); matches: List[Dict[str, Any]] = []; fps: List[Dict[str, Any]] = []
     for pi, p in enumerate(predicted):
         pp, pl, pt, pc, ps = _comment_parts(p)
@@ -82,4 +90,5 @@ def evaluate_pr(prediction: Dict[str, Any], golden_comments: List[Any]) -> Dict[
             gi = best[2]
             used.add(gi); matches.append({"prediction_index": pi, "golden_index": gi, "score": best[0], "reason": best[1], "prediction": p, "golden": goldens[gi]})
     fns = [{"golden_index": i, "golden": g} for i, g in enumerate(goldens) if i not in used]
-    return {"tp": len(matches), "fp": len(fps), "fn": len(fns), "matches": matches, "false_positives": fps, "false_negatives": fns}
+    return {"tp": len(matches), "fp": len(fps), "fn": len(fns), "matches": matches, "false_positives": fps, "false_negatives": fns,
+            "pr_truth": label, "pr_truth_provenance": pr_truth.model_dump(mode="json") if pr_truth else None}

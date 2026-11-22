@@ -126,7 +126,7 @@ def score_run(
             unscored_prs.append({"pr_url": url, "unresolved_gold_ids": unresolved})
             continue
         confirmed = [gold for gold, status in zip(goldens, statuses) if status.status == "confirmed"]
-        evaluation = evaluate_pr(prediction, confirmed)
+        evaluation = evaluate_pr(prediction, confirmed, pr_truth=pr.pr_truth)
         evaluation["pr_url"] = url
         confirmed_evaluations.append(evaluation)
         confirmed_predictions.append(prediction)
@@ -217,9 +217,10 @@ def score_run(
         f"Precision / recall / F1: **{percent(displayed.get('precision'))} / {percent(displayed.get('recall'))} / {percent(displayed.get('f1'))}**",
         f"FP per PR: **{displayed.get('fp_per_pr', 0):.2f}**",
         f"Blocking gold / detected / recall: **{actionable.get('blocking_gold_count', 0)} / {actionable.get('blocking_detected', 0)} / {blocking_text}**",
-        f"Clean PRs: **{actionable.get('clean_pr_count', 0)}** (source benchmark contains no clean controls)",
+        f"Explicitly reviewed-clean PRs: **{actionable.get('clean_pr_count', 0)}** (empty issue lists do not establish cleanliness)",
         f"Median / p95 latency across all completed PRs: **{latency.get('p50', 0):.2f}s / {latency.get('p95', 0):.2f}s**", "",
-        f"Decision accuracy across all completed PRs (provisional labels): **{(provisional_metrics.get('decision') or {}).get('accuracy', 0):.1%}**", "",
+        f"Decision accuracy on labeled completed PRs (provisional labels): **{percent((provisional_metrics.get('decision') or {}).get('accuracy'))}**", "",
+        *[line for line in render_ascii(displayed).splitlines() if "MERGE" in line], "",
         "## False-negative attribution", "",
     ]
     lines.extend(f"- {stage}: {count}" for stage, count in sorted(confirmed_distribution.items()))

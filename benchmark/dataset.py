@@ -10,6 +10,7 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from benchmark.pr_truth import PRTruth
 
 
 @dataclass
@@ -34,6 +35,7 @@ class BenchmarkPR:
     source_repo: str = ""
     golden_comments: List[GoldenComment] = field(default_factory=list)
     original_url: str = ""
+    pr_truth: PRTruth | None = None
 
     @property
     def repo(self) -> str:
@@ -124,6 +126,7 @@ def load_dataset(
                 source_repo=str(entry.get("source_repo") or ""),
                 golden_comments=golden,
                 original_url=str(entry.get("original_url") or pr_url),
+                pr_truth=PRTruth.model_validate(entry["pr_truth"]) if entry.get("pr_truth") else None,
             )
         )
 

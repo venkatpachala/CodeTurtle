@@ -47,6 +47,14 @@ def evaluate_release_gate(metrics: dict[str, Any], thresholds: dict[str, Any]) -
             observed_key = {"agent_reliability": "agent_run_success_rate", "latency": "p95_latency_seconds",
                             "over_blocking": "over_blocking_rate"}.get(key, key)
             observed[observed_key] = None
+    safety = metrics.get("merge_safety") or {}
+    false_merge = safety.get("false_merge_given_defective") or {}
+    interval = false_merge.get("wilson_95")
+    observed["false_merge_upper_95"] = interval[1] if interval else None
+    checks["false_merge_upper_95"] = (interval[1] <= float(thresholds.get("max_false_merge_upper_95", 0.1))
+                                      if interval else None)
+    checks["pr_truth_complete"] = (not any((safety.get("labels") or {}).get(k, 0) for k in ("uncertain", "unlabeled"))
+                                    if safety.get("measured") and safety.get("labels") else None)
     return {
         # A missing denominator is neither a passing nor failing measurement.
         # The release remains ineligible until every required gate is measured.

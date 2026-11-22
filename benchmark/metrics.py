@@ -51,8 +51,7 @@ def aggregate_metrics(evaluations: Iterable[Dict[str, Any]], predictions: Iterab
     blocking_tp = blocking_fn = 0
     clean_prs = clean_prs_with_fp = 0
     for ev in evs:
-        golden_total = len(ev.get("matches") or []) + len(ev.get("false_negatives") or [])
-        if golden_total == 0:
+        if ev.get("pr_truth") == "reviewed_clean":
             clean_prs += 1
             if ev.get("false_positives"): clean_prs_with_fp += 1
         actionable_fp += len(ev.get("false_positives") or [])
@@ -84,8 +83,10 @@ def aggregate_metrics(evaluations: Iterable[Dict[str, Any]], predictions: Iterab
             expected = "REQUEST_CHANGES"
         elif goldens:
             expected = "COMMENT"
-        else:
+        elif ev.get("pr_truth") == "reviewed_clean":
             expected = "MERGE"
+        else:
+            continue
         actual = str(pred.get("decision") or pred.get("recommendation") or "COMMENT").upper()
         if actual not in rank: actual = "NO_VERDICT"
         decision_total += 1
@@ -108,4 +109,5 @@ def aggregate_metrics(evaluations: Iterable[Dict[str, Any]], predictions: Iterab
     }
     f1 = (round(2*precision*recall/(precision+recall), 4) if precision+recall else 0.0) if precision is not None and recall is not None else None
     from benchmark.product_metrics import product_metrics
-    return {"prs": len(evs), "tp":tp,"fp":fp,"fn":fn,"precision":precision,"recall":recall,"f1":f1,"pr_detection_rate":_ratio(sum(1 for x in evs if x.get("tp",0)),len(evs)),"fp_per_pr":_ratio(fp,len(evs)),"actionable":actionable,"agent_run_success_rate":_ratio(healthy_runs,total_runs),"decision":{"accuracy":_ratio(decision_correct,decision_total),"over_blocking_rate":_ratio(over_blocking,decision_total),"under_blocking_rate":_ratio(under_blocking,decision_total),"confusion":decision_confusion},"breakdowns":breakdown,"latency_seconds":{"p50":_pct(lat,.5),"p90":_pct(lat,.9),"p95":_pct(lat,.95),"p99":_pct(lat,.99)}, "product": product_metrics(preds), "denominators": {"precision": tp + fp, "recall": tp + fn, "agent_runs": total_runs, "decisions": decision_total}}
+    from benchmark.pr_truth import merge_safety
+    return {"merge_safety": merge_safety(evs, preds), "prs": len(evs), "tp":tp,"fp":fp,"fn":fn,"precision":precision,"recall":recall,"f1":f1,"pr_detection_rate":_ratio(sum(1 for x in evs if x.get("tp",0)),len(evs)),"fp_per_pr":_ratio(fp,len(evs)),"actionable":actionable,"agent_run_success_rate":_ratio(healthy_runs,total_runs),"decision":{"accuracy":_ratio(decision_correct,decision_total),"over_blocking_rate":_ratio(over_blocking,decision_total),"under_blocking_rate":_ratio(under_blocking,decision_total),"confusion":decision_confusion},"breakdowns":breakdown,"latency_seconds":{"p50":_pct(lat,.5),"p90":_pct(lat,.9),"p95":_pct(lat,.95),"p99":_pct(lat,.99)}, "product": product_metrics(preds), "denominators": {"precision": tp + fp, "recall": tp + fn, "agent_runs": total_runs, "decisions": decision_total}}

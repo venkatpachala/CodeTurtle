@@ -19,6 +19,7 @@ def recompute(run_dir: Path) -> dict:
     golden_by_url = {
         pr.pr_url: [vars(item) for item in pr.golden_comments] for pr in dataset
     }
+    truth_by_url = {pr.pr_url: pr.pr_truth for pr in dataset}
     predictions = []
     evaluations = []
     eval_dir = run_dir / "evaluations"
@@ -26,7 +27,7 @@ def recompute(run_dir: Path) -> dict:
     for prediction_path in sorted((run_dir / "predictions").glob("*.json")):
         prediction = json.loads(prediction_path.read_text(encoding="utf-8"))
         pr_url = str(prediction.get("pr_url") or "")
-        evaluation = evaluate_pr(prediction, golden_by_url.get(pr_url, []))
+        evaluation = evaluate_pr(prediction, golden_by_url.get(pr_url, []), pr_truth=truth_by_url.get(pr_url))
         evaluation["pr_url"] = pr_url
         (eval_dir / prediction_path.name).write_text(
             json.dumps(evaluation, indent=2), encoding="utf-8"
