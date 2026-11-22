@@ -90,3 +90,21 @@ def test_failed_attempt_is_retained_without_claiming_its_source_was_reviewed(tmp
     failed["target"]={"repo":"","number":0,"base_sha":"","head_sha":"","comparison_base_sha":"","diff_sha256":""}
     output=tmp_path/"sealed.json";seal(root,preds,output)
     assert score(root,output,root/"annotations.pending.json")["merge_safety"]["no_verdict"]==1
+
+
+def test_operational_report_counts_attempts_and_missing_reference_matches(tmp_path):
+    root = tmp_path / "pilot"
+    _, cases = make_pilot(root)
+    rows = predictions(cases)
+    for i, row in enumerate(rows, 1):
+        row["elapsed_seconds"] = i
+    output = tmp_path / "sealed.json"
+    seal(root, rows, output)
+    annotations = root / "annotations.pending.json"
+    labels = json.loads(annotations.read_text())
+    labels[rows[0]["pr_url"]].update(reference_status="exact_base_and_head_trees", issue_labels=[{}, {}])
+    annotations.write_text(json.dumps(labels))
+    report = score(root, output, annotations)
+    assert report["operations"]["decisions"] == {"COMMENT": 30}
+    assert report["operations"]["latency_seconds"]["p95_nearest_rank"] == 29
+    assert report["findings"]["published_reference_issues_on_prs_with_zero_findings"] == 2

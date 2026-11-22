@@ -6,8 +6,10 @@ blocked until exposure and labels are audited separately from prediction inputs.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import json
+import math
 from pathlib import Path
 from typing import Literal
 
@@ -156,6 +158,10 @@ def score(root: Path, predictions_path: Path, annotations_path: Path) -> dict:
         raise ValueError("sealed pilot predictions changed")
     predictions=json.loads(predictions_path.read_text());annotations=json.loads(annotations_path.read_text())
     evaluations,flattened=[],[]
+    timings = []
+    health, decisions, findings_by_label = Counter(), Counter(), Counter()
+    eligible = inspected = model_calls = prompt_tokens = completion_tokens = findings_count = 0
+    published_issues_without_predictions = 0
     exposure_complete=True
     for pred in predictions:
         raw=pred.get("result",pred);annotation=annotations.get(pred["pr_url"],{})
@@ -168,9 +174,37 @@ def score(root: Path, predictions_path: Path, annotations_path: Path) -> dict:
         exposure_complete &= annotation.get("exposure_audit")=="passed"
         evaluations.append({"pr_url":pred["pr_url"],"pr_truth":label})
         flattened.append(raw|{"pr_url":pred["pr_url"]})
+        health[raw["health"]["status"]] += 1
+        decisions[raw["decision"] or "NO_VERDICT"] += 1
+        if "elapsed_seconds" in pred:
+            timings.append(pred["elapsed_seconds"])
+        eligible += raw["inspection"]["eligible"]
+        inspected += raw["inspection"]["inspected"]
+        provenance = raw.get("provenance", {})
+        model_calls += provenance.get("budget", {}).get("calls", 0)
+        for usage in provenance.get("model_calls", []):
+            prompt_tokens += usage.get("prompt_tokens") or 0
+            completion_tokens += usage.get("completion_tokens") or 0
+        count = len(raw["product_findings"])
+        findings_count += count
+        findings_by_label[label] += bool(count)
+        if not count and annotation.get("reference_status") == "exact_base_and_head_trees":
+            published_issues_without_predictions += len(annotation.get("issue_labels", []))
     safety=merge_safety(evaluations,flattened)
     labels_complete=not any(safety["labels"][key] for key in ("unlabeled","uncertain"))
+    latency_seconds = None
+    if times := sorted(timings):
+        latency_seconds = {"count":len(times), "total":sum(times),
+                           "p50_nearest_rank":times[math.ceil(.50 * len(times)) - 1],
+                           "p95_nearest_rank":times[math.ceil(.95 * len(times)) - 1]}
     return {"merge_safety":safety,"labels_complete":labels_complete,"exposure_audited":exposure_complete,
+        "operations":{"attempts":len(predictions),"health":dict(health),"decisions":dict(decisions),
+                      "eligible_units":eligible,"inspected_units":inspected,"model_budget_calls":model_calls,
+                      "reported_prompt_tokens":prompt_tokens,"reported_completion_tokens":completion_tokens,
+                      "latency_seconds":latency_seconds,"monetary_cost_usd":None},
+        "findings":{"product_findings":findings_count,"prs_with_any_finding_by_reference_label":dict(findings_by_label),
+                    "published_reference_issues_on_prs_with_zero_findings":published_issues_without_predictions,
+                    "matching_scope":"On cases with zero emitted findings, every published reference issue has zero matches. Cases with emitted findings require issue matching."},
         "eligible_for_headline_metrics":False,
         "scope":"Safety accounting only. Issue matching, label independence, representative sampling and release qualification are separate requirements.",
         "annotations_sha256":hashlib.sha256(annotations_path.read_bytes()).hexdigest()}
