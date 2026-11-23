@@ -41,7 +41,7 @@ Template: [`examples/codeturtle.yaml`](../examples/codeturtle.yaml).
 | `coverage_merge_min` | Optional. Empty KEEP may MERGE only if `units_packed / units_total` ≥ this (default `0.5`). Low coverage is COMMENT, never REQUEST_CHANGES |
 | `runtime` | `v4` (default ReviewRuntime) or `legacy` (17-node LangGraph) |
 | `bundle_max` | Max review bundles (default 4) |
-| `agent_max_steps` | Max BundleAgent tool steps (default 4) |
+| `agent_max_steps` | Semantic discovery and repair steps per bundle (default 4). Investigation has separately protected shared capacity |
 
 ## `ignore_paths` and lockfiles
 

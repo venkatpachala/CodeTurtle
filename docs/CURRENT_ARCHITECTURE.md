@@ -18,10 +18,11 @@ not have the v2 production contract guarantees.
 7. Retrieve sealed hunks, pinned HEAD source, and bounded snapshot lexical context.
    Normal PR risk reads also use pinned Git objects; no checkout fallback follows
    CLI snapshot-preparation failure.
-8. Construct typed proof batches of at most two hypotheses, with at most one
-   repair across the bundle inside both step and shared model-call budgets.
-   Valid decision siblings survive an invalid sibling; only invalid IDs enter
-   repair. Remaining failures preserve partial progress and cannot imply approval.
+8. Investigate up to two hypotheses per semantic bundle with separate discovery,
+   investigation and verification capacity under the shared model-call ceiling.
+   The backend generates immutable source-span choices for BASE and HEAD.
+   A bounded repair can retry a malformed response against the same evidence.
+   Remaining failures preserve partial progress and cannot imply approval.
 9. Ground, position, reflect, and independently verify candidates.
 10. Build canonical findings, evidence-backed process coverage, health, and unresolved hypotheses.
 11. Evaluate a pure product policy once.
@@ -30,12 +31,12 @@ not have the v2 production contract guarantees.
 
 ## Canonical result
 
-`ReviewResult.to_dict()` emits schema version `2.3`. It includes target, health,
+`ReviewResult.to_dict()` emits schema version `2.4`. It includes target, health,
 inspection, findings, product findings, execution, trace, model/config provenance,
 policy reasons, and bounded-work telemetry. The additive requirement contracts
 record intent sources, requirements, assessments, investigations, and evidence.
 `ReviewResult.from_dict()` accepts a canonical result or its CLI envelope and
-upgrades stored `2.0`, `2.1`, and `2.2` results to `2.3`. `findings` is diagnostic; the
+upgrades stored `2.0` through `2.3` results to `2.4`. `findings` is diagnostic; the
 `product_findings` projection contains verified defects. No empty-list fallback
 reconstructs v4 findings from legacy comments.
 

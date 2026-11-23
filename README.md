@@ -228,7 +228,7 @@ Drop a `.codeturtle.yaml` at your repo root (see [`examples/codeturtle.yaml`](ex
 | `coverage_merge_min` | Min packed/total ratio required to `MERGE` on empty finding set (default 0.5) |
 | `runtime` | `v4` (default) or `legacy` (17-node LangGraph graph) |
 | `bundle_max` | Max review bundles (default 4) |
-| `agent_max_steps` | Max BundleAgent tool steps per bundle (default 4) |
+| `agent_max_steps` | Semantic discovery and repair steps per bundle (default 4). Investigation uses the shared review budget |
 
 Config merge order (later wins): `Settings / .env` → `environment variables` → `.codeturtle.yaml` → **CLI flags**.
 
