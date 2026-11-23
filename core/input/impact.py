@@ -66,19 +66,22 @@ class SnapshotImpactIndex:
                 continue
             text, digest = self.cache[path]
             lines = text.splitlines()
-            for number, line in enumerate(lines, 1):
-                if needle.search(line):
-                    if len(hits) == 20:
-                        capped = True
-                        break
-                    first, last = max(1, number - 1), min(len(lines), number + 1)
-                    hits.append({"path": path, "line": number, "text": line.strip()[:240], "content_sha256": digest,
-                                 "changed": path in self.changed, "kind": unit_kind(path),
-                                 "context": [{"line": n, "text": lines[n - 1][:240]}
-                                             for n in range(first, last + 1)]})
-                    break  # Prioritize distinct context paths over repeated hits in one file.
-            if capped:
+            matches = ((number, line) for number, line in enumerate(lines, 1) if needle.search(line))
+            best = min(matches, key=lambda item: (
+                not bool(re.search(r"\b(?:assert\w*|expect)\b", item[1])),
+                bool(re.match(r"\s*(?:import\b|from\b|use\b)", item[1])),
+                item[0]), default=None)
+            if best is None:
+                continue
+            if len(hits) == 20:
+                capped = True
                 break
+            number, line = best
+            first, last = max(1, number - 1), min(len(lines), number + 1)
+            hits.append({"path": path, "line": number, "text": line.strip()[:240], "content_sha256": digest,
+                         "changed": path in self.changed, "kind": unit_kind(path),
+                         "context": [{"line": n, "text": lines[n - 1][:240]}
+                                     for n in range(first, last + 1)]})
         truncated = bool(self.omitted or self.errors or capped or getattr(self.provider, "context_inventory_limited", False))
         return {"symbol": symbol, "matches": hits, "n": len(hits),
                 "text": "\n".join(f"{h['path']}:{h['line']}: {h['text']}" for h in hits),

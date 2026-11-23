@@ -48,7 +48,7 @@ def pinned_tools(tmp_path, head="POST", *, unchanged_test=False):
     git(tmp_path, "config", "user.email", "test@example.invalid")
     (tmp_path / "app.py").write_text('def request():\n    method = "GET"\n    return method\n')
     if unchanged_test:
-        (tmp_path / "test_app.py").write_text('def test_reads():\n    assert request() == "GET"\n')
+        (tmp_path / "test_app.py").write_text('from app import request\n\ndef test_reads():\n    assert request() == "GET"\n')
     git(tmp_path, "add", ".")
     git(tmp_path, "commit", "-m", "baseline")
     base = git(tmp_path, "rev-parse", "HEAD")
