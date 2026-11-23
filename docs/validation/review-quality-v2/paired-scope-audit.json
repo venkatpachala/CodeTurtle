@@ -1,0 +1,12 @@
+{
+  "baseline": {
+    "source_requests": 241,
+    "inspected_under_current_clipping_rules": 21,
+    "eligible_under_current_classification": 183
+  },
+  "candidate": {
+    "source_requests": 406,
+    "inspected_under_current_clipping_rules": 17,
+    "eligible_under_current_classification": 183
+  }
+}

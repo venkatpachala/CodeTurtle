@@ -126,7 +126,8 @@ Local `--requirement-strategy` selects investigate (default), link, or off;
 Failed/skipped analysis has no code verdict. A verified blocking defect requests
 changes even if the remaining analysis is partial. Otherwise partial analysis,
 incomplete inspection, material unresolved hypotheses, or unattributed failing
-execution produces COMMENT. Complete inspected analysis without findings can
+execution produces COMMENT. Recognizable persistence and synchronization
+changes require human review. Complete inspected analysis without findings can
 recommend MERGE. Medium-and-above verified defects are blocking under the preview's
 default policy; blocking is stored separately from severity.
 

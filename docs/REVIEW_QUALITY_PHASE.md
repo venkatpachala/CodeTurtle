@@ -78,3 +78,79 @@ The scorer exposes admission, inspection gaps, hypotheses, proof outcomes,
 candidate conversion, final verification, calls, tokens and latency. A finding
 on an externally labeled PR still needs issue-level matching to establish
 recall or precision. Unlabeled controls are excluded from clean-PR conclusions.
+
+## Results
+
+The full suite passed **848 tests**, including live Docker checks, on the code
+revision containing the synchronization guard. The original 30-PR test split
+was replayed offline for scope accounting. Eligible count changed from 392 to
+399. Full-inspection credit fell from 84 to 71 on the original assessments,
+removing the 13 clipped credits. Both saved six-line proof rejections accepted
+and resolved backend span IDs in a schema-only replay.
+
+### Matched ten-PR validation
+
+The paired live run used baseline `461daa8` and candidate `c56f333`.
+Both reviewers assessed the same pinned validation split, using the same
+Ollama GPU endpoint, Qwen model digest, bundle limit and shared call ceiling.
+This is a comparison of the combined changes. It does not isolate causes of
+the latency difference or control for every warm-up or network effect.
+
+| Measure | Baseline | Candidate |
+| --- | ---: | ---: |
+| Sealed results | 10 | 10 |
+| Eligible units | 183 | 183 |
+| Packed units | 119 | 121 |
+| Admitted units | 30 | 30 |
+| Inspected under each implementation | 27 | 17 |
+| Inspected after applying current clipping rules offline | 21 | 17 |
+| Hypotheses | 3 | 2 |
+| Proofs with model conclusions | 1 | 2 |
+| Proofs lost to budget | 2 | 0 |
+| Agent candidates and verified product findings | 0 | 0 |
+| Published issue matches | 0 of 22 | 0 of 22 |
+| False-MERGE on externally labeled defective PRs | 1 of 5 | 1 of 5 |
+| Source API requests | 241 | 406 |
+| Budgeted model calls | 16 | 18 |
+| Reported prompt and completion tokens | 43,563 | 54,915 |
+| Case latency p50 | 44.4 s | 54.5 s |
+| Case latency p95 | 169.4 s | 222.6 s |
+
+The new budget reached both candidate leads, and both proof answers refuted
+their specific lead. Final verification received zero candidates. The stronger
+scope accounting and evidence handling did not produce a measured quality or
+latency gain on this split. Five of the ten cases lacked accepted clean or
+defect labels. The candidate's false-MERGE is the same Grafana case observed by
+the baseline. This supports a process and safety diagnosis with a small labeled
+denominator.
+[Sealed comparison](validation/review-quality-v2/comparison.json)
+
+### Follow-up safety guard
+
+Both frozen validation results credited the two units of Grafana #90939 as
+inspected and recommended MERGE. The changed hunks expose new synchronization
+boundaries. The follow-up prioritizes these changes and requires human review
+when recognizable synchronization changes have no verified blocker. This is
+a deterministic policy guard. A policy replay against the saved assessment
+and a new native run on the same pinned revisions both returned COMMENT
+with `synchronization_change_requires_review`. The new run emitted zero
+findings. The pair remains sealed at its original revision.
+[Grafana policy replay and native rerun](validation/review-quality-v2/lock-guard/check.json)
+
+### Known miss and synthetic controls
+
+On the previously exposed Cal.com #14943 case, the candidate returned COMMENT
+and emitted no findings. Discovery used two calls and generated zero
+hypotheses. The persistence guard still applied. This remains a discovery miss.
+
+On the two existing synthetic development families, native Qwen found the
+expiry regression, returned no findings on either repair, and left the
+signed-delta regression unresolved during final verification. Independent
+Docker BASE/HEAD oracles passed for all four cases. A separate
+`gpt-6-astra` reference answered both unique synthetic discovery questions
+using the captured question evidence and schema. Native discovery also
+selected the expected side on all four directional cases. The stronger-model
+reference comparison covers discovery only. It supplies no real-PR
+or final-verifier accuracy estimate.
+[Synthetic oracles](validation/review-quality-v2/synthetic-oracles.json)
+· [Matched synthetic responses](validation/review-quality-v2/synthetic-reference.json)

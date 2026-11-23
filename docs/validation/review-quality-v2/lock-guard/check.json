@@ -1,0 +1,32 @@
+{
+  "pr_url": "https://github.com/grafana/grafana/pull/90939",
+  "target": {
+    "repo": "grafana/grafana",
+    "number": 90939,
+    "base_sha": "3ce1a5b0caab215346a51629b0344b90d67e9478",
+    "head_sha": "b1613e320acff00623e6efc59f00ee68c7684a97",
+    "diff_sha256": "5f78ad1876ccf4a7b15597c446a9ac0abef18c6bf210842a07f4197f14b8b9c2",
+    "comparison_base_sha": "cca9dee702ac4338ddc38aa56257273b8143e32e"
+  },
+  "before": "MERGE",
+  "recognized_units": [
+    "CU-002"
+  ],
+  "replayed_policy": {
+    "decision": "COMMENT",
+    "reasons": [
+      "synchronization_change_requires_review"
+    ],
+    "approval_eligible": false
+  },
+  "scope": "Post-hoc deterministic replay on frozen evidence.",
+  "native_rerun": {
+    "reviewer_commit": "5df85cfdb4b6029fd1cf1775dde1a4b1509beeba",
+    "decision": "COMMENT",
+    "reasons": [
+      "synchronization_change_requires_review"
+    ],
+    "verified_findings": 0,
+    "elapsed_seconds": 22.877017224000156
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "release": {
+    "reviewer_commit": "c56f33312ee8b8719fa64a1bca3a228edbc378b6",
+    "reviewer_identity": "728225a54dd17dd19ec9bd80350773e6fb444c9476127f29854a6c86ab0a9035",
+    "reviewer_dirty": false,
+    "python": "3.12.16",
+    "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+    "cpu_count": 16,
+    "packages": {
+      "pydantic": "2.13.4",
+      "httpx": "0.28.1",
+      "langchain-ollama": "1.1.0",
+      "PyGithub": "2.9.1",
+      "typer": "0.26.8"
+    },
+    "model_profile": {
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b",
+      "context_tokens": 8192,
+      "rules": true,
+      "verification": true,
+      "endpoint_fingerprint": "f38707a72806e05128cfcd67f38de8be852cde31fb49b4dd40699a8edb781c27"
+    },
+    "observed_model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+    "scorer_sha256": "0ecd4f05465fabcc596d4860677024fe18d41d5ff8f997e793a8a333e97629c5",
+    "quality_qualified": false,
+    "limitations": [
+      "Model digest observed at freeze time; verify it again after trials.",
+      "This is reproducibility metadata, not a benchmark result or release qualification.",
+      "GPU/peak memory, electricity and monetary inference cost are not established by this manifest."
+    ]
+  },
+  "bundle_max": 1,
+  "agent_max_steps": 2,
+  "split": "validation",
+  "inputs_sha256": "db8b0e427f471084975469e261f98b32a9d2f699c15ce637c6b7f63ef8a60875",
+  "source_scope": "frozen patch; bounded pinned nearby-tree context; exact Git blobs on demand"
+}

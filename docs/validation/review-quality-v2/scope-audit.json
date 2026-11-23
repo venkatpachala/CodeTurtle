@@ -1,0 +1,10 @@
+{
+  "cases": 30,
+  "original_eligible": 392,
+  "reclassified_eligible": 399,
+  "original_inspected": 84,
+  "inspected_after_scope_correction": 71,
+  "old_inspection_credits_on_clipped_hunks": 13,
+  "eligible_clipped": 34,
+  "scope": "Offline inventory reconstruction with original bundle assignments and model outputs. No new inference."
+}

@@ -1,0 +1,25 @@
+{
+  "corpus": {
+    "name": "contrast-transfer-v1",
+    "split": "development",
+    "eligible_for_headline_metrics": false,
+    "scope": "First-pass transfer check after development on UTF-8 and pagination. Frozen before prediction, no tuning on these outputs.",
+    "case_count": 4,
+    "family_count": 2,
+    "inputs_sha256": "cbadb94203a0008715d4151b92922df238555a6ac2f039ef9f65a3b09e6a7be2",
+    "labels_sha256": "71a32b3839fa5d7684da60e86627c0f43fa127828f1e4ccbb4959b32f7cf30ff"
+  },
+  "reviewer_commit": "c56f33312ee8b8719fa64a1bca3a228edbc378b6",
+  "reviewer_dirty": false,
+  "provider": {
+    "provider": "ollama",
+    "model": "qwen2.5-coder:7b",
+    "context_tokens": 8192,
+    "rules": true,
+    "verification": true,
+    "endpoint_fingerprint": "f38707a72806e05128cfcd67f38de8be852cde31fb49b4dd40699a8edb781c27"
+  },
+  "prompt_version": "semantic-contract-v11-source-spans",
+  "eligible_for_headline_metrics": false,
+  "transport": "native_gateway_no_llm_callback"
+}

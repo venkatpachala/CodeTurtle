@@ -1,0 +1,215 @@
+{
+  "scope": "Validation split on pinned real PRs. Source inventory scope and stage allocation are intentionally different. Labels are external and incomplete.",
+  "comparison": {
+    "baseline": {
+      "merge_safety": {
+        "measured": true,
+        "labels": {
+          "defective": 5,
+          "reviewed_clean": 0,
+          "uncertain": 0,
+          "unlabeled": 5
+        },
+        "no_verdict": 0,
+        "false_merge_given_defective": {
+          "events": 1,
+          "total": 5,
+          "rate": 0.2,
+          "wilson_95": [
+            0.03622410863243014,
+            0.6244653702374747
+          ]
+        },
+        "defective_given_labeled_merge": {
+          "events": 1,
+          "total": 1,
+          "rate": 1.0,
+          "wilson_95": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "all_merges": 1,
+        "unlabeled_or_uncertain_merges": 0,
+        "all_merge_defect_rate_label_bounds": [
+          1.0,
+          1.0
+        ],
+        "limitation": "Wilson intervals assume independent representative PRs; label bounds are not confidence intervals."
+      },
+      "labels_complete": false,
+      "exposure_audited": false,
+      "operations": {
+        "attempts": 10,
+        "health": {
+          "completed": 3,
+          "partial": 7
+        },
+        "decisions": {
+          "MERGE": 1,
+          "COMMENT": 9
+        },
+        "eligible_units": 183,
+        "inspected_units": 27,
+        "model_budget_calls": 16,
+        "reported_prompt_tokens": 39214,
+        "reported_completion_tokens": 4349,
+        "latency_seconds": {
+          "count": 10,
+          "total": 527.4867402070004,
+          "p50_nearest_rank": 44.352232705999995,
+          "p95_nearest_rank": 169.38708706900002
+        },
+        "monetary_cost_usd": null
+      },
+      "findings": {
+        "product_findings": 0,
+        "prs_with_any_finding_by_reference_label": {
+          "defective": 0,
+          "unlabeled": 0
+        },
+        "published_reference_issues_on_prs_with_zero_findings": 22,
+        "matching_scope": "On cases with zero emitted findings, every published reference issue has zero matches. Cases with emitted findings require issue matching."
+      },
+      "review_funnel": {
+        "packed_units": 119,
+        "admitted_units": 30,
+        "hypotheses": 3,
+        "agent_candidates": 0,
+        "final_verifications": 0,
+        "inspection_gaps": {
+          "not_packed": 64,
+          "model_input_budget": 89,
+          "assessment_unavailable": 2,
+          "other_evidence_gap": 1
+        },
+        "proof_outcomes": {
+          "violation_refuted": 1,
+          "budget_exhausted": 2
+        },
+        "model_calls_by_lane": {}
+      },
+      "eligible_for_headline_metrics": false,
+      "scope": "Safety accounting only. Issue matching, label independence, representative sampling and release qualification are separate requirements.",
+      "annotations_sha256": "a178ba9d130523df01dd4e24ec90f3c99496c5335339cba0addde340e3d9f689",
+      "source_requests": 241,
+      "reviewer_commit": "461daa8da2bf6aa12ee3d1c147eec66bded824d5",
+      "proof_attempts_excluding_budget_and_context": 1
+    },
+    "candidate": {
+      "merge_safety": {
+        "measured": true,
+        "labels": {
+          "defective": 5,
+          "reviewed_clean": 0,
+          "uncertain": 0,
+          "unlabeled": 5
+        },
+        "no_verdict": 0,
+        "false_merge_given_defective": {
+          "events": 1,
+          "total": 5,
+          "rate": 0.2,
+          "wilson_95": [
+            0.03622410863243014,
+            0.6244653702374747
+          ]
+        },
+        "defective_given_labeled_merge": {
+          "events": 1,
+          "total": 1,
+          "rate": 1.0,
+          "wilson_95": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "all_merges": 1,
+        "unlabeled_or_uncertain_merges": 0,
+        "all_merge_defect_rate_label_bounds": [
+          1.0,
+          1.0
+        ],
+        "limitation": "Wilson intervals assume independent representative PRs; label bounds are not confidence intervals."
+      },
+      "labels_complete": false,
+      "exposure_audited": false,
+      "operations": {
+        "attempts": 10,
+        "health": {
+          "completed": 1,
+          "partial": 9
+        },
+        "decisions": {
+          "MERGE": 1,
+          "COMMENT": 9
+        },
+        "eligible_units": 183,
+        "inspected_units": 17,
+        "model_budget_calls": 18,
+        "reported_prompt_tokens": 50312,
+        "reported_completion_tokens": 4603,
+        "latency_seconds": {
+          "count": 10,
+          "total": 724.8102577639993,
+          "p50_nearest_rank": 54.49392951499976,
+          "p95_nearest_rank": 222.57977600599997
+        },
+        "monetary_cost_usd": null
+      },
+      "findings": {
+        "product_findings": 0,
+        "prs_with_any_finding_by_reference_label": {
+          "defective": 0,
+          "unlabeled": 0
+        },
+        "published_reference_issues_on_prs_with_zero_findings": 22,
+        "matching_scope": "On cases with zero emitted findings, every published reference issue has zero matches. Cases with emitted findings require issue matching."
+      },
+      "review_funnel": {
+        "packed_units": 121,
+        "admitted_units": 30,
+        "hypotheses": 2,
+        "agent_candidates": 0,
+        "final_verifications": 0,
+        "inspection_gaps": {
+          "not_packed": 62,
+          "model_input_budget": 89,
+          "other_evidence_gap": 7,
+          "excerpt_truncated": 8
+        },
+        "proof_outcomes": {
+          "violation_refuted": 2
+        },
+        "model_calls_by_lane": {
+          "discovery": 16,
+          "investigation": 2
+        }
+      },
+      "eligible_for_headline_metrics": false,
+      "scope": "Safety accounting only. Issue matching, label independence, representative sampling and release qualification are separate requirements.",
+      "annotations_sha256": "a178ba9d130523df01dd4e24ec90f3c99496c5335339cba0addde340e3d9f689",
+      "source_requests": 406,
+      "reviewer_commit": "c56f33312ee8b8719fa64a1bca3a228edbc378b6",
+      "proof_attempts_excluding_budget_and_context": 2
+    }
+  },
+  "label_source": "docs/validation/efficient-reviewer-v1/published-labels/annotations.json",
+  "known_miss": {
+    "pr_url": "https://github.com/calcom/cal.com/pull/14943",
+    "health": "completed",
+    "decision": "COMMENT",
+    "reasons": [
+      "insufficient_inspection",
+      "persistence_change_requires_review"
+    ],
+    "inspection": {
+      "eligible": 5,
+      "packed": 3,
+      "inspected": 3
+    },
+    "proof_outcomes": {},
+    "findings": 0,
+    "elapsed_seconds": 59.545785012000124
+  }
+}

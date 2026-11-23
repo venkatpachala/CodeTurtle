@@ -1,0 +1,46 @@
+{
+  "scope": "Matched synthetic discovery question and schema, with a tool-free instruction wrapper. Identical prompt hashes reuse the same reference answer.",
+  "unique_requests": 2,
+  "results": [
+    {
+      "case_id": "expiry-regression",
+      "prompt_sha256": "8cfe82525f8082620bc455705fc8c56ee2400d78f70fb7f6edba011f04b112f6",
+      "model": "gpt-6-astra",
+      "response": {
+        "requirement_id": "R1",
+        "reason": "The requirement explicitly includes equality. Since now and deadline both equal 0, is_expired returns True.",
+        "selected": "option_2"
+      }
+    },
+    {
+      "case_id": "expiry-repair",
+      "prompt_sha256": "8cfe82525f8082620bc455705fc8c56ee2400d78f70fb7f6edba011f04b112f6",
+      "model": "gpt-6-astra",
+      "response": {
+        "requirement_id": "R1",
+        "reason": "The requirement explicitly includes equality. Since now and deadline both equal 0, is_expired returns True.",
+        "selected": "option_2"
+      }
+    },
+    {
+      "case_id": "delta-regression",
+      "prompt_sha256": "23f9b3a641319647d66d4dc134895f0d035048bbcd453e57684bb0f14d8c9cbc",
+      "model": "gpt-6-astra",
+      "response": {
+        "requirement_id": "R1",
+        "reason": "The signed increase is end minus start: 1 - 0 = 1.",
+        "required_integer": 1
+      }
+    },
+    {
+      "case_id": "delta-repair",
+      "prompt_sha256": "23f9b3a641319647d66d4dc134895f0d035048bbcd453e57684bb0f14d8c9cbc",
+      "model": "gpt-6-astra",
+      "response": {
+        "requirement_id": "R1",
+        "reason": "The signed increase is end minus start: 1 - 0 = 1.",
+        "required_integer": 1
+      }
+    }
+  ]
+}

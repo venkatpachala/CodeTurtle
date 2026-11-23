@@ -41,6 +41,13 @@ records, protected investigation capacity, bounded unchanged-file context,
 and backend-resolved source spans. The initial 30-case pilot remains sealed
 as a historical baseline.
 
+On the ten-PR paired validation split, proof attempts increased from one
+to two and proof starvation fell from two to zero. Both runs missed all
+22 published issue references. The new profile used more time and source
+requests. A follow-up synchronization guard changed the same pinned
+Grafana false-MERGE case to COMMENT in a native rerun.
+[Validation report](validation/review-quality-v2/comparison.json)
+
 The [efficient reviewer report](EFFICIENT_REVIEWER_PHASE.md) records the five
 priorities, learning notes, sealed experiments, source-linked labels, resources,
 and reproduction commands. Key outcomes include a local Docker qualification
