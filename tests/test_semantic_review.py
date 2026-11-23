@@ -85,6 +85,16 @@ def test_fix_assessment_never_becomes_defect_candidate():
     assert result.to_dict()["prompt_version"] == "semantic-contract-v11-source-spans"
 
 
+def test_reported_missing_contract_evidence_prevents_merge_eligible_coverage():
+    bundle = Bundle(id="B1", paths=["app.py"], units=[unit()])
+    row = assessment() | {"missing_evidence": ["caller requires separate inspection"]}
+    result = BundleAgent(llm=lambda _: json.dumps({"assessments": [row]}), discovery_protocol="semantic").run_result(bundle)
+    coverage = collect_inspection(bundle.units, [bundle], [{"bundle_id": bundle.id, **result.to_dict()}])
+    assert result.status == "PARTIAL"
+    assert coverage.inspected == 0
+    assert coverage.assessments[0].reason == "caller requires separate inspection"
+
+
 def test_partial_assessment_repairs_only_missing_units_and_preserves_inspection():
     bundle = Bundle(id="B1", paths=["app.py"], units=[unit(), unit("CU-002")])
     prompts = []

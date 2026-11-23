@@ -161,6 +161,7 @@ def score(root: Path, predictions_path: Path, annotations_path: Path) -> dict:
     timings = []
     health, decisions, findings_by_label = Counter(), Counter(), Counter()
     eligible = inspected = model_calls = prompt_tokens = completion_tokens = findings_count = 0
+    stages, scope_gaps, proof_outcomes, model_lanes = Counter(), Counter(), Counter(), Counter()
     published_issues_without_predictions = 0
     exposure_complete=True
     for pred in predictions:
@@ -180,8 +181,23 @@ def score(root: Path, predictions_path: Path, annotations_path: Path) -> dict:
             timings.append(pred["elapsed_seconds"])
         eligible += raw["inspection"]["eligible"]
         inspected += raw["inspection"]["inspected"]
+        stages["packed_units"] += raw["inspection"]["packed"]
+        for unit in raw["inspection"].get("assessments", []):
+            if unit["status"] != "inspected":
+                reason = unit.get("reason") or "unknown"
+                scope_gaps[reason if reason in {"not_packed", "model_input_budget", "excerpt_truncated",
+                                                "assessment_unavailable"} else "other_evidence_gap"] += 1
+        for run in raw.get("agent_runs", []):
+            stages["admitted_units"] += sum(bool(unit.get("selected")) for unit in run.get("admission", []))
+            stages["hypotheses"] += len(run.get("hypotheses", []))
+            stages["agent_candidates"] += run.get("candidate_count", 0)
+            for proof in run.get("proof_runs", []):
+                proof_outcomes[proof.get("conclusion") or proof.get("status", "unknown")] += 1
+        stages["final_verifications"] += len(raw.get("finding_verifications", []))
         provenance = raw.get("provenance", {})
-        model_calls += provenance.get("budget", {}).get("calls", 0)
+        budget = provenance.get("budget", {})
+        model_calls += budget.get("calls", 0)
+        model_lanes.update(budget.get("calls_by_lane", {}))
         for usage in provenance.get("model_calls", []):
             prompt_tokens += usage.get("prompt_tokens") or 0
             completion_tokens += usage.get("completion_tokens") or 0
@@ -205,6 +221,8 @@ def score(root: Path, predictions_path: Path, annotations_path: Path) -> dict:
         "findings":{"product_findings":findings_count,"prs_with_any_finding_by_reference_label":dict(findings_by_label),
                     "published_reference_issues_on_prs_with_zero_findings":published_issues_without_predictions,
                     "matching_scope":"On cases with zero emitted findings, every published reference issue has zero matches. Cases with emitted findings require issue matching."},
+        "review_funnel":{**stages, "inspection_gaps":dict(scope_gaps), "proof_outcomes":dict(proof_outcomes),
+                         "model_calls_by_lane":dict(model_lanes)},
         "eligible_for_headline_metrics":False,
         "scope":"Safety accounting only. Issue matching, label independence, representative sampling and release qualification are separate requirements.",
         "annotations_sha256":hashlib.sha256(annotations_path.read_bytes()).hexdigest()}

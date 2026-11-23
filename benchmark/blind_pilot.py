@@ -142,7 +142,9 @@ class PilotSource:
                           content=raw, content_sha256=hashlib.sha256(raw).hexdigest())
 
 
-def predict(root: Path, output: Path, split: str) -> None:
+def predict(root: Path, output: Path, split: str, *, bundle_max: int = 1, agent_max_steps: int = 2) -> None:
+    if not 1 <= bundle_max <= 32 or not 1 <= agent_max_steps <= 8:
+        raise ValueError("bundle-max must be 1..32 and agent-max-steps 1..8")
     registry, rows = load_inputs(root)
     output.mkdir(parents=True, exist_ok=True)
     if (output / "predictions.json").exists():
@@ -151,7 +153,7 @@ def predict(root: Path, output: Path, split: str) -> None:
     import tempfile
     with tempfile.TemporaryDirectory() as directory:
         release = freeze(Path(directory) / "release.json")
-    profile = {"release": release, "bundle_max": 1, "agent_max_steps": 2, "split": split,
+    profile = {"release": release, "bundle_max": bundle_max, "agent_max_steps": agent_max_steps, "split": split,
                "inputs_sha256": registry["inputs_sha256"], "source_scope": "frozen patch; bounded pinned nearby-tree context; exact Git blobs on demand"}
     manifest_path = output / "manifest.json"
     if manifest_path.exists() and json.loads(manifest_path.read_bytes()) != profile:
@@ -210,5 +212,7 @@ if __name__ == "__main__":
     parser.add_argument("root", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--split", choices=["development","validation","test"], required=True)
+    parser.add_argument("--bundle-max", type=int, default=1)
+    parser.add_argument("--agent-max-steps", type=int, default=2)
     args = parser.parse_args()
-    predict(args.root, args.output, args.split)
+    predict(args.root, args.output, args.split, bundle_max=args.bundle_max, agent_max_steps=args.agent_max_steps)

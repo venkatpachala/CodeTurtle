@@ -365,7 +365,7 @@ def run_semantic(agent, bundle, tools):
                                 "behavioral_delta":"","hypothesis_outcome":"","evidence_refs":[]})
             continue
         contracts.append({**row.model_dump(mode="json"),"verification_level":"source_assessment_not_execution"})
-        assessments.append({"unit_id":uid,"status":"unknown" if row.outcome=="unassessed" else "inspected",
+        assessments.append({"unit_id":uid,"status":"unknown" if row.outcome=="unassessed" or row.missing_evidence else "inspected",
                             "behavioral_delta":row.behavioral_delta,"hypothesis_outcome":row.outcome,
                             "evidence_refs":list(row.evidence_refs),"reason":"; ".join(row.missing_evidence)})
         if row.hypothesis is not None and len(hypotheses)<2:
