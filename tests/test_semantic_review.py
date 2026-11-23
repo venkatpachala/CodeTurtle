@@ -43,11 +43,13 @@ def proof_for(prompt, head_value="POST"):
             **observed, "missing_evidence": []}
 
 
-def pinned_tools(tmp_path, head="POST"):
+def pinned_tools(tmp_path, head="POST", *, unchanged_test=False):
     git(tmp_path, "init")
     git(tmp_path, "config", "user.name", "Semantic test")
     git(tmp_path, "config", "user.email", "test@example.invalid")
     (tmp_path / "app.py").write_text('def request():\n    method = "GET"\n    return method\n')
+    if unchanged_test:
+        (tmp_path / "test_app.py").write_text('def test_reads():\n    assert request() == "GET"\n')
     git(tmp_path, "add", ".")
     git(tmp_path, "commit", "-m", "baseline")
     base = git(tmp_path, "rev-parse", "HEAD")
@@ -57,6 +59,22 @@ def pinned_tools(tmp_path, head="POST"):
     snapshot = provider.resolve(base)
     bundle = Bundle(id="B-001", paths=["app.py"], units=[unit()])
     return bundle, SnapshotBundleTools(bundle, index=build_diff_index(provider.diff(snapshot)), provider=provider, snapshot=snapshot)
+
+
+def test_discovery_receives_contract_from_unchanged_pinned_test(tmp_path):
+    bundle, tools = pinned_tools(tmp_path, unchanged_test=True)
+    bundle.units[0]["symbols"] = ["request"]
+    (tmp_path / "test_app.py").write_text('def test_reads():\n    assert request() == "POST"\n')
+    def respond(prompt):
+        package = json.loads(prompt.split("\nPACKAGE\n")[1])
+        impact = package["impact_context"][0]
+        assert impact["revision_sha"] == tools.snapshot.head_sha
+        hit = impact["matches"][0]
+        assert hit["path"] == "test_app.py" and not hit["changed"]
+        assert 'request() == "GET"' in hit["text"]
+        return json.dumps({"assessments": [assessment()]})
+    result = BundleAgent(llm=respond, discovery_protocol="semantic").run_result(bundle, tools)
+    assert result.status == "VALID_EMPTY"
 
 
 def test_fix_assessment_never_becomes_defect_candidate():

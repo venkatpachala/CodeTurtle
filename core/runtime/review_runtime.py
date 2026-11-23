@@ -682,7 +682,11 @@ class ReviewRuntime:
                 for item in intent.items:
                     if candidate.file in item.paths:
                         context_paths.extend(item.context_paths)
-            return tuple(context_paths)
+            if impact_index is not None:
+                matches = impact_index.search(candidate.symbol).get("matches", [])
+                related = [hit["path"] for hit in matches if not hit["changed"] and hit["path"] != candidate.file]
+                context_paths.extend(related[:2])
+            return tuple(dict.fromkeys(context_paths))
 
         def contract_completion(prompt: str) -> str:
             finding_generation_metadata.clear()

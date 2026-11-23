@@ -6,7 +6,7 @@ import base64
 from functools import lru_cache
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import subprocess
 import time
 from types import SimpleNamespace
@@ -17,6 +17,7 @@ from benchmark.pilot import load_inputs, seal
 from benchmark.release_manifest import freeze
 from core.agent.bundle_agent import PROMPT_VERSION
 from core.input.snapshot import GitSnapshotProvider, InputError, ReviewSnapshot, SourceNotFound, SourceRead
+from core.pr_facts import is_source_file
 from core.review.artifacts import write_json_atomic
 from core.review.budget import ReviewBudget
 from core.review.contract import ReviewHealth, ReviewTarget
@@ -28,6 +29,9 @@ from core.verification.diff_index import build_diff_index
 
 class PilotSource:
     """Frozen patch and regular source blobs resolved through exact Git commits and trees."""
+
+    context_file_limit = 36
+    context_inventory_limited = True
 
     def __init__(self, client, repository, snapshot, patch):
         self.snapshot = snapshot
@@ -85,6 +89,38 @@ class PilotSource:
             raise InputError("foreign snapshot")
         return tuple(self.paths_changed)
 
+    def context_paths(self, snapshot):
+        """Inspect root and nearby directories with a bounded number of tree operations."""
+        if snapshot != self.snapshot:
+            raise InputError("foreign snapshot")
+        root = self.commit_tree(snapshot.head_sha)
+        parents = [str(PurePosixPath(path).parent) for path in self.paths_changed]
+        directories = list(dict.fromkeys([*parents, ".", "tests", "test", "prisma", "schema"]))[:10]
+        paths = dict.fromkeys(self.paths_changed)
+        started = self.requests
+        for directory in directories:
+            if self.requests - started >= 30 or len(paths) >= len(self.paths_changed) + 96:
+                break
+            parts = PurePosixPath(directory).parts
+            if len(parts) > 12:
+                continue
+            tree = root
+            for part in parts:
+                entry = self.tree(tree).get(part)
+                if entry is None or entry["type"] != "tree":
+                    tree = None
+                    break
+                tree = entry["sha"]
+            if tree is None:
+                continue
+            for name, entry in sorted(self.tree(tree).items()):
+                path = (PurePosixPath(directory) / name).as_posix()
+                if entry["mode"] in {"100644", "100755"} and is_source_file(path):
+                    paths.setdefault(path)
+                if len(paths) >= len(self.paths_changed) + 96:
+                    break
+        return tuple(paths)
+
     def read(self, snapshot, path, side="head"):
         if snapshot != self.snapshot:
             raise InputError("foreign snapshot")
@@ -116,7 +152,7 @@ def predict(root: Path, output: Path, split: str) -> None:
     with tempfile.TemporaryDirectory() as directory:
         release = freeze(Path(directory) / "release.json")
     profile = {"release": release, "bundle_max": 1, "agent_max_steps": 2, "split": split,
-               "inputs_sha256": registry["inputs_sha256"], "source_scope": "frozen patch; changed-path inventory; exact Git blobs on demand"}
+               "inputs_sha256": registry["inputs_sha256"], "source_scope": "frozen patch; bounded pinned nearby-tree context; exact Git blobs on demand"}
     manifest_path = output / "manifest.json"
     if manifest_path.exists() and json.loads(manifest_path.read_bytes()) != profile:
         raise ValueError("resume requires identical frozen profile")

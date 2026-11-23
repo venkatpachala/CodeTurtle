@@ -219,15 +219,23 @@ def run_semantic(agent, bundle, tools):
     repair_available = True
     retry_ids = None
     next_stage = "semantic_discovery"
-    impact = []
-    if getattr(tools, "supports_scoped_source", False):
-        symbols = list(dict.fromkeys(str(s) for unit in admitted for s in _unit(unit, "symbols", [])
-                                    if str(s) not in {"pub", "self", "mod", "use", "format", "Some", "Err", "Ok"}))[:2]
-        for symbol in symbols:
+    impact = {}
+
+    def contract_context(symbols):
+        if not getattr(tools, "supports_scoped_source", False):
+            return []
+        useful = [symbol for symbol in dict.fromkeys(symbols)
+                  if symbol not in {"pub", "self", "mod", "use", "format", "Some", "Err", "Ok"}]
+        for symbol in useful[:2]:
+            if symbol in impact:
+                continue
             observed = tools.graph_callers(symbol)
-            impact.append({k: observed[k] for k in ("symbol", "source", "snapshot_id", "truncated", "error", "limitations") if k in observed}
-                          | {"matches": observed.get("matches", [])[:4],
-                             "package_clipped": len(observed.get("matches", [])) > 4})
+            impact[symbol] = {
+                k: observed[k] for k in ("symbol", "source", "snapshot_id", "revision_sha",
+                                          "truncated", "error", "limitations") if k in observed
+            } | {"matches": observed.get("matches", [])[:3],
+                 "package_clipped": len(observed.get("matches", [])) > 3}
+        return [impact[symbol] for symbol in useful[:2]]
     for attempt in range(agent.max_steps):
         if not pending or discovery_attempts >= agent.max_steps:
             break
@@ -240,7 +248,8 @@ def run_semantic(agent, bundle, tools):
                                       "clipped":len(str(_unit(u,"excerpt")))>1800}
                                      for u in (bundle.units or []) if _unit(u,"kind")=="test"][:2],
                    "explicit_requirements":bundle.requirements,"validation_feedback":errors[-1:]}
-        package["impact_context"] = impact
+        package["impact_context"] = contract_context(
+            str(symbol) for uid in selected for symbol in _unit(by_id[uid], "symbols", []))
         package["structural_context"] = {"snapshot_id": bundle.change_context.get("snapshot_id"),
                                          "changes": bundle.change_context.get("changes", [])[:8],
                                          "limitations": bundle.change_context.get("limitations", [])}
@@ -332,6 +341,7 @@ def run_semantic(agent, bundle, tools):
             package={"hypothesis_id":hyp.id,"path":hyp.file,"trigger":lead.trigger,"expected":lead.expected.model_dump(),
                      "suspected":lead.suspected.model_dump(),"evidence":admitted_evidence,"omitted_evidence":omitted}
             package["behavioral_examples"] = [item for item in bundle.change_context.get("behavioral_examples", []) if item["path"] == hyp.file]
+            package["contract_context"] = contract_context([lead.symbol])
             proof = RegressionProof.model_validate(complete(PROVE+"\nPACKAGE\n"+json.dumps(package),RegressionProof,"semantic_proof"))
             head_code = validate_transition(proof,lead,hyp.file,admitted_evidence)
             if head_code is not None:
