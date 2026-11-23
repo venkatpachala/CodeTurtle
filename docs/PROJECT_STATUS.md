@@ -36,6 +36,11 @@ has no code verdict. Approval eligibility requires more than an empty findings l
 
 ## Evidence and remaining work
 
+The [review quality phase](REVIEW_QUALITY_PHASE.md) adds explicit hunk clipping
+records, protected investigation capacity, bounded unchanged-file context,
+and backend-resolved source spans. The initial 30-case pilot remains sealed
+as a historical baseline.
+
 The [efficient reviewer report](EFFICIENT_REVIEWER_PHASE.md) records the five
 priorities, learning notes, sealed experiments, source-linked labels, resources,
 and reproduction commands. Key outcomes include a local Docker qualification
