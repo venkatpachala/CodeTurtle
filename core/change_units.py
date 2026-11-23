@@ -66,6 +66,9 @@ class ChangeUnit(BaseModel):
     end_line: int = 0
     symbols: List[str] = Field(default_factory=list)
     excerpt: str = ""
+    original_chars: int | None = Field(default=None, ge=0)
+    captured_chars: int | None = Field(default=None, ge=0)
+    excerpt_truncated: bool = False
     n_added: int = 0
     n_removed: int = 0
     kind: str = "other"  # source | test | lockfile | docs | other
@@ -170,7 +173,9 @@ def build_change_units(
                 continue
             n += 1
             kind = unit_kind(h.file or resolved)
+            original_chars = len(h.raw)
             excerpt = _excerpt_for(h)
+            truncated = original_chars > EXCERPT_CAP
             start = int(h.new_start or 0)
             end = int(h.new_end or start)
             unit = ChangeUnit(
@@ -180,6 +185,9 @@ def build_change_units(
                 end_line=end if end >= start else start,
                 symbols=extract_unit_symbols(h.added or "", h.header or "", excerpt),
                 excerpt=excerpt,
+                original_chars=original_chars,
+                captured_chars=len(excerpt) - int(truncated),
+                excerpt_truncated=truncated,
                 n_added=n_added,
                 n_removed=n_removed,
                 kind=kind,

@@ -119,7 +119,12 @@ SOURCE_EXTS = (
     ".rb",
     ".php",
     ".swift",
+    ".sql",
+    ".prisma",
 )
+
+_BEHAVIOR_CONFIG_NAMES = frozenset({"dockerfile", "compose.yaml", "compose.yml",
+                                    "docker-compose.yaml", "docker-compose.yml"})
 
 
 def is_lockfile(path: str) -> bool:
@@ -130,7 +135,9 @@ def is_lockfile(path: str) -> bool:
 
 def is_source_file(path: str) -> bool:
     p = normalize_path(path).lower()
-    return any(p.endswith(ext) for ext in SOURCE_EXTS)
+    return (any(p.endswith(ext) for ext in SOURCE_EXTS)
+            or p.rsplit("/", 1)[-1] in _BEHAVIOR_CONFIG_NAMES
+            or (p.startswith(".github/workflows/") and p.endswith((".yml", ".yaml"))))
 
 
 def _is_docs_or_trivia(path: str) -> bool:

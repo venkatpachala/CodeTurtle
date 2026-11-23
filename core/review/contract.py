@@ -40,6 +40,9 @@ class UnitAssessment(BaseModel):
     hypothesis_outcome: str = ""
     evidence_refs: list[str] = Field(default_factory=list)
     reason: str = ""
+    original_chars: int | None = None
+    captured_chars: int | None = None
+    excerpt_truncated: bool = False
 
     @model_validator(mode="after")
     def inspection_requires_evidence(self) -> "UnitAssessment":
@@ -60,6 +63,7 @@ class ReviewCoverage(BaseModel):
     packed: int = Field(default=0, ge=0)
     inspected: int = Field(default=0, ge=0)
     assessments: list[UnitAssessment] = Field(default_factory=list)
+    excluded_by_kind: dict[str, int] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def valid_counts(self) -> "ReviewCoverage":

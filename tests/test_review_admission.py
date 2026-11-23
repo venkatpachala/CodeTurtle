@@ -46,6 +46,28 @@ def test_cross_language_test_paths_are_not_ranked_as_production_source():
         assert unit_kind(path) == "test"
 
 
+def test_clipped_behavior_hunk_stays_visible_without_full_inspection_credit():
+    from core.change_units import build_change_units
+    from core.review.inspection import collect_inspection
+    from core.runtime.models import Bundle
+
+    patch = ("diff --git a/schema.sql b/schema.sql\n--- a/schema.sql\n+++ b/schema.sql\n"
+             "@@ -1 +1 @@\n-old\n+" + "x" * 3000 + "\n")
+    unit, = build_change_units(patch)
+    bundle = Bundle(id="B1", units=[unit])
+    row = {"unit_id": unit.id, "status": "inspected", "behavioral_delta": "schema changed",
+           "hypothesis_outcome": "unassessed", "evidence_refs": [unit.id]}
+    coverage = collect_inspection([unit], [bundle], [{
+        "bundle_id": "B1", "status": "VALID_EMPTY", "assessments": [row],
+        "discovery_protocol": "semantic-v1",
+    }])
+    assert unit.kind == "source" and unit.excerpt_truncated
+    assert unit.original_chars > unit.captured_chars
+    assert (coverage.eligible, coverage.packed, coverage.inspected) == (1, 1, 0)
+    assert coverage.assessments[0].reason == "excerpt_truncated"
+    assert coverage.assessments[0].excerpt_truncated
+
+
 def test_persistence_argument_change_gets_priority_and_requires_human_review():
     unit = {"id": "persistence", "kind": "source", "excerpt":
             "   await prisma.reminder.deleteMany({\n-    attempts: 3\n+    attempts: 1"}

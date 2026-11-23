@@ -1,7 +1,10 @@
 """Build evidence-backed process coverage without inferring model understanding."""
 from __future__ import annotations
 
+from collections import Counter
+
 from pydantic import ValidationError
+from core.change_units import EXCERPT_CAP
 from core.review.contract import ReviewCoverage, UnitAssessment
 
 
@@ -12,7 +15,13 @@ def _get(unit, key, default=""):
 def collect_inspection(units: list, bundles: list, runs: list[dict]) -> ReviewCoverage:
     eligible = {str(_get(u, "id")): u for u in units if _get(u, "kind") in {"source", "test"}}
     packed = {str(_get(u, "id")) for b in bundles for u in b.units} & eligible.keys()
+    scope = {uid: {"original_chars": _get(unit, "original_chars", None),
+                   "captured_chars": _get(unit, "captured_chars", None),
+                   "excerpt_truncated": bool(_get(unit, "excerpt_truncated", False))
+                   or len(str(_get(unit, "excerpt"))) > EXCERPT_CAP}
+             for uid, unit in eligible.items()}
     observed: dict[str, UnitAssessment] = {}
+    recorded = {}
     healthy = {"VALID_CANDIDATES", "VALID_EMPTY"}
     by_bundle = {b.id: b for b in bundles}
     for run in runs:
@@ -25,14 +34,16 @@ def collect_inspection(units: list, bundles: list, runs: list[dict]) -> ReviewCo
         for raw in run.get("assessments") or []:
             if not isinstance(raw, dict):
                 continue
+            uid = str(raw.get("unit_id") or "")
+            if semantic and uid in packed:
+                recorded[uid] = raw
             if semantic and raw.get("status") != "inspected":
                 continue
-            uid = str(raw.get("unit_id") or "")
             if uid not in eligible or uid not in permitted:
                 continue
             # The prompt only includes this bounded slice. A truncated unit is
             # packed but cannot be claimed fully inspected.
-            if len(str(_get(eligible[uid], "excerpt"))) > 2500:
+            if scope[uid]["excerpt_truncated"]:
                 continue
             refs = raw.get("evidence_refs")
             if not isinstance(refs, list) or uid not in refs:
@@ -40,17 +51,21 @@ def collect_inspection(units: list, bundles: list, runs: list[dict]) -> ReviewCo
             try:
                 observed[uid] = UnitAssessment(unit_id=uid, path=_get(eligible[uid], "path"),
                     status="inspected", behavioral_delta=raw.get("behavioral_delta", ""),
-                    hypothesis_outcome=raw.get("hypothesis_outcome", ""), evidence_refs=[uid])
+                    hypothesis_outcome=raw.get("hypothesis_outcome", ""), evidence_refs=[uid], **scope[uid])
             except ValidationError:
                 continue
     assessments = []
     for uid, unit in eligible.items():
-        recorded = next((raw for run in runs if run.get("discovery_protocol")=="semantic-v1"
-                         for raw in run.get("assessments",[]) if raw.get("unit_id")==uid),{})
+        assessment = recorded.get(uid, {})
         assessments.append(observed.get(uid) or UnitAssessment(unit_id=uid, path=_get(unit, "path"),
             status="omitted" if uid not in packed else "unknown",
-            reason="not_packed" if uid not in packed else recorded.get("reason") or "missing_or_incomplete_assessment"))
-    return ReviewCoverage(eligible=len(eligible), packed=len(packed), inspected=len(observed), assessments=assessments)
+            reason="not_packed" if uid not in packed else "excerpt_truncated" if scope[uid]["excerpt_truncated"]
+                   else assessment.get("reason") or "missing_or_incomplete_assessment",
+            **scope[uid]))
+    excluded = Counter(_get(unit, "kind", "other") for unit in units
+                       if _get(unit, "kind") not in {"source", "test"})
+    return ReviewCoverage(eligible=len(eligible), packed=len(packed), inspected=len(observed),
+                          assessments=assessments, excluded_by_kind=dict(excluded))
 
 
 def unresolved_hypotheses(runs: list[dict], candidates: list, dropped: list[dict]) -> list[dict]:
