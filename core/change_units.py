@@ -64,6 +64,7 @@ class ChangeUnit(BaseModel):
     path: str
     start_line: int = 0
     end_line: int = 0
+    old_start_line: int = 0
     symbols: List[str] = Field(default_factory=list)
     excerpt: str = ""
     original_chars: int | None = Field(default=None, ge=0)
@@ -183,6 +184,7 @@ def build_change_units(
                 path=normalize_path(h.file or resolved),
                 start_line=start,
                 end_line=end if end >= start else start,
+                old_start_line=h.old_start,
                 symbols=extract_unit_symbols(h.added or "", h.header or "", excerpt),
                 excerpt=excerpt,
                 original_chars=original_chars,

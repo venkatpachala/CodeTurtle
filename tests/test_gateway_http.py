@@ -228,8 +228,8 @@ def test_native_semantic_discovery_reaches_independent_rule_and_product(ollama_s
             return json.dumps({"assessments": rows})
         observed = {}
         for side, value, line in (("base", expected, 3), ("head", actual, 2)):
-            record = next(e for e in package["evidence"] if e["result"].get("source") == "git_snapshot" and e["result"].get("side", "head") == side)
-            observed[side] = {**value, "source": {"evidence_id": record["id"], "start_line": line, "end_line": line}}
+            span = next(e for e in package["source_spans"] if e["side"] == side and e["start_line"] == e["end_line"] == line)
+            observed[side] = {**value, "span_id": span["span_id"]}
         return json.dumps({"conclusion": "violation_supported", "reason": "None reaches builtin len", **observed, "missing_evidence": []})
     state["respond"] = respond
     result = ReviewRuntime(rule_engine=lambda *a, **k: []).run(SimpleNamespace(

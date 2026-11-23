@@ -18,7 +18,7 @@ class SnapshotBundleTools(BundleTools):
         from core.input.impact import SnapshotImpactIndex
         self.impact = impact or SnapshotImpactIndex(provider, snapshot, bundle.paths)
 
-    def read_source(self, path: str, *, symbol: str = "", side: str = "head") -> dict:
+    def read_source(self, path: str, *, symbol: str = "", side: str = "head", anchor: int | None = None) -> dict:
         resolved = self._in_bundle(path)
         if not resolved:
             return {"error": "outside_bundle", "status": "denied"}
@@ -36,15 +36,17 @@ class SnapshotBundleTools(BundleTools):
             starts = [int(h.old_start) for h in self.index.hunks_for(resolved) if h.old_start > 0]
         from core.input.excerpts import capture_excerpt
         excerpt = capture_excerpt("\n".join(lines), resolved, symbol=symbol,
-                                  anchor=max(1, min(starts or [1])), max_lines=100, max_chars=4000)
+                                  anchor=max(1, anchor or min(starts or [1])), max_lines=100, max_chars=4000)
         text = "\n".join(f"{i}: {line}" for i, line in enumerate(excerpt.text.splitlines(), start=excerpt.start_line))
         truncated = not excerpt.complete or bool(excerpt.unresolved_dependencies) or len(text) > 5000
-        return {"path": resolved, "text": text[:5000], "source": "git_snapshot",
+        if len(text) > 5000:
+            text = text[:5000].rpartition("\n")[0]
+        return {"path": resolved, "text": text, "source": "git_snapshot",
                 "side": side,
                 "snapshot_id": self.snapshot.id, "revision_sha": source.revision_sha,
                 "content_sha256": source.content_sha256, "truncated": truncated,
                 "scope": excerpt.scope, "scope_symbol": excerpt.symbol,
-                "start_line": excerpt.start_line, "end_line": excerpt.start_line + len(excerpt.text.splitlines()) - 1,
+                "start_line": excerpt.start_line, "end_line": excerpt.start_line + len(text.splitlines()) - 1,
                 "unresolved_dependencies": list(excerpt.unresolved_dependencies),
                 "limitations": ["Completeness refers only to the declared source scope; runtime contracts may require more context."],
                 "status": "truncated" if truncated else "success"}

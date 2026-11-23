@@ -36,9 +36,8 @@ def proof_for(prompt, head_value="POST"):
     package = json.loads(prompt.split("\nPACKAGE\n", 1)[1])
     observed = {}
     for side, value in (("base", "GET"), ("head", head_value)):
-        evidence = next(e for e in package["evidence"] if e["result"].get("source") == "git_snapshot"
-                        and e["result"].get("side", "head") == side)
-        observed[side] = {**outcome(value), "source": {"evidence_id": evidence["id"], "start_line": 2, "end_line": 2}}
+        span = next(e for e in package["source_spans"] if e["side"] == side and e["start_line"] == e["end_line"] == 2)
+        observed[side] = {**outcome(value), "span_id": span["span_id"]}
     return {"conclusion": "violation_supported", "reason": "Changed method violates the read contract",
             **observed, "missing_evidence": []}
 
@@ -83,7 +82,7 @@ def test_fix_assessment_never_becomes_defect_candidate():
     assert result.status == "VALID_EMPTY"
     assert not result.hypotheses and not result.candidates
     assert result.contract_assessments[0]["verification_level"] == "source_assessment_not_execution"
-    assert result.to_dict()["prompt_version"] == "semantic-contract-v10-direct-integer"
+    assert result.to_dict()["prompt_version"] == "semantic-contract-v11-source-spans"
 
 
 def test_partial_assessment_repairs_only_missing_units_and_preserves_inspection():
@@ -211,6 +210,24 @@ def test_shared_budget_preserves_proof_and_final_verification_capacity():
     for _ in range(2):
         budget.reserve("verify", lane="verification")
     assert budget.calls == budget.max_model_calls
+
+
+def test_proof_repairs_foreign_span_against_same_pinned_catalog(tmp_path):
+    bundle, tools = pinned_tools(tmp_path)
+    catalogs = []
+    def respond(prompt):
+        package = json.loads(prompt.split("\nPACKAGE\n")[1])
+        if "units" in package:
+            return json.dumps({"assessments": [assessment(regression=True)]})
+        catalogs.append(package["source_spans"])
+        proof = proof_for(prompt)
+        if len(catalogs) == 1:
+            proof["head"]["span_id"] = proof["base"]["span_id"]
+        return json.dumps(proof)
+    result = BundleAgent(llm=respond, discovery_protocol="semantic").run_result(bundle, tools)
+    assert len(result.candidates) == 1
+    assert len(catalogs) == 2 and catalogs[0] == catalogs[1]
+    assert result.proof_runs[0]["repair_attempted"]
 
 
 def test_truncated_batch_is_repaired_with_one_unit_instead_of_repeated():
