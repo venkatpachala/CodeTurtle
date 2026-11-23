@@ -16,6 +16,7 @@ from pydantic import Field, StringConstraints, create_model, model_validator
 from core.agent.hypothesis import ReviewHypothesis
 from core.agent.parse import parse_agent_document
 from core.domain.review_contracts import DomainRecord
+from core.review.admission import touches_persistence
 from core.review.budget import BudgetExceeded
 from core.runtime.models import Candidate
 
@@ -136,6 +137,15 @@ Select violation_refuted only for this specific alleged failure, not universal c
 
 def _unit(unit, key, default=""):
     return unit.get(key, default) if isinstance(unit, dict) else getattr(unit, key, default)
+
+
+def review_focus(units: list) -> list[str]:
+    focus = []
+    if any(touches_persistence(unit) for unit in units):
+        focus.append("For changed storage effects, check scope predicates on every branch and whether state updates still hold under retries or concurrent calls.")
+    if any(_unit(unit, "path").endswith((".sql", ".prisma")) for unit in units):
+        focus.append("Check migration ordering, existing data, and compatibility with representative callers or tests.")
+    return focus
 
 
 def _assessment_schema(ids, requirements=()):
@@ -308,6 +318,7 @@ def run_semantic(agent, bundle, tools):
                    "explicit_requirements":bundle.requirements,"validation_feedback":errors[-1:]}
         package["impact_context"] = contract_context(
             str(symbol) for uid in selected for symbol in _unit(by_id[uid], "symbols", []))
+        package["review_focus"] = review_focus([by_id[uid] for uid in selected])
         package["structural_context"] = {"snapshot_id": bundle.change_context.get("snapshot_id"),
                                          "changes": bundle.change_context.get("changes", [])[:8],
                                          "limitations": bundle.change_context.get("limitations", [])}

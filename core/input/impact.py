@@ -53,7 +53,11 @@ class SnapshotImpactIndex:
             self._load()
         except InputError:
             return {"error": "impact_index_unavailable", "status": "error"}
-        needle = re.compile(r"\b"+re.escape(re.split(r"\.|::", symbol)[-1])+r"\b")
+        components = re.split(r"\.|::", symbol)
+        leaf = components[-1]
+        if len(components) > 2 and leaf in {"create", "update", "upsert", "delete", "findMany", "deleteMany", "updateMany"}:
+            leaf = components[-2]
+        needle = re.compile(r"\b" + re.escape(leaf) + r"\b", re.I)
         hits = []
         capped = False
         ranked = sorted(self.cache, key=lambda p: (p in self.changed, unit_kind(p) != "test"))

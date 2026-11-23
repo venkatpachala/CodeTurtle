@@ -76,6 +76,17 @@ def test_discovery_receives_contract_from_unchanged_pinned_test(tmp_path):
     assert result.status == "VALID_EMPTY"
 
 
+def test_discovery_focus_is_scoped_to_visible_database_mutation():
+    unit_row = unit(excerpt="+await prisma.reminder.update({where: {id}, data: values})")
+    bundle = Bundle(id="B1", units=[unit_row])
+    def respond(prompt):
+        package = json.loads(prompt.split("\nPACKAGE\n")[1])
+        assert any("scope predicates" in item for item in package["review_focus"])
+        return json.dumps({"assessments": [assessment()]})
+    result = BundleAgent(llm=respond, discovery_protocol="semantic").run_result(bundle)
+    assert result.status == "VALID_EMPTY"
+
+
 def test_fix_assessment_never_becomes_defect_candidate():
     bundle = Bundle(id="B1", paths=["app.py"], units=[unit()])
     result = BundleAgent(llm=lambda _: json.dumps({"assessments": [assessment()]}), discovery_protocol="semantic").run_result(bundle)
