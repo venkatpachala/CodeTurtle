@@ -251,6 +251,15 @@ def test_proof_repairs_foreign_span_against_same_pinned_catalog(tmp_path):
     assert result.proof_runs[0]["repair_attempted"]
 
 
+def test_proof_with_unavailable_source_is_reported_without_a_model_attempt():
+    bundle = Bundle(id="B1", paths=["app.py"], units=[unit()])
+    agent = BundleAgent(llm=lambda _: json.dumps({"assessments": [assessment(regression=True)]}),
+                        discovery_protocol="semantic")
+    result = agent.run_result(bundle)
+    assert result.proof_runs[0]["status"] == "context_unavailable"
+    assert result.request_attempts == 1 and not result.candidates
+
+
 def test_truncated_batch_is_repaired_with_one_unit_instead_of_repeated():
     bundle = Bundle(id="B1", units=[unit(), unit("CU-002"), unit("CU-003")])
     packages = []

@@ -411,6 +411,7 @@ def run_semantic(agent, bundle, tools):
                     spans.extend(evidence_spans(item, anchor, hyp.symbol))
         evidence.extend(relevant)
         record["spans"] = [{key: value for key, value in span.items() if key != "text"} for span in spans]
+        has_both_sides = {span["side"] for span in spans} == {"base", "head"}
         try:
             schema = span_proof_schema(spans)
             package={"hypothesis_id":hyp.id,"path":hyp.file,"trigger":lead.trigger,"expected":lead.expected.model_dump(),
@@ -440,7 +441,9 @@ def run_semantic(agent, bundle, tools):
                              "reason":proof.reason,"evidence_refs":[proof.head.source.evidence_id] if proof.head else []})
         except (ValueError,RuntimeError) as error:
             reason=str(error)[:900]
-            record.update(reason=reason,status="budget_exhausted" if isinstance(error,BudgetExceeded) else "invalid_response")
+            failure = ("budget_exhausted" if isinstance(error, BudgetExceeded)
+                       else "invalid_response" if has_both_sides else "context_unavailable")
+            record.update(reason=reason, status=failure)
             rejections.append({"hypothesis_id":hyp.id,"reason":reason})
             outcomes.append({"hypothesis_id":hyp.id,"status":"unresolved","reason":reason,"evidence_refs":[]})
     incomplete = bool(rejections) or any(a['status']=='unknown' for a in assessments) or any(r['status']!='completed' for r in proof_runs)
