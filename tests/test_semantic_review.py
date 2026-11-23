@@ -158,6 +158,43 @@ def test_large_bundle_is_split_into_two_unit_requests():
     assert result.status == "VALID_EMPTY"
 
 
+def test_lead_from_last_discovery_step_still_receives_a_proof_attempt(tmp_path):
+    from core.review.budget import ReviewBudget
+
+    bundle, tools = pinned_tools(tmp_path)
+    bundle.units.append(unit("CU-002"))
+    bundle.units.append(unit("CU-003"))
+    def respond(prompt):
+        package = json.loads(prompt.split("\nPACKAGE\n")[1])
+        if "units" not in package:
+            return json.dumps(proof_for(prompt))
+        return json.dumps({"assessments": [
+            assessment(row["unit_id"], regression=row["unit_id"] == "CU-003") for row in package["units"]
+        ]})
+    agent = BundleAgent(llm=respond, max_steps=2, discovery_protocol="semantic")
+    agent.budget = ReviewBudget()
+    result = agent.run_result(bundle, tools)
+    assert len(result.candidates) == 1
+    assert agent.budget.calls_by_lane == {"discovery": 2, "investigation": 1}
+
+
+def test_shared_budget_preserves_proof_and_final_verification_capacity():
+    from core.review.budget import BudgetExceeded, ReviewBudget
+
+    budget = ReviewBudget()
+    for _ in range(6):
+        budget.reserve("discover", lane="discovery")
+    with pytest.raises(BudgetExceeded, match="discovery"):
+        budget.reserve("discover", lane="discovery")
+    for _ in range(4):
+        budget.reserve("investigate", lane="investigation")
+    with pytest.raises(BudgetExceeded, match="investigation"):
+        budget.reserve("investigate", lane="investigation")
+    for _ in range(2):
+        budget.reserve("verify", lane="verification")
+    assert budget.calls == budget.max_model_calls
+
+
 def test_truncated_batch_is_repaired_with_one_unit_instead_of_repeated():
     bundle = Bundle(id="B1", units=[unit(), unit("CU-002"), unit("CU-003")])
     packages = []

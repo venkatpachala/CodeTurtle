@@ -244,7 +244,7 @@ class ReviewRuntime:
     def _verify_completion(self, prompt: str) -> str:
         from core.gateway.gateway import AIGateway
         try:
-            self.budget.reserve(prompt)
+            self.budget.reserve(prompt, lane="verification")
             response = AIGateway().generate(prompt=prompt, capability="correctness_review",
                 agent_name="FindingVerifier", temperature=0.0, max_tokens=96, retries=1)
             self.verification_usage.append(response.telemetry.model_dump(mode="json"))
@@ -705,7 +705,7 @@ class ReviewRuntime:
                 return "UNCERTAIN"
             injected = self.verification_llm or self.llm
             if injected is not None:
-                self.budget.reserve(prompt)
+                self.budget.reserve(prompt, lane="verification")
                 return str(injected(prompt))
             return self._verify_completion(prompt)
 
@@ -890,7 +890,7 @@ class ReviewRuntime:
         elif intent is not None and requirement_strategy == "link" and not static_only:
             from core.intent.service import assess_verified_findings
             def complete_requirement(prompt: str) -> str:
-                self.budget.reserve(prompt)
+                self.budget.reserve(prompt, lane="verification")
                 if self.verification_llm is not None or self.llm is not None:
                     return str((self.verification_llm or self.llm)(prompt))
                 from core.gateway.gateway import AIGateway

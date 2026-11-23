@@ -194,15 +194,18 @@ def run_semantic(agent, bundle, tools):
     hypotheses, candidates, outcomes = [], [], []
     leads_by_id = {}
     attempts = 0
+    discovery_attempts = 0
     from core.review.admission import plan_admission
     admitted, admission = plan_admission(list(bundle.units or []), max_units=min(12, agent.max_steps*2))
     by_id = {str(_unit(u,"id")):u for u in admitted}
     valid = {}
 
     def complete(prompt, schema, stage, cap=1400):
-        nonlocal attempts
-        if attempts >= agent.max_steps:
-            raise BudgetExceeded("bundle step budget exhausted")
+        nonlocal attempts, discovery_attempts
+        if stage in {"semantic_discovery", "assessment_repair"}:
+            if discovery_attempts >= agent.max_steps:
+                raise BudgetExceeded("bundle discovery step budget exhausted")
+            discovery_attempts += 1
         if len(prompt) > 22000:
             raise BudgetExceeded("semantic prompt admission budget exhausted")
         attempts += 1
@@ -226,10 +229,8 @@ def run_semantic(agent, bundle, tools):
                           | {"matches": observed.get("matches", [])[:4],
                              "package_clipped": len(observed.get("matches", [])) > 4})
     for attempt in range(agent.max_steps):
-        if not pending or attempts >= agent.max_steps:
+        if not pending or discovery_attempts >= agent.max_steps:
             break
-        if attempts >= agent.max_steps-1 and any(row.hypothesis is not None for row in valid.values()):
-            break  # Reserve an investigation request rather than consuming all steps on discovery.
         selected = retry_ids or pending[:2]
         retry_ids = None
         schema = _assessment_schema(selected, bundle.requirements)

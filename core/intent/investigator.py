@@ -164,7 +164,7 @@ class RequirementInvestigator:
         repair = None
         for attempt in (1, 2):
             prompt = _prompt(run, stage, repair)
-            self.budget.reserve(prompt)
+            self.budget.reserve(prompt, lane="investigation")
             run.attempted = True
             raw = self.complete(stage, prompt)
             run.responses.append({"stage": stage, "attempt": attempt, "raw": raw[:16_000],

@@ -174,7 +174,9 @@ class BundleAgent:
 
     def _complete(self, prompt: str, response_schema=None, *, stage="discovery", max_tokens=1400) -> str:
         if self.budget is not None:
-            self.budget.reserve(prompt)
+            lane = ("investigation" if stage in {"semantic_proof", "semantic_proof_repair", "proof"}
+                    else "discovery" if self.discovery_protocol == "semantic" else "general")
+            self.budget.reserve(prompt, lane=lane)
         if self.llm is not None:
             return str(self.llm(prompt) or "")
         from core.gateway.gateway import AIGateway
