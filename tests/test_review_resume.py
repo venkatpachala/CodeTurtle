@@ -56,8 +56,9 @@ def test_native_checkpoint_reuse_still_runs_independent_final_verification(verif
             return json.dumps({"assessments":[row]})
         result={"conclusion":"violation_supported","reason":"None reaches len","missing_evidence":[]}
         for side,value,line in [("base",expected,3),("head",actual,2)]:
-            evidence=next(x for x in package["evidence"] if x["result"].get("source")=="git_snapshot" and x["result"].get("side","head")==side)
-            result[side]=value|{"source":{"evidence_id":evidence["id"],"start_line":line,"end_line":line}}
+            span = next(x for x in package["source_spans"]
+                        if x["side"] == side and x["start_line"] == x["end_line"] == line)
+            result[side] = value | {"span_id": span["span_id"]}
         return json.dumps(result)
     state["respond"]=respond
     context=SimpleNamespace(review_snapshot=snapshot,input_provider=provider,repo_dir=str(provider.root),
