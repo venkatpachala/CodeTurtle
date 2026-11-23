@@ -10,6 +10,11 @@ _PERSISTENCE_CALL = re.compile(
     r"\.(?:create|insert|update|upsert|delete|remove|replace)(?:Many|One)?\s*\("
     r"|\.(?:deleteMany|updateMany|upsertMany|insertMany)\s*\("
 )
+_SYNCHRONIZATION = re.compile(
+    r"\bsync\.(?:Mutex|RWMutex|Once|WaitGroup)\b"
+    r"|\.(?:Lock|RLock|Unlock|RUnlock|try_lock|lock_shared|unlock_shared)\s*\("
+    r"|\b(?:threading|asyncio)\.(?:Lock|RLock|Semaphore)\s*\("
+)
 
 
 def get(unit: Any, key: str, default: Any = "") -> Any:
@@ -25,6 +30,14 @@ class Priority:
 def touches_persistence(unit: Any) -> bool:
     """Detect visible storage mutation context, including edits to call arguments."""
     return get(unit, "kind") == "source" and bool(_PERSISTENCE_CALL.search(str(get(unit, "excerpt"))))
+
+
+def touches_synchronization(unit: Any) -> bool:
+    """Recognize changed lock boundaries and common synchronization primitives."""
+    return get(unit, "kind") == "source" and any(
+        line[:1] in {"+", "-"} and _SYNCHRONIZATION.search(line[1:])
+        for line in str(get(unit, "excerpt")).splitlines()
+    )
 
 
 def priority(unit: Any) -> Priority:
@@ -49,6 +62,9 @@ def priority(unit: Any) -> Priority:
     if touches_persistence(unit):
         score += 8
         reasons.append("persistence_mutation")
+    if touches_synchronization(unit):
+        score += 8
+        reasons.append("synchronization_change")
     hint = get(unit, "risk_hint", "none")
     if hint in {"mutation", "io"}:
         score += 8 if hint == "mutation" else 4

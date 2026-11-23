@@ -16,7 +16,7 @@ from pydantic import Field, StringConstraints, create_model, model_validator
 from core.agent.hypothesis import ReviewHypothesis
 from core.agent.parse import parse_agent_document
 from core.domain.review_contracts import DomainRecord
-from core.review.admission import touches_persistence
+from core.review.admission import touches_persistence, touches_synchronization
 from core.review.budget import BudgetExceeded
 from core.runtime.models import Candidate
 
@@ -143,6 +143,8 @@ def review_focus(units: list) -> list[str]:
     focus = []
     if any(touches_persistence(unit) for unit in units):
         focus.append("For changed storage effects, check scope predicates on every branch and whether state updates still hold under retries or concurrent calls.")
+    if any(touches_synchronization(unit) for unit in units):
+        focus.append("Follow each shared-state read and write across the changed lock boundaries. Check whether a condition must be rechecked after acquiring a lock.")
     if any(_unit(unit, "path").endswith((".sql", ".prisma")) for unit in units):
         focus.append("Check migration ordering, existing data, and compatibility with representative callers or tests.")
     return focus

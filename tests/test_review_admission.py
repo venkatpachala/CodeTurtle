@@ -1,4 +1,4 @@
-from core.review.admission import plan_admission, touches_persistence
+from core.review.admission import plan_admission, touches_persistence, touches_synchronization
 from core.review.contract import ReviewCoverage, ReviewHealth, evaluate_policy
 from core.input.impact import SnapshotImpactIndex
 from core.change_units import unit_kind
@@ -79,6 +79,18 @@ def test_clipped_behavior_hunk_stays_visible_without_full_inspection_credit():
     assert (coverage.eligible, coverage.packed, coverage.inspected) == (1, 1, 0)
     assert coverage.assessments[0].reason == "excerpt_truncated"
     assert coverage.assessments[0].excerpt_truncated
+
+
+def test_changed_synchronization_requires_human_review_even_with_full_coverage():
+    changed = {"id": "lock", "kind": "source", "excerpt": "+var cacheMu sync.RWMutex\n+cacheMu.RLock()"}
+    assert touches_synchronization(changed)
+    assert not touches_synchronization(changed | {"kind": "test"})
+    assert not touches_synchronization(changed | {"excerpt": " cacheMu.RLock()\n+return cached"})
+    outcome = evaluate_policy(health=ReviewHealth(status="completed"),
+        coverage=ReviewCoverage(eligible=1, packed=1, inspected=1), findings=[],
+        unresolved=[], execution={}, synchronization_changed=True)
+    assert outcome.decision == "COMMENT" and not outcome.approval_eligible
+    assert outcome.reasons == ["synchronization_change_requires_review"]
 
 
 def test_persistence_argument_change_gets_priority_and_requires_human_review():

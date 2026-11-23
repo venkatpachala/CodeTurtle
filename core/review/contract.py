@@ -86,7 +86,8 @@ class PolicyOutcome(BaseModel):
 
 def evaluate_policy(*, health: ReviewHealth, coverage: ReviewCoverage,
                     findings: list, unresolved: list[dict], execution: dict,
-                    classification: str = "", persistence_changed: bool = False) -> PolicyOutcome:
+                    classification: str = "", persistence_changed: bool = False,
+                    synchronization_changed: bool = False) -> PolicyOutcome:
     """Single v4 verdict function. A failed analysis has no code verdict."""
     reasons: list[str] = []
     if health.status == "failed":
@@ -116,6 +117,8 @@ def evaluate_policy(*, health: ReviewHealth, coverage: ReviewCoverage,
         reasons.append("execution_unattributed" if failed_execution else "execution_inconclusive")
     if persistence_changed:
         reasons.append("persistence_change_requires_review")
+    if synchronization_changed:
+        reasons.append("synchronization_change_requires_review")
     if blockers:
         return PolicyOutcome(decision="REQUEST_CHANGES", reasons=reasons)
     if reasons:
