@@ -46,6 +46,19 @@ def test_cross_language_test_paths_are_not_ranked_as_production_source():
         assert unit_kind(path) == "test"
 
 
+def test_test_with_different_stem_joins_group_defining_its_changed_symbol():
+    from core.bundling.builder import BundleBuilder
+
+    paths = ["billing/fees.py", "reminders/sender.py", "tests/test_retries.py"]
+    units = [
+        {"id": "one", "path": paths[0], "kind": "source", "excerpt": "+def compute_fee():"},
+        {"id": "two", "path": paths[1], "kind": "source", "excerpt": "+def send_reminder():"},
+        {"id": "three", "path": paths[2], "kind": "test", "symbols": ["send_reminder"]},
+    ]
+    bundles = BundleBuilder().build(files_changed=paths, units=units, classification="source")
+    assert any(set(bundle.paths) == {paths[1], paths[2]} for bundle in bundles)
+
+
 def test_clipped_behavior_hunk_stays_visible_without_full_inspection_credit():
     from core.change_units import build_change_units
     from core.review.inspection import collect_inspection

@@ -21,6 +21,10 @@ MAX_FILES_PER_BUNDLE = 6
 MAX_BUNDLES = 4
 
 _JS_TEST_RE = re.compile(r".*\.test\.(ts|tsx|js|jsx)$", re.I)
+_DECLARATION = re.compile(
+    r"^[ +\-]\s*(?:export\s+)?(?:async\s+)?(?:def|class|function|func)\s+([A-Za-z_]\w*)",
+    re.M,
+)
 _GENERIC_DIRS = {
     "cli",
     "src",
@@ -278,6 +282,11 @@ class BundleBuilder:
             _add(_feature_key(p), p)
 
         source_keys = list(groups.keys())
+        declaration_groups: dict[str, set[str]] = defaultdict(set)
+        for source in sources:
+            for unit in units_by_path[source]:
+                for name in _DECLARATION.findall(str(getattr(unit, "excerpt", ""))):
+                    declaration_groups[name].add(_feature_key(source))
         for t in tests:
             key = _feature_key(t)
             if key in groups:
@@ -286,6 +295,11 @@ class BundleBuilder:
             exact = [s for s in sources if _stem(s).lower() == _stem(t).lower()]
             if exact:
                 _add(_feature_key(exact[0]), t)
+                continue
+            symbols = {name for unit in units_by_path[t] for name in _unit_symbols(unit)}
+            related_groups = set().union(*(declaration_groups.get(name, set()) for name in symbols))
+            if len(related_groups) == 1:
+                _add(next(iter(related_groups)), t)
                 continue
             if sources and source_keys:
                 _add(source_keys[0], t)
