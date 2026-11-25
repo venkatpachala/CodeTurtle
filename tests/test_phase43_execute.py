@@ -394,13 +394,6 @@ class TestExecuteHappyAndFail(unittest.TestCase):
 
 
 class TestGraphAndPolicy(unittest.TestCase):
-    def test_graph_has_execute_after_verify(self):
-        from core.graph import build_review_graph
-
-        nodes = set(build_review_graph().get_graph().nodes)
-        self.assertIn("execute_tests", nodes)
-        self.assertIn("verify_findings", nodes)
-
     def test_lockfile_comment_unchanged_when_execute_skipped(self):
         rec = recommendation_from_verification(
             [

@@ -328,30 +328,3 @@ def attach_change_units(
         "review_diff": packed,
         "review_coverage": coverage,
     }
-
-
-def change_units_node(state: dict) -> dict:
-    """LangGraph: after facts on state, before understanding / specialists."""
-    if state.get("change_units") is not None and state.get("review_diff"):
-        return {}
-    return attach_change_units(state)
-
-
-def specialist_code_view(state: dict, max_chars: int = DEFAULT_PACK_CHARS) -> str:
-    """LLM-facing hunk pack. Never a raw 14k prefix of full_diff when units exist."""
-    if state.get("review_diff"):
-        text = str(state.get("review_diff") or "")
-        if max_chars and len(text) > max_chars:
-            return text[:max_chars]
-        return text
-    units = state.get("change_units")
-    facts = state.get("pr_facts") if isinstance(state.get("pr_facts"), dict) else {}
-    lockfile_only = str(facts.get("classification") or "") == "lockfile-only"
-    if units is not None:
-        packed, _ = format_units(
-            units, max_chars=max_chars, lockfile_only=lockfile_only
-        )
-        return packed
-    attached = attach_change_units(state, max_chars=max_chars)
-    state.update(attached)
-    return str(attached.get("review_diff") or "(no change units)")

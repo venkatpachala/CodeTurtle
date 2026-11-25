@@ -2,18 +2,14 @@
 
 from __future__ import annotations
 
-import io
 import sys
 import unittest
-from contextlib import redirect_stdout
 from pathlib import Path
-from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from core.github_review import should_post
 from core.verification.policy import (
     clamp_recommendation,
     coverage_score,
@@ -133,132 +129,3 @@ class TestDecideTable(unittest.TestCase):
             [], classification="source", risk="low"
         )
         self.assertEqual(rec2, "MERGE")
-
-
-class TestClampCoverage(unittest.TestCase):
-    def test_llm_merge_low_coverage_clamped_comment(self):
-        from core.agents import final_recommender
-        from core.models import ReviewOutput
-
-        def fake_gen(**kwargs):
-            return ReviewOutput(
-                summary="Looks fine",
-                recommendation="MERGE",
-                confidence=0.9,
-            )
-
-        state = {
-            "validated_findings": [],
-            "findings": [],
-            "files_changed": [LOADER],
-            "pr_facts": {
-                "classification": "source",
-                "files_changed": [LOADER],
-            },
-            "review_coverage": LOW,
-            "pr_understanding": {"summary": "loader", "risk_level": "low"},
-            "review_plan": {"risk_level": "low"},
-            "verification_report": {"ran": True, "suggested_recommendation": "COMMENT"},
-        }
-        buf = io.StringIO()
-        with redirect_stdout(buf), patch("core.agents.gateway") as gw:
-            gw.generate_structured.side_effect = fake_gen
-            out = final_recommender(state)
-        self.assertEqual(out["recommendation"], "MERGE")
-        self.assertEqual(out["policy_reason"], "no_findings")
-        self.assertTrue(out["coverage_low"])
-        self.assertIn("[Coverage]", buf.getvalue())
-        self.assertNotIn("→ REQUEST_CHANGES", buf.getvalue())
-
-    def test_llm_request_changes_low_coverage_empty_keep_stays_comment(self):
-        from core.agents import final_recommender
-        from core.models import ReviewOutput
-
-        def fake_gen(**kwargs):
-            return ReviewOutput(
-                summary="must block",
-                recommendation="REQUEST_CHANGES",
-                confidence=0.9,
-            )
-
-        state = {
-            "validated_findings": [],
-            "findings": [],
-            "files_changed": [LOADER],
-            "pr_facts": {"classification": "source", "files_changed": [LOADER]},
-            "review_coverage": LOW,
-            "pr_understanding": {"summary": "loader", "risk_level": "low"},
-            "verification_report": {"ran": True},
-        }
-        with patch("core.agents.gateway") as gw:
-            gw.generate_structured.side_effect = fake_gen
-            out = final_recommender(state)
-        self.assertEqual(out["recommendation"], "MERGE")
-        self.assertEqual(out["policy_reason"], "no_findings")
-
-    def test_high_coverage_empty_keep_allows_merge(self):
-        from core.agents import final_recommender
-        from core.models import ReviewOutput
-
-        def fake_gen(**kwargs):
-            return ReviewOutput(
-                summary="No validated issues found",
-                recommendation="MERGE",
-                confidence=0.8,
-            )
-
-        state = {
-            "validated_findings": [],
-            "findings": [],
-            "files_changed": [LOADER],
-            "pr_facts": {"classification": "source", "files_changed": [LOADER]},
-            "review_coverage": HIGH,
-            "pr_understanding": {"summary": "loader", "risk_level": "medium"},
-            "verification_report": {"ran": True},
-        }
-        with patch("core.agents.gateway") as gw:
-            gw.generate_structured.side_effect = fake_gen
-            out = final_recommender(state)
-        self.assertEqual(out["recommendation"], "MERGE")
-        self.assertEqual(out["policy_reason"], "no_findings")
-        self.assertFalse(out["coverage_low"])
-
-    def test_clamp_helper_insufficient_coverage(self):
-        self.assertEqual(
-            clamp_recommendation(
-                "MERGE", "COMMENT", "source", policy_reason="insufficient_coverage"
-            ),
-            "COMMENT",
-        )
-        self.assertEqual(
-            clamp_recommendation(
-                "REQUEST_CHANGES",
-                "COMMENT",
-                "source",
-                policy_reason="insufficient_coverage",
-            ),
-            "COMMENT",
-        )
-
-    def test_dry_run_does_not_post(self):
-        self.assertFalse(should_post(dry_run=True, comment=False))
-
-
-class TestGithubClampUsesCoverage(unittest.TestCase):
-    def test_clamped_decision_low_coverage_comment(self):
-        from core.github_review import clamped_decision
-
-        state = {
-            "recommendation": "MERGE",
-            "validated_findings": [],
-            "files_changed": [LOADER],
-            "pr_facts": {"classification": "source", "files_changed": [LOADER]},
-            "review_coverage": LOW,
-            "pr_understanding": {"risk_level": "low"},
-            "verification_report": {"ran": True, "suggested_recommendation": "MERGE"},
-        }
-        self.assertEqual(clamped_decision(state), "MERGE")
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

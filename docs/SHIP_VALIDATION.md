@@ -23,7 +23,9 @@ Command used: `codeturtle review confident-ai/deepeval 3288 --dry-run -v`
 - Title: `fix(kimi): keep unknown pricing as None instead of raising`
 - Files: `deepeval/models/llms/kimi_model.py`, `tests/test_core/test_models/test_kimi_model.py`
 
-## Commands
+## Historical commands
+
+These commands document the original qualification run. The golden-snapshot runner was retired.
 
 ```bash
 codeturtle new-session

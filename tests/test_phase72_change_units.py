@@ -12,12 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from core.agents import _build_specialist_context, _diff_for_review
 from core.change_units import (
     build_change_units,
     format_units,
     attach_change_units,
-    specialist_code_view,
 )
 from core.pr_facts import build_pr_facts
 from core.verification.diff_index import build_diff_index
@@ -217,50 +215,7 @@ class TestFormatUnits(unittest.TestCase):
         self.assertEqual(cov["units_packed"] + cov["units_omitted"], cov["units_total"])
 
 
-class TestSpecialistPayload(unittest.TestCase):
-    def test_no_raw_full_diff_when_units_exist(self):
-        files = [LOADER, PIPELINE, README]
-        facts = build_pr_facts(
-            title="loader",
-            files_changed=files,
-            full_diff=DIFF_LARGE,
-        )
-        state = {
-            "title": "SQL Server loader",
-            "body": "refresh schema",
-            "full_diff": DIFF_LARGE,
-            "files_changed": files,
-            "pr_facts": facts,
-        }
-        attached = attach_change_units(state, max_chars=500)
-        state.update(attached)
-        view = _diff_for_review(state, max_chars=14000)
-        self.assertIn("### CU-", view)
-        self.assertNotIn(OMITTED_TOKEN, view)
-        # Must not be a raw unified-diff prefix
-        self.assertFalse(view.lstrip().startswith("diff --git"))
-        block = _build_specialist_context(
-            state,
-            role_focus="CORRECTNESS",
-            max_diff_chars=14000,
-            max_evidence_chunks=2,
-        )
-        self.assertIn("CHANGE UNITS", block)
-        self.assertIn("### CU-", block)
-        self.assertNotIn(OMITTED_TOKEN, block)
-        self.assertIn("Cite `file` and `start_line`", _shared_rules_snippet())
-
-    def test_specialist_code_view_helper(self):
-        state = {
-            "full_diff": DIFF_THREE,
-            "files_changed": [LOADER, PIPELINE],
-            "pr_facts": {"classification": "source", "files_changed": [LOADER, PIPELINE]},
-        }
-        view = specialist_code_view(state, max_chars=12000)
-        self.assertIn("### CU-001", view)
-        self.assertIn(LOADER, view)
-        self.assertIn("refresh_graph_schema", view)
-
+class TestChangeUnitPayload(unittest.TestCase):
     def test_attach_sets_coverage_not_merge_policy(self):
         state = {
             "full_diff": DIFF_THREE,
@@ -279,24 +234,7 @@ class TestSpecialistPayload(unittest.TestCase):
         self.assertEqual(rec, "MERGE")
 
 
-class TestGraphAndLockfileEvalShape(unittest.TestCase):
-    def test_graph_has_change_units_before_understanding(self):
-        from core.graph import build_review_graph
-
-        g = build_review_graph()
-        nodes = set(g.get_graph().nodes)
-        self.assertIn("change_units", nodes)
-        edges = set()
-        for e in g.get_graph().edges:
-            src = getattr(e, "source", None)
-            tgt = getattr(e, "target", None)
-            if src is None and isinstance(e, (tuple, list)) and len(e) >= 2:
-                src, tgt = e[0], e[1]
-            if src and tgt:
-                edges.add((str(src), str(tgt)))
-        self.assertIn(("change_units", "extract_failure_paths"), edges)
-        self.assertIn(("extract_failure_paths", "pr_understanding"), edges)
-
+class TestLockfileUnits(unittest.TestCase):
     def test_571_shaped_lockfile_has_unit(self):
         facts = build_pr_facts(files_changed=[LOCK], full_diff=DIFF_LOCK, title="lock")
         self.assertEqual(facts.get("classification"), "lockfile-only")
@@ -310,12 +248,6 @@ class TestGraphAndLockfileEvalShape(unittest.TestCase):
         self.assertIn("lockfile", kinds)
         self.assertGreaterEqual(len(out["change_units"]), 1)
         self.assertIn(LOCK, out["review_diff"])
-
-
-def _shared_rules_snippet() -> str:
-    from core.agents import _SHARED_SYSTEM_RULES, _CORRECTNESS_ROLE_FOCUS
-
-    return _SHARED_SYSTEM_RULES + _CORRECTNESS_ROLE_FOCUS
 
 
 if __name__ == "__main__":

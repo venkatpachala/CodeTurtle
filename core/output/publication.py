@@ -43,6 +43,10 @@ class PublicationResult:
         return asdict(self)
 
 
+def should_post(*, dry_run: bool, comment: bool) -> bool:
+    return comment or not dry_run
+
+
 def build_publication_plan(result: ReviewResult, *, full_diff: str,
                            approve: bool = False, inline_max: int = 8) -> PublicationPlan:
     if result.decision is None or result.health.status in {"failed", "skipped"}:

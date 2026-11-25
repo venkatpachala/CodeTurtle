@@ -5,7 +5,6 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -102,66 +101,6 @@ class TestRuntimeSmoke(unittest.TestCase):
         self.assertNotIn("settings.bundle_max", text)
         self.assertNotIn("settings.agent_max_steps", text)
         self.assertNotIn("settings.runtime =", text)
-
-    def test_legacy_flag_still_imports_graph(self):
-        from core.graph import build_review_graph
-
-        nodes = set(build_review_graph().get_graph().nodes)
-        self.assertIn("final_recommender", nodes)
-        self.assertGreaterEqual(len(nodes), 17)
-
-
-class TestCliWiresRuntime(unittest.TestCase):
-    def test_review_pipeline_uses_runtime_not_graph_when_v4(self):
-        from cli.commands.review import ReviewPipeline
-
-        calls = {"runtime": 0, "graph": 0}
-
-        class FakeResult:
-            decision = "COMMENT"
-            policy_reason = "no_validated_issues"
-            comments = []
-            dropped = []
-            bundles = []
-            coverage = {
-                "units_total": 1,
-                "units_packed": 1,
-                "units_omitted": 0,
-                "source_units": 1,
-            }
-            execution = {"skipped": True, "skip_reason": "disabled"}
-
-            def to_dict(self):
-                return {}
-
-        class FakeRuntime:
-            def run(self, context):
-                calls["runtime"] += 1
-                return FakeResult()
-
-        pipe = ReviewPipeline()
-        pipe.context.repo = "acme/widgets"
-        pipe.context.number = 1
-        pipe.context.files_changed = [LOADER]
-        pipe.context.full_diff = _hunk(LOADER, "+def load():\n+    return 1\n")
-        pipe.context.pr_facts = build_pr_facts(
-            title="x",
-            files_changed=[LOADER],
-            full_diff=pipe.context.full_diff,
-        )
-
-        with patch("core.runtime.review_runtime.ReviewRuntime", FakeRuntime), patch(
-            "core.graph.review_graph.invoke",
-            side_effect=lambda *_a, **_k: calls.__setitem__("graph", calls["graph"] + 1) or {},
-        ):
-            from core.runtime.review_runtime import result_to_review_state
-
-            result = FakeRuntime().run(pipe.context)
-            pipe.context.final_state = result_to_review_state(result, pipe.context)
-        self.assertEqual(calls["runtime"], 1)
-        self.assertEqual(calls["graph"], 0)
-        self.assertEqual(pipe.context.final_state["recommendation"], "COMMENT")
-
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

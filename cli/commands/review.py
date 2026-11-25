@@ -6,13 +6,11 @@ from typing import Any, List, Optional
 import typer
 from github import Github
 from rich.console import Console
-from rich.markdown import Markdown
 from rich.panel import Panel
 
 from config import settings
 from core.memory.manager import LazyMemoryManager
 from core.observability import get_langfuse_client, get_logger
-from core.utils import handle_error
 
 logger = get_logger()
 console = Console()
@@ -57,13 +55,9 @@ class PipelineContext:
     number: int = 0
     conversation_id: str = ""
     pr: Optional[object] = None
-    kb: Optional[object] = None
-    engine: Optional[object] = None
     files_changed: List[str] = field(default_factory=list)
     full_diff: str = ""
-    raw_context: str = ""
     pr_facts: Optional[dict] = None
-    state: Optional[dict] = None
     final_state: Optional[dict] = None
     execute_tests: bool = False
     execute_install: bool = False
@@ -76,7 +70,6 @@ class PipelineContext:
     repo_cfg: Optional[object] = None
     change_units_payload: Optional[dict] = None
     repo_dir: str = ""
-    show_uncertain: bool = False
     review_intent: Optional[object] = None
     pr_input_provider: Optional[object] = None
     pr_review_snapshot: Optional[object] = None
@@ -92,37 +85,8 @@ def get_current_session() -> str:
     return ensure_session(str(path))
 
 
-def _as_dict(obj: Any) -> dict:
-    if obj is None:
-        return {}
-    if isinstance(obj, dict):
-        return obj
-    if hasattr(obj, "model_dump"):
-        return obj.model_dump()
-    return {}
-
-
-def _finding_line(finding: Any) -> dict:
-    d = _as_dict(finding)
-    if d:
-        return d
-    return {
-        "title": getattr(finding, "title", str(finding)),
-        "severity": getattr(finding, "severity", "?"),
-        "confidence": getattr(finding, "confidence", 0),
-        "evidence": getattr(finding, "evidence", []),
-        "file": getattr(finding, "file", None),
-        "symbol": getattr(finding, "symbol", None),
-        "reasoning": getattr(finding, "reasoning", ""),
-        "recommendation": getattr(finding, "recommendation", ""),
-        "category": getattr(finding, "category", ""),
-    }
-
-
 class ReviewPipeline:
-    """CLI orchestration: GitHub + KB setup, then LangGraph owns the review."""
-
-    last_snapshot = None
+    """Prepare a GitHub PR and deliver the canonical review result."""
 
     def __init__(self):
         self.context = PipelineContext()
@@ -170,17 +134,17 @@ class ReviewPipeline:
             try:
                 cfg_path = find_config_path(config_path or None)
                 repo_yaml = load_repo_config(cfg_path)
+                cfg = merge_review_config(
+                    repo=repo_yaml,
+                    cli_execute_tests=bool(execute_tests),
+                    cli_execute_install=bool(execute_install),
+                    settings=settings,
+                    config_path=cfg_path,
+                )
             except RepoConfigError as exc:
                 console.print(f"[red]{exc}[/red]")
                 raise SystemExit(1) from exc
 
-            cfg = merge_review_config(
-                repo=repo_yaml,
-                cli_execute_tests=bool(execute_tests),
-                cli_execute_install=bool(execute_install),
-                settings=settings,
-                config_path=cfg_path,
-            )
             self.context.repo_cfg = cfg
             self.context.execute_tests = bool(cfg.execute_tests)
             self.context.execute_install = bool(cfg.execute_install)
@@ -188,12 +152,11 @@ class ReviewPipeline:
                 raise ValueError("PR code execution is disabled in GitHub Actions; use a separate credential-free runner")
             if cfg.execute_tests or cfg.execute_install:
                 raise ValueError("Host PR execution is disabled; use sandbox-check with a digest-pinned image")
-            self.context.show_uncertain = bool(show_uncertain)
             if cfg.model:
                 settings.ollama_model = cfg.model
             if cfg.llm_backend:
                 settings.llm_backend = cfg.llm_backend
-            # runtime / bundle_max / agent_max_steps stay on repo_cfg.
+            # Bundle and step limits stay on the per-review configuration.
             # Do not assign them onto Settings — extra="ignore" rejects unknown fields
             # and YAML defaults (bundle_max=4) would always trigger a write.
             if cfg_path:
@@ -279,42 +242,21 @@ class ReviewPipeline:
             except Exception:
                 self.context.repo_dir = ""
 
-            self._load_knowledge_base()
             self._build_full_diff()
             self._prepare_source_snapshot()
 
-            runtime = str(
-                getattr(cfg, "runtime", None)
-                or getattr(settings, "runtime", "v4")
-                or "v4"
-            ).strip().lower()
-            if runtime == "legacy":
-                self._retrieve_context()
-                self._create_review_state()
-                console.print("[yellow]Running agent swarm...[/yellow]")
-                from core.graph import review_graph
+            from core.output.terminal import render_result_terminal
+            from core.runtime.review_runtime import ReviewRuntime, result_to_review_state
 
-                self.context.final_state = review_graph.invoke(self.context.state)
-            else:
-                from core.runtime.review_runtime import ReviewRuntime, result_to_review_state
-
-                console.print("[yellow]Running v4 review runtime...[/yellow]")
-                result = ReviewRuntime().run(self.context)
-                self.context.final_state = result_to_review_state(result, self.context)
-                # Inject raw ReviewResult so _write_benchmark_json can use ReviewFinding directly
-                if self.context.final_state is not None:
-                    self.context.final_state["_review_result"] = result
-            self._write_eval_snapshot()
-
+            console.print("[yellow]Running review runtime...[/yellow]")
+            result = ReviewRuntime().run(self.context)
+            self.context.final_state = result_to_review_state(result, self.context)
+            self.context.final_state["_review_result"] = result
             self._add_langfuse_metadata()
-            if runtime != "legacy":
-                from core.output.terminal import render_result_terminal
-                render_result_terminal(result, console=console, show_uncertain=show_uncertain)
-            else:
-                self._display_results()
+            render_result_terminal(result, console=console, show_uncertain=show_uncertain)
             self._save_to_memory()
 
-            if runtime != "legacy" and result.health.status == "failed":
+            if result.health.status == "failed":
                 if json_output:
                     self._write_benchmark_json(json_output, elapsed=time.monotonic() - t0)
                 raise SystemExit(1)
@@ -352,12 +294,6 @@ class ReviewPipeline:
             target=ReviewTarget(repo=self.context.repo, number=self.context.number,
                 head_sha=self.context.pr_head_sha, base_sha=self.context.pr_base_sha))
         write_json_atomic(path, {**result.to_dict(), "review_comments": [], "decision": None})
-
-    def _load_knowledge_base(self):
-        # Graphify-only retrieval path
-        self.context.kb = None
-        self.context.engine = None
-        print("[Review] Retrieval backend: Graphify only (Qdrant disabled)")
 
     def _fetch_pr(self):
         from core.ci import resolve_github_token
@@ -464,69 +400,6 @@ class ReviewPipeline:
             print(f"[ChangeUnits] attach failed: {type(exc).__name__}")
             self.context.change_units_payload = None
 
-    def _retrieve_context(self):
-        from core.graphify_retriever import GraphifyRetriever
-
-        retriever = GraphifyRetriever(self.context.repo)
-
-        query = f"""Title:
-{self.context.pr.title}
-
-Description:
-{self.context.pr.body or ''}
-""".strip()
-
-        docs = retriever.retrieve(
-            query,
-            k=8,
-            pr_title=self.context.pr.title or "",
-            pr_body=self.context.pr.body or "",
-            files_changed=list(self.context.files_changed or []),
-            full_diff=self.context.full_diff,
-            pr_number=self.context.number,
-        )
-
-        self.context.raw_context = "\n\n---\n\n".join(
-            d.page_content for d in docs if d.page_content
-        )
-        print(f"[DEBUG] Graphify-only context chars={len(self.context.raw_context)}")
-
-    def _create_review_state(self):
-        self.context.state = {
-            "repo": self.context.repo,
-            "number": self.context.number,
-            "title": self.context.pr.title,
-            "body": self.context.pr.body or "",
-            "author": self.context.pr.user.login,
-            "full_diff": self.context.full_diff,
-            "files_changed": self.context.files_changed,
-            "pr_facts": self.context.pr_facts or {},
-            **dict(getattr(self.context, "change_units_payload", None) or {}),
-            "model_used": settings.ollama_model,
-            "kb": None,
-            "engine": None,
-            "context_from_kb": getattr(self.context, "raw_context", ""),
-            "traces": [],
-            "execute_tests": bool(self.context.execute_tests),
-            "execute_install": bool(self.context.execute_install),
-            "inline_max": int(getattr(self.context.repo_cfg, "inline_max", 8) or 8),
-            "inline_lockfile": bool(getattr(self.context.repo_cfg, "inline_lockfile", False)),
-            "coverage_merge_min": float(
-                getattr(self.context.repo_cfg, "coverage_merge_min", 0.5) or 0.5
-            ),
-            "ignore_paths": list(getattr(self.context.repo_cfg, "ignore_paths", None) or []),
-            "pr_head_sha": self.context.pr_head_sha or "",
-            "execute_timeout_s": int(getattr(settings, "execute_timeout_s", 120)),
-            "execute_max_files": int(getattr(settings, "execute_max_files", 8)),
-            "execute_install_timeout_s": int(
-                getattr(settings, "execute_install_timeout_s", 180)
-            ),
-            "execute_allow_npm": bool(getattr(settings, "execute_allow_npm", True)),
-            "execute_allow_npm_scripts": bool(
-                getattr(settings, "execute_allow_npm_scripts", False)
-            ),
-        }
-
     def _prepare_source_snapshot(self):
         """Resolve comparison source before inference; retain missing history explicitly."""
         from core.input.preparation import prepare_pr_snapshot
@@ -545,19 +418,6 @@ Description:
             self.context.source_preparation = {"status": "unavailable", "reason": str(exc)}
             print("[Source] pinned comparison unavailable; source-dependent conclusions remain unresolved")
 
-    def _write_eval_snapshot(self):
-        """Always write artifacts/last_review_snapshot.json for run_eval --live."""
-        try:
-            from core.evaluation.snapshot import write_review_snapshot
-
-            state = dict(self.context.final_state or {})
-            if self.context.pr_facts and not state.get("pr_facts"):
-                state["pr_facts"] = self.context.pr_facts
-            snap = write_review_snapshot(state)
-            ReviewPipeline.last_snapshot = snap
-        except Exception:
-            ReviewPipeline.last_snapshot = None
-
     def _add_langfuse_metadata(self):
         langfuse_client = get_langfuse_client()
         if not langfuse_client:
@@ -575,402 +435,23 @@ Description:
         except Exception:
             pass
 
-    def _display_v4(self, final: dict) -> None:
-        console.print("\n[bold cyan]=== BUNDLES ===[/bold cyan]")
-        bundles = final.get("v4_bundles") or []
-        if not bundles:
-            console.print("[dim](none)[/dim]")
-        for b in bundles:
-            if not isinstance(b, dict):
-                continue
-            paths = ",".join(str(p) for p in (b.get("paths") or []))
-            console.print(f"  {b.get('id')} kind={b.get('kind')} files={paths}")
+    def _maybe_post(self, *, dry_run: bool, comment: bool, approve: bool = False) -> bool:
+        from core.ci import resolve_github_token
+        from core.output.publication import build_publication_plan, deliver_review, should_post
 
-        console.print("\n[bold green]=== COMMENTS (VERIFIED_BUG) ===[/bold green]")
-        kept_all = final.get("validated_findings") or final.get("findings") or []
-        kept = [
-            d
-            for d in kept_all
-            if isinstance(d, dict) and str(d.get("verify_status") or "").lower() == "verified"
-        ]
-        if not kept:
-            console.print("no kept defects")
-        for d in kept:
-            console.print(
-                f"status=verified file={d.get('file')} line={d.get('start_line') or d.get('line')}"
-            )
-            if d.get("invariant"):
-                console.print(f"invariant={d.get('invariant')}")
-            snippet = d.get("existing_code") or ""
-            if snippet:
-                console.print(f"snippet={snippet[:200]}")
-            self._print_findings([d])
-        if getattr(self.context, "show_uncertain", False):
-            plausible = [
-                d
-                for d in (final.get("v4_dropped") or [])
-                if isinstance(d, dict) and d.get("drop_reason") == "unproven"
-            ]
-            console.print("\n[bold yellow]=== PLAUSIBLE (not Decision) ===[/bold yellow]")
-            if not plausible:
-                console.print("[dim](none)[/dim]")
-            for d in plausible[:20]:
-                console.print(f"  - {d.get('title') or d.get('file')}")
-
-        console.print("\n[bold yellow]=== DROPPED ===[/bold yellow]")
-        dropped = final.get("v4_dropped") or []
-        if not dropped:
-            console.print("[dim](none)[/dim]")
-        for d in dropped[:20]:
-            if isinstance(d, dict):
-                why = d.get("drop_reason") or ""
-                prefix = ""
-                if why in ("disproved", "not_a_defect"):
-                    prefix = "disproved: "
-                elif why == "unproven":
-                    prefix = "unproven: "
-                console.print(
-                    f"  - {prefix}{d.get('title') or d.get('file')} reason={why}"
-                )
-            else:
-                console.print(f"  - {d}")
-
-        console.print("\n[bold cyan]=== SANDBOX ===[/bold cyan]")
-        ex = final.get("execution_report") if isinstance(final.get("execution_report"), dict) else {}
-        if ex.get("skipped") or not ex:
-            console.print(f"[dim]skip reason={ex.get('skip_reason') or 'flag_off'}[/dim]")
-        else:
-            console.print(
-                f"[dim]cmd={ex.get('cmd')} exit={ex.get('exit_code')} "
-                f"passed={ex.get('passed')} failed={ex.get('failed')}[/dim]"
-            )
-
-        cov = final.get("review_coverage") if isinstance(final.get("review_coverage"), dict) else {}
-        packed = int(cov.get("units_packed") or 0)
-        total = int(cov.get("units_total") or 0)
-        ratio = final.get("coverage_ratio")
-        if ratio is None and total:
-            ratio = packed / total
-        low = final.get("coverage_low")
-        rec = str(final.get("recommendation") or "COMMENT")
-        reason = str(final.get("policy_reason") or "")
-        console.print("\n[bold cyan]=== DECISION ===[/bold cyan]")
-        if total:
-            ratio_s = f"{float(ratio):.2f}" if ratio is not None else "?"
-            console.print(
-                f"[dim]coverage packed={packed} total={total} ratio={ratio_s} "
-                f"low={str(bool(low)).lower()}[/dim]"
-            )
-        console.print(f"[bold]Decision: {rec}[/bold]")
-        if reason:
-            console.print(f"[dim]reason={reason}[/dim]")
-        final_comment = final.get("final_comment", "")
-        if final_comment:
-            console.print(Markdown(str(final_comment)))
-
-    def _display_results(self):
-        final = self.context.final_state or {}
-        if str(final.get("runtime") or "") == "v4":
-            self._display_v4(final)
-            return
-
-        # ── PR Understanding ─────────────────────────────────────────────
-        understanding = _as_dict(final.get("pr_understanding"))
-        if understanding:
-            console.print("\n[bold cyan]=== PR UNDERSTANDING ===[/bold cyan]")
-            console.print(f"**Summary**: {understanding.get('summary', '')}")
-            console.print(f"**Risk Level**: {understanding.get('risk_level', '')}")
-            change_types = (
-                understanding.get("change_type")
-                or understanding.get("change_types")
-                or []
-            )
-            if isinstance(change_types, list):
-                console.print(
-                    f"**Change Types**: {', '.join(str(x) for x in change_types)}"
-                )
-            console.print(
-                f"**Focus Areas**: {', '.join(str(x) for x in (understanding.get('focus_areas') or []))}"
-            )
-
-        # ── Review Plan ──────────────────────────────────────────────────
-        plan = _as_dict(final.get("review_plan"))
-        if plan:
-            console.print("\n[bold magenta]=== REVIEW PLAN ===[/bold magenta]")
-            reviewers = plan.get("reviewers") or []
-            console.print(f"**Reviewers**: {', '.join(str(r) for r in reviewers)}")
-            console.print(f"**Risk**: {plan.get('risk_level', '')}")
-            qs = plan.get("retrieval_questions") or []
-            console.print(f"**Retrieval questions**: {len(qs)}")
-            for q in qs[:8]:
-                if isinstance(q, dict):
-                    console.print(
-                        f"  - [{q.get('purpose', '')}] {str(q.get('question', ''))[:100]}"
-                    )
-                else:
-                    console.print(f"  - {q}")
-            asks = plan.get("investigate") or []
-            if asks:
-                console.print(f"**Investigate asks**: {len(asks)}")
-                for a in asks[:6]:
-                    if isinstance(a, dict):
-                        console.print(
-                            f"  - {a.get('file')} symbol={a.get('symbol') or ''} ask={a.get('ask')}"
-                        )
-                    else:
-                        console.print(f"  - {a}")
-
-        # ── Specialists (always show meta: raw / grounded / skipped) ─────
-        console.print("\n[bold red]=== CORRECTNESS ===[/bold red]")
-        self._print_meta(
-            "CORRECTNESS",
-            final.get("correctness_meta"),
-            final.get("correctness_findings") or [],
-        )
-
-        console.print("\n[bold yellow]=== CODE QUALITY ===[/bold yellow]")
-        self._print_meta(
-            "CODE QUALITY",
-            final.get("quality_meta"),
-            final.get("quality_findings") or [],
-        )
-
-        console.print("\n[bold blue]=== TESTING ===[/bold blue]")
-        self._print_meta(
-            "TESTING",
-            final.get("testing_meta"),
-            final.get("testing_findings") or [],
-        )
-
-        # Legacy fallback if only old code_analysis present
-        if (
-            not (final.get("correctness_findings") or final.get("quality_findings"))
-            and final.get("code_analysis")
-        ):
-            console.print("\n[bold green]=== CODE QUALITY ANALYSIS (legacy) ===[/bold green]")
-            console.print(str(final.get("code_analysis"))[:2000])
-
-        inv = final.get("investigation_report") if isinstance(final.get("investigation_report"), dict) else {}
-        if inv:
-            console.print("\n[bold cyan]=== INVESTIGATION ===[/bold cyan]")
-            if inv.get("skipped"):
-                console.print(f"[dim]skipped reason={inv.get('reason')}[/dim]")
-            else:
-                console.print(
-                    f"[dim]hops={inv.get('hops')} calls={inv.get('calls')} "
-                    f"hypotheses={inv.get('hypotheses')}[/dim]"
-                )
-            for h in (final.get("hypotheses") or [])[:6]:
-                d = h if isinstance(h, dict) else {}
-                console.print(
-                    f"  {d.get('id')} status={d.get('status')} file={d.get('file')} "
-                    f"evidence={d.get('evidence_ids')}"
-                )
-
-        vrep = final.get("verification_report") if isinstance(final.get("verification_report"), dict) else {}
-        if vrep:
-            console.print("\n[bold cyan]=== VERIFICATION ===[/bold cyan]")
-            console.print(
-                f"[dim]supported={vrep.get('supported')} "
-                f"uncertain={vrep.get('uncertain')} "
-                f"unsupported={vrep.get('unsupported')} "
-                f"tests_touched={vrep.get('tests_touched')}/{vrep.get('tests_touched_of')} "
-                f"suggested={vrep.get('suggested_recommendation')}[/dim]"
-            )
-            for rec in (vrep.get("records") or [])[:12]:
-                if not isinstance(rec, dict):
-                    continue
-                console.print(
-                    f"  {str(rec.get('status') or '').upper()} "
-                    f"file={rec.get('file')} "
-                    f"reasons={rec.get('reasons')} "
-                    f"tokens={rec.get('matched_tokens')}"
-                )
-                if rec.get("tests_touched") and rec.get("related_tests"):
-                    console.print(
-                        f"  related: {rec.get('file')} → {rec.get('related_tests')}"
-                    )
-
-        ex = final.get("execution_report") if isinstance(final.get("execution_report"), dict) else {}
-        if ex:
-            console.print("\n[bold cyan]=== EXECUTION ===[/bold cyan]")
-            py = ex.get("python") if isinstance(ex.get("python"), dict) else {}
-            js = ex.get("js") if isinstance(ex.get("js"), dict) else {}
-            if ex.get("python_env") or py.get("env"):
-                console.print(
-                    f"[dim]python_env={ex.get('python_env') or py.get('env')} "
-                    f"frozen={py.get('frozen')} cached={py.get('cached')}[/dim]"
-                )
-            if ex.get("skipped"):
-                console.print(f"[dim]skipped reason={ex.get('skip_reason')}[/dim]")
-            else:
-                console.print(
-                    f"[dim]cmd={ex.get('cmd')} exit={ex.get('exit_code')} "
-                    f"elapsed={ex.get('elapsed_s')}s "
-                    f"passed={ex.get('passed')} failed={ex.get('failed')}[/dim]"
-                )
-            if js.get("skip_reason") or js.get("cmd"):
-                if js.get("skipped"):
-                    console.print(f"[dim]js skip reason={js.get('skip_reason')}[/dim]")
-                else:
-                    console.print(
-                        f"[dim]js_cwd={js.get('cwd')} js_cmd={js.get('cmd')} "
-                        f"js_exit={js.get('exit_code')}[/dim]"
-                    )
-
-        # ── Critic (validated survivors only) ────────────────────────────
-        report = final.get("validation_report") if isinstance(final.get("validation_report"), dict) else {}
-        if report:
-            console.print(
-                f"\n[dim][Grounding] raw={report.get('raw')} "
-                f"kept={report.get('kept')} dropped={report.get('dropped')}[/dim]"
-            )
-        critique = _as_dict(final.get("critique"))
-        kept = (
-            final.get("validated_findings")
-            or final.get("findings")
-            or critique.get("kept")
-            or []
-        )
-        console.print("\n[bold green]=== CRITIQUE ===[/bold green]")
-        if critique.get("notes"):
-            console.print(f"[dim]{critique.get('notes')}[/dim]")
-        dropped = critique.get("dropped") or []
-        if dropped:
-            console.print("[dim]Dropped:[/dim]")
-            for d in dropped[:15]:
-                if isinstance(d, dict):
-                    console.print(f"  - {d.get('title', d)} ({d.get('reason', '')})")
-                else:
-                    console.print(f"  - {d}")
-        if kept:
-            console.print("[bold]Kept findings:[/bold]")
-            self._print_findings(kept)
-        else:
-            console.print("no validated findings")
-
-        # ── Coverage (7.3) ──────────────────────────────────────────────
-        cov = final.get("review_coverage") if isinstance(final.get("review_coverage"), dict) else {}
-        packed = int(cov.get("units_packed") or 0)
-        total = int(cov.get("units_total") or 0)
-        ratio = final.get("coverage_ratio")
-        if ratio is None and total:
-            ratio = packed / total
-        low = final.get("coverage_low")
-        reason = final.get("policy_reason") or _as_dict(final.get("merge_decision")).get(
-            "policy_reason", ""
-        )
-        if cov or ratio is not None or reason:
-            console.print("\n[bold cyan]=== COVERAGE ===[/bold cyan]")
-            ratio_s = f"{float(ratio):.2f}" if ratio is not None else "?"
-            console.print(
-                f"units {packed}/{total} ({ratio_s}) low={str(bool(low)).lower()}"
-            )
-            if reason:
-                console.print(f"policy_reason={reason}")
-
-        # ── Final decision (Policy owns MERGE/COMMENT/REQUEST_CHANGES) ──
-        rec = "N/A"
-        if final:
-            from core.verification.policy import policy_from_state
-
-            rec, pol_reason, _ratio, _low = policy_from_state(final)
-            if pol_reason:
-                reason = pol_reason
-        console.print("\n[bold cyan]=== FINAL RECOMMENDATION ===[/bold cyan]")
-        console.print(f"[bold]Decision: {rec}[/bold]")
-        if reason:
-            console.print(f"[dim]{rec} ({reason})[/dim]")
-        final_comment = final.get("final_comment", "")
-        if final_comment:
-            console.print(Markdown(str(final_comment)))
-
-    def _print_findings(self, findings: list):
-        for finding in findings:
-            d = _finding_line(finding)
-            title = d.get("title", "?")
-            sev = d.get("severity", "?")
-            conf = d.get("confidence", 0)
-            try:
-                conf_s = f"{float(conf):.2f}"
-            except Exception:
-                conf_s = str(conf)
-            console.print(f"**{title}** ({sev}) — confidence {conf_s}")
-            if d.get("file"):
-                console.print(f"File: {d.get('file')}")
-            console.print(f"Evidence: {d.get('evidence') or []}")
-            reasoning = d.get("reasoning") or d.get("description") or ""
-            if reasoning:
-                console.print(f"Reasoning: {reasoning}")
-            if d.get("recommendation"):
-                console.print(f"Recommendation: {d.get('recommendation')}")
-            console.print("---")
-
-    def _print_meta(self, label: str, meta: Any, findings: list):
-        meta = meta if isinstance(meta, dict) else {}
-        if meta.get("skipped"):
-            console.print(f"[dim]{label}: skipped (not in plan)[/dim]")
-            return
-        raw = meta.get("raw", "?")
-        grounded = meta.get("validated", meta.get("grounded", len(findings) if findings is not None else 0))
-        extra = ""
-        if "no_issues_in_diff" in meta:
-            extra = f" no_issues_in_diff={meta.get('no_issues_in_diff')}"
-        if "tests_touched" in meta:
-            extra += f" tests_touched={meta.get('tests_touched')}"
-        console.print(f"[dim]{label}: raw={raw} grounded={grounded}{extra}[/dim]")
-        if findings:
-            self._print_findings(findings)
-        else:
-            console.print(f"[dim]{label}: no validated findings[/dim]")
-
-    def _maybe_post(self, *, dry_run: bool, comment: bool, approve: bool = False) -> Optional[bool]:
-        """Return True if posted/skipped, False on hard failure, None if dry-run."""
-        from core.github_review import post_pull_request_review, should_post
-
-        raw_result = (self.context.final_state or {}).get("_review_result")
-        if raw_result is not None:
-            from core.output.publication import build_publication_plan, deliver_review
-            from core.ci import resolve_github_token
-            plan = build_publication_plan(raw_result, full_diff=self.context.full_diff, approve=approve,
-                inline_max=int(getattr(self.context.repo_cfg, "inline_max", 8)))
-            self.context.publication_preview = plan.to_dict()
-            live = should_post(dry_run=dry_run, comment=comment)
-            login = ""
-            if live:
-                token = resolve_github_token(fallback=str(settings.github_token or ""))
-                login = "github-actions[bot]" if os.environ.get("GITHUB_ACTIONS") and not os.environ.get("CODETURTLE_GITHUB_TOKEN") else Github(token).get_user().login
-            delivery = deliver_review(self.context.pr, plan, dry_run=not live, publisher_login=login)
-            self.context.publication = delivery.to_dict()
-            console.print(f"[GitHub] {delivery.status} event={plan.event} inlines={len(plan.comments)} {delivery.error_code}")
-            return delivery.ok
-        if not should_post(dry_run=dry_run, comment=comment):
-            console.print("[dim]--dry-run mode (not posted)[/dim]")
-            return None
-
-        # v4 has a single canonical output model.  Do not reconstruct inline
-        # comments from legacy dicts when the ReviewResult is available.
-        state = dict(self.context.final_state or {})
-        if self.context.pr_facts and not state.get("pr_facts"):
-            state["pr_facts"] = self.context.pr_facts
-        sha = self.context.pr_head_sha or ""
-        result = post_pull_request_review(self.context.pr, state, sha=sha)
-        if result.skipped:
-            console.print(f"[dim][GitHub] skip: {result.skip_reason}[/dim]")
-            return True
-        if result.ok:
-            console.print(
-                f"[green][GitHub] posted event={result.event} "
-                f"inlines={result.inlines} skipped_inline={result.skipped_inline} "
-                f"url={result.url or result.pr_url}[/green]"
-            )
-            return True
-        console.print(f"[red][GitHub] post failed: {result.error}[/red]")
-        if result.pr_url:
-            console.print(f"[dim]PR: {result.pr_url}[/dim]")
-        console.print("[dim]--- review body (not posted) ---[/dim]")
-        console.print(result.body)
-        return False
+        result = self.context.final_state["_review_result"]
+        plan = build_publication_plan(result, full_diff=self.context.full_diff, approve=approve,
+            inline_max=int(getattr(self.context.repo_cfg, "inline_max", 8)))
+        self.context.publication_preview = plan.to_dict()
+        live = should_post(dry_run=dry_run, comment=comment)
+        login = ""
+        if live:
+            token = resolve_github_token(fallback=str(settings.github_token or ""))
+            login = "github-actions[bot]" if os.environ.get("GITHUB_ACTIONS") and not os.environ.get("CODETURTLE_GITHUB_TOKEN") else Github(token).get_user().login
+        delivery = deliver_review(self.context.pr, plan, dry_run=not live, publisher_login=login)
+        self.context.publication = delivery.to_dict()
+        console.print(f"[GitHub] {delivery.status} event={plan.event} inlines={len(plan.comments)} {delivery.error_code}")
+        return delivery.ok
 
     def _save_to_memory(self):
         final = self.context.final_state or {}
@@ -979,69 +460,49 @@ Description:
             repo_name=self.context.repo,
             review_type="pr",
             number=self.context.number,
-            title=(self.context.state or {}).get("title", ""),
+            title=str((self.context.pr_facts or {}).get("title") or ""),
             recommendation=final.get("recommendation", "N/A"),
             summary=str(final.get("final_comment", ""))[:600],
         )
 
     def _write_benchmark_json(self, json_path: str, elapsed: float = 0.0) -> None:
-        import json
         from pathlib import Path
-        from benchmark.adapter import review_result_to_benchmark_review, review_state_to_benchmark_review
+        from benchmark.adapter import review_result_to_benchmark_review
 
-        final = self.context.final_state or {}
-        repo = self.context.repo or ""
-        number = self.context.number or 0
+        review_result = self.context.final_state["_review_result"]
         model, _ = _ollama_model_and_source()
-
-        # Canonical path: use ReviewResult.findings (List[ReviewFinding]) if available
-        review_result = final.get("_review_result")
-        if review_result is not None:
-            model = review_result.provenance.get("model") or model
-        if review_result is not None and hasattr(review_result, "findings"):
-            review_data = review_result_to_benchmark_review(
-                review_result,
-                repo=repo,
-                number=number,
-                elapsed=elapsed,
-                model=model or "qwen2.5:7b",
-            )
-        else:
-            # Legacy path: build from final_state dict (updated adapter no longer filters to verified-only)
-            review_data = review_state_to_benchmark_review(
-                final,
-                elapsed=elapsed,
-                model=model or "qwen2.5:7b",
-            )
-
+        payload = review_result_to_benchmark_review(
+            review_result,
+            repo=self.context.repo,
+            number=self.context.number,
+            elapsed=elapsed,
+            model=review_result.provenance.get("model") or model or "qwen2.5:7b",
+        ).to_dict()
         out_path = Path(json_path).resolve()
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        payload = review_data.to_dict()
         # Retain the established top-level review_comments schema while also
         # exposing canonical v4 findings and diagnostics for benchmark runs.
-        if review_result is not None:
-            canonical = review_result.to_dict()
-            payload["diagnostic_findings"] = canonical["findings"]
-            payload["findings"] = canonical["product_findings"]
-            payload["result"] = canonical
-            for key in ("schema_version", "target", "health", "decision"):
-                payload[key] = canonical[key]
-            payload["publication_preview"] = self.context.publication_preview
-            payload["publication"] = self.context.publication
-            trace = getattr(review_result, "pipeline_trace", None)
-            timing = getattr(review_result, "timing", None)
-            payload["pipeline_trace"] = trace.to_list() if hasattr(trace, "to_list") else []
-            payload["agent_runs"] = list(getattr(review_result, "agent_runs", []) or [])
-            payload["pipeline_health"] = dict(getattr(review_result, "pipeline_health", {}) or {})
-            trace_summary = trace.summary() if hasattr(trace, "summary") else {}
-            payload["telemetry"] = {
-                "timing": timing.to_dict() if hasattr(timing, "to_dict") else {},
-                "agent_runs": list(getattr(review_result, "agent_runs", []) or []),
-                "pipeline_health": dict(getattr(review_result, "pipeline_health", {}) or {}),
-                "candidate_count": int(trace_summary.get("total_candidates") or 0),
-                "verified_count": int(trace_summary.get("final_findings") or 0),
-                "drop_reasons": dict(trace_summary.get("drop_reasons") or {}),
-            }
+        canonical = review_result.to_dict()
+        payload["diagnostic_findings"] = canonical["findings"]
+        payload["findings"] = canonical["product_findings"]
+        payload["result"] = canonical
+        for key in ("schema_version", "target", "health", "decision"):
+            payload[key] = canonical[key]
+        payload["publication_preview"] = self.context.publication_preview
+        payload["publication"] = self.context.publication
+        trace = getattr(review_result, "pipeline_trace", None)
+        timing = getattr(review_result, "timing", None)
+        payload["pipeline_trace"] = trace.to_list() if hasattr(trace, "to_list") else []
+        payload["agent_runs"] = list(getattr(review_result, "agent_runs", []) or [])
+        payload["pipeline_health"] = dict(getattr(review_result, "pipeline_health", {}) or {})
+        trace_summary = trace.summary() if hasattr(trace, "summary") else {}
+        payload["telemetry"] = {
+            "timing": timing.to_dict() if hasattr(timing, "to_dict") else {},
+            "agent_runs": list(getattr(review_result, "agent_runs", []) or []),
+            "pipeline_health": dict(getattr(review_result, "pipeline_health", {}) or {}),
+            "candidate_count": int(trace_summary.get("total_candidates") or 0),
+            "verified_count": int(trace_summary.get("final_findings") or 0),
+            "drop_reasons": dict(trace_summary.get("drop_reasons") or {}),
+        }
         from core.review.artifacts import write_json_atomic
         write_json_atomic(out_path, payload)
         console.print(f"[dim][Benchmark] Wrote {out_path}[/dim]")

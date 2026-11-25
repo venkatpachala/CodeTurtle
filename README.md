@@ -66,7 +66,7 @@ There is no required backend. Optional Langfuse traces LLM calls if you set keys
 
 ### v4 ReviewRuntime pipeline
 
-The default runtime (`runtime: v4`) is a linear, LangGraph-free pipeline:
+The review runtime runs a linear pipeline:
 
 ```text
 PR Facts & Change Units
@@ -90,7 +90,7 @@ Sandbox (opt-in)    jailed pytest on PR worktree; evidence only, never disproves
 Policy / decide()   MERGE | COMMENT | REQUEST_CHANGES from facts, coverage, tests
 ```
 
-The legacy 17-node LangGraph path remains available via `runtime: legacy` in `.codeturtle.yaml`.
+Existing configurations that set `runtime: legacy` should remove that setting.
 
 ### Deterministic layers
 
@@ -226,7 +226,6 @@ Drop a `.codeturtle.yaml` at your repo root (see [`examples/codeturtle.yaml`](ex
 | `execute_tests` / `execute_install` | Legacy execution settings. Keep these false and use `sandbox-check` explicitly |
 | `model` | Override the Ollama model for this repo |
 | `coverage_merge_min` | Min packed/total ratio required to `MERGE` on empty finding set (default 0.5) |
-| `runtime` | `v4` (default) or `legacy` (17-node LangGraph graph) |
 | `bundle_max` | Max review bundles (default 4) |
 | `agent_max_steps` | Semantic discovery and repair steps per bundle (default 4). Investigation uses the shared review budget |
 
@@ -234,22 +233,16 @@ Config merge order (later wins): `Settings / .env` â†’ `environment variables` â
 
 ### Sandbox (optional)
 
-`--execute-tests` runs a path-jailed pytest inside a detached Git worktree at the PR head SHA. Key guarantees:
-
-- No `shell=True`; timeout enforced.
-- A **green** run is evidence, never auto-approves or disproves an existing finding.
-- A **red** run sets `Decision = REQUEST_CHANGES` with reason `tests_failed`.
-- Lockfile-only PRs skip execution entirely.
-- Skip is never counted as a green test run.
+Use `sandbox-check` with a digest-pinned image to run the same command against BASE and HEAD in isolated containers.
 
 ### GitHub Action
 
-Copy [`examples/github-action.yml`](examples/github-action.yml) to `.github/workflows/codeturtle-review.yml`. The Action runs on `pull_request` (opened / synchronize / reopened), builds Graphify in the PR checkout, and posts with `--comment`. See [`docs/github-action.md`](docs/github-action.md) for full setup.
+Copy [`examples/github-action.yml`](examples/github-action.yml) to `.github/workflows/codeturtle-review.yml`. The Action installs CodeTurtle from a pinned reviewer revision. Automatic PR runs produce a dry-run artifact. Use manual dispatch to publish. See [`docs/github-action.md`](docs/github-action.md) for full setup.
 
 ### Dev eval
 
 ```bash
-uv run python -m tests.evaluation.run_eval --offline
+uv run python -m pytest tests/test_real_pilot.py -q
 ```
 
 ---
@@ -276,7 +269,6 @@ core/
 docs/           architecture, CLI reference, .codeturtle.yaml, GitHub Action
 examples/       .codeturtle.yaml template, GitHub Action workflow
 tests/          unit tests and golden offline eval
-evals/          phase benchmark scripts
 scripts/        maintainer helpers
 ```
 

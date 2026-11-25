@@ -1,9 +1,9 @@
 # Current architecture: 0.5.0a1 preview
 
-The default path is `cli.commands.review.ReviewPipeline` followed by the linear
-`core.runtime.review_runtime.ReviewRuntime`. It does not invoke LangGraph.
-The legacy runtime remains an explicit compatibility option; its outputs do
-not have the v2 production contract guarantees.
+The GitHub CLI calls `cli.commands.review.ReviewPipeline` and the linear
+`core.runtime.review_runtime.ReviewRuntime`. The local and benchmark paths
+use the same runtime. Remove `runtime: legacy` from existing configurations
+to use the current reviewer.
 
 ## Runtime and boundaries
 

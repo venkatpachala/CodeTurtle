@@ -58,6 +58,14 @@ class TestCliHelp(unittest.TestCase):
         self.assertIn("--comment", blob)
 
 
+def test_review_cli_rejects_retired_runtime_before_fetching_pr(tmp_path):
+    config = tmp_path / "codeturtle.yaml"
+    config.write_text("runtime: legacy\n", encoding="utf-8")
+    proc = _run("review", "owner/repo#1", "--config", str(config), "--github-auth", "anonymous")
+    assert proc.returncode == 1
+    assert "legacy runtime was removed" in proc.stdout
+
+
 class TestObservabilityLogger(unittest.TestCase):
     def test_info_accepts_structlog_kwargs(self):
         from core.observability import get_logger

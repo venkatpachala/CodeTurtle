@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from core.github_review import build_inline_comments, should_post
+from core.output.publication import should_post
 from core.ignore import filter_paths, is_ignored
 from core.pr_facts import build_pr_facts
 from core.repo_config import (
@@ -27,17 +27,6 @@ from core.repo_config import (
 
 SANITIZER = "api/sql_utils/sql_sanitizer.py"
 LOCK = "package-lock.json"
-
-DIFF_A = f"""diff --git a/{SANITIZER} b/{SANITIZER}
---- a/{SANITIZER}
-+++ b/{SANITIZER}
-@@ -1,3 +1,8 @@
-+class SQLIdentifierQuoter:
-+    def quote(self, name):
-+        return name
- context
-"""
-
 
 class TestLoad(unittest.TestCase):
     def test_no_file_none(self):
@@ -105,8 +94,8 @@ class TestMerge(unittest.TestCase):
         eff = merge_review_config(repo=repo, cli_execute_tests=False, settings=s)
         self.assertTrue(eff.execute_tests)
 
-    def test_yaml_runtime_legacy(self):
-        repo = RepoConfig(runtime="legacy", bundle_max=2, agent_max_steps=3)
+    def test_yaml_bundle_and_step_limits(self):
+        repo = RepoConfig(runtime="v4", bundle_max=2, agent_max_steps=3)
         s = MagicMock()
         s.inline_max = 8
         s.inline_lockfile = False
@@ -119,7 +108,6 @@ class TestMerge(unittest.TestCase):
         s.agent_max_steps = 4
         s.coverage_merge_min = 0.5
         eff = merge_review_config(repo=repo, settings=s)
-        self.assertEqual(eff.runtime, "legacy")
         self.assertEqual(eff.bundle_max, 2)
         self.assertEqual(eff.agent_max_steps, 3)
 
@@ -176,32 +164,6 @@ class TestIgnore(unittest.TestCase):
         facts = build_pr_facts(files_changed=kept)
         self.assertIn(SANITIZER, facts["files_changed"])
         self.assertEqual(facts["classification"], "source")
-
-
-class TestInlineMaxFromYaml(unittest.TestCase):
-    def test_inline_max_2(self):
-        findings = []
-        for i in range(5):
-            findings.append(
-                {
-                    "title": f"f{i}",
-                    "file": SANITIZER,
-                    "severity": "nit",
-                    "verification_status": "supported",
-                    "start_line": 2,
-                    "claim": f"c{i}",
-                }
-            )
-        state = {
-            "full_diff": DIFF_A,
-            "files_changed": [SANITIZER],
-            "pr_facts": {"classification": "source", "files_changed": [SANITIZER]},
-            "validated_findings": findings,
-            "inline_max": 2,
-        }
-        comments, skipped = build_inline_comments(state)
-        self.assertEqual(len(comments), 2)
-        self.assertGreaterEqual(skipped, 3)
 
 
 if __name__ == "__main__":

@@ -47,7 +47,6 @@ class EffectiveReviewConfig:
     llm_backend: str = ""
     post_on_github: bool = False
     coverage_merge_min: float = 0.5
-    runtime: str = "v4"
     bundle_max: int = 4
     agent_max_steps: int = 4
     config_path: Optional[Path] = None
@@ -121,13 +120,6 @@ def _as_float(val: Any, default: float) -> float:
         return default
 
 
-def _as_runtime(val: Any) -> str:
-    s = str(val or "v4").strip().lower()
-    if s in ("v4", "legacy"):
-        return s
-    return "v4"
-
-
 def merge_review_config(
     *,
     repo: Optional[RepoConfig] = None,
@@ -141,6 +133,11 @@ def merge_review_config(
         from config import settings as _s
 
         settings = _s
+    requested_runtime = repo.runtime if repo and repo.runtime else getattr(settings, "runtime", None)
+    if isinstance(requested_runtime, str) and requested_runtime.strip().lower() == "legacy":
+        raise RepoConfigError(
+            "The legacy runtime was removed. Remove the runtime override to use the current reviewer."
+        )
     out = EffectiveReviewConfig(
         inline_max=int(getattr(settings, "inline_max", 8) or 8),
         inline_lockfile=bool(getattr(settings, "inline_lockfile", False)),
@@ -149,7 +146,6 @@ def merge_review_config(
         model=str(getattr(settings, "ollama_model", "") or ""),
         llm_backend=str(getattr(settings, "llm_backend", "") or ""),
         coverage_merge_min=_as_float(getattr(settings, "coverage_merge_min", 0.5), 0.5),
-        runtime=_as_runtime(getattr(settings, "runtime", "v4")),
         bundle_max=_as_int(getattr(settings, "bundle_max", 4), 4),
         agent_max_steps=_as_int(getattr(settings, "agent_max_steps", 4), 4),
         config_path=config_path,
@@ -174,10 +170,6 @@ def merge_review_config(
         out.post_on_github = bool(repo.post_on_github)
         if repo.coverage_merge_min is not None:
             out.coverage_merge_min = float(repo.coverage_merge_min)
-        if repo.runtime:
-            rt = str(repo.runtime).strip().lower()
-            if rt in ("v4", "legacy"):
-                out.runtime = rt
         if repo.bundle_max is not None:
             out.bundle_max = int(repo.bundle_max)
         if repo.agent_max_steps is not None:
@@ -206,7 +198,7 @@ def review_skip_reason(
 
 def yaml_cannot_force_post(*, dry_run: bool, comment: bool, post_on_github: bool) -> bool:
     """YAML post_on_github never overrides CLI dry-run."""
-    from core.github_review import should_post
+    from core.output.publication import should_post
 
     if should_post(dry_run=dry_run, comment=comment):
         return True

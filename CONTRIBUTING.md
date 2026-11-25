@@ -15,7 +15,7 @@ pip install -e ".[ollama,graphify]"
 
 ```bash
 codeturtle --help
-uv run python -m tests.evaluation.run_eval --offline
+uv run python -m pytest tests/test_real_pilot.py -q
 ```
 
 Both must pass. Do not commit `.env` or tokens.

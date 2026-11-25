@@ -182,7 +182,7 @@ Run from Ubuntu WSL in the repository:
 
 ```bash
 uv run --no-sync python -m pytest -q -p no:cacheprovider
-uv run --no-sync python -m tests.evaluation.run_eval --offline
+uv run --no-sync python -m pytest tests/test_real_pilot.py -q
 ```
 
 The offline command checks stored snapshots. It does not run the current model

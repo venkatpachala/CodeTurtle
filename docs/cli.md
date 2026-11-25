@@ -78,7 +78,7 @@ It attempts finite fetch depths 32, 128, and 512 within a bounded preparation
 budget. Missing history remains explicit. Proof requests use small typed batches
 and at most one repair per bundle; unresolved work cannot imply clean code.
 
-Default runtime is **v4**. Printed `Decision:` is Policy (`MERGE` / `COMMENT` / `REQUEST_CHANGES`), not leftover LLM Final text. Set `runtime: legacy` in `.codeturtle.yaml` to use the 17-node graph.
+The review policy sets the printed recommendation (`MERGE`, `COMMENT`, or `REQUEST_CHANGES`). Remove the retired `runtime: legacy` setting from existing configurations.
 
 **Options**
 
